@@ -1,0 +1,686 @@
+{
+  "corpus_id": "pyrnova-m6-precursor-and-inferred-joins-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_m5.json",
+  "reviewed_at": "2026-09-08",
+  "notes": "M6 extends the frozen M5 corpus with budget/appropriation precursor coverage and reviewed inferred-join calibration cases. Earlier corpora are byte-for-byte unchanged. Each inferred case's ground_truth label reports whether its cross-source linkage is real, so inferred precision and false-join rate are measurable.",
+  "cases": [
+    {
+      "case_id": "m6-inferred-cfda-appropriation-doe-2022",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2023-09-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations",
+          "source_ref": "TAS-089-0224-FY22-CLEANENERGY",
+          "record_kind": "appropriation",
+          "stage": "FUNDING",
+          "program_key": "department of energy:doe-approp-clean-energy-2022",
+          "program_identifier": "81.086",
+          "summary": "Clean energy manufacturing appropriated budget authority",
+          "agency": "Department of Energy",
+          "amount_usd": 240000000,
+          "available_at": "2022-04-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/federal_account/089-0224",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_DE_CLEANENERGY_2023",
+          "record_kind": "award",
+          "stage": "AWARD",
+          "program_key": "department of energy:doe-clean-energy-award-2023",
+          "program_identifier": "81.086",
+          "summary": "Clean energy manufacturing downstream award",
+          "agency": "Department of Energy",
+          "amount_usd": 44000000,
+          "available_at": "2023-07-15T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_DE_CLEANENERGY_2023",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_DE_CLEANENERGY_2023-status-2026",
+          "record_kind": "project_update",
+          "summary": "Later option exercised (excluded at cutoff)",
+          "available_at": "2026-05-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_DE_CLEANENERGY_2023",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "DOE clean-energy appropriated budget authority and a later DOE award belong to the same assistance-listing program (CFDA 81.086) even without a native crosswalk id.",
+        "relevance": 0.5,
+        "predicted_buyer": "Department of Energy",
+        "predicted_timing": "12-18 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["clean-energy manufacturing and equipment vendors"],
+      "expected_buyer_program_owner": "Department of Energy",
+      "expected_commercial_mechanism": "appropriation to downstream award linked by shared assistance-listing identifier",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "downstream_award",
+        "buyer": "Department of Energy",
+        "occurred_at": "2023-07-15T00:00:00+00:00",
+        "actual_value_usd": 44000000,
+        "source_ref": "CONT_AWD_DE_CLEANENERGY_2023"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "The appropriation account and the award carry the same authoritative assistance-listing number (81.086) under the same agency, so the linkage is real; but appropriated funding is not yet an executable customer-specific procurement, so it stays a WATCH.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": ["funding_without_executable_demand"],
+      "expected_chain": {
+        "min_relationships": 1,
+        "min_inferred": 1,
+        "min_deterministic": 0,
+        "predicates": ["PRECEDES"],
+        "final_disposition": "WATCH"
+      }
+    },
+    {
+      "case_id": "m6-inferred-entity-uei-navy-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-03-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "grants_gov",
+          "source_ref": "N00014-23-RESEARCH-GRANT-441",
+          "record_kind": "grant_award",
+          "stage": "FUNDING",
+          "program_key": "department of the navy:onr-directed-energy-grant-2023",
+          "summary": "ONR directed energy research grant",
+          "agency": "Department of the Navy",
+          "recipient_uei": "ABC123DEF4567",
+          "available_at": "2023-05-10T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.grants.gov/search-results-detail/N00014-23-RESEARCH-GRANT-441",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_N0002423C7788",
+          "record_kind": "award",
+          "stage": "AWARD",
+          "program_key": "department of the navy:navsea-directed-energy-procurement-2024",
+          "summary": "NAVSEA directed energy prototype production award",
+          "agency": "Department of the Navy",
+          "recipient_uei": "ABC123DEF4567",
+          "parent_uei": "PARENT99887766",
+          "place_of_performance": "Crane, IN",
+          "available_at": "2024-01-20T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_N0002423C7788",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_N0002423C7788-status-2026",
+          "record_kind": "project_update",
+          "summary": "Later delivery order (excluded at cutoff)",
+          "available_at": "2026-04-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_N0002423C7788",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "An ONR research grant and a NAVSEA production award to the same authoritative recipient entity (same UEI) under the Navy are stages of the same directed-energy capability build-out.",
+        "relevance": 0.55,
+        "predicted_buyer": "Department of the Navy",
+        "predicted_timing": "within 12 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["directed-energy prototyping and production vendors"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "research funding to production award linked by authoritative recipient entity identity",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "Department of the Navy",
+        "occurred_at": "2024-01-20T00:00:00+00:00",
+        "actual_value_usd": 18500000,
+        "source_ref": "CONT_AWD_N0002423C7788"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Both records name the same authoritative recipient UEI under the same military department; the entity crosswalk is authoritative, so the linkage is real and the recipient is a genuine AWARDED_TO edge. It remains a WATCH because there is no open recompete to strike yet.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": [],
+      "expected_chain": {
+        "min_relationships": 1,
+        "min_inferred": 1,
+        "entity_predicates": ["AWARDED_TO", "LOCATED_AT", "SUBSIDIARY_OF"],
+        "final_disposition": "WATCH"
+      }
+    },
+    {
+      "case_id": "m6-false-cfda-cross-agency-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2023-11-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations",
+          "source_ref": "TAS-089-0228-FY23-GRID",
+          "record_kind": "appropriation",
+          "stage": "FUNDING",
+          "program_key": "department of energy:doe-grid-2023",
+          "program_identifier": "12.800",
+          "summary": "Grid resilience budget authority",
+          "agency": "Department of Energy",
+          "available_at": "2023-02-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/federal_account/089-0228",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "W912-23-GRID-RFI-55",
+          "record_kind": "rfi",
+          "stage": "PROCUREMENT",
+          "program_key": "department of defense:usace-grid-2023",
+          "program_identifier": "12.800",
+          "summary": "Grid resilience request for information",
+          "agency": "Department of Defense",
+          "available_at": "2023-06-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/W912-23-GRID-RFI-55/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "W912-23-GRID-RFI-55-status-2026",
+          "record_kind": "status_check",
+          "summary": "Reviewed status: no shared program confirmed (excluded at cutoff)",
+          "available_at": "2026-03-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/W912-23-GRID-RFI-55/view",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "A DOE appropriation and a DoD RFI that both cite listing 12.800 are one grid program.",
+        "relevance": 0.2,
+        "predicted_buyer": "Department of Energy",
+        "predicted_timing": "unclear",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["grid resilience vendors"],
+      "expected_buyer_program_owner": "Department of Energy",
+      "expected_commercial_mechanism": "asserted shared-identifier program across two different departments (not supported)",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "no_shared_program",
+        "buyer": null,
+        "occurred_at": null,
+        "source_ref": "W912-23-GRID-RFI-55"
+      },
+      "expected_disposition": "REJECT",
+      "ground_truth": {"label": "TRUE_NEGATIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Assistance-listing numbers are agency-specific; the same-looking identifier under two genuinely different departments is a coincidence or data error, not a shared program. The agency conflict must invalidate the inferred join.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": ["broad_topical_match", "speculative_causality"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "min_rejected": 1,
+        "final_disposition": "REJECT"
+      }
+    },
+    {
+      "case_id": "m6-false-temporal-impossible-navy-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-02-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations",
+          "source_ref": "PB-FY24-PE0604567N-LINE",
+          "record_kind": "authorization",
+          "stage": "AUTHORIZATION",
+          "program_key": "department of the navy:navy-auth-radar-2024",
+          "program_identifier": "PE0604567N",
+          "summary": "Navy radar program authorization line",
+          "agency": "Department of the Navy",
+          "available_at": "2024-01-05T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/federal_account/017-1319",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "N00024-22-RADAR-SOL-01",
+          "record_kind": "presolicitation",
+          "stage": "PROCUREMENT",
+          "program_key": "department of the navy:navy-radar-proc-2022",
+          "program_identifier": "PE0604567N",
+          "summary": "Navy radar presolicitation",
+          "agency": "Department of the Navy",
+          "available_at": "2022-03-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/N00024-22-RADAR-SOL-01/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "N00024-22-RADAR-SOL-01-status-2026",
+          "record_kind": "status_check",
+          "summary": "Reviewed status (excluded at cutoff)",
+          "available_at": "2026-02-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/N00024-22-RADAR-SOL-01/view",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "A 2024 authorization line and a 2022 presolicitation sharing a program element are the same radar program in order.",
+        "relevance": 0.2,
+        "predicted_buyer": "Department of the Navy",
+        "predicted_timing": "unclear",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["radar systems vendors"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "asserted authorization-to-procurement chain that runs backward in time (not supported)",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "temporal_contradiction",
+        "buyer": null,
+        "occurred_at": null,
+        "source_ref": "N00024-22-RADAR-SOL-01"
+      },
+      "expected_disposition": "REJECT",
+      "ground_truth": {"label": "TRUE_NEGATIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "The authorization line postdates the procurement it supposedly precedes, so it cannot be the precursor; a program-element match cannot override the temporal impossibility.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": ["speculative_causality", "contradictory_evidence"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "min_rejected": 1,
+        "final_disposition": "REJECT"
+      }
+    },
+    {
+      "case_id": "m6-false-agency-topic-only-interior-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-07-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "DOI-2024-WILDFIRE-301",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "department of the interior:doi-wildfire-detect-2024",
+          "summary": "Wildfire detection sensor network forecast",
+          "agency": "Department of the Interior",
+          "available_at": "2024-02-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.doi.gov/procurement-forecast/DOI-2024-WILDFIRE-301",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "DOI-2024-WILDFIRE-UPGRADE-88",
+          "record_kind": "rfi",
+          "stage": "PROCUREMENT",
+          "program_key": "department of the interior:doi-wildfire-upgrade-2024",
+          "summary": "Wildfire detection sensor upgrade request",
+          "agency": "Department of the Interior",
+          "available_at": "2024-05-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/DOI-2024-WILDFIRE-UPGRADE-88/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "DOI-2024-WILDFIRE-UPGRADE-88-status-2026",
+          "record_kind": "status_check",
+          "summary": "Reviewed status (excluded at cutoff)",
+          "available_at": "2026-06-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/DOI-2024-WILDFIRE-UPGRADE-88/view",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Two same-agency wildfire-sensor notices with similar topics are the same procurement.",
+        "relevance": 0.2,
+        "predicted_buyer": "Department of the Interior",
+        "predicted_timing": "unclear",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["wildfire detection sensor vendors"],
+      "expected_buyer_program_owner": "Department of the Interior",
+      "expected_commercial_mechanism": "asserted same-program link from agency plus topic overlap alone (not supported)",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "no_shared_program",
+        "buyer": null,
+        "occurred_at": null,
+        "source_ref": "DOI-2024-WILDFIRE-UPGRADE-88"
+      },
+      "expected_disposition": "REJECT",
+      "ground_truth": {"label": "TRUE_NEGATIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Same agency and overlapping topic words carry no authoritative shared identifier or entity; joining them would be exactly the topic-plus-agency guesswork the doctrine forbids.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": ["broad_topical_match", "weak_buyer_specificity"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "min_rejected": 1,
+        "final_disposition": "REJECT"
+      }
+    },
+    {
+      "case_id": "m6-defer-fragment-ambiguous-gsa-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-10-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "GSA-2024-CLOUD-889001",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "general services administration:gsa-cloud-forecast-2024",
+          "summary": "cloud infrastructure modernization forecast",
+          "agency": "General Services Administration",
+          "available_at": "2024-03-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.gsa.gov/procurement-forecast/GSA-2024-CLOUD-889001",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "SOL-889001-GSA-CLOUD",
+          "record_kind": "rfi",
+          "stage": "PROCUREMENT",
+          "program_key": "general services administration:gsa-cloud-rfi-2024",
+          "summary": "cloud infrastructure modernization request",
+          "agency": "General Services Administration",
+          "available_at": "2024-08-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/SOL-889001-GSA-CLOUD/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "SOL-889001-GSA-CLOUD-status-2026",
+          "record_kind": "status_check",
+          "summary": "Reviewed status (excluded at cutoff)",
+          "available_at": "2026-01-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/SOL-889001-GSA-CLOUD/view",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "A GSA cloud forecast and a GSA RFI sharing the number fragment 889001 are likely the same requirement, but no authoritative identifier confirms it.",
+        "relevance": 0.4,
+        "predicted_buyer": "General Services Administration",
+        "predicted_timing": "within 12 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["cloud infrastructure and managed services vendors"],
+      "expected_buyer_program_owner": "General Services Administration",
+      "expected_commercial_mechanism": "same-agency records sharing a specific number fragment but no authoritative program identifier",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "unconfirmed_linkage",
+        "buyer": "General Services Administration",
+        "occurred_at": null,
+        "source_ref": "SOL-889001-GSA-CLOUD"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "The shared number fragment plus same agency and topic is suggestive but not authoritative. The engine scores it in the review band and defers it; a reviewer must confirm or reject rather than the system auto-linking.",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "The fragment match is plausible but unconfirmed, so this belongs in the human review queue as a deferred inferred join, not an automatic link.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "LOW"
+      },
+      "failure_reasons": ["speculative_causality"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "min_deferred": 1,
+        "final_disposition": "WATCH"
+      }
+    },
+    {
+      "case_id": "m6-precursor-appropriation-chain-airforce-2021",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-03-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations",
+          "source_ref": "TAS-057-3010-FY21-RADARMOD",
+          "record_kind": "appropriation",
+          "stage": "FUNDING",
+          "program_key": "department of the air force:af-radar-mod-2024",
+          "program_identifier": "057-3010",
+          "summary": "Air Force radar modernization procurement appropriation",
+          "agency": "Department of the Air Force",
+          "amount_usd": 310000000,
+          "available_at": "2021-03-15T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/federal_account/057-3010",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "AF-FY24-RADARMOD-014",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "department of the air force:af-radar-mod-2024",
+          "summary": "Air Force radar modernization procurement forecast",
+          "agency": "Department of the Air Force",
+          "available_at": "2022-05-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.acquisition.gov/procurement-forecast/AF-FY24-RADARMOD-014",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "FA8730-23-RADARMOD-R-0001",
+          "record_kind": "solicitation",
+          "stage": "PROCUREMENT",
+          "program_key": "department of the air force:af-radar-mod-2024",
+          "summary": "Air Force radar modernization solicitation",
+          "agency": "Department of the Air Force",
+          "downstream_refs": ["CONT_AWD_FA873024C0001"],
+          "available_at": "2023-06-01T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/FA8730-23-RADARMOD-R-0001/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_FA873024C0001",
+          "record_kind": "award",
+          "stage": "AWARD",
+          "program_key": "department of the air force:af-radar-mod-2024",
+          "summary": "Air Force radar modernization award",
+          "agency": "Department of the Air Force",
+          "recipient_uei": "RADR9988XX11",
+          "parent_uei": "PARENTUEI777001",
+          "place_of_performance": "Hanscom AFB, MA",
+          "amount_usd": 295000000,
+          "available_at": "2024-02-01T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_FA873024C0001",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_FA873024C0001-mod-2026",
+          "record_kind": "project_update",
+          "summary": "Option year exercised (excluded at cutoff)",
+          "available_at": "2026-04-01T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_FA873024C0001",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The FY21 radar-modernization appropriation moves through a forecast and a SAM solicitation to an Air Force award, giving early lead time from the appropriation itself.",
+        "relevance": 0.7,
+        "predicted_buyer": "Department of the Air Force",
+        "predicted_timing": "by early 2024",
+        "predicted_value_usd": 300000000
+      },
+      "expected_affected_entities": ["radar modernization and electronics integration vendors"],
+      "expected_buyer_program_owner": "Department of the Air Force",
+      "expected_commercial_mechanism": "appropriation to forecast to solicitation to award lifecycle with a program-key backbone",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "Department of the Air Force",
+        "occurred_at": "2024-02-01T00:00:00+00:00",
+        "actual_value_usd": 295000000,
+        "source_ref": "CONT_AWD_FA873024C0001"
+      },
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "ACCEPT",
+        "reason": "An appropriation, a forecast, a matching SAM solicitation, and the award all carry the same explicit program key, so this is one procurement lifecycle observable from the appropriation onward. The recipient UEI, parent, and place of performance are authoritative entity edges.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "expected_chain": {
+        "min_relationships": 3,
+        "min_deterministic": 3,
+        "predicates": ["FUNDS", "PRECEDES"],
+        "entity_predicates": ["AWARDED_TO", "LOCATED_AT", "SUBSIDIARY_OF"],
+        "final_disposition": "STRIKE",
+        "promotion_causes": [
+          {"to": "WATCH", "stage": "FUNDING"},
+          {"to": "STRIKE", "stage": "PROCUREMENT"}
+        ]
+      }
+    },
+    {
+      "case_id": "m6-partial-authorization-dhs-2024",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2024-06-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations",
+          "source_ref": "PL118-047-DHS-CYBER-TITLE",
+          "record_kind": "authorization",
+          "stage": "AUTHORIZATION",
+          "program_key": "department of homeland security:dhs-cyber-auth-2024",
+          "program_identifier": "PL118-047",
+          "summary": "DHS cybersecurity program authorization title",
+          "agency": "Department of Homeland Security",
+          "available_at": "2024-03-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.congress.gov/bill/118th-congress/PL118-047",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "dhs",
+          "source_ref": "PL118-047-DHS-CYBER-status-2026",
+          "record_kind": "unresolved_authorization",
+          "summary": "No appropriation, program designation, or solicitation had followed as of the reviewed status check (excluded at cutoff)",
+          "available_at": "2026-09-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.dhs.gov/cybersecurity",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "A DHS cybersecurity authorization will convert into funding and procurement.",
+        "relevance": 0.4,
+        "predicted_buyer": "Department of Homeland Security",
+        "predicted_timing": "unclear",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["cybersecurity services vendors"],
+      "expected_buyer_program_owner": "Department of Homeland Security",
+      "expected_commercial_mechanism": "authorization stage present without downstream funding or procurement yet",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "unresolved_authorization",
+        "buyer": "Department of Homeland Security",
+        "occurred_at": null,
+        "source_ref": "PL118-047-DHS-CYBER-status-2026"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "An authorization grants authority but not money; with no appropriation, program designation, or solicitation yet, the chain is a single AUTHORIZATION stage and must not be promoted or have downstream stages inferred merely because authority exists.",
+      "reviewer": "Pyrnova M6 inference review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Authorization is genuine upstream evidence and worth monitoring, but authority alone is not funding or executable demand, so it stays a partial single-stage WATCH.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "LOW"
+      },
+      "failure_reasons": ["policy_without_funding"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "final_disposition": "WATCH"
+      }
+    }
+  ]
+}
