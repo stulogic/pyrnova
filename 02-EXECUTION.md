@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M3–M5 closed; M6 in progress · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M3–M6 closed; M7 in progress · updated 2026-09-08_
 
 ## Active work
 
@@ -48,33 +48,42 @@ opportunity evolution (`pyrnova/transitions.py`), temporal `Relationship` fields
 `OpportunityTransition` are implemented and offline-validated; the 27-case `corpus_m5.json` extends
 the frozen `corpus_m4.json`. `scoring_v1` unchanged. See `docs/replay/M5_CHAIN_RESOLUTION.md`.
 
-### Milestone 6 — in progress
+### Milestone 6 — CLOSED
 
-M6 moves Pyrnova earlier in the capital lifecycle and calibrates inferred cross-source relationships
-that cannot rely on deterministic identifiers. Implemented offline-first per
-`docs/specs/M6_PRECURSOR_AND_INFERENCE.md`:
+M6 passed acceptance on 2026-09-08: an appropriations/budget precursor source (INTENT/AUTHORIZATION/
+FUNDING), a weighted anchored inferred-join engine with a `[0.45, 0.60)` deferral band, a human review
+queue, and entity predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`). 35-case `corpus_m6.json`
+extends the frozen M5 corpus; `scoring_v1` unchanged. See `docs/replay/M6_INFERENCE_CALIBRATION.md`.
 
-- `pyrnova/sources/appropriations.py` adds a budget/appropriation precursor source distinguishing
-  INTENT / AUTHORIZATION / FUNDING and emitting authoritative structured identifiers (TAS, Federal
-  Account, CFDA, program element) that crosswalk into existing chains.
-- `pyrnova/chains.py` gains a weighted, explainable inference model (`score_inferred_join`) gated by
-  an authoritative structured anchor, a `[0.45, 0.60)` deferral band, entity-level predicates
-  (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`), and calibration outputs.
-- `pyrnova/review_queue.py` (CLI `join-review`) persists human dispositions of deferred inferred
-  joins as future calibration evidence.
-- `examples/replay/corpus_m6.json` extends the frozen `corpus_m5.json` with eight reviewed cases;
-  results are in `docs/replay/M6_INFERENCE_CALIBRATION.md`.
+### Milestone 7 — in progress
 
-Active constraints: the inferred acceptance threshold stays frozen at 0.60 unless full-corpus
-evidence justifies a change; inferred joins never independently drive a high-confidence STRIKE;
-inference must remain explainable and evidence-anchored (no topic-only / agency-only / chronology-only
-/ opaque-semantic joins); `scoring_v1` is unchanged; strict point-in-time replay is preserved.
+M7 turns resolved capital chains into explicit, evidence-backed commercial consequences. Implemented
+offline-first per `docs/specs/M7_COMMERCIAL_CONSEQUENCE.md`:
+
+- `pyrnova/catalysts.py` builds one `CapitalCatalyst` per resolved program chain (deterministic id;
+  connected program keys collapse) and generates 0..N `CommercialConsequence`s with a conservative,
+  deterministic mechanism classifier (7-family v1 taxonomy), directness (DIRECT/DOWNSTREAM/
+  SECOND_ORDER), participant-role resolution, negative-commercial falsification, and a recommended
+  screened disposition. Zero consequences is a common valid result.
+- `pyrnova/capabilities.py` extracts specific capability classes (rejecting broad labels);
+  `pyrnova/value.py` classifies value as KNOWN/ESTIMATED/BOUNDED/UNKNOWN with provenance.
+- `pyrnova/replay.py` adds `run_consequence_replay`/`run_consequence_corpus`/
+  `summarize_consequence_results`; CLI `consequences` / `consequence-corpus`.
+- `examples/replay/corpus_m7.json` extends the frozen `corpus_m6.json` with eight consequence cases;
+  results are in `docs/replay/M7_CONSEQUENCE_REPORT.md`.
+
+Active constraints: no generic idea generation — every consequence is grounded in explicit structured
+evidence, and unknown stays unknown; STRIKE requires DIRECT + resolved buyer + specific capability;
+SECOND_ORDER stays internal/WATCH unless corroborated; catalyst/consequence/mechanism/capability
+confidences stay distinct from opportunity score; `scoring_v1` is unchanged; strict point-in-time
+replay is preserved; earlier frozen corpora remain byte-for-byte unchanged.
 
 ## Immediate sequence
 
 1. Complete and record the unchanged M2 live acceptance gate after the reset.
-2. Accumulate additional reviewed inferred-join cases and at least one live-archived budget artifact
-   before revisiting the 0.60 threshold; keep it frozen until the sample materially grows.
+2. Accumulate additional reviewed consequence cases (including SUPPLY_DISPLACEMENT and
+   TECHNOLOGY_MIGRATION) and inferred-join cases before drawing general commercial-precision
+   conclusions; keep the inferred threshold frozen at 0.60.
 3. Do not alter scoring or begin a later milestone without separate authority.
 
 ## Active constraints

@@ -11,9 +11,12 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
 - **M5: CLOSED.** Cross-source capital-chain resolution, opportunity evolution, and chain
   observability passed acceptance on 2026-09-08. `scoring_v1` unchanged.
-- **M6: IN PROGRESS.** Budget/appropriation precursor coverage and inferred-relationship calibration
-  are implemented and offline-validated; the weighted, explainable inference model, a human review
-  queue for uncertain joins, and entity-level predicates are exercised by a reviewed corpus.
+- **M6: CLOSED.** Budget/appropriation precursor coverage and inferred-relationship calibration passed
+  acceptance on 2026-09-08; the weighted, explainable inference model, human review queue, and
+  entity-level predicates are exercised by a reviewed corpus. `scoring_v1` unchanged.
+- **M7: IN PROGRESS.** Capital catalysts and commercial consequences turn resolved capital chains into
+  explicit, evidence-backed commercial consequences (mechanism, directness, participant roles,
+  capability, value, falsifiers) without inventing generic business ideas.
 
 ## Implemented and verified
 
@@ -101,6 +104,53 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   live API calls. See `docs/replay/M6_INFERENCE_CALIBRATION.md` and
   `docs/specs/M6_PRECURSOR_AND_INFERENCE.md`.
 
+## M7 commercial-consequence engine
+
+- **Capital catalysts** (`pyrnova/catalysts.py`, `CapitalCatalyst`): one catalyst per resolved program
+  chain — connected program keys (native-id or accepted inferred crosswalk) collapse into a single
+  catalyst with deterministic identity `cat_<hash(program_keys)>`, so a chain never yields duplicate
+  catalysts. It references canonical signals/relationships, carries a catalyst confidence distinct from
+  scoring, `first_observed_at`/`available_at`, contradiction status, and a small catalyst-type enum
+  (BUDGET_APPROPRIATION / PROGRAM_ESTABLISHMENT / PROCUREMENT_LIFECYCLE / REGULATORY_MANDATE /
+  CAPACITY_BUILDOUT / SUPPLY_DISRUPTION).
+- **Commercial consequences** (`CommercialConsequence`, distinct from `Opportunity`/STRIKE): each
+  describes one economically distinct behavior a catalyst is likely to cause, with mechanism,
+  directness, participant roles, capability classes, timing, value, evidence, assumptions, falsifiers,
+  a consequence confidence, and a *recommended* `screened_disposition`. A catalyst yields **0..N**
+  consequences; zero is common and valid.
+- **Mechanism taxonomy (v1, deterministic + explainable)**: DIRECT_PROCUREMENT, FUNDED_DOWNSTREAM_DEMAND,
+  FORCED_COMPLIANCE_SPEND, CAPITAL_EXPANSION, SUPPLY_DISPLACEMENT, TECHNOLOGY_MIGRATION,
+  INDUSTRIAL_CAPACITY_BUILDOUT. Classification comes from stage + record_kind + source + explicit
+  structured flags (procurement language, funding type, regulatory obligation, capex/policy), never
+  from topical similarity. A `_subsume` rule prevents double-counting the same money (an appropriation
+  that funds an observed direct procurement is not also a separate downstream consequence).
+- **Directness doctrine**: DIRECT (explicit buyer/spend path) → STRIKE-eligible; DOWNSTREAM (supported,
+  one step removed) → WATCH; SECOND_ORDER (materially inferential) → held internal/WATCH pending
+  corroboration. STRIKE requires DIRECT + a resolved BUYER/PRIME_RECIPIENT + a specific capability.
+- **Participant roles** (`resolve_participants`): FUNDING_AUTHORITY, PROGRAM_OWNER, BUYER,
+  PRIME_RECIPIENT, BENEFICIARY, REGULATED_ENTITY resolved from authoritative structured fields;
+  SUPPLIER/SUBCONTRACTOR are never inferred without explicit evidence.
+- **Capability classes** (`pyrnova/capabilities.py`): specific normalized labels from NAICS/PSC and
+  curated phrases; overly broad labels (technology, consulting, services, manufacturing…) are rejected.
+- **Value foundation** (`pyrnova/value.py`): KNOWN / ESTIMATED / BOUNDED / UNKNOWN with method, inputs,
+  confidence, provenance, and range; never an unsupported precise amount. UNKNOWN is a valid result.
+- **Negative commercial evidence**: structured `ConsequenceFalsifier`s (no_identifiable_buyer,
+  funding_restricted_from_commercial_use, internal_self_performance, program_cancelled,
+  speculative_second_order, …); fatal falsifiers reject the consequence with a reason rather than
+  silently lowering a number.
+- **`corpus_m7.json`** extends the frozen `corpus_m6.json` with eight consequence cases (direct STRIKE,
+  downstream grant, multi-consequence CHIPS program, zero-consequence appropriation, internal
+  self-performance kill, regulatory compliance, second-order capex, unknown-value direct procurement).
+  Consequence engine over the 43-case M7 corpus: 29 catalysts (2 duplicate program keys collapsed),
+  23 consequences, 6 zero-consequence catalysts, 4 multi-consequence cases, directness DIRECT 13 /
+  DOWNSTREAM 7 / SECOND_ORDER 3, five mechanism families exercised, buyer resolution 0.5652, capability
+  resolution 0.5217, value KNOWN 4 / BOUNDED 3 / UNKNOWN 16, 1 consequence rejected
+  (internal_self_performance). Consequence precision 1.0 and false-consequence rate 0.0 graded over the
+  eight cases that declare consequence-level ground truth (small-sample warning surfaced). Under
+  `scoring_v1`: 43 cases, STRIKE precision 0.875, WATCH conversion 0.8571, FPR 0.125, FNR 0.0, no STRIKE
+  explosion (7 true / 1 false). Frozen M4/M5/M6 baselines unchanged. No live API calls. See
+  `docs/replay/M7_CONSEQUENCE_REPORT.md` and `docs/specs/M7_COMMERCIAL_CONSEQUENCE.md`.
+
 ## M3 baseline
 
 - STRIKE precision: 0.6667
@@ -141,12 +191,22 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - Entity predicates are established only from structured UEI/place fields present on a record; entity
   resolution across name variants and unverified addresses remains out of scope.
 - No M6 live API calls were made.
+- M7 consequence precision (1.0) and false-consequence rate (0.0) are graded on only 8 cases with
+  declared consequence-level ground truth; the small-sample warning is surfaced, never hidden. Two of
+  the seven mechanism families (SUPPLY_DISPLACEMENT, TECHNOLOGY_MIGRATION) are implemented but not yet
+  exercised by a reviewed corpus case. Capability/value extraction depends on structured NAICS/PSC and
+  explicit amounts being present in a record; absent those, capability resolution and value are
+  correctly UNKNOWN rather than guessed. Consequence generation is retrospective over a resolved chain;
+  each consequence carries `first_supportable_at`, but per-cutoff consequence transitions are not yet
+  woven into `derive_transitions`. No M7 live API calls were made.
 - Earlier limitations (M2 fresh-SAM gate, sparse STRIKE sample, binary-metric exclusions, restricted
-  URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text) still stand.
+  URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text, tiny inferred-join
+  sample) still stand.
 
 ## Exact next action
 
 Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
 `2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`. M6 remains offline; accumulate additional reviewed inferred-join and live budget
-artifacts before revisiting the 0.60 threshold.
+`06-HISTORY.md`. M6/M7 remain offline; accumulate additional reviewed consequence and inferred-join
+cases (and exercise the SUPPLY_DISPLACEMENT / TECHNOLOGY_MIGRATION mechanisms) before drawing general
+commercial-precision conclusions.

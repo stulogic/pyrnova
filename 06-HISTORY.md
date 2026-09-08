@@ -58,7 +58,7 @@
 - Kept the M4 baseline byte-for-byte unchanged; the M5 corpus added one hand-reviewed true-positive
   STRIKE and no false positive, with `scoring_v1` unmodified. Test suite grew from 87 to 109.
 
-## Milestone 6 — IN PROGRESS 2026-09-08
+## Milestone 6 — CLOSED 2026-09-08
 
 - Added a budget/appropriation precursor source (`pyrnova/sources/appropriations.py`) distinguishing
   INTENT / AUTHORIZATION / FUNDING and emitting authoritative structured identifiers (TAS, Federal
@@ -79,6 +79,29 @@
   conversion 0.8889; inferred precision 1.0 and false-join rate 0.0 over 2 accepted inferred joins
   (small-sample warning surfaced). The 0.60 threshold was swept and left unchanged. Test suite grew
   from 109 to 146. No live API calls.
+
+## Milestone 7 — IN PROGRESS 2026-09-08
+
+- Added the commercial-consequence engine (`pyrnova/catalysts.py`): one `CapitalCatalyst` per resolved
+  program chain (deterministic id, connected keys collapse) and 0..N `CommercialConsequence`s, with a
+  deterministic 7-family mechanism taxonomy, directness (DIRECT/DOWNSTREAM/SECOND_ORDER), participant
+  roles (FUNDING_AUTHORITY/PROGRAM_OWNER/BUYER/PRIME_RECIPIENT/BENEFICIARY/REGULATED_ENTITY), and
+  structured negative-commercial falsification. STRIKE requires DIRECT + resolved buyer + capability;
+  SECOND_ORDER stays internal/WATCH.
+- Added `pyrnova/capabilities.py` (specific capability-class extraction, broad labels rejected) and
+  `pyrnova/value.py` (KNOWN/ESTIMATED/BOUNDED/UNKNOWN with provenance; never an invented amount).
+- Wired `run_consequence_replay`/`run_consequence_corpus`/`summarize_consequence_results` and CLI
+  `consequences` / `consequence-corpus`; mirrored `capital_catalyst` and `commercial_consequence`
+  tables in `db/schema.sql`.
+- Added `corpus_m7.json` (extends the frozen `corpus_m6.json`, 43 cases) with eight consequence cases:
+  a direct-procurement STRIKE, a downstream grant, a multi-consequence CHIPS program, a
+  zero-consequence appropriation (no invented ideas), an internal-self-performance kill, a regulatory
+  compliance case, a second-order capex case, and an unknown-value direct procurement. Consequence
+  engine: 29 catalysts (2 keys collapsed), 23 consequences, 6 zero-consequence, 4 multi-consequence,
+  five mechanism families, 1 rejected consequence; consequence precision 1.0 / false-consequence rate
+  0.0 on the eight graded cases (small-sample warning surfaced). Under `scoring_v1`: 43 cases, STRIKE
+  precision 0.875, WATCH conversion 0.8571, FPR 0.125, FNR 0.0, no STRIKE explosion. Frozen M4/M5/M6
+  baselines unchanged. Test suite grew from 146 to 182 (tracked). No live API calls.
 
 ## Repository authority normalization — 2026-09-08
 

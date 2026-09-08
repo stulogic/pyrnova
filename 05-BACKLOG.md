@@ -34,6 +34,18 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 - Richer chain-confidence modeling (source independence weighting, expected-stage completeness) only
   if per-relationship confidence proves insufficient.
 
+## P1 — deferred commercial-consequence work
+
+- Exercise the SUPPLY_DISPLACEMENT and TECHNOLOGY_MIGRATION mechanism families with reviewed corpus
+  cases (implemented in M7 but not yet corpus-exercised).
+- Weave per-cutoff consequence supportability into `derive_transitions` so a single trajectory can read
+  "catalyst supportable at AUTHORIZATION, consequence supportable at FUNDING, STRIKE at PROCUREMENT".
+- Evidence-backed SUPPLIER/SUBCONTRACTOR roles once subcontract/supplier-tier data is available.
+- Richer value estimation (comparable-award selection, program-fraction priors by mechanism) once more
+  reviewed value cases exist; keep UNKNOWN honest until then.
+- Human review of uncertain commercial causality reusing the M6 review-queue pattern for consequences.
+- Capability fit-matching against customer `CapabilityProfile` (foundation only in M7).
+
 ## Deferred product/infrastructure work
 
 - Polished frontend, mobile apps, enterprise UI, self-serve dashboard.
