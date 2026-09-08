@@ -46,6 +46,18 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 - Human review of uncertain commercial causality reusing the M6 review-queue pattern for consequences.
 - Capability fit-matching against customer `CapabilityProfile` (foundation only in M7).
 
+## P1 — deferred fit / personalization work
+
+- Grow the reviewed fit corpus well beyond 12 graded fits (more TEAM/DEFEND, more tempting false
+  matches, historical fits that later proved right/wrong) before drawing general fit-precision
+  conclusions.
+- Build company profiles from real archived evidence (USAspending award history, SEC operational
+  descriptions, official capability statements) via existing adapters, point-in-time.
+- Optional Operations Panel fit view: surface posture, capability match, blockers, strongest evidence,
+  and fit review over current engine state (thin read/write; do not redesign the panel).
+- Capability fit-matching thresholds and confidence calibration once a larger reviewed sample exists.
+- Contract-vehicle and set-aside eligibility depth (currently a single structured blocker each).
+
 ## Deferred product/infrastructure work
 
 - Polished frontend, mobile apps, enterprise UI, self-serve dashboard.

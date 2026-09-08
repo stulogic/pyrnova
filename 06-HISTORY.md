@@ -80,7 +80,7 @@
   (small-sample warning surfaced). The 0.60 threshold was swept and left unchanged. Test suite grew
   from 109 to 146. No live API calls.
 
-## Milestone 7 — IN PROGRESS 2026-09-08
+## Milestone 7 — CLOSED 2026-09-08
 
 - Added the commercial-consequence engine (`pyrnova/catalysts.py`): one `CapitalCatalyst` per resolved
   program chain (deterministic id, connected keys collapse) and 0..N `CommercialConsequence`s, with a
@@ -102,6 +102,29 @@
   0.0 on the eight graded cases (small-sample warning surfaced). Under `scoring_v1`: 43 cases, STRIKE
   precision 0.875, WATCH conversion 0.8571, FPR 0.125, FNR 0.0, no STRIKE explosion. Frozen M4/M5/M6
   baselines unchanged. Test suite grew from 146 to 182 (tracked). No live API calls.
+
+## Milestone 8 — IN PROGRESS 2026-09-08
+
+- Stabilized the recovered internal Operations Panel (`pyrnova/ops.py`, `ops_server.py`, `ops_web/`):
+  a local-only, loopback-only analyst view over append-only state. Made its tests sandbox-safe (the
+  live-socket test skips when a bind is forbidden; a new handler-routing test covers the HTTP path
+  without a port). Launch `python -m pyrnova.ops_server` → `http://127.0.0.1:8765`.
+- Added `pyrnova/company.py`: evidence-backed company capability profiles (specific normalized
+  capabilities, point-in-time capability/award filtering, deterministic id), distinct from `match.py`.
+- Added `pyrnova/fit.py`: the capability-fit engine — nine POSITIVE/NEGATIVE/UNKNOWN fit dimensions,
+  structured fatal/soft blockers, and capture posture PRIME/SUPPORT/TEAM/DEFEND/NO_FIT. Fit rests on
+  explicit shared capability classes only (no sector/NAICS/keyword/semantic-only fit); unknown is never
+  PRIME; fit confidence is separate from `scoring_v1`. A fit review queue (ACCEPT_FIT/REJECT_FIT/DEFER)
+  reuses `StateStore`.
+- Wired `run_fit_replay`/`run_fit_corpus`/`summarize_fit_results` and CLI `fit`/`fit-corpus`; mirrored
+  `company_profile`, `fit_result`, and `fit_review` in `db/schema.sql`.
+- Added `corpus_m8.json` (extends the frozen `corpus_m7.json`, 48 cases) with 5 fit cases / 12 graded
+  fits across all five postures, multiple companies per consequence, and NO_FIT via broad-sector,
+  eligibility, timing, and unknown/future-evidence-excluded companies. Fit precision 1.0, no-fit
+  precision 1.0, false-match rate 0.0, posture precision 1.0, blocker accuracy 1.0 (small graded
+  sample; warning surfaced). Under `scoring_v1`: FNR 0.0, no new false strike, no STRIKE explosion.
+  Frozen M4–M7 baselines unchanged. Test suite grew to 218 passing (1 sandbox skip). No live API calls.
+  Each coherent block (panel, company, fit engine) was committed and pushed to origin/main.
 
 ## Repository authority normalization — 2026-09-08
 

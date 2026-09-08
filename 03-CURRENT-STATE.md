@@ -14,9 +14,13 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - **M6: CLOSED.** Budget/appropriation precursor coverage and inferred-relationship calibration passed
   acceptance on 2026-09-08; the weighted, explainable inference model, human review queue, and
   entity-level predicates are exercised by a reviewed corpus. `scoring_v1` unchanged.
-- **M7: IN PROGRESS.** Capital catalysts and commercial consequences turn resolved capital chains into
+- **M7: CLOSED.** Capital catalysts and commercial consequences turn resolved capital chains into
   explicit, evidence-backed commercial consequences (mechanism, directness, participant roles,
-  capability, value, falsifiers) without inventing generic business ideas.
+  capability, value, falsifiers) without inventing generic business ideas. `scoring_v1` unchanged.
+- **M8: IN PROGRESS.** Capability fit + opportunity personalization: evidence-backed company profiles
+  matched against commercial-consequence requirements produce an explainable capture posture
+  (PRIME/SUPPORT/TEAM/DEFEND/NO_FIT) with fit dimensions, structured blockers, and point-in-time truth.
+  A recovered internal Operations Panel is stabilized and sandbox-safe.
 
 ## Implemented and verified
 
@@ -151,6 +155,45 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   explosion (7 true / 1 false). Frozen M4/M5/M6 baselines unchanged. No live API calls. See
   `docs/replay/M7_CONSEQUENCE_REPORT.md` and `docs/specs/M7_COMMERCIAL_CONSEQUENCE.md`.
 
+## M8 capability fit + personalization
+
+- **Company capability profile** (`pyrnova/company.py`, `CompanyProfile`): a durable, evidence-linked
+  profile distinct from the customer relevance profile in `match.py`. Every capability is normalized
+  via `capabilities.py` (specific labels only; broad labels rejected) and carries
+  `source_id`/`source_ref`/`available_at` provenance. `build_profile`/`profile_from_dict` filter both
+  capability evidence and contract history strictly point-in-time (`available_at <= as_of`), so future
+  capability evidence and future awards cannot leak into an earlier fit. Deterministic `company_id`.
+- **Capability-fit engine** (`pyrnova/fit.py`): given a `CommercialConsequence` and a `CompanyProfile`,
+  decides whether the company has a credible, evidence-backed capture path. Fit is grounded in explicit
+  capability-class overlap — the SAME normalizer extracts both the consequence's requirement and the
+  company's capabilities — never agency-name-only, NAICS-only, keyword-only, or semantic-similarity-only.
+  Nine fit dimensions (CAPABILITY_FIT, BUYER_RELEVANCE, GEOGRAPHY, CERTIFICATION, SECURITY, SCALE,
+  TIMING, INCUMBENT_POSITION, TEAMING_POTENTIAL) each report POSITIVE / NEGATIVE / UNKNOWN, never a
+  forced neutral. Structured `FitBlocker`s (fatal vs soft) falsify a fit with a reason.
+- **Capture posture**: PRIME (full capability, eligible, credible scale, prior prime performance),
+  SUPPORT (fits a subcontract/supplier or downstream role), TEAM (partial capability plus teaming
+  partners), DEFEND (incumbent — retention not new capture), NO_FIT (evidence says no, or insufficient
+  evidence marked `is_unknown`). Unknown is never PRIME. Fit confidence is kept strictly separate from
+  `scoring_v1`, catalyst/consequence confidence, and opportunity attractiveness.
+- **Human review**: a lightweight fit review queue (ACCEPT_FIT / REJECT_FIT / DEFER) reusing
+  `StateStore`, retaining the automated posture and pre-review confidence as calibration evidence.
+- **`corpus_m8.json`** extends the frozen `corpus_m7.json` with 5 fit cases (12 graded fits): an
+  obvious PRIME, SUPPORT, TEAM, DEFEND, a broad-sector false match, a capability-match-but-eligibility
+  failure, a timing-passed block, and unknown/future-evidence-excluded companies, with multiple
+  companies evaluated against one consequence. Posture distribution PRIME 3 / SUPPORT 2 / TEAM 1 /
+  DEFEND 1 / NO_FIT 5. Fit precision 1.0, no-fit precision 1.0, false-match rate 0.0, posture precision
+  1.0 (per-posture 1.0), blocker accuracy 1.0, capability-match coverage 0.75, buyer-history coverage
+  0.5833, unknown-rate 0.1667 — all on a deliberately small graded sample (warning surfaced). Under
+  `scoring_v1` the 48-case M8 corpus keeps FNR 0.0 and a single inherited false strike (STRIKE precision
+  0.9231), with no STRIKE explosion. Frozen M4–M7 baselines unchanged. No live API calls. See
+  `docs/replay/M8_FIT_REPORT.md` and `docs/specs/M8_CAPABILITY_FIT.md`.
+- **Operations Panel** (`pyrnova/ops.py`, `pyrnova/ops_server.py`, `pyrnova/ops_web/`): a stabilized,
+  local-only internal analyst view over append-only state (target queue, source status, adjudication,
+  PRIME/SUPPORT/TEAM/DEFEND posture, evidence links, notes/falsification, STRIKE promotion, Signal
+  Brief export, outcome label). Launch `python -m pyrnova.ops_server` → `http://127.0.0.1:8765`. Tests
+  are sandbox-safe (the live-socket path skips when a loopback bind is forbidden; a handler-routing test
+  covers the HTTP path without a port). See `docs/OPERATOR_CONSOLE.md`.
+
 ## M3 baseline
 
 - STRIKE precision: 0.6667
@@ -199,14 +242,22 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   correctly UNKNOWN rather than guessed. Consequence generation is retrospective over a resolved chain;
   each consequence carries `first_supportable_at`, but per-cutoff consequence transitions are not yet
   woven into `derive_transitions`. No M7 live API calls were made.
+- M8 fit precision, no-fit precision, false-match rate, posture precision, and blocker accuracy are all
+  measured on only 12 graded fits across 5 cases; the small-sample warning is surfaced, never hidden.
+  Fit quality depends on structured source fields (NAICS/PSC/capability phrases, certifications,
+  clearances, contract history); where those are absent the fit is correctly UNKNOWN/NO_FIT rather than
+  guessed. Requirements (certifications, clearance, geography restriction, contract vehicle, incumbency,
+  timing) are read only from explicit record fields. No M8 live API calls were made.
+- The Operations Panel is internal-only, loopback-only tooling; source health means "an observation is
+  persisted", not a live availability claim, and outcomes are operator-entered labels, not ground truth.
 - Earlier limitations (M2 fresh-SAM gate, sparse STRIKE sample, binary-metric exclusions, restricted
   URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text, tiny inferred-join
-  sample) still stand.
+  and consequence samples, two un-exercised mechanism families) still stand.
 
 ## Exact next action
 
 Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
 `2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`. M6/M7 remain offline; accumulate additional reviewed consequence and inferred-join
+`06-HISTORY.md`. M6–M8 remain offline; accumulate more reviewed fit, consequence, and inferred-join
 cases (and exercise the SUPPLY_DISPLACEMENT / TECHNOLOGY_MIGRATION mechanisms) before drawing general
-commercial-precision conclusions.
+fit- or commercial-precision conclusions.

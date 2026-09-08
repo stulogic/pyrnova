@@ -420,5 +420,76 @@ CREATE TABLE commercial_consequence (
 CREATE INDEX commercial_consequence_catalyst_idx ON commercial_consequence(catalyst_id);
 CREATE INDEX commercial_consequence_mechanism_idx ON commercial_consequence(mechanism, directness);
 
+-- ---------------------------------------------------------------------------
+-- M8 COMPANY CAPABILITY PROFILE + CAPABILITY FIT
+-- ---------------------------------------------------------------------------
+-- An evidence-backed company profile (distinct from the customer relevance profile). Capabilities are
+-- normalized, specific, and source-linked; profiles are built point-in-time so future capability
+-- evidence and future awards cannot leak into an earlier fit. A fit_result records whether a specific
+-- company has a credible capture path for a commercial consequence, in what posture, with explicit
+-- fit dimensions and structured blockers. Fit confidence is distinct from scoring_v1. Dev
+-- implementation is append-only JSONL; these tables are the production mirror.
+CREATE TABLE company_profile (
+    company_id      text PRIMARY KEY,                 -- deterministic: co_<hash(canonical name)>
+    name            text NOT NULL,
+    aliases         text[] NOT NULL DEFAULT '{}',
+    capabilities    jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{label, display, confidence, specificity, source_id, source_ref, raw_phrase, available_at, basis}]
+    naics           text[] NOT NULL DEFAULT '{}',
+    psc             text[] NOT NULL DEFAULT '{}',
+    certifications  text[] NOT NULL DEFAULT '{}',
+    clearances      text[] NOT NULL DEFAULT '{}',
+    geography       text[] NOT NULL DEFAULT '{}',
+    facilities      jsonb NOT NULL DEFAULT '[]'::jsonb,
+    scale           jsonb NOT NULL DEFAULT '{}'::jsonb,
+    contract_history jsonb NOT NULL DEFAULT '[]'::jsonb,
+    partners        text[] NOT NULL DEFAULT '{}',
+    exclusions      text[] NOT NULL DEFAULT '{}',
+    first_observed_at timestamptz,
+    available_at    timestamptz,
+    provenance      text[] NOT NULL DEFAULT '{}',
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE fit_result (
+    id              text PRIMARY KEY,                 -- deterministic: fit_<hash(consequence,company)>
+    consequence_id  text NOT NULL,
+    company_id      text NOT NULL REFERENCES company_profile(company_id),
+    posture         text NOT NULL CHECK (posture IN ('PRIME','SUPPORT','TEAM','DEFEND','NO_FIT')),
+    fit             boolean NOT NULL,
+    fit_confidence  real,                             -- confidence in the posture, distinct from scoring
+    is_unknown      boolean NOT NULL DEFAULT false,
+    capability_match text[] NOT NULL DEFAULT '{}',
+    dimensions      jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{name, verdict, confidence, evidence_ids, basis}]
+    blockers        jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{code, detail, fatal}]
+    assumptions     text[] NOT NULL DEFAULT '{}',
+    strongest_evidence text,
+    weakest_dimension text,
+    rationale       text,
+    evidence_ids    text[] NOT NULL DEFAULT '{}',
+    first_supportable_at timestamptz,
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX fit_result_consequence_idx ON fit_result(consequence_id);
+CREATE INDEX fit_result_company_idx ON fit_result(company_id);
+
+-- Human review of uncertain fits (ACCEPT_FIT / REJECT_FIT / DEFER), retaining the automated posture
+-- and pre-review confidence as calibration evidence.
+CREATE TABLE fit_review (
+    id              text PRIMARY KEY,
+    fit_id          text NOT NULL,
+    consequence_id  text,
+    company_id      text,
+    decision        text NOT NULL CHECK (decision IN ('ACCEPT_FIT','REJECT_FIT','DEFER')),
+    reviewer        text NOT NULL,
+    reason          text,
+    automated_posture text,
+    pre_review_confidence real,
+    reviewed_at     timestamptz,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX fit_review_fit_idx ON fit_review(fit_id, created_at DESC);
+
 -- Reserved for dormant pipelines (declared, never populated in initial phase):
 --   FLOW, SHIFT, RISK  -> intentionally NOT created. Add only when a pipeline is activated.

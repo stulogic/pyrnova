@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M3–M6 closed; M7 in progress · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M3–M7 closed; M8 in progress · updated 2026-09-08_
 
 ## Active work
 
@@ -55,35 +55,39 @@ FUNDING), a weighted anchored inferred-join engine with a `[0.45, 0.60)` deferra
 queue, and entity predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`). 35-case `corpus_m6.json`
 extends the frozen M5 corpus; `scoring_v1` unchanged. See `docs/replay/M6_INFERENCE_CALIBRATION.md`.
 
-### Milestone 7 — in progress
+### Milestone 7 — CLOSED
 
-M7 turns resolved capital chains into explicit, evidence-backed commercial consequences. Implemented
-offline-first per `docs/specs/M7_COMMERCIAL_CONSEQUENCE.md`:
+M7 passed acceptance on 2026-09-08: `pyrnova/catalysts.py` builds one `CapitalCatalyst` per resolved
+program chain and 0..N `CommercialConsequence`s (7-family mechanism taxonomy, directness, participant
+roles, structured falsification); `capabilities.py`/`value.py` supply specific capability classes and
+KNOWN/ESTIMATED/BOUNDED/UNKNOWN value. 43-case `corpus_m7.json` extends the frozen M6 corpus;
+`scoring_v1` unchanged. See `docs/replay/M7_CONSEQUENCE_REPORT.md`.
 
-- `pyrnova/catalysts.py` builds one `CapitalCatalyst` per resolved program chain (deterministic id;
-  connected program keys collapse) and generates 0..N `CommercialConsequence`s with a conservative,
-  deterministic mechanism classifier (7-family v1 taxonomy), directness (DIRECT/DOWNSTREAM/
-  SECOND_ORDER), participant-role resolution, negative-commercial falsification, and a recommended
-  screened disposition. Zero consequences is a common valid result.
-- `pyrnova/capabilities.py` extracts specific capability classes (rejecting broad labels);
-  `pyrnova/value.py` classifies value as KNOWN/ESTIMATED/BOUNDED/UNKNOWN with provenance.
-- `pyrnova/replay.py` adds `run_consequence_replay`/`run_consequence_corpus`/
-  `summarize_consequence_results`; CLI `consequences` / `consequence-corpus`.
-- `examples/replay/corpus_m7.json` extends the frozen `corpus_m6.json` with eight consequence cases;
-  results are in `docs/replay/M7_CONSEQUENCE_REPORT.md`.
+### Milestone 8 — in progress
 
-Active constraints: no generic idea generation — every consequence is grounded in explicit structured
-evidence, and unknown stays unknown; STRIKE requires DIRECT + resolved buyer + specific capability;
-SECOND_ORDER stays internal/WATCH unless corroborated; catalyst/consequence/mechanism/capability
-confidences stay distinct from opportunity score; `scoring_v1` is unchanged; strict point-in-time
-replay is preserved; earlier frozen corpora remain byte-for-byte unchanged.
+M8 personalizes opportunities: which specific companies have a credible, evidence-backed path to
+capture a commercial consequence. Implemented offline-first per `docs/specs/M8_CAPABILITY_FIT.md`:
+
+- `pyrnova/company.py` — durable, source-linked company capability profiles (specific normalized
+  capabilities, point-in-time capability/award filtering, deterministic id).
+- `pyrnova/fit.py` — the capability-fit engine: nine explicit fit dimensions
+  (POSITIVE/NEGATIVE/UNKNOWN), structured fatal/soft blockers, and capture posture
+  PRIME/SUPPORT/TEAM/DEFEND/NO_FIT. Fit confidence is separate from `scoring_v1`. A fit review queue
+  (ACCEPT_FIT/REJECT_FIT/DEFER) reuses `StateStore`.
+- `pyrnova/replay.py` adds `run_fit_replay`/`run_fit_corpus`/`summarize_fit_results`; CLI
+  `fit`/`fit-corpus`. `examples/replay/corpus_m8.json` extends frozen `corpus_m7.json` with 5 fit cases.
+- `pyrnova/ops*.py` + `ops_web/` — a stabilized internal Operations Panel (`python -m pyrnova.ops_server`).
+
+Active constraints: fit is explicit capability/evidence overlap only — no agency/NAICS/keyword/
+semantic-similarity-only fit; unknown stays unknown and is never PRIME; fit confidence stays distinct
+from opportunity quality, evidence confidence, and consequence confidence; strict point-in-time truth
+(no future capability/award leakage); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
 1. Complete and record the unchanged M2 live acceptance gate after the reset.
-2. Accumulate additional reviewed consequence cases (including SUPPLY_DISPLACEMENT and
-   TECHNOLOGY_MIGRATION) and inferred-join cases before drawing general commercial-precision
-   conclusions; keep the inferred threshold frozen at 0.60.
+2. Accumulate more reviewed fit cases (and the un-exercised mechanism families) before drawing general
+   fit-precision conclusions.
 3. Do not alter scoring or begin a later milestone without separate authority.
 
 ## Active constraints
