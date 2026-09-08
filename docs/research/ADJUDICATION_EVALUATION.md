@@ -1,6 +1,9 @@
 # Evaluation of the Adjudication Feedback
 
-**Status:** Analysis. Companion to `EXECUTION_AUTHORITY_30D.md`.
+> **Research and decision provenance, not current implementation authority.** Durable adopted decisions
+> are recorded in `01-PROJECT-AUTHORITY.md` and `04-DECISIONS.md`.
+
+**Status:** Historical analysis. Companion to `docs/archive/EXECUTION_AUTHORITY_30D_V1.md`.
 **What this is:** a hostile evaluation of the feedback received on the original red team — NOT an
 adoption of it. Requested standard: *evaluate, don't just accept.*
 
@@ -75,4 +78,4 @@ the substrate-first plan again.
 Adopt reversals 1, 2, 3, 5 (1 & 2 with bounding notes; 3 keeping the lift-test). Reject reversal 4's
 plan, keep its concern, replace with precursors-already-in-SAM + manual casebook proof +
 automate-on-customer-pull. Add the anti-accumulation rule and the source-specific moat note. The
-resulting 30-day plan is in `EXECUTION_AUTHORITY_30D.md`.
+resulting 30-day plan is preserved in `docs/archive/EXECUTION_AUTHORITY_30D_V1.md`.

@@ -1,5 +1,8 @@
 # Retrospective Precursor Casebook
 
+> **Supporting research, not implementation authority.** The versioned canonical replay corpus is
+> `examples/replay/corpus_v1.json`; current results are in `docs/replay/M3_BASELINE.md`.
+
 **Purpose:** demonstrate, on the public record, that genuinely *upstream* events (statute / authorization
 / executive policy) precede procurement by a trackable lead time — the differentiation recompete-expiry
 alone cannot provide. This is **retrospective methodology proof**, not a claim that Pyrnova predicted

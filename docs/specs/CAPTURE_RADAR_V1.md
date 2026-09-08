@@ -1,6 +1,6 @@
 # Capture Radar / Opportunity Engine v1 — Implementation Spec
 
-Companion to `EXECUTION_AUTHORITY_30D.md` (CONTROLLING). Scope: the smallest runnable path that
+Companion to `01-PROJECT-AUTHORITY.md` and `02-EXECUTION.md`. Scope: the smallest runnable path that
 produces sellable intelligence and starts proprietary accumulation on Day 1.
 
 ## Pipeline (software modules, not 21 subsystems)
@@ -75,7 +75,7 @@ a later, trivial render step; Markdown is sufficient initially.
 ## Accumulation (Day 1, non-optional)
 Every run appends: observations (with observed_at), evidence hashes, predictions (with precursor class +
 lead time), reviews (accept/reject + reason = benchmark labels), and scoreboard events. This is the
-moat's raw material; the moat test (`authority §D`) is applied to it continuously.
+moat's raw material; the measurable-lift test in `01-PROJECT-AUTHORITY.md` is applied continuously.
 
 ## Repo layout
 ```

@@ -22,6 +22,10 @@ Edit `.env` only if you want SAM (pre-solicitation) intelligence:
 ```
 SAM_API_KEY=your_key_here
 ```
+
+Pyrnova loads `SAM_API_KEY` automatically from the repository-local `.env` when the process
+environment does not already provide it. The file is gitignored and should remain mode `600`, so
+interactive and scheduled local runs use the same private source without putting credentials in Git.
 Get the key: sign in at https://sam.gov → **Account Details → API Key** (or the public
 "Get Opportunities" API at https://open.gsa.gov/api/get-opportunities-public-api/). Nothing else is
 required — the evidence archive and state default to local folders (`./var/…`), no cloud needed.
@@ -43,7 +47,7 @@ Same command — it auto-includes SAM when `SAM_API_KEY` is present (Sources Sou
 Special Notices for the profile's first NAICS, last 30 days).
 
 ## 5. Confirm a human review, then re-emit
-Read the candidates, apply the review discipline in `docs/REVIEW_TEMPLATE.md`, then stamp your name so
+Read the candidates, apply the review discipline in `docs/specs/REVIEW_TEMPLATE.md`, then stamp your name so
 recommended items become confirmed STRIKEs:
 ```bash
 python -m pyrnova.cli capture-radar --profile examples/profiles/torch_technologies.json --live \

@@ -8,18 +8,21 @@ contract expirations, and pre-solicitation demand (Sources Sought, RFIs, Presoli
 Notices) *before* the obvious RFP stage, matched to a customer's actual capabilities, with evidence,
 falsification, and a recommended action.
 
-## Governing documents
+## Start here
 
-- **`docs/EXECUTION_AUTHORITY_30D.md`** — CONTROLLING for the next 30 days. Read this first.
-- `docs/ADJUDICATION_EVALUATION.md` — how the strategy was stress-tested.
-- `docs/IMPLEMENTATION_SPEC_CAPTURE_RADAR_V1.md` — technical spec for the kernel.
+- **`00-INDEX.md`** — canonical navigation, reading order, and authority precedence.
+- `01-PROJECT-AUTHORITY.md` — mission, product boundaries, and locked doctrine.
+- `03-CURRENT-STATE.md` — verified implementation and milestone truth.
+- `02-EXECUTION.md` — current work and active constraints.
+- `docs/specs/CAPTURE_RADAR_V1.md` — detailed kernel specification.
 
 ## Going live (founder)
 
-- **`docs/LIVE_RUN.md`** — fresh checkout → live intelligence in ~5 minutes.
+- **`docs/specs/LIVE_RUN.md`** — fresh checkout → live intelligence in ~5 minutes.
 - First real target: `examples/profiles/torch_technologies.json` (rationale + provenance in
   `docs/targets/torch_technologies.md`).
-- Review discipline: `docs/REVIEW_TEMPLATE.md`. Precursor proof: `docs/PRECURSOR_CASEBOOK.md`.
+- Review discipline: `docs/specs/REVIEW_TEMPLATE.md`. Supporting precursor research:
+  `docs/research/PRECURSOR_CASEBOOK.md`.
 
 ## The kernel pipeline
 
@@ -27,8 +30,8 @@ falsification, and a recommended action.
 OBSERVE → ARCHIVE → NORMALIZE → RESOLVE → DETECT → MATCH → REVIEW → STRIKE → OUTCOME
 ```
 
-Sources (initial): **USAspending** (keyless) and **SAM.gov** (needs `SAM_API_KEY`). Federal Register /
-Grants.gov added only where they materially improve output.
+Active sources: **USAspending** (keyless), **SAM.gov** (needs `SAM_API_KEY`), and bounded Federal
+Register context. Grants.gov and other M4 sources are not implemented.
 
 ## Quickstart (local, no cloud)
 
@@ -61,3 +64,6 @@ scoreboard events — the proprietary history that must start accumulating on Da
 Copy `.env.example` → `.env`. Cloud storage is optional; without it the evidence archive uses a local
 filesystem adapter, so all work continues offline. See **EXTERNAL ACTIONS** in the spec for the exact
 credentials needed to move to production storage.
+
+Historical evaluation commands and the current empirical baseline are documented in
+`docs/replay/M3_BASELINE.md`. The canonical challenge corpus is `examples/replay/corpus_v1.json`.

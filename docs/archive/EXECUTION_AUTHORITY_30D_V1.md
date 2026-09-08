@@ -1,4 +1,7 @@
-# Pyrnova — 30-Day Execution Authority (v1)
+# Pyrnova — 30-Day Execution Authority (v1, superseded)
+
+> **Historical authority only.** Superseded on 2026-09-08 by `01-PROJECT-AUTHORITY.md` and
+> `02-EXECUTION.md`. Retained intact below for decision provenance; it does not control implementation.
 
 **Status:** ✅ CONTROLLING (locked). Supersedes the broad strategic authority for the next 30 days of
 execution. Incorporates the red-team, the adjudication feedback, the evaluation of that feedback
@@ -367,4 +370,3 @@ satellite/geospatial · deep private-company intel · CUI handling · SSO/enterp
 integrations · giant crawler · speculative OMB/Congress connectors.
 
 > The economic intelligence substrate emerges from useful work, it does not precede it.
-
