@@ -113,14 +113,29 @@ CREATE TABLE event_evidence (
 
 -- Generic evidence-backed graph edge. Sources terminate at normalized entities/events; source-native
 -- fields remain in evidence/meta rather than defining this relationship model.
+--
+-- M5 cross-source capital-chain resolution adds the temporal/confidence columns below. join_method
+-- records how the edge was established (deterministic vs conservatively inferred); first_observed_at
+-- is the earliest time both endpoints were knowable, so replay can answer "when could we first have
+-- known this relationship?". Topic-only, agency-name-only, and chronology-only matches are never
+-- persisted here — they are rejected upstream.
 CREATE TABLE relationship (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     subject_id      uuid NOT NULL,
-    predicate       text NOT NULL,
+    predicate       text NOT NULL,                    -- AUTHORIZES|FUNDS|IMPLEMENTS|PRECEDES|CORROBORATES|CONTRADICTS|...
     object_id       uuid NOT NULL,
+    join_method     text,                             -- deterministic_program_key|deterministic_native_id|inferred_strong_attribute
+    confidence      real,                             -- per-relationship confidence 0..1
+    rationale       text,                             -- why this edge exists (audit)
+    first_observed_at timestamptz,                    -- earliest time both endpoints were knowable
+    available_at    timestamptz,                      -- alias of first_observed_at for point-in-time queries
+    valid_from      timestamptz,
+    valid_to        timestamptz,
     meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
     created_at      timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX relationship_subject_pred_idx ON relationship(subject_id, predicate);
+CREATE INDEX relationship_first_observed_idx ON relationship(first_observed_at);
 
 CREATE TABLE relationship_evidence (
     relationship_id uuid NOT NULL REFERENCES relationship(id),
@@ -207,6 +222,26 @@ CREATE TABLE opportunity_evidence (
     basis           text,
     PRIMARY KEY (opportunity_id, evidence_id)
 );
+
+-- M5 opportunity evolution: one evidence-caused disposition change over an opportunity/chain
+-- lifecycle. Derived by replaying the active scoring policy point-in-time; it records observability
+-- (prior -> new disposition, the causing evidence, and when), not a separate scoring model. No
+-- promotion state is written that the evidence at that cutoff did not support.
+CREATE TABLE opportunity_transition (
+    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    subject_id      text NOT NULL,                    -- opportunity id, chain id, or program_key
+    prior_disposition text CHECK (prior_disposition IN ('SIGNAL','WATCH','STRIKE','REJECT')),
+    new_disposition text NOT NULL CHECK (new_disposition IN ('SIGNAL','WATCH','STRIKE','REJECT')),
+    cause_stage     text CHECK (cause_stage IN ('INTENT','AUTHORIZATION','FUNDING','PROGRAM','MARKET_ENGAGEMENT','PROCUREMENT','AWARD','OUTCOME')),
+    cause_source_id text,
+    cause_source_ref text,
+    occurred_at     timestamptz,                      -- cutoff at which the change became supportable
+    scoring_version text NOT NULL,
+    basis           text,
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX opportunity_transition_subject_idx ON opportunity_transition(subject_id, occurred_at);
 
 -- ---------------------------------------------------------------------------
 -- REVIEW  (human adjudication = labeled intelligence work = benchmark corpus)

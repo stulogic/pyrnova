@@ -332,6 +332,30 @@ def cmd_compare_scoring(args) -> int:
     return 0
 
 
+def cmd_chain_resolve(args) -> int:
+    from .replay import run_chain_replay
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    case = json.loads(Path(args.case).read_text(encoding="utf-8"))
+    result = run_chain_replay(case, scoring_version=args.scoring_version, store=store)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_chain_corpus(args) -> int:
+    from .replay import load_corpus, run_chain_corpus, summarize_chain_results
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    cases = load_corpus(Path(args.corpus))
+    results = run_chain_corpus(cases, scoring_version=args.scoring_version, store=store)
+    summary = summarize_chain_results(results)
+    output = {"summary": summary, "cases": results} if args.verbose else {"summary": summary}
+    print(json.dumps(output, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_source_contribution(args) -> int:
     from .contribution import measure_replay_source_contribution
     from .replay import load_corpus
@@ -394,6 +418,17 @@ def main(argv=None) -> int:
     compare.add_argument("--baseline", default="scoring_v1")
     compare.add_argument("--challenger", default="scoring_v2_candidate")
     compare.set_defaults(func=cmd_compare_scoring)
+
+    chain = sub.add_parser("chain-resolve", help="resolve the cross-source capital chain for one case")
+    chain.add_argument("--case", required=True)
+    chain.add_argument("--scoring-version", default="scoring_v1")
+    chain.set_defaults(func=cmd_chain_resolve)
+
+    chain_corpus = sub.add_parser("chain-corpus", help="resolve cross-source chains across a corpus")
+    chain_corpus.add_argument("--corpus", default="examples/replay/corpus_m5.json")
+    chain_corpus.add_argument("--scoring-version", default="scoring_v1")
+    chain_corpus.add_argument("--verbose", action="store_true", help="include per-case chain detail")
+    chain_corpus.set_defaults(func=cmd_chain_corpus)
 
     contribution = sub.add_parser("source-contribution", help="measure source lift by deterministic replay ablation")
     contribution.add_argument("--corpus", default="examples/replay/corpus_m4.json")

@@ -70,12 +70,45 @@ class Event:
 
 @dataclass
 class Relationship:
-    """Evidence-backed edge between canonical records."""
+    """Evidence-backed edge between canonical records.
+
+    Temporal fields (M5) let replay answer "when could we first have known this relationship?".
+    They are optional so the M2/M4 event-enrichment use of this type is unchanged.
+    """
 
     subject_id: str
     predicate: str
     object_id: str
     evidence_ids: list[str] = field(default_factory=list)
+    join_method: Optional[str] = None   # deterministic_program_key | deterministic_native_id | inferred_strong_attribute
+    confidence: float = 0.0
+    rationale: str = ""
+    first_observed_at: Optional[str] = None  # earliest time both endpoints were knowable
+    available_at: Optional[str] = None       # alias of first_observed_at for point-in-time filters
+    valid_from: Optional[str] = None
+    valid_to: Optional[str] = None
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class OpportunityTransition:
+    """One evidence-caused disposition change in an opportunity/chain lifecycle (M5).
+
+    Derived from the existing scoring policy replayed point-in-time; it records observability, not a
+    new scoring model.
+    """
+
+    subject_id: str          # opportunity id, chain id, or program_key
+    prior_disposition: Optional[str]  # None | SIGNAL | WATCH | STRIKE | REJECT
+    new_disposition: str
+    cause_stage: Optional[str] = None
+    cause_source_id: Optional[str] = None
+    cause_source_ref: Optional[str] = None
+    cause_evidence_ids: list[str] = field(default_factory=list)
+    occurred_at: Optional[str] = None
+    scoring_version: str = "scoring_v1"
+    basis: str = ""
     id: str = field(default_factory=_uid)
     meta: dict = field(default_factory=dict)
 

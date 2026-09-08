@@ -158,6 +158,93 @@ def run_replay(case: dict, *, store: Optional[StateStore] = None, scoring_versio
     return result
 
 
+def run_chain_replay(case: dict, *, scoring_version: str = ACTIVE_SCORING_VERSION,
+                     store: Optional[StateStore] = None) -> dict:
+    """Reconstruct the cross-source capital chain for a case and validate any ``expected_chain``.
+
+    Chain reconstruction is retrospective: it links every source-native signal in the case, but each
+    relationship carries its own ``first_observed_at`` so the earliest knowable time of every link is
+    explicit. Disposition transitions are derived strictly point-in-time from the existing scoring
+    policy and never see evidence beyond a given cutoff.
+    """
+    from .chains import resolve_chain, signals_from_records
+    from .transitions import derive_transitions, transition_summary
+
+    validate_case(case)
+    signals = signals_from_records(case["records"])
+    resolution = resolve_chain(signals)
+    transitions = derive_transitions(case, scoring_version=scoring_version, subject_id=case["case_id"])
+    metrics = resolution.metrics()
+
+    outcome = case.get("actual_outcome") or {}
+    first_signal_at = min((s.available_at for s in resolution.signals if s.available_at), default=None)
+    chain_lead_time_days = None
+    if first_signal_at and outcome.get("occurred") and outcome.get("occurred_at"):
+        chain_lead_time_days = (_dt(outcome["occurred_at"]).date() - _dt(first_signal_at).date()).days
+
+    checks = _check_expected_chain(case.get("expected_chain"), resolution, transitions)
+    result = {
+        "case_id": case["case_id"],
+        "mechanism_family": case["mechanism_family"],
+        "scoring_version": scoring_version,
+        "chain_metrics": metrics,
+        "relationships": [
+            {"subject": r.subject_id, "predicate": r.predicate, "object": r.object_id,
+             "join_method": r.join_method, "confidence": r.confidence,
+             "first_observed_at": r.first_observed_at, "rationale": r.rationale}
+            for r in resolution.relationships
+        ],
+        "rejected_joins": [{"reason": j.reason, "detail": j.detail} for j in resolution.rejected],
+        "transitions": transition_summary(transitions),
+        "chain_lead_time_days": chain_lead_time_days,
+        "expected_chain_checks": checks,
+        "expected_chain_ok": all(c["ok"] for c in checks) if checks else None,
+    }
+    if store:
+        store.append("chain_replay_results", result)
+    return result
+
+
+def _check_expected_chain(expected: dict | None, resolution, transitions) -> list[dict]:
+    if not expected:
+        return []
+    metrics = resolution.metrics()
+    summary = {t.new_disposition: t for t in transitions}
+    checks: list[dict] = []
+
+    def check(name, ok, got, want):
+        checks.append({"check": name, "ok": bool(ok), "got": got, "want": want})
+
+    if "min_relationships" in expected:
+        want = expected["min_relationships"]
+        check("min_relationships", metrics["relationships_total"] >= want, metrics["relationships_total"], want)
+    if "min_deterministic" in expected:
+        want = expected["min_deterministic"]
+        check("min_deterministic", metrics["deterministic_relationships"] >= want, metrics["deterministic_relationships"], want)
+    if "min_rejected" in expected:
+        want = expected["min_rejected"]
+        check("min_rejected", metrics["rejected_weak_joins"] >= want, metrics["rejected_weak_joins"], want)
+    if "max_relationships" in expected:
+        want = expected["max_relationships"]
+        check("max_relationships", metrics["relationships_total"] <= want, metrics["relationships_total"], want)
+    if "predicates" in expected:
+        got = sorted({r.predicate for r in resolution.relationships})
+        want = sorted(expected["predicates"])
+        check("predicates", set(want) <= set(got), got, want)
+    if "final_disposition" in expected:
+        got = transitions[-1].new_disposition if transitions else None
+        check("final_disposition", got == expected["final_disposition"], got, expected["final_disposition"])
+    if "promotion_causes" in expected:
+        for want in expected["promotion_causes"]:
+            transition = summary.get(want["to"])
+            got = transition.cause_stage if transition else None
+            check(f"promotion_to_{want['to']}", got == want["stage"], got, want["stage"])
+    if "contradicted" in expected:
+        got = resolution.confidence.get("contradicted", False)
+        check("contradicted", got == expected["contradicted"], got, expected["contradicted"])
+    return checks
+
+
 def load_corpus(path: Path, _seen: set[Path] | None = None) -> list[dict]:
     path = Path(path).resolve()
     seen = set(_seen or ())
@@ -187,3 +274,38 @@ def run_corpus(cases: Iterable[dict], *, scoring_version: str = ACTIVE_SCORING_V
 
 def report_id(results: list[dict], report_kind: str = "corpus") -> str:
     return _stable_id({"kind": report_kind, "result_ids": sorted(r["id"] for r in results)}, length=24)
+
+
+def run_chain_corpus(cases: Iterable[dict], *, scoring_version: str = ACTIVE_SCORING_VERSION,
+                     store: Optional[StateStore] = None) -> list[dict]:
+    """Resolve chains only for cases that declare cross-source program identity in their records."""
+    selected = [c for c in cases if any(r.get("program_key") and r.get("stage") for r in c["records"])]
+    return [run_chain_replay(c, scoring_version=scoring_version, store=store) for c in selected]
+
+
+def summarize_chain_results(results: list[dict]) -> dict:
+    """Aggregate cross-source chain observability across the corpus (no scoring impact)."""
+    def total(key: str) -> int:
+        return sum(r["chain_metrics"][key] for r in results)
+
+    leads = [r["chain_lead_time_days"] for r in results if r.get("chain_lead_time_days") is not None]
+    checked = [r for r in results if r.get("expected_chain_ok") is not None]
+    promotions = [c for r in results for c in r["transitions"]["promotion_causes"]]
+    return {
+        "chain_cases": len(results),
+        "cross_source_relationships": total("relationships_total"),
+        "deterministic_relationships": total("deterministic_relationships"),
+        "inferred_relationships": total("inferred_relationships"),
+        "corroborations": total("corroborations"),
+        "contradictions": total("contradictions"),
+        "rejected_weak_joins": total("rejected_weak_joins"),
+        "duplicates_collapsed": total("duplicates_collapsed"),
+        "promotion_events": len(promotions),
+        "promotion_causes_by_stage": {
+            stage: sum(p["stage"] == stage for p in promotions)
+            for stage in sorted({p["stage"] for p in promotions if p["stage"]})
+        },
+        "median_chain_lead_time_days": sorted(leads)[len(leads) // 2] if leads else None,
+        "expected_chain_cases": len(checked),
+        "expected_chain_passing": sum(bool(r["expected_chain_ok"]) for r in checked),
+    }
