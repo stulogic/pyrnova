@@ -42,6 +42,7 @@ def build_payload(
     *,
     naics_codes: Optional[list[str]] = None,
     agency_name: Optional[str] = None,
+    recipient_search: Optional[list[str]] = None,
     action_date_start: str,
     action_date_end: str,
     page: int = 1,
@@ -53,7 +54,12 @@ def build_payload(
     }
     if naics_codes:
         filters["naics_codes"] = list(naics_codes)
+    if recipient_search:
+        # High-precision, reliable filter: fuzzy-matches the recipient name. Anchors a run on the
+        # target company's own award history (incumbency + their upcoming recompetes).
+        filters["recipient_search_text"] = list(recipient_search)
     if agency_name:
+        # NOTE: agency-name filtering is brittle (toptier vs subtier naming). Prefer recipient/NAICS.
         filters["agencies"] = [
             {"type": "awarding", "tier": "toptier", "name": agency_name}
         ]
@@ -77,6 +83,7 @@ class USAspendingClient:
         *,
         naics_codes: Optional[list[str]] = None,
         agency_name: Optional[str] = None,
+        recipient_search: Optional[list[str]] = None,
         action_date_start: str,
         action_date_end: str,
         max_pages: int = 2,
@@ -88,6 +95,7 @@ class USAspendingClient:
             payload = build_payload(
                 naics_codes=naics_codes,
                 agency_name=agency_name,
+                recipient_search=recipient_search,
                 action_date_start=action_date_start,
                 action_date_end=action_date_end,
                 page=page,

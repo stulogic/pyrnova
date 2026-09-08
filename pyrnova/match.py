@@ -26,6 +26,7 @@ class CapabilityProfile:
     set_asides: list[str] = field(default_factory=list)
     exclusions: list[str] = field(default_factory=list)    # hard "cannot pursue" keywords
     incumbencies: list[str] = field(default_factory=list)
+    recipient_names: list[str] = field(default_factory=list)  # USAspending recipient search anchors
 
     @classmethod
     def from_dict(cls, d: dict) -> "CapabilityProfile":
@@ -41,7 +42,12 @@ class CapabilityProfile:
             set_asides=list(d.get("set_asides", [])),
             exclusions=list(d.get("exclusions", [])),
             incumbencies=list(d.get("incumbencies", [])),
+            recipient_names=list(d.get("recipient_names", [])),
         )
+
+    @property
+    def search_names(self) -> list[str]:
+        return self.recipient_names or [self.name]
 
 
 # Component weights (sum to 1.0).

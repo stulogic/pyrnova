@@ -42,17 +42,31 @@ def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
     from .sources.usaspending import USAspendingClient
 
     award_rows: list[dict] = []
+    seen: set = set()
     # Action-date window: awards acted on in the last ~6 years may still be active/expiring soon.
     start = (as_of - timedelta(days=6 * 365)).isoformat()
     end = as_of.isoformat()
     naics = profile.naics or None
-    agency = profile.agencies[0] if profile.agencies else None
     client = USAspendingClient()
-    for raw, results in client.search_awards(
-        naics_codes=naics, agency_name=agency,
-        action_date_start=start, action_date_end=end, max_pages=3, limit=100,
-    ):
-        award_rows.extend(results)
+
+    def _collect(**kw):
+        for _raw, results in client.search_awards(
+            action_date_start=start, action_date_end=end, max_pages=3, limit=100, **kw
+        ):
+            for r in results:
+                key = r.get("generated_internal_id") or r.get("Award ID")
+                if key and key not in seen:
+                    seen.add(key)
+                    award_rows.append(r)
+
+    # Pass 1 (anchor): the target company's own awards — incumbency + their upcoming recompetes.
+    for name in profile.search_names:
+        _collect(recipient_search=[name])
+    # Pass 2 (market): recompete landscape in the target's NAICS they could compete for.
+    if naics:
+        _collect(naics_codes=naics)
+    # NOTE: agency-name filtering is intentionally omitted (brittle toptier/subtier naming);
+    # agency relevance is handled deterministically by the capability matcher instead.
 
     notice_rows: list[dict] = []
     if cfg.has_sam:

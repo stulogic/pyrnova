@@ -1,0 +1,38 @@
+{
+  "name": "Torch Technologies",
+  "recipient_names": ["Torch Technologies", "Torch Technologies Inc"],
+  "agencies": ["Army", "Missile Defense Agency", "Air Force", "Space Force", "Department of Defense"],
+  "naics": ["541715", "541330", "541511", "541512", "541990", "541714"],
+  "psc": ["AC", "AR", "AD", "R425", "DA01", "DB"],
+  "capabilities": [
+    "modeling and simulation", "systems engineering", "test and evaluation",
+    "missile", "missile defense", "hypersonic", "aviation", "directed energy",
+    "software", "cybersecurity", "high performance computing", "prototyping",
+    "digital engineering", "RDT&E"
+  ],
+  "geography": ["Huntsville", "Redstone Arsenal", "Alabama", "CONUS"],
+  "size_min_usd": 1000000,
+  "size_max_usd": 500000000,
+  "set_asides": [],
+  "exclusions": ["construction", "janitorial", "grounds maintenance", "food service", "custodial"],
+  "incumbencies": [],
+  "_provenance": {
+    "note": "Constructed from publicly attributable, general knowledge of the company for a FIRST-PASS profile. The founder should validate/refine against Torch's own site and the company's live USAspending recipient page before customer use. No certifications, clearances, or specific contract vehicles are asserted.",
+    "known_public_facts": [
+      "Employee-owned (ESOP) engineering/RDT&E services company headquartered in Huntsville, Alabama.",
+      "Core work supports US Army (Redstone Arsenal community: AMCOM, PEO Missiles & Space, SMDC), the Missile Defense Agency, and the Air Force/Space Force.",
+      "Practice areas publicly described include modeling & simulation, systems engineering, test & evaluation, software, and RDT&E support in the missiles/missile-defense/aviation domains.",
+      "Now a large business (grown beyond small-business size)."
+    ],
+    "inferred_not_asserted": [
+      "NAICS/PSC codes here are INFERRED from public capability descriptions, not read from the company's SAM registration. Treat as search hints; confirm against live USAspending award records.",
+      "Contract-size band ($1M-$500M) is an assumption for a mid/large-market services contractor, not a stated figure.",
+      "Agency list is inferred from public mission focus."
+    ],
+    "unknown_do_not_invent": [
+      "Specific active contracts / incumbencies (left empty deliberately).",
+      "Facility clearance level, specific certifications, specific contract vehicles/IDIQs.",
+      "Named individuals or current org chart."
+    ]
+  }
+}

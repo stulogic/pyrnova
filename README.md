@@ -14,6 +14,13 @@ falsification, and a recommended action.
 - `docs/ADJUDICATION_EVALUATION.md` — how the strategy was stress-tested.
 - `docs/IMPLEMENTATION_SPEC_CAPTURE_RADAR_V1.md` — technical spec for the kernel.
 
+## Going live (founder)
+
+- **`docs/LIVE_RUN.md`** — fresh checkout → live intelligence in ~5 minutes.
+- First real target: `examples/profiles/torch_technologies.json` (rationale + provenance in
+  `docs/targets/torch_technologies.md`).
+- Review discipline: `docs/REVIEW_TEMPLATE.md`. Precursor proof: `docs/PRECURSOR_CASEBOOK.md`.
+
 ## The kernel pipeline
 
 ```
