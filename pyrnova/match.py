@@ -127,8 +127,25 @@ def score_relevance(opp: Opportunity, profile: CapabilityProfile) -> tuple[float
     return round(min(1.0, score), 3), reasons, False
 
 
+def posture(opp: Opportunity, profile: CapabilityProfile) -> str:
+    """'defend' if the target company is the incumbent, else 'capture'.
+
+    A defend item (the customer's own contract coming up for recompete) is always maximally relevant and
+    is the most credible outreach opener; a capture item requires displacing someone else.
+    """
+    if not opp.incumbent:
+        return "capture"
+    inc = canonicalize_name(opp.incumbent)
+    for name in profile.search_names:
+        cn = canonicalize_name(name)
+        if cn and (cn == inc or cn in inc or inc in cn):
+            return "defend"
+    return "capture"
+
+
 def apply_match(opp: Opportunity, profile: CapabilityProfile) -> Opportunity:
     score, reasons, _ = score_relevance(opp, profile)
     opp.relevance_score = score
     opp.relevance_reasons = reasons
+    opp.meta["posture"] = posture(opp, profile)
     return opp

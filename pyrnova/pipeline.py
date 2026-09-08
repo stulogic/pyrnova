@@ -121,9 +121,16 @@ def run(
         else:
             report.rejected.append(opp)
 
-    # Rank strikes: relevance first, then attractiveness, then soonest action.
+    # Rank strikes: DEFEND (customer's own recompetes) first — always relevant and the most credible
+    # opener — then relevance, then attractiveness, then soonest action. This keeps mega-prime CAPTURE
+    # contracts the customer cannot realistically win from headlining the brief on raw dollar size.
     report.strikes.sort(
-        key=lambda o: (-o.relevance_score, -o.attractiveness, o.catalyst.horizon_days or 10**9)
+        key=lambda o: (
+            0 if o.meta.get("posture") == "defend" else 1,
+            -o.relevance_score,
+            -o.attractiveness,
+            o.catalyst.horizon_days or 10**9,
+        )
     )
     scoreboard.record(store, "strikes_published", len(report.strikes), profile=profile.name)
 
@@ -134,5 +141,7 @@ def run(
         "avg_lead_time_days": round(sum(lead_times) / len(lead_times), 1) if lead_times else None,
         "recompete": sum(1 for o in report.strikes if o.catalyst.kind == "recompete_expiry"),
         "presolicitation": sum(1 for o in report.strikes if o.catalyst.kind != "recompete_expiry"),
+        "defend": sum(1 for o in report.strikes if o.meta.get("posture") == "defend"),
+        "capture": sum(1 for o in report.strikes if o.meta.get("posture") != "defend"),
     }
     return report

@@ -63,6 +63,16 @@ def test_brief_renders_expected_sections(tmp_path, profile, award_rows, notice_r
     assert "Pyrnova Capture Radar" in radar
 
 
+def test_posture_defend_vs_capture(tmp_path, profile, award_rows, notice_rows, as_of):
+    report, _ = _run(tmp_path, profile, award_rows, notice_rows, as_of)
+    # Acme is the incumbent on its own recompete -> DEFEND; others -> CAPTURE.
+    defend = [o for o in report.strikes if o.meta.get("posture") == "defend"]
+    assert any(o.incumbent and "Acme" in o.incumbent for o in defend)
+    # DEFEND items must sort ahead of CAPTURE items.
+    postures = [o.meta.get("posture") for o in report.strikes]
+    assert postures == sorted(postures, key=lambda p: 0 if p == "defend" else 1)
+
+
 def test_human_reviewer_upgrades_to_confirmed(tmp_path, profile, award_rows, notice_rows, as_of):
     report, _ = _run(tmp_path, profile, award_rows, notice_rows, as_of, reviewer="stulogic")
     assert report.strikes

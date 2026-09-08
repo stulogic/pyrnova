@@ -29,8 +29,11 @@ def _item_md(n: int, opp: Opportunity) -> str:
             ev_links.append(f"`{ev.source_id}:{ev.content_sha256[:12]}`")
     review_status = opp.meta.get("review_status", "pending_human")
     flag = " · ⚠️ PENDING HUMAN REVIEW" if review_status == "pending_human" else ""
+    posture = opp.meta.get("posture")
+    tag = {"defend": "🛡️ DEFEND", "capture": "🎯 CAPTURE"}.get(posture, "")
+    tag = f" · {tag}" if tag else ""
     lines = [
-        f"### SIGNAL {n:02d} — {opp.title}{flag}",
+        f"### SIGNAL {n:02d} — {opp.title}{tag}{flag}",
         "",
         f"- **What we found:** {opp.catalyst.summary}",
         f"- **Why it matters:** {opp.recommended_action.split(';')[0].strip().capitalize()}.",
@@ -88,6 +91,8 @@ def render_capture_radar_report(report: Report) -> str:
         "",
         f"- Recompete/expiry STRIKEs: **{s.get('recompete', 0)}**",
         f"- Pre-solicitation STRIKEs: **{s.get('presolicitation', 0)}**",
+        f"- 🛡️ Defend (your recompetes): **{s.get('defend', 0)}**  ·  🎯 Capture (displace incumbent): "
+        f"**{s.get('capture', 0)}**",
         f"- Avg lead time: **{s.get('avg_lead_time_days', 'n/a')} days**",
         "",
         "> Confidence (our certainty in the intelligence) is reported separately from attractiveness "
