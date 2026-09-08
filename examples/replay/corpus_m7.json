@@ -1,0 +1,319 @@
+{
+  "corpus_id": "pyrnova-m7-commercial-consequence-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_m6.json",
+  "reviewed_at": "2026-09-08",
+  "notes": "M7 extends the frozen M6 corpus with commercial-consequence cases: direct/downstream/second-order consequences, a zero-consequence catalyst, a multi-consequence catalyst, consequences killed by negative commercial evidence, and cases where value stays UNKNOWN. Each M7 case declares expected_consequences carrying consequence-level ground truth, so consequence precision is graded only where that truth exists. Earlier corpora are byte-for-byte unchanged.",
+  "cases": [
+    {
+      "case_id": "m7-direct-strike-navy-radar-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-11-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations", "source_ref": "TAS-017-1319-FY23-RADAR", "record_kind": "appropriation",
+          "stage": "FUNDING", "program_key": "department of the navy:navy-radar-2024", "program_identifier": "017-1319",
+          "summary": "Navy shipboard radar procurement appropriation", "agency": "Department of the Navy",
+          "amount_usd": 180000000, "available_at": "2023-01-15T00:00:00+00:00", "strength": 3,
+          "source_role": "primary", "url": "https://www.usaspending.gov/federal_account/017-1319", "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities", "source_ref": "N00024-24-RADAR-R-0007", "record_kind": "solicitation",
+          "stage": "PROCUREMENT", "program_key": "department of the navy:navy-radar-2024",
+          "summary": "Shipboard radar component production solicitation", "agency": "Department of the Navy",
+          "naics": "334511", "psc": "5841", "description": "production of shipboard radar components and antennas",
+          "amount_usd": 52000000, "downstream_refs": ["CONT_AWD_N0002424C0044"],
+          "available_at": "2024-06-01T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://sam.gov/opp/N00024-24-RADAR-R-0007/view", "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0044", "record_kind": "award",
+          "stage": "AWARD", "program_key": "department of the navy:navy-radar-2024",
+          "summary": "Shipboard radar component production award", "agency": "Department of the Navy",
+          "recipient": "Coastal Radar Systems Inc", "recipient_uei": "RDR55AA77BB1", "place_of_performance": "Portsmouth, VA",
+          "naics": "334511", "amount_usd": 54000000, "available_at": "2024-10-15T00:00:00+00:00", "strength": 5,
+          "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0044", "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0044-mod-2026", "record_kind": "project_update",
+          "summary": "Option exercised (excluded at cutoff)", "available_at": "2026-05-01T00:00:00+00:00", "strength": 4,
+          "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0044", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "The Navy radar appropriation converts to a solicitation and award for radar component production.", "relevance": 0.7, "predicted_buyer": "Department of the Navy", "predicted_timing": "by late 2024", "predicted_value_usd": 52000000},
+      "expected_affected_entities": ["shipboard radar component manufacturers"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "direct procurement of radar components with a named buyer and recipient",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Navy", "occurred_at": "2024-10-15T00:00:00+00:00", "actual_value_usd": 54000000, "source_ref": "CONT_AWD_N0002424C0044"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Explicit radar-component solicitation and award with a named Navy buyer, a prime recipient, and a specific capability; direct procurement spend with a known amount.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "expected_consequences": {"catalyst_count": 1, "catalyst_type": "PROCUREMENT_LIFECYCLE", "min_consequences": 1, "max_consequences": 1, "mechanisms": ["DIRECT_PROCUREMENT"], "directness": ["DIRECT"], "roles": ["BUYER", "PRIME_RECIPIENT"], "require_capability": true, "value_status": ["KNOWN"], "screened_dispositions": ["STRIKE"], "expect_rejected": false}
+    },
+    {
+      "case_id": "m7-downstream-grant-battery-2023",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2023-09-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "grants_gov", "source_ref": "DE-FOA-0002890", "record_kind": "grant_nofo",
+          "stage": "FUNDING", "program_key": "department of energy:doe-battery-manufacturing-2023",
+          "summary": "Battery cell manufacturing scale-up grants", "agency": "Department of Energy",
+          "naics": "335910", "description": "battery manufacturing scale-up and equipment", "capability_terms": ["battery manufacturing"],
+          "program_amount": 200000000, "project_fraction": [0.05, 0.20],
+          "available_at": "2023-03-01T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://www.grants.gov/search-results-detail/DE-FOA-0002890", "applies_to_candidate": true
+        },
+        {
+          "source_id": "grants_gov", "source_ref": "DE-FOA-0002890-recipient", "record_kind": "grant_award",
+          "stage": "PROGRAM", "program_key": "department of energy:doe-battery-manufacturing-2023",
+          "summary": "Grant awarded to a battery cell manufacturer", "agency": "Department of Energy",
+          "recipient": "Cascade Cell Manufacturing LLC", "recipient_uei": "BAT88CC22DD3", "place_of_performance": "Reno, NV",
+          "naics": "335910", "available_at": "2023-08-10T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://www.grants.gov/search-results-detail/DE-FOA-0002890", "applies_to_candidate": true
+        },
+        {
+          "source_id": "grants_gov", "source_ref": "DE-FOA-0002890-status-2026", "record_kind": "project_update",
+          "summary": "Facility milestone (excluded at cutoff)", "available_at": "2026-02-01T00:00:00+00:00", "strength": 3,
+          "source_role": "primary", "url": "https://www.grants.gov/search-results-detail/DE-FOA-0002890", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "A DOE battery-manufacturing grant creates downstream equipment and construction demand at the funded recipient.", "relevance": 0.5, "predicted_buyer": "Department of Energy", "predicted_timing": "12-24 months", "predicted_value_usd": null},
+      "expected_affected_entities": ["battery manufacturing equipment and construction vendors"],
+      "expected_buyer_program_owner": "Department of Energy",
+      "expected_commercial_mechanism": "funded downstream demand from a grant recipient's build-out",
+      "actual_outcome": {"occurred": true, "kind": "grant_award", "buyer": "Department of Energy", "occurred_at": "2023-08-10T00:00:00+00:00", "actual_value_usd": null, "source_ref": "DE-FOA-0002890-recipient"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "The grant funds a named beneficiary whose build-out creates real downstream demand, but there is no direct government procurement, so it is a downstream WATCH, not a STRIKE.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": ["funding_without_executable_demand"],
+      "expected_consequences": {"catalyst_count": 1, "min_consequences": 1, "max_consequences": 1, "mechanisms": ["FUNDED_DOWNSTREAM_DEMAND"], "directness": ["DOWNSTREAM"], "roles": ["BENEFICIARY"], "value_status": ["BOUNDED"], "screened_dispositions": ["WATCH"], "expect_rejected": false}
+    },
+    {
+      "case_id": "m7-multi-consequence-chips-2022",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2023-12-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations", "source_ref": "TAS-013-0126-CHIPS-FY22", "record_kind": "capacity_program",
+          "stage": "FUNDING", "program_key": "department of commerce:chips-fab-incentive-2022", "program_identifier": "013-0126",
+          "summary": "CHIPS domestic semiconductor fabrication incentive program", "agency": "Department of Commerce",
+          "industrial_policy": true, "explicit_supplier_need": true, "amount_usd": 5000000000, "program_amount": 5000000000, "project_fraction": [0.01, 0.05],
+          "naics": "333242", "description": "semiconductor fabrication capacity build-out",
+          "available_at": "2022-08-09T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://www.commerce.gov/chips/incentive-program", "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities", "source_ref": "GS-CHIPS-CONSTR-2023-R-0011", "record_kind": "solicitation",
+          "stage": "PROCUREMENT", "program_key": "department of commerce:chips-fab-incentive-2022",
+          "summary": "CHIPS program office facility electrical construction solicitation", "agency": "Department of Commerce",
+          "naics": "238210", "psc": "Z2AA", "description": "electrical construction for a fabrication facility",
+          "amount_usd": 120000000, "available_at": "2023-06-15T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://sam.gov/opp/GS-CHIPS-CONSTR-2023-R-0011/view", "applies_to_candidate": true
+        },
+        {
+          "source_id": "grants_gov", "source_ref": "CHIPS-FAB-GRANT-2023-01", "record_kind": "grant_award",
+          "stage": "PROGRAM", "program_key": "department of commerce:chips-fab-grant-2023",
+          "summary": "CHIPS incentive award to a semiconductor fabricator", "agency": "Department of Commerce",
+          "recipient": "Meridian Semiconductor Corp", "recipient_uei": "SEM11EE44FF5", "place_of_performance": "Chandler, AZ",
+          "naics": "333242", "description": "semiconductor process equipment build-out", "capability_terms": ["semiconductor"],
+          "program_amount": 1500000000, "project_fraction": [0.05, 0.15],
+          "available_at": "2023-09-20T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://www.grants.gov/search-results-detail/CHIPS-FAB-GRANT-2023-01", "applies_to_candidate": true
+        },
+        {
+          "source_id": "commerce", "source_ref": "CHIPS-status-2026", "record_kind": "project_update",
+          "summary": "Program milestone (excluded at cutoff)", "available_at": "2026-03-01T00:00:00+00:00", "strength": 3,
+          "source_role": "primary", "url": "https://www.commerce.gov/chips", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "The CHIPS fabrication program produces distinct commercial consequences: direct facility construction procurement, downstream fabricator equipment demand, and broad semiconductor supplier capacity build-out.", "relevance": 0.72, "predicted_buyer": "Department of Commerce", "predicted_timing": "2023-2026", "predicted_value_usd": 120000000},
+      "expected_affected_entities": ["electrical construction firms", "semiconductor process equipment suppliers"],
+      "expected_buyer_program_owner": "Department of Commerce",
+      "expected_commercial_mechanism": "one capital program yielding multiple economically distinct consequences",
+      "actual_outcome": {"occurred": true, "kind": "solicitation", "buyer": "Department of Commerce", "occurred_at": "2023-06-15T00:00:00+00:00", "actual_value_usd": 120000000, "source_ref": "GS-CHIPS-CONSTR-2023-R-0011"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "The program has an explicit facility construction solicitation (direct procurement STRIKE), a funded fabricator (downstream equipment demand), and a capacity build-out driving supplier demand: three economically distinct, separately evidenced consequences.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "expected_consequences": {"catalyst_count": 2, "min_consequences": 2, "max_consequences": 3, "mechanisms": ["DIRECT_PROCUREMENT", "INDUSTRIAL_CAPACITY_BUILDOUT"], "directness": ["DIRECT"], "roles": ["BUYER"], "value_status": ["KNOWN", "BOUNDED"], "screened_dispositions": ["STRIKE"], "expect_rejected": false}
+    },
+    {
+      "case_id": "m7-zero-consequence-appropriation-2024",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2024-05-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "appropriations", "source_ref": "TAS-089-0301-FY24-QUANTUM", "record_kind": "appropriation",
+          "stage": "FUNDING", "program_key": "department of energy:doe-quantum-2024", "program_identifier": "089-0301",
+          "summary": "Quantum information science appropriation", "agency": "Department of Energy",
+          "amount_usd": 500000000, "available_at": "2024-02-01T00:00:00+00:00", "strength": 3, "source_role": "primary",
+          "url": "https://www.usaspending.gov/federal_account/089-0301", "applies_to_candidate": true
+        },
+        {
+          "source_id": "doe", "source_ref": "DOE-QUANTUM-status-2026", "record_kind": "unresolved_appropriation",
+          "summary": "No program designation, grant, or solicitation had followed as of the reviewed check (excluded at cutoff)",
+          "available_at": "2026-09-01T00:00:00+00:00", "strength": 2, "source_role": "primary",
+          "url": "https://www.energy.gov/quantum", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "A $500m quantum appropriation will create commercial opportunities.", "relevance": 0.4, "predicted_buyer": "Department of Energy", "predicted_timing": "unclear", "predicted_value_usd": null},
+      "expected_affected_entities": ["unknown until a procurement or program structure emerges"],
+      "expected_buyer_program_owner": "Department of Energy",
+      "expected_commercial_mechanism": "appropriation with no yet-supportable commercial route",
+      "actual_outcome": {"occurred": false, "kind": "no_commercial_route_yet", "buyer": "Department of Energy", "occurred_at": null, "source_ref": "DOE-QUANTUM-status-2026"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "A large appropriation is a real capital catalyst, but with no procurement, grant, program designation, or regulatory obligation there is no evidence-backed commercial consequence yet. Pyrnova must NOT invent generic consulting/software/logistics opportunities; zero consequences is the correct output.",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "Real money, but no executable commercial mechanism is evidenced yet; monitor without fabricating consequences.", "reviewer": "Pyrnova corpus reviewer", "confidence": "LOW"},
+      "failure_reasons": ["no_actionable_commercial_path"],
+      "expected_consequences": {"catalyst_count": 1, "catalyst_type": "BUDGET_APPROPRIATION", "min_consequences": 0, "max_consequences": 0}
+    },
+    {
+      "case_id": "m7-killed-internal-selfperf-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-08-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "sam_opportunities", "source_ref": "VA-2024-DEPOT-PRESOL-03", "record_kind": "presolicitation",
+          "stage": "PROCUREMENT", "program_key": "department of veterans affairs:va-depot-maintenance-2024",
+          "summary": "VA depot equipment maintenance requirement", "agency": "Department of Veterans Affairs",
+          "naics": "811310", "description": "industrial equipment maintenance performed in-house at a government depot",
+          "internal_self_performance": true, "available_at": "2024-04-01T00:00:00+00:00", "strength": 3, "source_role": "primary",
+          "url": "https://sam.gov/opp/VA-2024-DEPOT-PRESOL-03/view", "applies_to_candidate": true
+        },
+        {
+          "source_id": "va", "source_ref": "VA-2024-DEPOT-status-2026", "record_kind": "status_check",
+          "summary": "Confirmed performed in-house (excluded at cutoff)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 2,
+          "source_role": "primary", "url": "https://sam.gov/opp/VA-2024-DEPOT-PRESOL-03/view", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "A VA depot maintenance requirement is a commercial procurement opportunity.", "relevance": 0.25, "predicted_buyer": "Department of Veterans Affairs", "predicted_timing": "unclear", "predicted_value_usd": null},
+      "expected_affected_entities": ["equipment maintenance vendors"],
+      "expected_buyer_program_owner": "Department of Veterans Affairs",
+      "expected_commercial_mechanism": "apparent procurement that is actually internal self-performance (no commercial path)",
+      "actual_outcome": {"occurred": false, "kind": "internal_self_performance", "buyer": null, "occurred_at": null, "source_ref": "VA-2024-DEPOT-status-2026"},
+      "expected_disposition": "REJECT",
+      "ground_truth": {"label": "TRUE_NEGATIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "REJECT", "reason": "The work is performed in-house by the government depot, so there is no commercial procurement path despite the notice; the consequence must be killed by negative commercial evidence.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": ["no_actionable_commercial_path"],
+      "expected_consequences": {"catalyst_count": 1, "min_consequences": 1, "max_consequences": 1, "mechanisms": ["DIRECT_PROCUREMENT"], "expect_rejected": true, "screened_dispositions": ["REJECT"]}
+    },
+    {
+      "case_id": "m7-compliance-epa-2024",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2024-07-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "federal_register", "source_ref": "2024-EPA-PFAS-RULE-118", "record_kind": "rule",
+          "stage": "MARKET_ENGAGEMENT", "program_key": "environmental protection agency:epa-pfas-2024",
+          "summary": "Final rule setting enforceable PFAS drinking-water limits", "agency": "Environmental Protection Agency",
+          "obligation": true, "regulated_entity": "public water utilities", "naics": "562910",
+          "description": "environmental remediation and treatment system installation to meet PFAS limits",
+          "effective_date": "2027-01-01T00:00:00+00:00",
+          "available_at": "2024-04-10T00:00:00+00:00", "strength": 3, "source_role": "primary",
+          "url": "https://www.federalregister.gov/documents/2024-EPA-PFAS-RULE-118", "applies_to_candidate": true
+        },
+        {
+          "source_id": "epa", "source_ref": "EPA-PFAS-status-2026", "record_kind": "project_update",
+          "summary": "Compliance guidance issued (excluded at cutoff)", "available_at": "2026-06-01T00:00:00+00:00", "strength": 2,
+          "source_role": "primary", "url": "https://www.epa.gov/pfas", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "Enforceable PFAS limits compel water utilities to spend on remediation and treatment systems.", "relevance": 0.45, "predicted_buyer": "public water utilities", "predicted_timing": "before 2027 effective date", "predicted_value_usd": null},
+      "expected_affected_entities": ["public water utilities", "environmental remediation and water treatment vendors"],
+      "expected_buyer_program_owner": "Environmental Protection Agency",
+      "expected_commercial_mechanism": "forced compliance spend created by an enforceable regulatory obligation",
+      "actual_outcome": {"occurred": true, "kind": "regulatory_obligation", "buyer": "public water utilities", "occurred_at": "2024-04-10T00:00:00+00:00", "actual_value_usd": null, "source_ref": "2024-EPA-PFAS-RULE-118"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "An enforceable obligation with a compliance deadline creates required remediation spend across regulated utilities; downstream and worth monitoring, but the specific buyers and procurements are not yet posted.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "expected_consequences": {"catalyst_count": 1, "catalyst_type": "REGULATORY_MANDATE", "min_consequences": 1, "max_consequences": 1, "mechanisms": ["FORCED_COMPLIANCE_SPEND"], "directness": ["DOWNSTREAM"], "roles": ["REGULATED_ENTITY"], "value_status": ["UNKNOWN"], "screened_dispositions": ["WATCH"], "expect_rejected": false}
+    },
+    {
+      "case_id": "m7-second-order-capex-2024",
+      "mechanism_family": "capex_expansion",
+      "replay_as_of": "2024-09-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "sec_edgar", "source_ref": "0000320193-24-CAPEX-8K", "record_kind": "capex",
+          "stage": "PROGRAM", "program_key": "acme industrials:acme-plant-expansion-2024",
+          "summary": "8-K disclosing a new domestic manufacturing plant capital program", "agency": "Acme Industrials Inc",
+          "capex_disclosed": true, "naics": "333242", "description": "new semiconductor assembly plant construction",
+          "available_at": "2024-05-01T00:00:00+00:00", "strength": 2, "source_role": "primary",
+          "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany", "applies_to_candidate": true
+        },
+        {
+          "source_id": "sec_edgar", "source_ref": "0000320193-24-CAPEX-status-2026", "record_kind": "project_update",
+          "summary": "Plant groundbreaking (excluded at cutoff)", "available_at": "2026-04-01T00:00:00+00:00", "strength": 2,
+          "source_role": "primary", "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "A disclosed capex program will create supplier and construction demand.", "relevance": 0.3, "predicted_buyer": "Acme Industrials Inc", "predicted_timing": "unclear", "predicted_value_usd": null},
+      "expected_affected_entities": ["construction and equipment suppliers"],
+      "expected_buyer_program_owner": "Acme Industrials Inc",
+      "expected_commercial_mechanism": "second-order supplier demand inferred from a capex disclosure",
+      "actual_outcome": {"occurred": false, "kind": "uncorroborated_second_order", "buyer": "Acme Industrials Inc", "occurred_at": null, "source_ref": "0000320193-24-CAPEX-status-2026"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "A capex disclosure plausibly implies supplier demand, but with no named procurement or supplier the consequence is second-order and uncorroborated; it must stay internal/WATCH rather than becoming a STRIKE.",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "The supplier demand is a materially inferential second-order effect with no corroborating procurement, so it is held internal as a WATCH.", "reviewer": "Pyrnova corpus reviewer", "confidence": "LOW"},
+      "failure_reasons": ["speculative_causality"],
+      "expected_consequences": {"catalyst_count": 1, "min_consequences": 1, "max_consequences": 1, "mechanisms": ["CAPITAL_EXPANSION"], "directness": ["SECOND_ORDER"], "value_status": ["UNKNOWN"], "screened_dispositions": ["WATCH"], "expect_rejected": false}
+    },
+    {
+      "case_id": "m7-unknown-value-directed-energy-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-10-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "sam_opportunities", "source_ref": "FA9451-24-DE-R-0003", "record_kind": "solicitation",
+          "stage": "PROCUREMENT", "program_key": "department of the air force:af-directed-energy-2024",
+          "summary": "Directed energy prototype integration solicitation", "agency": "Department of the Air Force",
+          "psc": "5865", "description": "directed energy beam control prototype integration", "capability_terms": ["directed energy"],
+          "available_at": "2024-05-01T00:00:00+00:00", "strength": 4, "source_role": "primary",
+          "url": "https://sam.gov/opp/FA9451-24-DE-R-0003/view", "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending", "source_ref": "CONT_AWD_FA945124C0009", "record_kind": "award",
+          "stage": "AWARD", "program_key": "department of the air force:af-directed-energy-2024",
+          "summary": "Directed energy prototype integration award", "agency": "Department of the Air Force",
+          "recipient": "Photon Dynamics Corp", "recipient_uei": "PHO22GG55HH6", "place_of_performance": "Albuquerque, NM",
+          "available_at": "2024-09-10T00:00:00+00:00", "strength": 5, "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_FA945124C0009", "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending", "source_ref": "CONT_AWD_FA945124C0009-status-2026", "record_kind": "project_update",
+          "summary": "Follow-on phase (excluded at cutoff)", "available_at": "2026-07-01T00:00:00+00:00", "strength": 4,
+          "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_FA945124C0009", "applies_to_candidate": false
+        }
+      ],
+      "candidate": {"hypothesis": "A directed energy prototype solicitation is a direct procurement, but no dollar amount is available.", "relevance": 0.6, "predicted_buyer": "Department of the Air Force", "predicted_timing": "by late 2024", "predicted_value_usd": null},
+      "expected_affected_entities": ["directed energy prototype integrators"],
+      "expected_buyer_program_owner": "Department of the Air Force",
+      "expected_commercial_mechanism": "direct procurement whose value must remain UNKNOWN",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Air Force", "occurred_at": "2024-09-10T00:00:00+00:00", "actual_value_usd": null, "source_ref": "CONT_AWD_FA945124C0009"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M7 consequence review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "A real directed-energy solicitation and award with a named buyer and recipient and a specific capability; a genuine direct procurement whose commercial value is simply not disclosed, so value stays UNKNOWN with provenance rather than being invented.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "expected_consequences": {"catalyst_count": 1, "catalyst_type": "PROCUREMENT_LIFECYCLE", "min_consequences": 1, "max_consequences": 1, "mechanisms": ["DIRECT_PROCUREMENT"], "directness": ["DIRECT"], "roles": ["BUYER", "PRIME_RECIPIENT"], "require_capability": true, "value_status": ["UNKNOWN"], "screened_dispositions": ["STRIKE"], "expect_rejected": false}
+    }
+  ]
+}
