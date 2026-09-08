@@ -1,0 +1,81 @@
+{
+  "name": "Modern Technology Solutions",
+  "recipient_names": [
+    "Modern Technology Solutions",
+    "Modern Technology Solutions Inc",
+    "Modern Technology Solutions, Inc."
+  ],
+  "agencies": [
+    "Missile Defense Agency",
+    "Air Force",
+    "Space Force",
+    "Department of Defense",
+    "Army",
+    "Space Development Agency"
+  ],
+  "naics": ["541330", "541715", "541511", "541512", "541990"],
+  "psc": [],
+  "capabilities": [
+    "systems engineering",
+    "systems integration",
+    "modeling and simulation",
+    "mission engineering",
+    "digital engineering",
+    "MBSE",
+    "test and evaluation",
+    "verification, validation and accreditation",
+    "VV&A",
+    "acquisition",
+    "program management",
+    "software engineering",
+    "missile defense",
+    "air and missile defense",
+    "hypersonic",
+    "hypersonics",
+    "radar",
+    "sensor",
+    "sensors",
+    "missile warning",
+    "missile tracking",
+    "space",
+    "space sensing",
+    "space domain awareness",
+    "ground segment",
+    "command and control",
+    "JADC2",
+    "ISR",
+    "rapid prototyping",
+    "rapid acquisition",
+    "cybersecurity",
+    "autonomy",
+    "artificial intelligence"
+  ],
+  "geography": [],
+  "size_min_usd": 1000000,
+  "size_max_usd": null,
+  "set_asides": [],
+  "exclusions": [
+    "construction",
+    "janitorial",
+    "grounds maintenance",
+    "food service",
+    "custodial"
+  ],
+  "incumbencies": [],
+  "_provenance": {
+    "note": "Constructed only from the capability basis, priority agencies, recipient-name variants, NAICS search hints, and live-run floor supplied for this first-pass profile. Validate and refine against authoritative company and federal records before customer use. No unsupported company facts are asserted.",
+    "known_public_facts": [],
+    "inferred_not_asserted": [
+      "Capabilities are search terms supplied for this task, not independently verified claims about the company.",
+      "Agency entries are supplied search priorities, not assertions of active customer relationships.",
+      "NAICS entries are supplied search hints, not asserted SAM registration codes.",
+      "The $1M size floor reflects the requested live-run minimum, not a stated company contract-size preference."
+    ],
+    "unknown_do_not_invent": [
+      "UEI and exact legal entity registration.",
+      "Facility clearance level, certifications, and contract vehicles or IDIQs.",
+      "Specific active contracts, incumbencies, capture priorities, and named personnel.",
+      "Geographic preferences and maximum target contract size."
+    ]
+  }
+}
