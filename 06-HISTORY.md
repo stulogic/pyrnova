@@ -42,7 +42,7 @@
   STRIKEs appeared; each new source contributed one WATCH under ablation.
 - Preserved `scoring_v1` and the frozen M2 SAM acceptance path.
 
-## Milestone 5 — IN PROGRESS 2026-09-08
+## Milestone 5 — CLOSED 2026-09-08
 
 - Added cross-source capital-chain resolution (`pyrnova/chains.py`): typed, temporal, evidence-backed
   relationships via a deterministic-program-key / native-identifier / conservative-inference
@@ -57,6 +57,28 @@
   chain that stays WATCH, a rejected tempting false join, and an unresolved partial chain.
 - Kept the M4 baseline byte-for-byte unchanged; the M5 corpus added one hand-reviewed true-positive
   STRIKE and no false positive, with `scoring_v1` unmodified. Test suite grew from 87 to 109.
+
+## Milestone 6 — IN PROGRESS 2026-09-08
+
+- Added a budget/appropriation precursor source (`pyrnova/sources/appropriations.py`) distinguishing
+  INTENT / AUTHORIZATION / FUNDING and emitting authoritative structured identifiers (TAS, Federal
+  Account, CFDA, program element) that crosswalk into existing chains; offline-first, no live calls.
+- Refined the inferred-join path into a weighted, explainable model (`score_inferred_join`) gated by
+  an authoritative structured anchor with contradiction penalties and a `[0.45, 0.60)` deferral band.
+  The frozen 0.60 acceptance threshold was given teeth, not relaxed; the canonical case still scores
+  exactly 0.60 and all M5 behavior is preserved.
+- Added a human review queue (`pyrnova/review_queue.py`, CLI `join-review`) that persists reviewer
+  dispositions of deferred inferred joins (ACCEPT_JOIN / REJECT_JOIN / WATCH) with prior automated
+  state, and an override-rate metric, as future calibration evidence.
+- Added entity-level predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`) from authoritative
+  structured fields only.
+- Added `corpus_m6.json` (extends the frozen `corpus_m5.json`) with eight reviewed cases: two true
+  inferred joins, three tempting false joins, one ambiguous deferral, one appropriation-anchored
+  precursor lifecycle (1053-day lead, WATCH→STRIKE), and one partial authorization case. Under
+  `scoring_v1`: false-negative rate 0.0, STRIKE precision 0.80, false-positive rate 0.1429, WATCH
+  conversion 0.8889; inferred precision 1.0 and false-join rate 0.0 over 2 accepted inferred joins
+  (small-sample warning surfaced). The 0.60 threshold was swept and left unchanged. Test suite grew
+  from 109 to 146. No live API calls.
 
 ## Repository authority normalization — 2026-09-08
 

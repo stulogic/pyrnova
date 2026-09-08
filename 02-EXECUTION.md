@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M4 closed; M5 in progress · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M3–M5 closed; M6 in progress · updated 2026-09-08_
 
 ## Active work
 
@@ -41,31 +41,41 @@ baseline. `scoring_v1` remains unchanged: no new STRIKEs, no precision regressio
 adds one conservative WATCH in leave-one-source-out replay. See
 `docs/replay/M4_SOURCE_CONTRIBUTION.md`.
 
-### Milestone 5 — in progress
+### Milestone 5 — CLOSED
 
-M5 is cross-source intelligence and capital-chain resolution: connecting apparently separate source
-signals into one economic story on evidence. Implemented offline-first per
-`docs/specs/M5_CROSS_SOURCE_INTELLIGENCE.md`:
+M5 passed acceptance on 2026-09-08. Cross-source capital-chain resolution (`pyrnova/chains.py`),
+opportunity evolution (`pyrnova/transitions.py`), temporal `Relationship` fields, and
+`OpportunityTransition` are implemented and offline-validated; the 27-case `corpus_m5.json` extends
+the frozen `corpus_m4.json`. `scoring_v1` unchanged. See `docs/replay/M5_CHAIN_RESOLUTION.md`.
 
-- `pyrnova/chains.py` resolves typed, temporal, evidence-backed relationships with a
-  deterministic-program-key / native-identifier / conservative-inference hierarchy and explicit
-  rejection of weak (agency/topic/chronology) matches.
-- `pyrnova/transitions.py` derives opportunity evolution by replaying `scoring_v1` point-in-time.
-- `Relationship` gains temporal/confidence fields and `OpportunityTransition` is added, both mirrored
-  in `db/schema.sql`.
-- `examples/replay/corpus_m5.json` extends the frozen `corpus_m4.json` with four reviewed chain cases;
-  results are in `docs/replay/M5_CHAIN_RESOLUTION.md`. `scoring_v1` is unchanged.
+### Milestone 6 — in progress
 
-Active constraint: chain resolution enriches evidence, timing, provenance, and explanation only. It
-must not create a candidate, promote a disposition, or alter `scoring_v1`. Prefer deterministic and
-native-identifier joins; never materialize a topic-, agency-name-, or chronology-only join.
+M6 moves Pyrnova earlier in the capital lifecycle and calibrates inferred cross-source relationships
+that cannot rely on deterministic identifiers. Implemented offline-first per
+`docs/specs/M6_PRECURSOR_AND_INFERENCE.md`:
+
+- `pyrnova/sources/appropriations.py` adds a budget/appropriation precursor source distinguishing
+  INTENT / AUTHORIZATION / FUNDING and emitting authoritative structured identifiers (TAS, Federal
+  Account, CFDA, program element) that crosswalk into existing chains.
+- `pyrnova/chains.py` gains a weighted, explainable inference model (`score_inferred_join`) gated by
+  an authoritative structured anchor, a `[0.45, 0.60)` deferral band, entity-level predicates
+  (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`), and calibration outputs.
+- `pyrnova/review_queue.py` (CLI `join-review`) persists human dispositions of deferred inferred
+  joins as future calibration evidence.
+- `examples/replay/corpus_m6.json` extends the frozen `corpus_m5.json` with eight reviewed cases;
+  results are in `docs/replay/M6_INFERENCE_CALIBRATION.md`.
+
+Active constraints: the inferred acceptance threshold stays frozen at 0.60 unless full-corpus
+evidence justifies a change; inferred joins never independently drive a high-confidence STRIKE;
+inference must remain explainable and evidence-anchored (no topic-only / agency-only / chronology-only
+/ opaque-semantic joins); `scoring_v1` is unchanged; strict point-in-time replay is preserved.
 
 ## Immediate sequence
 
 1. Complete and record the unchanged M2 live acceptance gate after the reset.
-2. Re-run the frozen M3 corpus and confirm its deterministic baseline remains unchanged.
-3. Expand new-source historical cases only as reviewed primary evidence becomes available; do not
-   alter scoring or begin a later milestone without separate authority.
+2. Accumulate additional reviewed inferred-join cases and at least one live-archived budget artifact
+   before revisiting the 0.60 threshold; keep it frozen until the sample materially grows.
+3. Do not alter scoring or begin a later milestone without separate authority.
 
 ## Active constraints
 

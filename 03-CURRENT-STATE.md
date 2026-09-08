@@ -9,8 +9,11 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - **M3: CLOSED.** The formal acceptance review passed on 2026-09-08.
 - **M4: CLOSED.** Offline-first source expansion passed its implementation and regression gates on
   2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
-- **M5: IN PROGRESS.** Cross-source capital-chain resolution, opportunity evolution, and chain
-  observability are implemented and offline-validated; acceptance is pending final review.
+- **M5: CLOSED.** Cross-source capital-chain resolution, opportunity evolution, and chain
+  observability passed acceptance on 2026-09-08. `scoring_v1` unchanged.
+- **M6: IN PROGRESS.** Budget/appropriation precursor coverage and inferred-relationship calibration
+  are implemented and offline-validated; the weighted, explainable inference model, a human review
+  queue for uncertain joins, and entity-level predicates are exercised by a reviewed corpus.
 
 ## Implemented and verified
 
@@ -55,6 +58,49 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   434 days and is promoted WATCH→STRIKE by the procurement solicitation. See
   `docs/replay/M5_CHAIN_RESOLUTION.md`.
 
+## M6 precursor + inferred-join calibration
+
+- **Appropriations / program-funding precursor source** (`pyrnova/sources/appropriations.py`,
+  registry id `appropriations`): offline-first adapter over explicitly configured official budget
+  artifacts, mirroring the acquisition-forecast contract (deterministic identity, `available_at`,
+  exact-byte archival, sanitized request fingerprint, malformed handling). It distinguishes
+  `INTENT` (budget request), `AUTHORIZATION` (enacted authority), and `FUNDING` (appropriated budget
+  authority) and never collapses them. It emits the most authoritative structured identifier present
+  (TAS → Federal Account → CFDA/assistance-listing → program element → budget line item) as
+  `program_identifier`, retaining every raw id field. It cannot create a candidate or STRIKE.
+- **Weighted, explainable inference model** (`pyrnova/chains.py:score_inferred_join`): replaces the
+  M5 rubber-stamp inferred path with an additive factor model gated by an authoritative structured
+  **anchor** (shared program identifier, matching entity UEI, or a specific program/solicitation
+  number fragment). Without an anchor a pair is capped at 0.55, so agency + topic + chronology +
+  name-similarity can never reach the frozen 0.60 acceptance threshold. Contradiction penalties
+  (agency conflict, temporal impossibility, geography/funding divergence) subtract and can invalidate
+  an anchored pair. Anchored pairs in `[0.45, 0.60)` are **deferred** to human review, not linked.
+  Every factor, penalty, and anchor is retained on the relationship rationale. The canonical
+  shared-identifier + agency case still lands at exactly 0.60, so all M5 behavior is preserved.
+- **Human review queue** (`pyrnova/review_queue.py`, CLI `join-review`): deferred inferred joins are
+  enqueued (idempotent per relationship id) with pre-review confidence and the prior automated
+  recommendation; a reviewer records `ACCEPT_JOIN | REJECT_JOIN | WATCH` with reviewer, timestamp,
+  and reason. `override_rate` reports how often reviewers disagree with the automated recommendation.
+  This persisted history is future calibration evidence. State is durable append-only JSONL.
+- **Entity-level predicates** (`pyrnova/chains.py:resolve_entity_relationships`): `AWARDED_TO`,
+  `SUBSIDIARY_OF`, and `LOCATED_AT` are established only from authoritative structured fields
+  (recipient/parent UEI, place of performance), never inferred from topic; each edge is
+  evidence-backed, temporal, and deterministic (confidence 0.95).
+- **`corpus_m6.json`** extends the frozen `corpus_m5.json` with eight reviewed cases: two true
+  inferred joins (shared assistance-listing identifier; matching recipient UEI), three tempting false
+  joins (cross-agency shared identifier, temporal impossibility, agency-plus-topic only), one
+  ambiguous deferral (number-fragment only), one appropriation→forecast→solicitation→award precursor
+  chain, and one partial authorization-only chain. Under `scoring_v1` the 35-case M6 corpus keeps
+  false-negative rate 0.0, adds one true-positive STRIKE (the appropriation-anchored Air Force radar
+  lifecycle), and raises STRIKE precision to 0.80 with false-positive rate 0.1429 and WATCH
+  conversion 0.8889. Chain observability: 2 accepted inferred joins (both true → inferred precision
+  1.0, false-join rate 0.0), 1 deferred join, ≥4 rejected weak joins, all three entity predicates
+  exercised. The appropriation-anchored chain gives a 1053-day lead time from appropriation to award
+  (vs the M5 flagship's 434 days from forecast). The frozen 0.60 threshold was swept over the
+  corpus's anchored candidates and left unchanged: too few reviewed examples to justify a move. No
+  live API calls. See `docs/replay/M6_INFERENCE_CALIBRATION.md` and
+  `docs/specs/M6_PRECURSOR_AND_INFERENCE.md`.
+
 ## M3 baseline
 
 - STRIKE precision: 0.6667
@@ -83,14 +129,24 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   supply-disruption, customer-concentration, and geographic-change claims remains human-supervised.
 - No M4 live API calls were made. Current connectivity, provider quotas, and cadence remain unknown
   until a separately justified LIVE-SAFE or ACCEPTANCE request.
-- The M5 chain corpus is four reviewed cases; every accepted join is deterministic. The conservative
-  `inferred_strong_attribute` path is implemented and unit-tested but not yet exercised by a corpus
-  case, and entity-level predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`) plus explicit
-  budget/appropriation precursor stages await reviewed primary evidence. No M5 live API calls were
-  made.
+- The M6 inferred-join corpus is deliberately small: only 2 accepted inferred joins and 5 anchored
+  candidates total. Inferred precision (1.0) and false-join rate (0.0) are therefore directional, not
+  stable rates; the summary emits an explicit small-sample warning that is never hidden. The 0.60
+  threshold stays frozen until a materially larger reviewed set exists.
+- The human override rate is a live metric over adjudicated reviews, not a corpus constant; it is
+  meaningful only once several real reviews accumulate.
+- The `appropriations` adapter parses explicitly configured official artifacts; it has no live
+  discovery and, like agency forecasts, each artifact still needs a reviewed column/field mapping.
+  Only synthetic offline fixtures have been exercised — no live budget artifact has been archived yet.
+- Entity predicates are established only from structured UEI/place fields present on a record; entity
+  resolution across name variants and unverified addresses remains out of scope.
+- No M6 live API calls were made.
+- Earlier limitations (M2 fresh-SAM gate, sparse STRIKE sample, binary-metric exclusions, restricted
+  URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text) still stand.
 
 ## Exact next action
 
 Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
 `2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`.
+`06-HISTORY.md`. M6 remains offline; accumulate additional reviewed inferred-join and live budget
+artifacts before revisiting the 0.60 threshold.

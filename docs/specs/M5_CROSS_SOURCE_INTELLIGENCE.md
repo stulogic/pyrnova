@@ -1,6 +1,8 @@
 # Milestone 5 — cross-source intelligence and capital-chain resolution
 
-_Status: IN PROGRESS 2026-09-08 · authority: `01-PROJECT-AUTHORITY.md`, activated by `02-EXECUTION.md`._
+_Status: CLOSED 2026-09-08 · authority: `01-PROJECT-AUTHORITY.md`. Superseded for active work by
+`docs/specs/M6_PRECURSOR_AND_INFERENCE.md`; the inferred path described here as flat-0.60 was refined
+into a weighted, anchored model in M6 (see D-020)._
 
 ## Core question
 

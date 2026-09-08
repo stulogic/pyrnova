@@ -22,16 +22,17 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 
 ## P1 — deferred cross-source (graph) work
 
-- Exercise and calibrate the conservative `inferred_strong_attribute` join path against reviewed cases
-  before relaxing its 0.60 confidence.
-- Entity-level predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`) once recipient/entity evidence
-  justifies them.
-- Explicit budget/appropriation precursor stages (INTENT/AUTHORIZATION/FUNDING linkage groundwork)
-  from a focused official source, without turning M5 into another source-expansion milestone.
+- Grow the reviewed inferred-join corpus (true, false, and ambiguous) well beyond M6's small sample,
+  then re-evaluate the frozen 0.60 acceptance threshold and the `[0.45, 0.60)` deferral band with
+  real override statistics. (M6 delivered the weighted model, deferral band, and review queue;
+  the threshold stays frozen until the sample materially grows — D-020/D-021/D-023.)
+- Archive at least one live official budget/appropriation artifact through the `appropriations`
+  adapter and add per-artifact column mappings for additional agencies.
+- Extend entity predicates beyond `AWARDED_TO`/`SUBSIDIARY_OF`/`LOCATED_AT` (e.g. `SUPPLIES_TO`,
+  `OPERATES`, `RECEIVES_FUNDING_FROM`) only where authoritative primary evidence clearly justifies
+  each one.
 - Richer chain-confidence modeling (source independence weighting, expected-stage completeness) only
   if per-relationship confidence proves insufficient.
-- Human-review queue for inferred cross-source joins with persisted reviewer/decision/outcome for
-  future calibration.
 
 ## Deferred product/infrastructure work
 
