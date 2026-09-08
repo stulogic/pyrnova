@@ -380,6 +380,26 @@ def cmd_consequence_corpus(args) -> int:
     return 0
 
 
+def cmd_profile(args) -> int:
+    from .company import to_record as company_record
+    from .grounding import first_supportable_capability_date, load_parsed, profile_as_of
+
+    parsed = load_parsed(args.evidence, company_name=args.company)
+    profile = profile_as_of(args.company, parsed, args.as_of, geography=(args.geography or "").split(",") if args.geography else ())
+    record = company_record(profile)
+    caps = sorted({e["label"] for e in record["capabilities"]})
+    out = {
+        "company": profile.name, "as_of": args.as_of, "company_id": profile.company_id,
+        "capabilities": caps, "contract_count": len(profile.contract_history),
+        "max_contract_usd": (profile.scale or {}).get("max_contract_usd"),
+        "buyer_agencies": profile.meta.get("buyer_agencies"),
+        "vehicles": profile.meta.get("contract_vehicles"),
+        "first_supportable": {c: first_supportable_capability_date(parsed, c) for c in caps},
+    }
+    print(json.dumps(out, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_fit(args) -> int:
     from .replay import run_fit_replay
 
@@ -538,6 +558,13 @@ def main(argv=None) -> int:
     cons_corpus.add_argument("--verbose", action="store_true", help="include per-case catalyst/consequence detail")
     cons_corpus.add_argument("--persist", action="store_true")
     cons_corpus.set_defaults(func=cmd_consequence_corpus)
+
+    prof = sub.add_parser("profile", help="build a real company capability profile as of a historical date")
+    prof.add_argument("--company", required=True)
+    prof.add_argument("--evidence", required=True, help="archived USAspending evidence JSON path")
+    prof.add_argument("--as-of", default=None, help="ISO cutoff; omit for all-time")
+    prof.add_argument("--geography", default=None)
+    prof.set_defaults(func=cmd_profile)
 
     fit = sub.add_parser("fit", help="evaluate company capability fit for one case")
     fit.add_argument("--case", required=True)

@@ -305,9 +305,37 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
     keys_by_catalyst = {c.id: set(c.meta.get("program_keys") or [c.program_key]) for c in catalysts}
 
     profiles = {}
+    leakage_violations: list[dict] = []
     for company in case.get("companies", []):
-        profile = profile_from_dict(company, as_of=as_of)
-        profiles[profile.company_id] = profile
+        grounded = company.get("grounded")
+        if grounded:
+            # Build the profile from REAL archived source evidence, filtered strictly point-in-time.
+            from pathlib import Path as _Path
+
+            from .company import company_id as _cid
+            from .grounding import load_parsed, profile_as_of
+
+            name = company["name"]
+            parsed = load_parsed(str(_Path("examples/real_evidence") / grounded["fixture"]), company_name=name)
+            profile = profile_as_of(
+                name, parsed, as_of,
+                aliases=grounded.get("aliases", ()), geography=grounded.get("geography", ()),
+                certifications=grounded.get("certifications", ()), clearances=grounded.get("clearances", ()),
+                partners=grounded.get("partners", ()), exclusions=grounded.get("exclusions", ()),
+                meta_extra=grounded.get("meta_extra"),
+            )
+            profiles[profile.company_id] = profile
+        else:
+            profile = profile_from_dict(company, as_of=as_of)
+            profiles[profile.company_id] = profile
+        # Hard temporal gate: evidence dated after the cutoff must never appear in the as-of profile.
+        probe = company.get("leakage_probe") or []
+        if probe:
+            present = {e.source_ref for e in profile.capabilities} | {
+                h.get("award_ref") for h in profile.contract_history}
+            for ref in probe:
+                if ref in present:
+                    leakage_violations.append({"company_id": profile.company_id, "ref": ref})
 
     def _find_consequence(exp):
         cands = [c for c in consequences if c.mechanism == exp.get("mechanism")]
@@ -346,9 +374,11 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
 
     result = {
         "case_id": case["case_id"], "replay_as_of": as_of, "ground_truth": case.get("ground_truth"),
+        "profile_source": case.get("profile_source", "synthetic"),
         "companies": sorted(profiles), "consequence_count": len(consequences),
         "fits": fits, "expected_fit_checks": checks,
         "expected_fit_ok": all(c["ok"] for c in checks) if checks else None,
+        "leakage_violations": leakage_violations,
     }
     if store is not None:
         from .company import to_record as company_record
@@ -364,8 +394,13 @@ def run_fit_corpus(cases: Iterable[dict], *, store: Optional[StateStore] = None)
     return [run_fit_replay(c, store=store) for c in selected]
 
 
-def summarize_fit_results(results: list[dict]) -> dict:
-    """Fit-quality observability across the corpus (no scoring impact)."""
+def summarize_fit_results(results: list[dict], *, source: str | None = None) -> dict:
+    """Fit-quality observability across the corpus (no scoring impact).
+
+    ``source`` filters to a profile provenance ("real" | "synthetic") so real-profile calibration is
+    never blended with synthetic-fixture metrics into a single flattering number."""
+    if source is not None:
+        results = [r for r in results if r.get("profile_source", "synthetic") == source]
     graded = [f for r in results for f in r["fits"] if f.get("expected", {}).get("expected_fit") is not None]
     postures = ("PRIME", "SUPPORT", "TEAM", "DEFEND", "NO_FIT")
 
@@ -414,6 +449,8 @@ def summarize_fit_results(results: list[dict]) -> dict:
         "unknown_rate": rate(sum(1 for f in graded if f["is_unknown"]), len(graded)),
         "expected_fit_cases": sum(r.get("expected_fit_ok") is not None for r in results),
         "expected_fit_passing": sum(bool(r.get("expected_fit_ok")) for r in results),
+        "temporal_leakage_violations": sum(len(r.get("leakage_violations") or []) for r in results),
+        "profile_source": source or "all",
         "small_sample_warning": ("fit precision rests on very few graded fits; treat as directional"
                                  if len(graded) < 20 else None),
     }

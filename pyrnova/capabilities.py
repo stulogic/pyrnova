@@ -114,6 +114,19 @@ PHRASE_CAPABILITIES: list[tuple[str, str, str, str]] = [
     ("radar", "radar_component_manufacturing", "Radar component manufacturing", "keyword"),
     ("semiconductor", "semiconductor_process_equipment", "Semiconductor process equipment", "keyword"),
     ("shipbuilding", "shipbuilding", "Shipbuilding", "keyword"),
+    # M9 real defense-services capability classes (specific specialties, not broad "engineering").
+    ("hardware in the loop", "hardware_in_the_loop_simulation", "Hardware-in-the-loop simulation", "phrase"),
+    ("hardware-in-the-loop", "hardware_in_the_loop_simulation", "Hardware-in-the-loop simulation", "phrase"),
+    ("hwil", "hardware_in_the_loop_simulation", "Hardware-in-the-loop simulation", "keyword"),
+    ("missile defense", "missile_defense_engineering", "Missile defense systems engineering", "phrase"),
+    ("modeling and simulation", "modeling_and_simulation", "Modeling and simulation", "phrase"),
+    ("modeling & simulation", "modeling_and_simulation", "Modeling and simulation", "phrase"),
+    ("test and evaluation", "test_and_evaluation_services", "Test and evaluation services", "phrase"),
+    ("systems engineering and technical assistance", "systems_engineering_technical_assistance",
+     "Systems engineering and technical assistance (SETA)", "phrase"),
+    ("system engineering and technical assistance", "systems_engineering_technical_assistance",
+     "Systems engineering and technical assistance (SETA)", "phrase"),
+    ("specialty engineering", "specialty_engineering", "Specialty engineering", "phrase"),
 ]
 
 _CONF_NAICS = 0.9
