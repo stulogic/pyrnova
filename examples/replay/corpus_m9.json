@@ -1,0 +1,198 @@
+{
+  "corpus_id": "pyrnova-m9-real-company-fit-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_m8.json",
+  "reviewed_at": "2026-09-08",
+  "notes": "M9 extends the frozen M8 corpus with REAL company fit cases. Company profiles are built from real archived USAspending award evidence (examples/real_evidence/) via grounding.profile_as_of, filtered strictly point-in-time. Each case carries profile_source='real'; fit metrics are reported separately from the synthetic M8 fixtures. Cases exercise real PRIME/SUPPORT/DEFEND/NO_FIT, a broad-sector false match with a real defense firm, an early-cutoff unknown, and explicit future-award leakage probes. Certifications/clearances are left UNKNOWN because authoritative data was not available. Earlier corpora are byte-for-byte unchanged.",
+  "cases": [
+    {
+      "case_id": "m9-torch-army-seta-prime-2020",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2020-12-31T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "ARMY-AMCOM-SETAS-2021-SOL", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "army:amcom-setas-2021", "summary": "Systems engineering and technical assistance support for Army aviation and missile systems", "agency": "Department of the Army", "available_at": "2020-11-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/ARMY-AMCOM-SETAS-2021-SOL/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "W31P4Q21F0038", "record_kind": "award", "stage": "AWARD", "program_key": "army:amcom-setas-2021", "summary": "Army AMCOM HWIL systems engineering award (later outcome)", "agency": "Department of the Army", "available_at": "2021-01-15T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/W31P4Q21F0038", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "An Army AMCOM SETA recompete will post and be captured by an incumbent engineering prime.", "relevance": 0.7, "predicted_buyer": "Department of the Army", "predicted_timing": "early 2021", "predicted_value_usd": 600000000},
+      "expected_affected_entities": ["Army systems engineering and technical assistance primes"],
+      "expected_buyer_program_owner": "Department of the Army",
+      "expected_commercial_mechanism": "direct SETA procurement captured by an established Army engineering prime",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Army", "occurred_at": "2021-01-15T00:00:00+00:00", "actual_value_usd": 623310899, "source_ref": "W31P4Q21F0038"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Torch Technologies held prior Army SETA and engineering prime work knowable by 2020, so it was a credible PRIME for the 2021 Army engineering recompete; the 2021 award confirms it. The 2021 award itself must not be used to build the 2020 profile.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Torch Technologies", "grounded": {"fixture": "usaspending_torch.json", "geography": ["AL"]}, "leakage_probe": ["W31P4Q21F0038", "W31P4Q21F0052"]}
+      ],
+      "expected_fits": [
+        {"company": "Torch Technologies", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "systems_engineering_technical_assistance + prior Army prime history", "available_at": "2020-11-01T00:00:00+00:00"}
+      ]
+    },
+    {
+      "case_id": "m9-torch-radar-hardware-nofit-2021",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2021-06-30T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "NAVY-RADAR-HW-2021-RFI", "record_kind": "rfi", "stage": "PROCUREMENT", "program_key": "navy:radar-hardware-2021", "summary": "Shipboard radar component production and antenna manufacturing", "agency": "Department of the Navy", "naics": "334511", "description": "production of radar components and antennas", "available_at": "2021-03-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://sam.gov/opp/NAVY-RADAR-HW-2021-RFI/view", "applies_to_candidate": true},
+        {"source_id": "navy", "source_ref": "NAVY-RADAR-HW-2021-status-2026", "record_kind": "status_check", "summary": "No evidence Torch pursued radar hardware manufacturing (excluded at cutoff)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 2, "source_role": "primary", "url": "https://sam.gov/opp/NAVY-RADAR-HW-2021-RFI/view", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "A defense engineering services firm can capture a radar hardware manufacturing requirement.", "relevance": 0.3, "predicted_buyer": "Department of the Navy", "predicted_timing": "unclear", "predicted_value_usd": null},
+      "expected_affected_entities": ["radar hardware manufacturers"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "radar component manufacturing (a domain the services firm does not do)",
+      "actual_outcome": {"occurred": false, "kind": "no_capability_evidence", "buyer": "Department of the Navy", "occurred_at": null, "source_ref": "NAVY-RADAR-HW-2021-status-2026"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "The radar hardware opportunity is real, but Torch is a systems-engineering / HWIL services firm with no evidence of radar component manufacturing; a same-sector (defense) match must be rejected. The opportunity's own outcome is not the subject here — the fit is.",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "Both are defense, but Torch has no radar-manufacturing capability evidence; broad-sector matching is forbidden, so this is NO_FIT for Torch.", "reviewer": "Pyrnova corpus reviewer", "confidence": "LOW"},
+      "failure_reasons": ["low_capability_relevance"],
+      "companies": [
+        {"name": "Torch Technologies", "grounded": {"fixture": "usaspending_torch.json", "geography": ["AL"]}}
+      ],
+      "expected_fits": [
+        {"company": "Torch Technologies", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "no_required_capability", "decisive_evidence": "capability_mismatch"}
+      ]
+    },
+    {
+      "case_id": "m9-torch-weapons-seta-defend-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2023-02-15T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "ARMY-WEAPONS-SETA-RECOMPETE-2023", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "army:amcom-weapons-seta-recompete", "summary": "Follow-on systems engineering and technical assistance support for the weapons development directorate", "agency": "Department of the Army", "available_at": "2023-02-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/ARMY-WEAPONS-SETA-RECOMPETE-2023/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "W31P4Q23F0134", "record_kind": "award", "stage": "AWARD", "program_key": "army:amcom-weapons-seta-recompete", "summary": "Follow-on technical and engineering support award to the incumbent (later outcome)", "agency": "Department of the Army", "available_at": "2023-03-13T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/W31P4Q23F0134", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "The incumbent will retain its Army weapons engineering support work in the recompete.", "relevance": 0.7, "predicted_buyer": "Department of the Army", "predicted_timing": "early 2023", "predicted_value_usd": 92000000},
+      "expected_affected_entities": ["incumbent Army weapons engineering support prime"],
+      "expected_buyer_program_owner": "Department of the Army",
+      "expected_commercial_mechanism": "recompete of an incumbent-held engineering support contract",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Army", "occurred_at": "2023-03-13T00:00:00+00:00", "actual_value_usd": 92389909, "source_ref": "W31P4Q23F0134"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "The 2023 award (W31P4Q23F0134) is explicitly a follow-on to Torch's own W31P4Q-19-F-C003, so Torch is the incumbent; posture is DEFEND (retention), not new capture. Torch's SETA capability is knowable by 2023.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Torch Technologies", "grounded": {"fixture": "usaspending_torch.json", "geography": ["AL"], "meta_extra": {"incumbent_of": ["army:amcom-weapons-seta-recompete"]}}}
+      ],
+      "expected_fits": [
+        {"company": "Torch Technologies", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "DEFEND", "expected_fit": true, "decisive_evidence": "real incumbency (follow-on to W31P4Q19FC003)"}
+      ]
+    },
+    {
+      "case_id": "m9-mtsi-mda-specialty-prime-2019",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2019-06-30T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "MDA-SPECIALTY-ENG-2019-SOL", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "mda:specialty-engineering-2019", "summary": "MDA specialty engineering support services", "agency": "Missile Defense Agency", "description": "specialty engineering support services", "available_at": "2019-03-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/MDA-SPECIALTY-ENG-2019-SOL/view", "applies_to_candidate": true},
+        {"source_id": "mda", "source_ref": "MDA-SPECIALTY-ENG-2019-status-2026", "record_kind": "status_check", "summary": "MDA specialty engineering support continued (excluded at cutoff)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://sam.gov/opp/MDA-SPECIALTY-ENG-2019-SOL/view", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "An MDA specialty engineering recompete will be captured by an incumbent MDA engineering prime.", "relevance": 0.7, "predicted_buyer": "Missile Defense Agency", "predicted_timing": "2019", "predicted_value_usd": 120000000},
+      "expected_affected_entities": ["MDA specialty engineering primes"],
+      "expected_buyer_program_owner": "Missile Defense Agency",
+      "expected_commercial_mechanism": "direct MDA specialty engineering procurement",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Missile Defense Agency", "occurred_at": "2020-09-17T00:00:00+00:00", "actual_value_usd": 55481647, "source_ref": "HQ086020C0006"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "MTSI held a 2017 MDA specialty engineering prime award ($124M, HQ0147-18-C-0003) knowable by 2019, so it was a credible PRIME for an MDA specialty engineering procurement.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Modern Technology Solutions", "grounded": {"fixture": "usaspending_mtsi.json", "geography": ["VA", "AL"]}}
+      ],
+      "expected_fits": [
+        {"company": "Modern Technology Solutions", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "specialty_engineering + prior MDA prime history"}
+      ]
+    },
+    {
+      "case_id": "m9-mtsi-fas-leakage-2021",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2021-06-30T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "FAS-MES-II-2021-SOL", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "fas:mes-ii-2021", "summary": "GSA FAS modernization and specialty engineering support II", "agency": "Federal Acquisition Service", "description": "specialty engineering support for program modernization", "available_at": "2021-04-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/FAS-MES-II-2021-SOL/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "47QFSA21F0098", "record_kind": "award", "stage": "AWARD", "program_key": "fas:mes-ii-2021", "summary": "MES II award (later outcome)", "agency": "Federal Acquisition Service", "available_at": "2021-07-27T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/47QFSA21F0098", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "An established GSA FAS engineering prime will capture the MES II modernization support work.", "relevance": 0.7, "predicted_buyer": "Federal Acquisition Service", "predicted_timing": "mid 2021", "predicted_value_usd": 75000000},
+      "expected_affected_entities": ["GSA FAS engineering support primes"],
+      "expected_buyer_program_owner": "Federal Acquisition Service",
+      "expected_commercial_mechanism": "direct GSA FAS engineering support procurement",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Federal Acquisition Service", "occurred_at": "2021-07-27T00:00:00+00:00", "actual_value_usd": 75379753, "source_ref": "47QFSA21F0098"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "MTSI had FAS engineering prime history and specialty engineering capability knowable by mid-2021, a credible PRIME. Critically, MTSI's 2024 (Digital Bloodhound) and 2025 (ARCWERX ARTEMIS) awards must NOT appear in the 2021 profile.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Modern Technology Solutions", "grounded": {"fixture": "usaspending_mtsi.json", "geography": ["VA", "AL"]}, "leakage_probe": ["47QFMA24F0023", "47QFSA25F0011", "HQ086024F0005"]}
+      ],
+      "expected_fits": [
+        {"company": "Modern Technology Solutions", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "specialty_engineering + FAS prime history (2019)"}
+      ]
+    },
+    {
+      "case_id": "m9-mtsi-early-unknown-2010",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2010-12-31T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "FAS-ENG-SUPPORT-2011-RFI", "record_kind": "rfi", "stage": "PROCUREMENT", "program_key": "fas:eng-support-2011", "summary": "Specialty engineering support services requirement", "agency": "Federal Acquisition Service", "description": "specialty engineering support services", "available_at": "2010-10-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://sam.gov/opp/FAS-ENG-SUPPORT-2011-RFI/view", "applies_to_candidate": true},
+        {"source_id": "fas", "source_ref": "FAS-ENG-SUPPORT-2011-status-2026", "record_kind": "status_check", "summary": "Later evidence (excluded at cutoff)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 2, "source_role": "primary", "url": "https://sam.gov/opp/FAS-ENG-SUPPORT-2011-RFI/view", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "As of 2010, is MTSI a credible fit for a specialty engineering requirement?", "relevance": 0.3, "predicted_buyer": "Federal Acquisition Service", "predicted_timing": "unclear", "predicted_value_usd": null},
+      "expected_affected_entities": ["specialty engineering support vendors"],
+      "expected_buyer_program_owner": "Federal Acquisition Service",
+      "expected_commercial_mechanism": "specialty engineering support with insufficient early evidence",
+      "actual_outcome": {"occurred": false, "kind": "insufficient_early_evidence", "buyer": "Federal Acquisition Service", "occurred_at": null, "source_ref": "FAS-ENG-SUPPORT-2011-status-2026"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "As of 2010 the only archived MTSI award evidence is broad executive-support services, which yields no specific capability class. Fit is UNKNOWN — Pyrnova must not classify MTSI as PRIME on insufficient early evidence, illustrating profile evolution over time.",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "Insufficient capability evidence at the 2010 cutoff; fit is unknown, not a confident yes or no.", "reviewer": "Pyrnova corpus reviewer", "confidence": "LOW"},
+      "failure_reasons": ["insufficient_source_authority"],
+      "companies": [
+        {"name": "Modern Technology Solutions", "grounded": {"fixture": "usaspending_mtsi.json", "geography": ["VA", "AL"]}}
+      ],
+      "expected_fits": [
+        {"company": "Modern Technology Solutions", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "insufficient_capability_evidence", "decisive_evidence": "unknown_early_cutoff"}
+      ]
+    },
+    {
+      "case_id": "m9-mtsi-hwil-support-2020",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2020-12-31T23:59:59+00:00",
+      "profile_source": "real",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "ARMY-HWIL-SPECIALTY-2020-RFI", "record_kind": "rfi", "stage": "PROCUREMENT", "program_key": "army:hwil-specialty-2020", "summary": "Hardware in the loop missile simulation and specialty engineering support", "agency": "Department of the Army", "description": "hardware in the loop missile simulation and specialty engineering support", "available_at": "2020-09-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://sam.gov/opp/ARMY-HWIL-SPECIALTY-2020-RFI/view", "applies_to_candidate": true},
+        {"source_id": "army", "source_ref": "ARMY-HWIL-SPECIALTY-2020-status-2026", "record_kind": "status_check", "summary": "Later evidence (excluded at cutoff)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 2, "source_role": "primary", "url": "https://sam.gov/opp/ARMY-HWIL-SPECIALTY-2020-RFI/view", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "MTSI can support an Army HWIL + specialty engineering requirement.", "relevance": 0.5, "predicted_buyer": "Department of the Army", "predicted_timing": "2021", "predicted_value_usd": null},
+      "expected_affected_entities": ["HWIL simulation and specialty engineering vendors"],
+      "expected_buyer_program_owner": "Department of the Army",
+      "expected_commercial_mechanism": "two-capability requirement where the company covers one part",
+      "actual_outcome": {"occurred": false, "kind": "partial_capability", "buyer": "Department of the Army", "occurred_at": null, "source_ref": "ARMY-HWIL-SPECIALTY-2020-status-2026"},
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "The requirement needs both hardware-in-the-loop simulation and specialty engineering. As of 2020 MTSI has specialty engineering evidence but no HWIL simulation evidence, so it is a partial-capability SUPPORT candidate, not a PRIME.",
+      "reviewer": "Pyrnova M9 real-profile review 2026-09-08",
+      "human_adjudication": {"human_decision": "WATCH", "reason": "MTSI covers the specialty-engineering portion but has no HWIL simulation capability evidence, so it fits a support/subcontract role rather than prime.", "reviewer": "Pyrnova corpus reviewer", "confidence": "LOW"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Modern Technology Solutions", "grounded": {"fixture": "usaspending_mtsi.json", "geography": ["VA", "AL"]}}
+      ],
+      "expected_fits": [
+        {"company": "Modern Technology Solutions", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "SUPPORT", "expected_fit": true, "decisive_evidence": "partial_capability_specialty_engineering_only"}
+      ]
+    }
+  ]
+}
