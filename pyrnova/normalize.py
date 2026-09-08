@@ -11,6 +11,11 @@ from typing import Any, Optional
 from .sources.usaspending import award_url
 from .sources.sam import notice_class_from_type
 from .sources.federal_register import document_url
+from .sources.grants_gov import (
+    grant_opportunity_identity,
+    grant_opportunity_url,
+    grant_signal_class,
+)
 
 
 def parse_date(value: Any) -> Optional[date]:
@@ -98,6 +103,55 @@ def normalize_notice(row: dict) -> dict:
     }
 
 
+def normalize_grant_opportunity(row: dict) -> dict:
+    """Grants.gov Search2 result -> a review signal, never a pipeline candidate.
+
+    Grants.gov metadata is useful only when the source record itself identifies a
+    current opportunity.  The normalizer therefore makes the signal class and
+    eligibility explicit; callers still need their existing evidence and human
+    review gates before any candidate can exist.
+    """
+    identity = grant_opportunity_identity(row)
+    signal_class = grant_signal_class(row)
+    title = _stringify(row.get("title") or row.get("opportunityTitle"))
+    agency = _stringify(row.get("agency") or row.get("agencyName"))
+    open_date = parse_date(row.get("openDate") or row.get("open_date"))
+    close_date = parse_date(row.get("closeDate") or row.get("close_date"))
+    source_record_id = _stringify(
+        row.get("id") or row.get("opportunityId") or row.get("opportunity_id")
+    )
+    # A status label alone is weak metadata.  This marker is deliberately not a
+    # candidate factory, and stays false until the source proves the basic object.
+    candidate_eligible = bool(
+        signal_class == "direct_opportunity"
+        and identity
+        and title
+        and agency
+        and open_date
+        and close_date
+    )
+    return {
+        "grant_source_identity": identity,
+        "grant_id": source_record_id,
+        "opportunity_number": _stringify(row.get("number") or row.get("opportunityNumber")),
+        "title": title,
+        "agency": agency,
+        "agency_code": _stringify(row.get("agencyCode")),
+        "opportunity_status": _stringify(row.get("oppStatus") or row.get("status")),
+        "open_date": open_date,
+        "close_date": close_date,
+        "last_updated_date": parse_date(row.get("lastUpdatedDate") or row.get("lastUpdated")),
+        "funding_instrument": _stringify(row.get("fundingInstrumentType")),
+        "funding_categories": _as_strings(row.get("fundingCategory") or row.get("fundingCategories")),
+        "award_floor": _to_float(row.get("awardFloor")),
+        "award_ceiling": _to_float(row.get("awardCeiling")),
+        "grant_signal_class": signal_class,
+        "candidate_eligible": candidate_eligible,
+        "url": grant_opportunity_url(source_record_id),
+        "_raw_ref": identity,
+    }
+
+
 def _to_float(value: Any) -> Optional[float]:
     if value in (None, ""):
         return None
@@ -125,3 +179,10 @@ def _code(value: Any) -> Optional[str]:
     if isinstance(value, dict):
         value = value.get("code")
     return _stringify(value)
+
+
+def _as_strings(value: Any) -> list[str]:
+    if value in (None, ""):
+        return []
+    values = value if isinstance(value, list) else [value]
+    return [item for item in (_stringify(value) for value in values) if item]

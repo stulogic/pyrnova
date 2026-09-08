@@ -1,0 +1,34 @@
+{
+  "errorcode": 0,
+  "msg": "Webservice Succeeds",
+  "data": {
+    "hitCount": 3,
+    "oppHits": [
+    {
+      "id": "G-2026-001",
+      "number": "DOD-CYBER-2026-01",
+      "title": "Cyber Resilience Applied Research",
+      "agency": "Department of Defense",
+      "agencyCode": "DOD",
+      "oppStatus": "posted",
+      "openDate": "2026-02-01",
+      "closeDate": "2026-03-15",
+      "lastUpdatedDate": "2026-02-02"
+    },
+    {
+      "id": "G-2026-002",
+      "number": "DOE-GRID-2026-02",
+      "title": "Grid Security Research Forecast",
+      "agency": "Department of Energy",
+      "agencyCode": "DOE",
+      "oppStatus": "forecasted",
+      "openDate": "2026-04-01",
+      "closeDate": "2026-06-01"
+    },
+    {
+      "id": "G-2026-003",
+      "oppStatus": "posted"
+    }
+    ]
+  }
+}

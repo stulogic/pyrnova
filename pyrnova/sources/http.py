@@ -44,3 +44,11 @@ def get_json(url: str, params: dict, *, headers: Optional[dict] = None, timeout:
     except json.JSONDecodeError:
         parsed = None
     return resp.status_code, raw, parsed
+
+
+def get_bytes(url: str, params: Optional[dict] = None, *, headers: Optional[dict] = None,
+              timeout: int = _TIMEOUT) -> tuple[int, bytes]:
+    """GET arbitrary source bytes for archival (CSV/PDF/etc.) without decoding or mutation."""
+    sess = _session()
+    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+    return resp.status_code, resp.content

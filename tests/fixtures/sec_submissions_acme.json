@@ -1,0 +1,18 @@
+{
+  "cik": "320193",
+  "name": "Acme Defense Systems, Inc.",
+  "tickers": ["ACME"],
+  "sic": "3674",
+  "sicDescription": "Semiconductors and Related Devices",
+  "filings": {
+    "recent": {
+      "accessionNumber": ["0000320193-26-000002", "0000320193-26-000001", "0000320193-25-000099"],
+      "filingDate": ["2026-02-10", "2026-01-30", "2025-11-01"],
+      "reportDate": ["2026-02-01", "2025-12-31", "2025-09-30"],
+      "form": ["8-K", "10-K", "10-Q"],
+      "primaryDocument": ["acme8k.htm", "acme10k.htm", "acme10q.htm"],
+      "primaryDocDescription": ["Current report", "Annual report", "Quarterly report"],
+      "items": ["1.01,2.03,5.02", "", ""]
+    }
+  }
+}

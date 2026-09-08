@@ -49,14 +49,39 @@ REGISTRY: dict[str, SourceSpec] = {
         active=True,
         notes="Procurement-adjacent upstream evidence; agency/topic links never prove procurement intent.",
     ),
+    "sec_edgar": SourceSpec(
+        id="sec_edgar",
+        name="SEC EDGAR Submissions and Company Facts",
+        base_url="https://data.sec.gov",
+        rights="us_gov_work",
+        retention_tier="A",  # filings and company facts can be amended/restated
+        active=True,
+        notes="Corporate-change and capex-adjacent filing evidence; never creates a candidate without other source evidence.",
+    ),
+    "acquisition_forecast": SourceSpec(
+        id="acquisition_forecast",
+        name="Official Agency Procurement Forecasts",
+        base_url="https://www.acquisition.gov/procurement-forecasts",
+        rights="us_gov_work",
+        retention_tier="A",
+        active=True,
+        notes=(
+            "M4: agency-published forecast artifacts normalized conservatively as MARKET_ENGAGEMENT; "
+            "per-agency mappings are required and forecast rows cannot independently create STRIKEs."
+        ),
+    ),
     "grants_gov": SourceSpec(
         id="grants_gov",
         name="Grants.gov Search2 API",
         base_url="https://api.grants.gov/v1/api",
         rights="us_gov_work",
-        retention_tier="B",
-        active=False,
-        notes="P0-B.",
+        retention_tier="A",  # opportunity status and terms can be amended
+        active=True,
+        notes=(
+            "M4: attributable federal funding opportunities. Search results are "
+            "mutable and may provide direct opportunities, precursor funding context, "
+            "or enrichment only; this source does not independently create candidates."
+        ),
     ),
 }
 
