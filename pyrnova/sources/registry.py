@@ -83,6 +83,22 @@ REGISTRY: dict[str, SourceSpec] = {
             "or enrichment only; this source does not independently create candidates."
         ),
     ),
+    "appropriations": SourceSpec(
+        id="appropriations",
+        name="Federal Appropriations / Program Funding (official budget artifacts)",
+        base_url="https://www.usaspending.gov/",
+        rights="us_gov_work",
+        retention_tier="A",  # enacted/appropriated amounts can be restated or reprogrammed
+        active=True,
+        notes=(
+            "M6: official structured budget artifacts (President's Budget request lines, enacted "
+            "authorization/appropriation act lines, appropriated accounts) normalized conservatively "
+            "as distinct INTENT/AUTHORIZATION/FUNDING precursor stages, moving Pyrnova earlier in the "
+            "capital lifecycle. Rows carry the most authoritative structured identifier present "
+            "(TAS > federal account > CFDA/assistance listing > program element > budget line item) "
+            "as inference anchors; this source cannot independently create candidates or STRIKEs."
+        ),
+    ),
 }
 
 

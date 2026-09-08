@@ -1,0 +1,41 @@
+[
+  {
+    "line_id": "DOD-INTENT-0091",
+    "budget_stage": "request",
+    "title": "Cloud Modernization Initiative",
+    "amount": "$1,200,000",
+    "program_element": "0603760D8Z",
+    "agency_component": "DISA"
+  },
+  {
+    "budget_stage": "authorization",
+    "title": "Network Resilience Program",
+    "amount": "1.2M",
+    "treasury_account_symbol": "097-0100",
+    "downstream_refs": ["FA8771-27-R-0001"]
+  },
+  {
+    "budget_stage": "appropriated",
+    "title": "Secure Data Centers Account",
+    "amount": "$3,400,000",
+    "treasury_account_symbol": "097-0100/2027",
+    "cfda": "12.345"
+  },
+  {
+    "budget_stage": "available",
+    "title": "Health IT Modernization Grant Program",
+    "amount": "$500,000",
+    "cfda": "93.778"
+  },
+  {
+    "budget_stage": "",
+    "title": "Unlabeled Line Item",
+    "amount": "$100,000"
+  },
+  {
+    "budget_stage": "appropriated",
+    "title": "Legacy System Sustainment",
+    "amount": "TBD",
+    "treasury_account_symbol": "021-0400"
+  }
+]
