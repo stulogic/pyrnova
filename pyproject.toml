@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyrnova"
+version = "0.1.0"
+description = "Pyrnova — economic and commercial intelligence. Capture Radar kernel."
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+# Cloud/object-storage and Postgres are optional; the kernel runs fully local without them.
+s3 = ["boto3>=1.34"]
+postgres = ["psycopg[binary]>=3.1"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+pyrnova = "pyrnova.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pyrnova*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

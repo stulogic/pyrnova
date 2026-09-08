@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Env / secrets
+.env
+*.local
+
+# Pyrnova local state (never commit real evidence, customer data, or intelligence output)
+/var/
+/out/
+/data/archive/
+*.sqlite
+*.sqlite3

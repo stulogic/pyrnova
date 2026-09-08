@@ -1,8 +1,9 @@
 # Pyrnova — 30-Day Execution Authority (v1)
 
-**Status:** DRAFT — pending founder sign-off. Not yet controlling. Incorporates the red-team, the
-adjudication feedback, and the evaluation of that feedback (`docs/ADJUDICATION_EVALUATION.md`).
-Once approved, this supersedes the broad strategic authority for the next 30 days of execution.
+**Status:** ✅ CONTROLLING (locked). Supersedes the broad strategic authority for the next 30 days of
+execution. Incorporates the red-team, the adjudication feedback, the evaluation of that feedback
+(`docs/ADJUDICATION_EVALUATION.md`), and the Final Strategic Adjudication.
+**Locked:** 2026-09-08. Change only if implementation reveals a genuine contradiction or blocker.
 **Scope:** What we build, sell, measure, and refuse until the first $100k is collected.
 **Founded on:** the red-team review + founder adjudication ("accept the commercial compression, reject the strategic amputation").
 
@@ -264,3 +265,106 @@ fact.
 
 *Companion: `docs/IMPLEMENTATION_SPEC_CAPTURE_RADAR_V1.md` (technical spec) and `db/schema.sql`
 (canonical objects, forward-compatible).*
+
+---
+
+# PART II — LOCKED CONTROLLING ADDENDA (Final Strategic Adjudication)
+
+## A. What Pyrnova is (locked)
+
+Pyrnova is an economic and commercial intelligence company. Long-term architecture:
+
+```
+ECONOMIC INTELLIGENCE SUBSTRATE
+        ↓
+AI INTELLIGENCE LAYER
+        ↓
+OPPORTUNITY ENGINE  |  ENTERPRISE INTELLIGENCE ENGINE  |  STRATEGIC/DATA INTELLIGENCE ENGINE
+        ↓
+PYRNOVA PRODUCTS
+```
+
+The three pipelines remain strategically canonical. **Only the Business Opportunity Pipeline is active
+during the initial commercial phase.** Enterprise and Strategic/Data are **dormant until activated** —
+they may influence forward-compatible schemas and cheap raw archival, but must NOT generate active
+engineering, normalization, integrations, UI, research, or founder-hours before the first $100k unless
+explicitly justified by customer demand.
+
+## B. AI Intelligence Layer (doctrine, locked)
+
+Pyrnova uses AI as a **bounded reasoning and interpretation layer** over authoritative evidence and the
+proprietary substrate. AI outputs are **claims, classifications, hypotheses, or recommendations** — not
+authoritative facts — until supported by provenance, deterministic validation, or required human review.
+Deterministic systems remain authoritative for: source state, identifiers, timestamps, raw evidence,
+rights, calculations, workflow state, access control, historical reconstruction. **Pyrnova is
+model-agnostic.**
+
+Conceptual AI roles (responsibilities, NOT five services to build now):
+- **EXTRACT** — unstructured evidence → structured claims with evidence spans.
+- **CONNECT** — suggest relationships (entities / events / programs / activity).
+- **REASON** — catalyst interpretations, opportunity hypotheses, economic mechanisms.
+- **CHALLENGE** — actively attempt to falsify candidate intelligence.
+- **COMMUNICATE** — validated intelligence → concise customer-facing output.
+
+Use the **minimum implementation necessary for Capture Radar**. AI is invoked behind one interface,
+always producing evidence-grounded claims routed through human REVIEW before customer exposure.
+
+## C. Tiered data retention doctrine (replaces "snapshot everything")
+
+Preserve everything necessary to reconstruct Pyrnova's knowledge state, using **source-specific**
+policies. Cryptographic hashes + dedup throughout.
+
+- **TIER A — version-sensitive** (SAM amendments/cancellations, mutable procurement records, changing
+  forecasts, revised awards, dynamic web): aggressive temporal preservation; retain materially distinct
+  states + full observation history.
+- **TIER B — durable authoritative publication** (Federal Register, Grants.gov, canonical filings):
+  store canonical content **once**; always retain source id, publication/effective date, Pyrnova
+  first-observed timestamp, extraction version, derived claims, entity state, resulting intelligence.
+  Do NOT duplicate immutable byte copies.
+- **TIER C — ephemeral web**: where lawful and valuable, preserve observed state (future reconstruction
+  may be impossible).
+
+## D. The moat test (apply continuously)
+
+> Does Pyrnova's accumulated private history let it make **materially better intelligence decisions**
+> than a competent competitor starting today with the same public sources? If not, accumulation is not a
+> moat. **Storage volume is not success. Predictive/intelligence lift is success.**
+
+## E. Pyrnova Intelligence Benchmark (accumulate now, do NOT build a platform)
+
+Every sufficiently adjudicated intelligence task may later become a private evaluation case (extraction,
+entity, catalyst, opportunity classification, falsification, capability match, relevance, outcome).
+**Store the decisions and labels now where cheap** (that is what the REVIEW records + prediction log do).
+Do not build a benchmark platform.
+
+## F. Commercial + intelligence scoreboard (track from Day 1)
+
+**Commercial:** targeted accounts · Signal Briefs produced · decision-makers contacted · replies ·
+meetings · paid Sprints · Radar customers · cash collected · avg sales cycle · rejection reasons ·
+enterprise conversations opened.
+**Intelligence:** candidate opportunities · STRIKEs published · customer-relevant STRIKE rate ·
+rejection reasons · evidence completeness · lead time · precursor class · source contribution ·
+prediction outcomes.
+
+Implemented as `pyrnova/scoreboard.py` (append-only event log) so the numbers accrue automatically.
+
+## G. First Definition of Done (the milestone that matters)
+
+Given one real federal contractor capability profile, Pyrnova ingests current authoritative federal data
+and produces **at least one human-reviewed, evidence-backed STRIKE or clearly valuable
+pre-solicitation/recompete intelligence item** credible enough to show a target company's Growth/Capture
+leadership. It must carry: source evidence · provenance · customer relevance · timing · incumbent/history
+where applicable · falsification/contra evidence · recommended action · confidence (separated from
+attractiveness) · a stored prediction/intelligence state for later outcome comparison.
+
+## H. What must NOT be built now (kill list, expanded — unless a paying customer/proven workflow requires)
+
+Polished self-service dashboard · mobile apps · Enterprise Intelligence product · Strategic/Data product
+· FLOW/SHIFT/RISK UI · institutional deployment · API/data-licensing product · full Capability Graph ·
+giant Outcome-Graph product · full replay engine · mechanism library · autonomous multi-agent
+architecture · global source coverage · large state/local ingestion · premium data · social monitoring ·
+satellite/geospatial · deep private-company intel · CUI handling · SSO/enterprise deployment · broad CRM
+integrations · giant crawler · speculative OMB/Congress connectors.
+
+> The economic intelligence substrate emerges from useful work, it does not precede it.
+
