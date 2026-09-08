@@ -17,6 +17,16 @@ pre-RFP + recompete intelligence for mid-market US federal/defense contractors. 
 - The finished, human-reviewed outbound package is at **`docs/outbound/torch_technologies_brief.md`**
   (brief + email + $2,500 Sprint ask + verify-before-send checklist).
 
+## COMMERCIAL HOLD — INTENTIONAL (do not nag / do not override)
+The founder has intentionally delayed outbound until Pyrnova has the minimum credibility + transaction stack in place:
+1. a credible public website explaining who Pyrnova is and what Capture Radar does;
+2. domain-based Pyrnova email;
+3. a working way to accept payment immediately (e.g. Stripe invoice/payment link for the $2,500 Intelligence Sprint and recurring Capture Radar).
+
+This is a deliberate commercial-readiness gate, not indecision and not a request for more product development. **Do not push the founder to send Torch outreach before these three items are live.** The founder plans to handle this setup on 2026-09-09.
+
+While outbound is on hold, allowed commercial preparation is limited to high-leverage work such as verifying the Torch checklist, preparing target #2, tightening sales collateral, and preparing launch copy. Do not build dashboards, CRM, automation, new data infrastructure, or speculative product features.
+
 ## The 3 STRIKEs in the current Torch brief (all real, live SAM notices)
 1. **MEO Missile Warning/Tracking EPOCH 3&4 RFI** — Space Systems Command / PEO Space Sensing (SSC/SNK),
    response ~2026-10-31. relevance 0.85.
@@ -26,16 +36,18 @@ Honest review verdict baked into the brief: Torch's realistic role on all three 
 **support / SE&I / M&S / T&E / teaming, NOT hardware/satellite prime.** Say that or a VP dismisses it.
 
 ## THE NEXT ACTION (highest leverage toward first $100k)
-Get the brief in front of one named human:
+After the intentional commercial-readiness gate above is cleared:
 1. Clear the "Verify before send" checklist in `docs/outbound/torch_technologies_brief.md`.
-2. Find Torch's current **VP Business Development / Capture** (leadership page / LinkedIn) — don't guess.
+2. Verify Torch's current **VP Business Development / Capture** (leadership page / LinkedIn) — don't guess.
 3. Open the 3 SAM links, confirm live + dates.
 4. Send the email + brief; ask for 20 min; offer the $2,500 Sprint.
+
+Before that gate is cleared, the recommended execution block is target #2 preparation plus minimum launch collateral only.
 
 ## How to reproduce the live run (fresh machine)
 ```bash
 git clone https://github.com/stulogic/pyrnova && cd pyrnova
-python3 -m venv .venv && source .venv/bin/activate
+python3 -m venv && source .venv/bin/activate
 pip install -r requirements.txt
 SAM_API_KEY=<your_key> python -m pyrnova.cli capture-radar \
   --profile examples/profiles/torch_technologies.json --live --window-days 540 --min-amount 1000000
