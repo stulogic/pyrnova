@@ -34,7 +34,7 @@ Grants.gov added only where they materially improve output.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -r requirements.txt        # runtime = just `requests`; `pip install -e ".[dev]"` also works on a modern pip
 
 # Deterministic recompete intelligence from LIVE USAspending (no API key needed):
 python -m pyrnova.cli capture-radar --profile examples/profiles/acme_c4isr.json --live

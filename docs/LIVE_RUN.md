@@ -3,11 +3,16 @@
 For an ordinary internet-connected machine. ~5 minutes. USAspending needs no key; SAM needs one key.
 
 ## 1. Install
+The only runtime dependency is `requests`. You do **not** need to install the package itself —
+`python -m pyrnova.cli` runs from the repo root.
 ```bash
 git clone https://github.com/stulogic/pyrnova && cd pyrnova
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e .            # runtime = just `requests`
+pip install -r requirements.txt      # simplest, works on any pip
 ```
+Editable install (`pip install -e .`) also works, but needs a modern pip — if it errors with
+"editable mode currently requires a setuptools-based build", your pip is too old:
+`pip install --upgrade pip` first, or just use the `requirements.txt` line above.
 
 ## 2. Configure
 ```bash

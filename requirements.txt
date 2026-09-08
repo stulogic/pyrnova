@@ -1,0 +1,4 @@
+# Minimal runtime dependency for the live path. Simplest install:
+#   pip install -r requirements.txt
+# (Running `python -m pyrnova.cli` from the repo root does NOT require installing the package itself.)
+requests>=2.31
