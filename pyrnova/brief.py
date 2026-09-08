@@ -71,12 +71,19 @@ def render_signal_brief(report: Report, *, customer_name: str | None = None, lim
     ]
     body = [_item_md(i + 1, opp) for i, opp in enumerate(items)]
     footer = []
-    if extra:
+    if extra or report.stats.get("defend"):
+        defend_n = report.stats.get("defend", 0)
+        portfolio = (
+            f" That set also includes **{defend_n} of your own contracts** approaching recompete "
+            "(we track your portfolio as well as the market)."
+            if defend_n
+            else ""
+        )
         footer = [
             "---",
-            f"**Pyrnova identified {extra} additional relevant item(s)** for {name}. We investigate, "
-            "rank, monitor and re-price them under a paid engagement (Intelligence Sprint / Capture "
-            "Radar).",
+            f"**Pyrnova identified {extra} additional relevant item(s)** for {name}.{portfolio} We "
+            "investigate, rank, monitor and re-price them under a paid engagement (Intelligence Sprint "
+            "/ Capture Radar).",
             "",
         ]
     return "\n".join(header + body + footer) or f"# Pyrnova Signal Brief — {name}\n\n_No items._\n"

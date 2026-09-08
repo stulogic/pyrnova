@@ -6,9 +6,12 @@
   "psc": ["AC", "AR", "AD", "R425", "DA01", "DB"],
   "capabilities": [
     "modeling and simulation", "systems engineering", "test and evaluation",
-    "missile", "missile defense", "hypersonic", "aviation", "directed energy",
-    "software", "cybersecurity", "high performance computing", "prototyping",
-    "digital engineering", "RDT&E"
+    "missile", "missile defense", "hypersonic", "hypersonics", "aviation",
+    "directed energy", "software", "cybersecurity", "high performance computing",
+    "prototyping", "prototype", "digital engineering", "RDT&E",
+    "interceptor", "kill vehicle", "radar", "missile warning", "missile tracking",
+    "space", "satellite", "launcher", "seeker", "guidance", "sensor",
+    "command and control", "battle network", "wargaming", "autonomy", "targeting"
   ],
   "geography": ["Huntsville", "Redstone Arsenal", "Alabama", "CONUS"],
   "size_min_usd": 1000000,

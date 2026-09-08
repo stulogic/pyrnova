@@ -68,9 +68,20 @@ def test_posture_defend_vs_capture(tmp_path, profile, award_rows, notice_rows, a
     # Acme is the incumbent on its own recompete -> DEFEND; others -> CAPTURE.
     defend = [o for o in report.strikes if o.meta.get("posture") == "defend"]
     assert any(o.incumbent and "Acme" in o.incumbent for o in defend)
-    # DEFEND items must sort ahead of CAPTURE items.
-    postures = [o.meta.get("posture") for o in report.strikes]
-    assert postures == sorted(postures, key=lambda p: 0 if p == "defend" else 1)
+
+
+def test_novelty_ordering_presol_first_defend_last(tmp_path, profile, award_rows, notice_rows, as_of):
+    report, _ = _run(tmp_path, profile, award_rows, notice_rows, as_of)
+
+    def rank(o):
+        if o.catalyst.kind != "recompete_expiry":
+            return 0
+        return 2 if o.meta.get("posture") == "defend" else 1
+
+    ranks = [rank(o) for o in report.strikes]
+    assert ranks == sorted(ranks), "pre-sol must lead, the customer's own recompetes must come last"
+    # The customer's own DEFEND recompete must not be the headline item when novel items exist.
+    assert report.strikes[0].meta.get("posture") != "defend"
 
 
 def test_human_reviewer_upgrades_to_confirmed(tmp_path, profile, award_rows, notice_rows, as_of):

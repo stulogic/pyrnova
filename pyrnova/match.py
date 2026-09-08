@@ -143,6 +143,18 @@ def posture(opp: Opportunity, profile: CapabilityProfile) -> str:
     return "capture"
 
 
+def has_domain_signal(opp: Opportunity) -> bool:
+    """True if relevance is backed by an agency or capability match (not NAICS/size alone).
+
+    Guards against pre-solicitation notices that match only on a generic NAICS (e.g. 541715 'R&D
+    services', which also covers biomedical/energy/rail research the customer has nothing to do with).
+    """
+    return any(
+        r.startswith("agency match") or r.startswith("capability keywords")
+        for r in opp.relevance_reasons
+    )
+
+
 def apply_match(opp: Opportunity, profile: CapabilityProfile) -> Opportunity:
     score, reasons, _ = score_relevance(opp, profile)
     opp.relevance_score = score

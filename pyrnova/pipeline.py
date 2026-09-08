@@ -16,8 +16,8 @@ from .ai import Reasoner, get_reasoner
 from .archive import EvidenceArchive
 from .engines.presolicitation import detect_presolicitations
 from .engines.recompete import detect_recompetes
-from .match import CapabilityProfile, apply_match
-from .models import Opportunity, to_record
+from .match import CapabilityProfile, apply_match, has_domain_signal
+from .models import Opportunity, Review, to_record
 from .normalize import normalize_award, normalize_notice
 from .review import apply_review, make_prediction, recommend
 from .state import StateStore
@@ -103,6 +103,20 @@ def run(
         apply_match(opp, profile)
         # AI (optional, non-authoritative)
         opp = reasoner.enrich(opp)
+        # DOMAIN GATE: a pre-solicitation notice matching only on a generic NAICS (no agency/capability
+        # signal) is not real intelligence for this customer — reject before it can become a STRIKE.
+        if opp.catalyst.kind != "recompete_expiry" and not has_domain_signal(opp):
+            review = Review(
+                opportunity_id=opp.id,
+                decision="reject",
+                reason="pre-solicitation NAICS-only match; no agency/capability domain signal",
+                confidence=opp.confidence,
+                reviewer=reviewer or "auto-recommend/v1",
+            )
+            apply_review(opp, review)
+            store.append("reviews", to_record(review))
+            report.rejected.append(opp)
+            continue
         # REVIEW → STRIKE / rejected
         review = recommend(opp, relevance_threshold=relevance_threshold, reviewer=reviewer)
         apply_review(opp, review)
@@ -121,12 +135,18 @@ def run(
         else:
             report.rejected.append(opp)
 
-    # Rank strikes: DEFEND (customer's own recompetes) first — always relevant and the most credible
-    # opener — then relevance, then attractiveness, then soonest action. This keeps mega-prime CAPTURE
-    # contracts the customer cannot realistically win from headlining the brief on raw dollar size.
+    # Rank strikes by NOVELTY to the customer (learned from the first live Torch run): pre-solicitation
+    # first (earliest, most differentiated, genuinely "not tracked yet"), then competitor recompetes we
+    # could capture, then the customer's OWN recompetes (they already know these — context, not a lead).
+    # Within a tier: relevance, then attractiveness, then soonest action.
+    def _novelty_rank(o: Opportunity) -> int:
+        if o.catalyst.kind != "recompete_expiry":
+            return 0  # pre-solicitation
+        return 2 if o.meta.get("posture") == "defend" else 1  # own defend last, competitor capture mid
+
     report.strikes.sort(
         key=lambda o: (
-            0 if o.meta.get("posture") == "defend" else 1,
+            _novelty_rank(o),
             -o.relevance_score,
             -o.attractiveness,
             o.catalyst.horizon_days or 10**9,
