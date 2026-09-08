@@ -1,0 +1,158 @@
+{
+  "corpus_id": "pyrnova-m8-capability-fit-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_m7.json",
+  "reviewed_at": "2026-09-08",
+  "notes": "M8 extends the frozen M7 corpus with capability-fit cases. Each case attaches evidence-backed company profiles and per-company expected_fits (posture + fit/no-fit + decisive blocker), so fit precision, posture precision, and false-match rate are measurable. Company capabilities and the consequence requirement are extracted by the SAME capability normalizer, so a match is an explicit shared capability class, never sector/NAICS/keyword-only. Point-in-time: company profiles are built as-of the replay cutoff, excluding future capability evidence and future awards. Earlier corpora are byte-for-byte unchanged.",
+  "cases": [
+    {
+      "case_id": "m8-fit-navy-radar-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-11-01T23:59:59+00:00",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "N00024-24-RDR-R-0100", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "department of the navy:navy-radar-fit-2024", "summary": "Shipboard radar component production solicitation", "agency": "Department of the Navy", "naics": "334511", "description": "production of shipboard radar components and antennas", "amount_usd": 52000000, "required_clearance": "FCL_SECRET", "downstream_refs": ["CONT_AWD_N0002424C0100"], "available_at": "2024-06-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/N00024-24-RDR-R-0100/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0100", "record_kind": "award", "stage": "AWARD", "program_key": "department of the navy:navy-radar-fit-2024", "summary": "Radar component production award", "agency": "Department of the Navy", "recipient": "Coastal Radar Systems Inc", "recipient_uei": "CRS111AA22B", "place_of_performance": "Portsmouth, VA", "naics": "334511", "amount_usd": 54000000, "available_at": "2024-10-20T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0100", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0100-mod-2026", "record_kind": "project_update", "summary": "Option exercised (excluded at cutoff)", "available_at": "2026-05-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0100", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "Navy radar component solicitation converts to an award.", "relevance": 0.7, "predicted_buyer": "Department of the Navy", "predicted_timing": "late 2024", "predicted_value_usd": 52000000},
+      "expected_affected_entities": ["shipboard radar component manufacturers"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "direct radar-component procurement",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Navy", "occurred_at": "2024-10-20T00:00:00+00:00", "actual_value_usd": 54000000, "source_ref": "CONT_AWD_N0002424C0100"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M8 fit review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Explicit radar-component procurement with a named Navy buyer.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Coastal Radar Systems Inc", "geography": ["VA"], "clearances": ["FCL_SECRET"], "scale": {"max_contract_usd": 80000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "CRS-CAP-1", "available_at": "2021-05-01T00:00:00+00:00", "naics": "334511", "description": "radar component and antenna manufacturing"}], "contract_history": [{"agency": "Department of the Navy", "naics": "334511", "role": "prime", "value_usd": 41000000, "award_ref": "CRS-HIST-1", "available_at": "2022-03-01T00:00:00+00:00"}]},
+        {"name": "Broad Defense Consulting LLC", "geography": ["DC"], "scale": {"max_contract_usd": 20000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "BDC-CAP-1", "available_at": "2022-01-01T00:00:00+00:00", "description": "technology consulting services and management support solutions"}], "contract_history": [{"agency": "Department of Defense", "naics": "541611", "role": "prime", "value_usd": 5000000, "award_ref": "BDC-HIST-1", "available_at": "2022-01-01T00:00:00+00:00"}]},
+        {"name": "Antenna Subsystems Co", "geography": ["NH"], "clearances": ["FCL_SECRET"], "scale": {"max_contract_usd": 5000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "ASC-CAP-1", "available_at": "2021-09-01T00:00:00+00:00", "naics": "334511", "description": "radar antenna subassembly manufacturing"}], "contract_history": [{"agency": "Department of the Army", "naics": "334511", "role": "sub", "value_usd": 2000000, "award_ref": "ASC-HIST-1", "available_at": "2022-04-01T00:00:00+00:00"}]},
+        {"name": "SecureRadar Corp", "geography": ["VA"], "clearances": [], "scale": {"max_contract_usd": 60000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "SRC-CAP-1", "available_at": "2021-07-01T00:00:00+00:00", "naics": "334511", "description": "radar component manufacturing"}], "contract_history": [{"agency": "Department of the Navy", "naics": "334511", "role": "prime", "value_usd": 30000000, "award_ref": "SRC-HIST-1", "available_at": "2022-02-01T00:00:00+00:00"}]}
+      ],
+      "expected_fits": [
+        {"company": "Coastal Radar Systems Inc", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "capability", "available_at": "2024-06-01T00:00:00+00:00"},
+        {"company": "Broad Defense Consulting LLC", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "insufficient_capability_evidence", "decisive_evidence": "no_capability"},
+        {"company": "Antenna Subsystems Co", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "SUPPORT", "expected_fit": true, "decisive_evidence": "capability_sub_role"},
+        {"company": "SecureRadar Corp", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "security_clearance_mismatch", "decisive_evidence": "eligibility"}
+      ]
+    },
+    {
+      "case_id": "m8-fit-chips-construction-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2023-12-01T23:59:59+00:00",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "GS-CHIPS-EC-2023-R-0200", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "department of commerce:chips-fab-construction-2023", "summary": "Fab facility electrical construction and semiconductor process equipment installation", "agency": "Department of Commerce", "naics": "238210", "psc": "Z2AA", "description": "electrical construction and semiconductor process equipment installation", "amount_usd": 120000000, "available_at": "2023-06-15T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/GS-CHIPS-EC-2023-R-0200/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_GSCHIPS0200", "record_kind": "award", "stage": "AWARD", "program_key": "department of commerce:chips-fab-construction-2023", "summary": "Facility construction award", "agency": "Department of Commerce", "recipient": "Meridian Build Group", "recipient_uei": "MBG222CC33D", "place_of_performance": "Chandler, AZ", "amount_usd": 118000000, "available_at": "2023-11-10T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_GSCHIPS0200", "applies_to_candidate": true},
+        {"source_id": "commerce", "source_ref": "GS-CHIPS-EC-status-2026", "record_kind": "project_update", "summary": "Construction milestone (excluded at cutoff)", "available_at": "2026-03-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://www.commerce.gov/chips", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "CHIPS fab facility construction solicitation converts to award.", "relevance": 0.7, "predicted_buyer": "Department of Commerce", "predicted_timing": "2023", "predicted_value_usd": 120000000},
+      "expected_affected_entities": ["electrical construction and semiconductor equipment installers"],
+      "expected_buyer_program_owner": "Department of Commerce",
+      "expected_commercial_mechanism": "direct facility construction procurement requiring two capabilities",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of Commerce", "occurred_at": "2023-11-10T00:00:00+00:00", "actual_value_usd": 118000000, "source_ref": "CONT_AWD_GSCHIPS0200"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M8 fit review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Explicit facility construction procurement.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Meridian Build Group", "geography": ["AZ"], "scale": {"max_contract_usd": 200000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "MBG-CAP-1", "available_at": "2021-01-01T00:00:00+00:00", "naics": "238210", "description": "industrial electrical construction"}, {"source_id": "capability_statement", "source_ref": "MBG-CAP-2", "available_at": "2021-01-01T00:00:00+00:00", "description": "semiconductor process equipment installation"}], "contract_history": [{"agency": "Department of Commerce", "naics": "238210", "role": "prime", "value_usd": 90000000, "award_ref": "MBG-HIST-1", "available_at": "2022-01-01T00:00:00+00:00"}]},
+        {"name": "Copper Line Electric Inc", "geography": ["AZ"], "scale": {"max_contract_usd": 60000000}, "partners": ["Fab Equipment Integrators LLC"], "capability_records": [{"source_id": "capability_statement", "source_ref": "CLE-CAP-1", "available_at": "2021-06-01T00:00:00+00:00", "naics": "238210", "description": "electrical construction"}], "contract_history": [{"agency": "General Services Administration", "naics": "238210", "role": "prime", "value_usd": 40000000, "award_ref": "CLE-HIST-1", "available_at": "2022-05-01T00:00:00+00:00"}]},
+        {"name": "Desert Wiring Co", "geography": ["AZ"], "scale": {"max_contract_usd": 50000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "DWC-CAP-1", "available_at": "2021-06-01T00:00:00+00:00", "naics": "238210", "description": "electrical construction"}], "contract_history": [{"agency": "Department of the Interior", "naics": "238210", "role": "prime", "value_usd": 20000000, "award_ref": "DWC-HIST-1", "available_at": "2022-05-01T00:00:00+00:00"}]}
+      ],
+      "expected_fits": [
+        {"company": "Meridian Build Group", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "full_capability"},
+        {"company": "Copper Line Electric Inc", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "TEAM", "expected_fit": true, "decisive_evidence": "partial_capability_with_partner"},
+        {"company": "Desert Wiring Co", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "SUPPORT", "expected_fit": true, "decisive_evidence": "partial_capability_no_partner"}
+      ]
+    },
+    {
+      "case_id": "m8-fit-radar-recompete-defend-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-08-01T23:59:59+00:00",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "N00024-24-RDR-SUSTAIN-R-0300", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "department of the navy:navy-radar-sustainment-recompete-2024", "summary": "Radar sustainment recompete solicitation", "agency": "Department of the Navy", "naics": "334511", "description": "radar sustainment and component repair", "amount_usd": 35000000, "downstream_refs": ["CONT_AWD_N0002424C0300"], "available_at": "2024-05-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/N00024-24-RDR-SUSTAIN-R-0300/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0300", "record_kind": "award", "stage": "AWARD", "program_key": "department of the navy:navy-radar-sustainment-recompete-2024", "summary": "Radar sustainment recompete award", "agency": "Department of the Navy", "recipient": "Incumbent Radar Sustainment Inc", "recipient_uei": "IRS444DD55E", "naics": "334511", "amount_usd": 34000000, "available_at": "2024-07-20T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0300", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_N0002424C0300-mod-2026", "record_kind": "project_update", "summary": "Later mod (excluded)", "available_at": "2026-01-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_N0002424C0300", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "Radar sustainment recompete converts to an award.", "relevance": 0.7, "predicted_buyer": "Department of the Navy", "predicted_timing": "2024", "predicted_value_usd": 35000000},
+      "expected_affected_entities": ["radar sustainment vendors"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "recompete of an incumbent-held sustainment contract",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Navy", "occurred_at": "2024-07-20T00:00:00+00:00", "actual_value_usd": 34000000, "source_ref": "CONT_AWD_N0002424C0300"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M8 fit review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Recompete of a real sustainment requirement.", "reviewer": "Pyrnova corpus reviewer", "confidence": "HIGH"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Incumbent Radar Sustainment Inc", "geography": ["VA"], "clearances": ["FCL_SECRET"], "scale": {"max_contract_usd": 60000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "IRS-CAP-1", "available_at": "2020-01-01T00:00:00+00:00", "naics": "334511", "description": "radar sustainment and component repair"}], "contract_history": [{"agency": "Department of the Navy", "naics": "334511", "role": "prime", "value_usd": 33000000, "award_ref": "IRS-HIST-1", "program_key": "department of the navy:navy-radar-sustainment-recompete-2024", "available_at": "2019-06-01T00:00:00+00:00"}]}
+      ],
+      "expected_fits": [
+        {"company": "Incumbent Radar Sustainment Inc", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "DEFEND", "expected_fit": true, "decisive_evidence": "incumbency"}
+      ]
+    },
+    {
+      "case_id": "m8-fit-directed-energy-open-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-10-01T23:59:59+00:00",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "FA9451-24-DE-R-0400", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "department of the air force:af-directed-energy-fit-2024", "summary": "Directed energy prototype integration solicitation", "agency": "Department of the Air Force", "psc": "5865", "description": "directed energy beam control prototype integration", "amount_usd": 25000000, "downstream_refs": ["CONT_AWD_FA945124C0400"], "available_at": "2024-05-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/FA9451-24-DE-R-0400/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_FA945124C0400", "record_kind": "award", "stage": "AWARD", "program_key": "department of the air force:af-directed-energy-fit-2024", "summary": "Directed energy integration award", "agency": "Department of the Air Force", "recipient": "Photon Dynamics Corp", "recipient_uei": "PHO555EE66F", "place_of_performance": "Albuquerque, NM", "amount_usd": 24000000, "available_at": "2024-09-10T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_FA945124C0400", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_FA945124C0400-status-2026", "record_kind": "project_update", "summary": "Follow-on (excluded)", "available_at": "2026-07-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_FA945124C0400", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "Directed energy solicitation converts to an award.", "relevance": 0.6, "predicted_buyer": "Department of the Air Force", "predicted_timing": "2024", "predicted_value_usd": null},
+      "expected_affected_entities": ["directed energy integrators"],
+      "expected_buyer_program_owner": "Department of the Air Force",
+      "expected_commercial_mechanism": "direct directed-energy procurement",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Air Force", "occurred_at": "2024-09-10T00:00:00+00:00", "actual_value_usd": 24000000, "source_ref": "CONT_AWD_FA945124C0400"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M8 fit review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "Real directed-energy procurement.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Photon Dynamics Corp", "geography": ["NM"], "scale": {"max_contract_usd": 40000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "PDC-CAP-1", "available_at": "2021-01-01T00:00:00+00:00", "psc": "5865", "description": "directed energy beam control integration"}], "contract_history": [{"agency": "Department of the Air Force", "psc": "5865", "role": "prime", "value_usd": 18000000, "award_ref": "PDC-HIST-1", "available_at": "2022-01-01T00:00:00+00:00"}]},
+        {"name": "Unknown Capability Ventures", "geography": ["CA"], "scale": {"max_contract_usd": 30000000}, "capability_records": []},
+        {"name": "Future Optics Corp", "geography": ["NM"], "scale": {"max_contract_usd": 40000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "FOC-CAP-1", "available_at": "2025-06-01T00:00:00+00:00", "description": "directed energy beam control integration"}]}
+      ],
+      "expected_fits": [
+        {"company": "Photon Dynamics Corp", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "PRIME", "expected_fit": true, "decisive_evidence": "capability"},
+        {"company": "Unknown Capability Ventures", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "insufficient_capability_evidence", "decisive_evidence": "unknown"},
+        {"company": "Future Optics Corp", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "insufficient_capability_evidence", "decisive_evidence": "future_capability_evidence_excluded", "available_at": "2025-06-01T00:00:00+00:00"}
+      ]
+    },
+    {
+      "case_id": "m8-fit-directed-energy-closed-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-10-01T23:59:59+00:00",
+      "records": [
+        {"source_id": "sam_opportunities", "source_ref": "FA9451-22-DE-R-0500", "record_kind": "solicitation", "stage": "PROCUREMENT", "program_key": "department of the air force:af-directed-energy-closed-2022", "summary": "Directed energy prototype (award already made, window closed)", "agency": "Department of the Air Force", "psc": "5865", "description": "directed energy beam control prototype", "amount_usd": 20000000, "timing_passed": true, "available_at": "2022-05-01T00:00:00+00:00", "strength": 3, "source_role": "primary", "url": "https://sam.gov/opp/FA9451-22-DE-R-0500/view", "applies_to_candidate": true},
+        {"source_id": "usaspending", "source_ref": "CONT_AWD_FA945122C0500", "record_kind": "award", "stage": "AWARD", "program_key": "department of the air force:af-directed-energy-closed-2022", "summary": "Directed energy award (already made)", "agency": "Department of the Air Force", "recipient": "Beam Systems Inc", "recipient_uei": "BSI777FF88G", "amount_usd": 19000000, "available_at": "2022-12-01T00:00:00+00:00", "strength": 5, "source_role": "primary", "url": "https://www.usaspending.gov/award/CONT_AWD_FA945122C0500", "applies_to_candidate": true},
+        {"source_id": "af", "source_ref": "FA9451-22-DE-status-2026", "record_kind": "project_update", "summary": "Base period ongoing (excluded)", "available_at": "2026-02-01T00:00:00+00:00", "strength": 4, "source_role": "primary", "url": "https://sam.gov/opp/FA9451-22-DE-R-0500/view", "applies_to_candidate": false}
+      ],
+      "candidate": {"hypothesis": "A closed directed-energy award has no remaining capture window.", "relevance": 0.6, "predicted_buyer": "Department of the Air Force", "predicted_timing": "2022", "predicted_value_usd": null},
+      "expected_affected_entities": ["directed energy integrators"],
+      "expected_buyer_program_owner": "Department of the Air Force",
+      "expected_commercial_mechanism": "direct procurement already awarded; window passed",
+      "actual_outcome": {"occurred": true, "kind": "award", "buyer": "Department of the Air Force", "occurred_at": "2022-12-01T00:00:00+00:00", "actual_value_usd": 19000000, "source_ref": "CONT_AWD_FA945122C0500"},
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M8 fit review 2026-09-08",
+      "human_adjudication": {"human_decision": "ACCEPT", "reason": "A real (now closed) directed-energy award.", "reviewer": "Pyrnova corpus reviewer", "confidence": "MEDIUM"},
+      "failure_reasons": [],
+      "companies": [
+        {"name": "Late Beam Corp", "geography": ["NM"], "scale": {"max_contract_usd": 40000000}, "capability_records": [{"source_id": "capability_statement", "source_ref": "LBC-CAP-1", "available_at": "2021-01-01T00:00:00+00:00", "psc": "5865", "description": "directed energy beam control integration"}], "contract_history": [{"agency": "Department of the Air Force", "psc": "5865", "role": "prime", "value_usd": 15000000, "award_ref": "LBC-HIST-1", "available_at": "2021-06-01T00:00:00+00:00"}]}
+      ],
+      "expected_fits": [
+        {"company": "Late Beam Corp", "mechanism": "DIRECT_PROCUREMENT", "expected_posture": "NO_FIT", "expected_fit": false, "expected_blocker": "timing_passed", "decisive_evidence": "timing"}
+      ]
+    }
+  ]
+}

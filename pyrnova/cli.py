@@ -380,6 +380,28 @@ def cmd_consequence_corpus(args) -> int:
     return 0
 
 
+def cmd_fit(args) -> int:
+    from .replay import run_fit_replay
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir) if args.persist else None
+    case = json.loads(Path(args.case).read_text(encoding="utf-8"))
+    print(json.dumps(run_fit_replay(case, store=store), indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_fit_corpus(args) -> int:
+    from .replay import load_corpus, run_fit_corpus, summarize_fit_results
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir) if args.persist else None
+    results = run_fit_corpus(load_corpus(Path(args.corpus)), store=store)
+    summary = summarize_fit_results(results)
+    output = {"summary": summary, "cases": results} if args.verbose else {"summary": summary}
+    print(json.dumps(output, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_inferred_threshold(args) -> int:
     from .replay import evaluate_inferred_threshold, load_corpus
 
@@ -516,6 +538,17 @@ def main(argv=None) -> int:
     cons_corpus.add_argument("--verbose", action="store_true", help="include per-case catalyst/consequence detail")
     cons_corpus.add_argument("--persist", action="store_true")
     cons_corpus.set_defaults(func=cmd_consequence_corpus)
+
+    fit = sub.add_parser("fit", help="evaluate company capability fit for one case")
+    fit.add_argument("--case", required=True)
+    fit.add_argument("--persist", action="store_true")
+    fit.set_defaults(func=cmd_fit)
+
+    fit_corpus = sub.add_parser("fit-corpus", help="evaluate capability fit across a corpus")
+    fit_corpus.add_argument("--corpus", default="examples/replay/corpus_m8.json")
+    fit_corpus.add_argument("--verbose", action="store_true")
+    fit_corpus.add_argument("--persist", action="store_true")
+    fit_corpus.set_defaults(func=cmd_fit_corpus)
 
     contribution = sub.add_parser("source-contribution", help="measure source lift by deterministic replay ablation")
     contribution.add_argument("--corpus", default="examples/replay/corpus_m4.json")

@@ -268,6 +268,157 @@ def to_record_safe(obj) -> dict:
     return to_record(obj)
 
 
+def _requirements_from_records(records: list[dict], keys: set[str]) -> dict:
+    """Collect explicit fit requirements from the records of a consequence's program component.
+
+    Requirements are read only from declared structured fields — never inferred — so fit stays
+    evidence-backed."""
+    mapping = {
+        "required_certifications": "certifications", "required_clearance": "clearance",
+        "geographic_restriction": "geography", "contract_vehicle": "contract_vehicle",
+        "incumbent_program_key": "incumbent_program_key", "timing_passed": "timing_passed",
+    }
+    req: dict = {}
+    for r in records:
+        if r.get("program_key") not in keys:
+            continue
+        for field_name, out in mapping.items():
+            if r.get(field_name) is not None:
+                req[out] = r[field_name]
+    return req
+
+
+def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
+    """Evaluate declared (company, consequence) fits point-in-time and validate `expected_fits`.
+
+    Company profiles are built as-of the replay cutoff, so future capability evidence and future awards
+    cannot leak into an earlier fit judgement."""
+    from .catalysts import build_catalysts_and_consequences
+    from .chains import resolve_chain, signals_from_records
+    from .company import company_id as company_id_of, profile_from_dict
+    from .fit import evaluate_fit
+
+    validate_case(case)
+    as_of = case["replay_as_of"]
+    resolution = resolve_chain(signals_from_records(case["records"]))
+    catalysts, consequences = build_catalysts_and_consequences(case["records"], resolution)
+    keys_by_catalyst = {c.id: set(c.meta.get("program_keys") or [c.program_key]) for c in catalysts}
+
+    profiles = {}
+    for company in case.get("companies", []):
+        profile = profile_from_dict(company, as_of=as_of)
+        profiles[profile.company_id] = profile
+
+    def _find_consequence(exp):
+        cands = [c for c in consequences if c.mechanism == exp.get("mechanism")]
+        if exp.get("program_key"):
+            cands = [c for c in cands if c.program_key == exp["program_key"]] or cands
+        return cands[0] if cands else None
+
+    fits: list[dict] = []
+    checks: list[dict] = []
+    for exp in case.get("expected_fits", []):
+        name = exp.get("company_id") or exp.get("company")
+        cid = name if str(name).startswith("co_") else company_id_of(str(name))
+        profile = profiles.get(cid)
+        consequence = _find_consequence(exp)
+        if profile is None or consequence is None:
+            checks.append({"check": f"resolve:{name}:{exp.get('mechanism')}", "ok": False,
+                           "got": "profile/consequence missing", "want": exp})
+            continue
+        requirements = _requirements_from_records(case["records"], keys_by_catalyst.get(consequence.catalyst_id, set()))
+        result = evaluate_fit(consequence, profile, requirements=requirements, as_of=as_of)
+        rec = to_record_safe(result)
+        rec["expected"] = exp
+        rec["ground_truth"] = case.get("ground_truth")
+        fits.append(rec)
+        if "expected_posture" in exp:
+            checks.append({"check": f"posture:{name}:{exp['mechanism']}",
+                           "ok": result.posture == exp["expected_posture"],
+                           "got": result.posture, "want": exp["expected_posture"]})
+        if "expected_fit" in exp:
+            checks.append({"check": f"fit:{name}:{exp['mechanism']}", "ok": result.fit == exp["expected_fit"],
+                           "got": result.fit, "want": exp["expected_fit"]})
+        if exp.get("expected_blocker"):
+            codes = {b["code"] for b in result.blockers}
+            checks.append({"check": f"blocker:{name}", "ok": exp["expected_blocker"] in codes,
+                           "got": sorted(codes), "want": exp["expected_blocker"]})
+
+    result = {
+        "case_id": case["case_id"], "replay_as_of": as_of, "ground_truth": case.get("ground_truth"),
+        "companies": sorted(profiles), "consequence_count": len(consequences),
+        "fits": fits, "expected_fit_checks": checks,
+        "expected_fit_ok": all(c["ok"] for c in checks) if checks else None,
+    }
+    if store is not None:
+        from .company import to_record as company_record
+        for profile in profiles.values():
+            store.append("company_profiles", company_record(profile))
+        for fit in fits:
+            store.append("fit_results", {k: v for k, v in fit.items() if k not in ("dimensions",)})
+    return result
+
+
+def run_fit_corpus(cases: Iterable[dict], *, store: Optional[StateStore] = None) -> list[dict]:
+    selected = [c for c in cases if c.get("companies") and c.get("expected_fits")]
+    return [run_fit_replay(c, store=store) for c in selected]
+
+
+def summarize_fit_results(results: list[dict]) -> dict:
+    """Fit-quality observability across the corpus (no scoring impact)."""
+    graded = [f for r in results for f in r["fits"] if f.get("expected", {}).get("expected_fit") is not None]
+    postures = ("PRIME", "SUPPORT", "TEAM", "DEFEND", "NO_FIT")
+
+    def cap_verdict(f):
+        return next((d["verdict"] for d in f["dimensions"] if d["name"] == "CAPABILITY_FIT"), "UNKNOWN")
+
+    def buyer_pos(f):
+        return any(d["name"] == "BUYER_RELEVANCE" and d["verdict"] == "POSITIVE" for d in f["dimensions"])
+
+    predicted_fit = [f for f in graded if f["fit"]]
+    predicted_nofit = [f for f in graded if not f["fit"]]
+    true_match = sum(1 for f in predicted_fit if f["expected"]["expected_fit"] is True)
+    false_match = sum(1 for f in predicted_fit if f["expected"]["expected_fit"] is False)
+    true_nofit = sum(1 for f in predicted_nofit if f["expected"]["expected_fit"] is False)
+
+    posture_graded = [f for f in graded if f["expected"].get("expected_posture")]
+    posture_correct = sum(1 for f in posture_graded if f["posture"] == f["expected"]["expected_posture"])
+    posture_precision = {}
+    for p in postures:
+        rows = [f for f in posture_graded if f["posture"] == p]
+        posture_precision[p] = round(sum(1 for f in rows if f["expected"]["expected_posture"] == p) / len(rows), 4) if rows else None
+
+    blocker_graded = [f for f in graded if f["expected"].get("expected_blocker")]
+    blocker_hits = sum(1 for f in blocker_graded
+                       if f["expected"]["expected_blocker"] in {b["code"] for b in f["blockers"]})
+
+    def rate(n, d):
+        return round(n / d, 4) if d else None
+
+    return {
+        "fit_engine_version": "capability_fit_v1",
+        "fit_cases": len(results),
+        "fits_evaluated": sum(len(r["fits"]) for r in results),
+        "graded_fits": len(graded),
+        "predicted_fit": len(predicted_fit),
+        "predicted_no_fit": len(predicted_nofit),
+        "posture_distribution": {p: sum(1 for f in graded if f["posture"] == p) for p in postures},
+        "fit_precision": rate(true_match, len(predicted_fit)),
+        "no_fit_precision": rate(true_nofit, len(predicted_nofit)),
+        "false_match_rate": rate(false_match, len(predicted_fit)),
+        "posture_precision_overall": rate(posture_correct, len(posture_graded)),
+        "posture_precision": posture_precision,
+        "blocker_accuracy": rate(blocker_hits, len(blocker_graded)),
+        "capability_match_coverage": rate(sum(1 for f in graded if cap_verdict(f) != "UNKNOWN"), len(graded)),
+        "buyer_history_coverage": rate(sum(1 for f in graded if buyer_pos(f)), len(graded)),
+        "unknown_rate": rate(sum(1 for f in graded if f["is_unknown"]), len(graded)),
+        "expected_fit_cases": sum(r.get("expected_fit_ok") is not None for r in results),
+        "expected_fit_passing": sum(bool(r.get("expected_fit_ok")) for r in results),
+        "small_sample_warning": ("fit precision rests on very few graded fits; treat as directional"
+                                 if len(graded) < 20 else None),
+    }
+
+
 def _check_expected_consequences(expected: dict | None, catalysts, consequences) -> list[dict]:
     if not expected:
         return []
