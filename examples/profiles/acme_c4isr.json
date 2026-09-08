@@ -1,0 +1,16 @@
+{
+  "name": "Acme Federal Systems",
+  "agencies": ["Department of Defense", "Army", "Navy", "Air Force"],
+  "naics": ["541512", "541330", "541519", "541611"],
+  "psc": ["D307", "D310", "R425"],
+  "capabilities": [
+    "C4ISR", "network", "cybersecurity", "systems engineering",
+    "cloud", "software", "logistics", "modernization"
+  ],
+  "geography": ["CONUS"],
+  "size_min_usd": 500000,
+  "size_max_usd": 500000000,
+  "set_asides": [],
+  "exclusions": ["construction", "janitorial", "grounds maintenance"],
+  "incumbencies": ["Acme Federal Systems"]
+}

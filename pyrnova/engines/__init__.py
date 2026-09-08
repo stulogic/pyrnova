@@ -1,0 +1,1 @@
+"""Deterministic intelligence engines (DETECT)."""

@@ -1,0 +1,70 @@
+{
+  "_note": "SAMPLE data shaped to the SAM.gov Get Opportunities v2 response (opportunitiesData[]). Not real notices; for offline tests/demos only. Notice-type codes/labels must be verified against current SAM docs before production.",
+  "totalRecords": 4,
+  "opportunitiesData": [
+    {
+      "noticeId": "n0001aaaa",
+      "title": "Army C4ISR Network Modernization Support",
+      "type": "Sources Sought",
+      "baseType": "Sources Sought",
+      "solicitationNumber": "W15P7T-26-SS-0007",
+      "fullParentPathName": "DEPT OF DEFENSE.DEPT OF THE ARMY.ARMY CONTRACTING COMMAND",
+      "naicsCode": "541512",
+      "classificationCode": "D307",
+      "typeOfSetAsideDescription": null,
+      "postedDate": "2026-09-01",
+      "responseDeadLine": "2026-10-15T17:00:00-04:00",
+      "active": "Yes",
+      "archiveDate": "2026-11-14",
+      "uiLink": "https://sam.gov/opp/n0001aaaa/view"
+    },
+    {
+      "noticeId": "n0002bbbb",
+      "title": "Navy Cybersecurity Engineering Services",
+      "type": "Presolicitation",
+      "baseType": "Presolicitation",
+      "solicitationNumber": "N0002426R0011",
+      "fullParentPathName": "DEPT OF DEFENSE.DEPT OF THE NAVY.NAVAL SEA SYSTEMS COMMAND",
+      "naicsCode": "541519",
+      "classificationCode": "D310",
+      "typeOfSetAsideDescription": "Total Small Business Set-Aside",
+      "postedDate": "2026-09-03",
+      "responseDeadLine": "2026-11-01T14:00:00-04:00",
+      "active": "Yes",
+      "archiveDate": "2026-12-01",
+      "uiLink": "https://sam.gov/opp/n0002bbbb/view"
+    },
+    {
+      "noticeId": "n0003cccc",
+      "title": "Industry Day: Air Force Cloud Modernization",
+      "type": "Special Notice",
+      "baseType": "Special Notice",
+      "solicitationNumber": "FA8750-26-SN-0003",
+      "fullParentPathName": "DEPT OF DEFENSE.DEPT OF THE AIR FORCE.AIR FORCE MATERIEL COMMAND",
+      "naicsCode": "541512",
+      "classificationCode": "D307",
+      "typeOfSetAsideDescription": null,
+      "postedDate": "2026-09-04",
+      "responseDeadLine": "2026-09-30T12:00:00-04:00",
+      "active": "Yes",
+      "archiveDate": "2026-10-30",
+      "uiLink": "https://sam.gov/opp/n0003cccc/view"
+    },
+    {
+      "noticeId": "n0004dddd",
+      "title": "Award Notice: Base Grounds Maintenance Services",
+      "type": "Award Notice",
+      "baseType": "Award Notice",
+      "solicitationNumber": "W911-26-A-0044",
+      "fullParentPathName": "DEPT OF DEFENSE.DEPT OF THE ARMY.ARMY CONTRACTING COMMAND",
+      "naicsCode": "561730",
+      "classificationCode": "S208",
+      "typeOfSetAsideDescription": null,
+      "postedDate": "2026-09-02",
+      "responseDeadLine": null,
+      "active": "No",
+      "archiveDate": "2026-10-02",
+      "uiLink": "https://sam.gov/opp/n0004dddd/view"
+    }
+  ]
+}
