@@ -360,5 +360,65 @@ CREATE TABLE replay_report (
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 
+-- ---------------------------------------------------------------------------
+-- M7 CAPITAL CATALYST + COMMERCIAL CONSEQUENCE
+-- ---------------------------------------------------------------------------
+-- A capital catalyst is an evidence-backed change likely to alter economic behavior. One catalyst per
+-- resolved program chain (deterministic id); it references canonical signals/relationships rather than
+-- duplicating them. A commercial consequence is a specific, evidence-linked economic behavior the
+-- catalyst is likely to cause, via a named mechanism, for a distinct participant role, requiring a
+-- specific capability, over a timeframe. Neither creates a candidate or changes scoring_v1: their
+-- confidences are distinct from opportunity attractiveness, and screened_disposition is a recommendation
+-- checked for consistency with scoring_v1, not an override. Dev implementation is append-only JSONL;
+-- these tables are the production mirror.
+CREATE TABLE capital_catalyst (
+    id              text PRIMARY KEY,                 -- deterministic: cat_<hash(program_keys)>
+    program_key     text NOT NULL,
+    catalyst_type   text NOT NULL CHECK (catalyst_type IN ('BUDGET_APPROPRIATION','PROGRAM_ESTABLISHMENT','PROCUREMENT_LIFECYCLE','REGULATORY_MANDATE','CAPACITY_BUILDOUT','SUPPLY_DISRUPTION')),
+    summary         text,
+    controlling_institution text,
+    confidence      real,                             -- catalyst confidence, distinct from scoring
+    first_observed_at timestamptz,
+    available_at    timestamptz,
+    effective_date  timestamptz,
+    geography       text,
+    status          text NOT NULL DEFAULT 'active' CHECK (status IN ('active','contradicted','superseded')),
+    stages_present  text[] NOT NULL DEFAULT '{}',
+    triggering_evidence_ids text[] NOT NULL DEFAULT '{}',
+    supporting_relationship_ids text[] NOT NULL DEFAULT '{}',
+    participants    jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{role, entity_ref, name, evidence_ids, basis}]
+    contradictions  text[] NOT NULL DEFAULT '{}',
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX capital_catalyst_program_idx ON capital_catalyst(program_key);
+
+CREATE TABLE commercial_consequence (
+    id              text PRIMARY KEY,                 -- deterministic: cons_<hash(catalyst,mechanism,anchor)>
+    catalyst_id     text NOT NULL REFERENCES capital_catalyst(id),
+    program_key     text NOT NULL,
+    mechanism       text NOT NULL CHECK (mechanism IN ('DIRECT_PROCUREMENT','FUNDED_DOWNSTREAM_DEMAND','FORCED_COMPLIANCE_SPEND','CAPITAL_EXPANSION','SUPPLY_DISPLACEMENT','TECHNOLOGY_MIGRATION','INDUSTRIAL_CAPACITY_BUILDOUT')),
+    directness      text NOT NULL CHECK (directness IN ('DIRECT','DOWNSTREAM','SECOND_ORDER')),
+    mechanism_confidence real,
+    mechanism_rationale text,
+    confidence      real,                             -- consequence confidence, distinct from scoring
+    likely_spend_category text,
+    geography       text,
+    first_supportable_at timestamptz,
+    participants    jsonb NOT NULL DEFAULT '[]'::jsonb,
+    capability_classes jsonb NOT NULL DEFAULT '[]'::jsonb,
+    value           jsonb NOT NULL DEFAULT '{}'::jsonb,   -- {status, amount_usd, low_usd, high_usd, method, confidence, provenance}
+    timing          jsonb NOT NULL DEFAULT '{}'::jsonb,
+    evidence_ids    text[] NOT NULL DEFAULT '{}',
+    assumptions     text[] NOT NULL DEFAULT '{}',
+    falsifiers      jsonb NOT NULL DEFAULT '[]'::jsonb,   -- [{code, detail, fatal}]
+    screened_disposition text NOT NULL CHECK (screened_disposition IN ('STRIKE','WATCH','REJECT')),
+    screening_basis text,
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX commercial_consequence_catalyst_idx ON commercial_consequence(catalyst_id);
+CREATE INDEX commercial_consequence_mechanism_idx ON commercial_consequence(mechanism, directness);
+
 -- Reserved for dormant pipelines (declared, never populated in initial phase):
 --   FLOW, SHIFT, RISK  -> intentionally NOT created. Add only when a pipeline is activated.

@@ -356,6 +356,30 @@ def cmd_chain_corpus(args) -> int:
     return 0
 
 
+def cmd_consequences(args) -> int:
+    from .replay import run_consequence_replay
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir) if args.persist else None
+    case = json.loads(Path(args.case).read_text(encoding="utf-8"))
+    result = run_consequence_replay(case, scoring_version=args.scoring_version, store=store)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_consequence_corpus(args) -> int:
+    from .replay import load_corpus, run_consequence_corpus, summarize_consequence_results
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir) if args.persist else None
+    cases = load_corpus(Path(args.corpus))
+    results = run_consequence_corpus(cases, scoring_version=args.scoring_version, store=store)
+    summary = summarize_consequence_results(results)
+    output = {"summary": summary, "cases": results} if args.verbose else {"summary": summary}
+    print(json.dumps(output, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_inferred_threshold(args) -> int:
     from .replay import evaluate_inferred_threshold, load_corpus
 
@@ -479,6 +503,19 @@ def main(argv=None) -> int:
     jr.add_argument("--reason", default="")
     jr.add_argument("--corpus", default=None, help="optionally resolve a corpus first to enqueue its deferred joins")
     jr.set_defaults(func=cmd_join_review)
+
+    cons = sub.add_parser("consequences", help="derive capital catalysts + commercial consequences for one case")
+    cons.add_argument("--case", required=True)
+    cons.add_argument("--scoring-version", default="scoring_v1")
+    cons.add_argument("--persist", action="store_true", help="persist catalysts/consequences to state")
+    cons.set_defaults(func=cmd_consequences)
+
+    cons_corpus = sub.add_parser("consequence-corpus", help="derive catalysts/consequences across a corpus")
+    cons_corpus.add_argument("--corpus", default="examples/replay/corpus_m7.json")
+    cons_corpus.add_argument("--scoring-version", default="scoring_v1")
+    cons_corpus.add_argument("--verbose", action="store_true", help="include per-case catalyst/consequence detail")
+    cons_corpus.add_argument("--persist", action="store_true")
+    cons_corpus.set_defaults(func=cmd_consequence_corpus)
 
     contribution = sub.add_parser("source-contribution", help="measure source lift by deterministic replay ablation")
     contribution.add_argument("--corpus", default="examples/replay/corpus_m4.json")

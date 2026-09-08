@@ -224,6 +224,184 @@ def run_chain_replay(case: dict, *, scoring_version: str = ACTIVE_SCORING_VERSIO
     return result
 
 
+def run_consequence_replay(case: dict, *, scoring_version: str = ACTIVE_SCORING_VERSION,
+                           store: Optional[StateStore] = None) -> dict:
+    """Derive capital catalysts and commercial consequences for a case and validate any
+    ``expected_consequences``. Retrospective chain reconstruction with per-consequence
+    ``first_supportable_at``; never creates a candidate or changes ``scoring_v1``."""
+    from .catalysts import build_catalysts_and_consequences
+    from .chains import resolve_chain, signals_from_records
+
+    validate_case(case)
+    resolution = resolve_chain(signals_from_records(case["records"]))
+    catalysts, consequences = build_catalysts_and_consequences(case["records"], resolution)
+
+    staged_keys = {r["program_key"] for r in case["records"] if r.get("program_key") and r.get("stage")}
+    scoring = run_replay(case, scoring_version=scoring_version)
+    checks = _check_expected_consequences(case.get("expected_consequences"), catalysts, consequences)
+    result = {
+        "case_id": case["case_id"],
+        "mechanism_family": case["mechanism_family"],
+        "scoring_version": scoring_version,
+        "ground_truth": case.get("ground_truth"),
+        "scoring_disposition": scoring["system_disposition"],
+        "catalysts": [to_record_safe(c) for c in catalysts],
+        "consequences": [to_record_safe(c) for c in consequences],
+        "catalyst_count": len(catalysts),
+        "consequence_count": len(consequences),
+        "program_keys": sorted(staged_keys),
+        "duplicate_catalysts_collapsed": max(0, len(staged_keys) - len(catalysts)) if catalysts else 0,
+        "expected_consequence_checks": checks,
+        "expected_consequence_ok": all(c["ok"] for c in checks) if checks else None,
+        "outcome_occurred_at": (case.get("actual_outcome") or {}).get("occurred_at"),
+    }
+    if store is not None:
+        from .catalysts import persist
+        persist(store, catalysts, consequences)
+        store.append("consequence_replay_results", {k: v for k, v in result.items()
+                                                    if k not in ("catalysts", "consequences")})
+    return result
+
+
+def to_record_safe(obj) -> dict:
+    from .models import to_record
+    return to_record(obj)
+
+
+def _check_expected_consequences(expected: dict | None, catalysts, consequences) -> list[dict]:
+    if not expected:
+        return []
+    checks: list[dict] = []
+
+    def check(name, ok, got, want):
+        checks.append({"check": name, "ok": bool(ok), "got": got, "want": want})
+
+    mechanisms = sorted({c.mechanism for c in consequences})
+    directness = sorted({c.directness for c in consequences})
+    roles = sorted({p["role"] for c in consequences for p in c.participants})
+    dispositions = sorted({c.screened_disposition for c in consequences})
+    if "catalyst_count" in expected:
+        check("catalyst_count", len(catalysts) == expected["catalyst_count"], len(catalysts), expected["catalyst_count"])
+    if "catalyst_type" in expected:
+        got = sorted({c.catalyst_type for c in catalysts})
+        check("catalyst_type", expected["catalyst_type"] in got, got, expected["catalyst_type"])
+    if "min_consequences" in expected:
+        check("min_consequences", len(consequences) >= expected["min_consequences"], len(consequences), expected["min_consequences"])
+    if "max_consequences" in expected:
+        check("max_consequences", len(consequences) <= expected["max_consequences"], len(consequences), expected["max_consequences"])
+    if "mechanisms" in expected:
+        check("mechanisms", set(expected["mechanisms"]) <= set(mechanisms), mechanisms, sorted(expected["mechanisms"]))
+    if "directness" in expected:
+        check("directness", set(expected["directness"]) <= set(directness), directness, sorted(expected["directness"]))
+    if "roles" in expected:
+        check("roles", set(expected["roles"]) <= set(roles), roles, sorted(expected["roles"]))
+    if "require_capability" in expected and expected["require_capability"]:
+        got = all(c.capability_classes for c in consequences if c.screened_disposition == "STRIKE")
+        check("require_capability", got and bool(consequences), got, True)
+    if "value_status" in expected:
+        got = sorted({c.value.get("status") for c in consequences})
+        check("value_status", set(expected["value_status"]) <= set(got), got, sorted(expected["value_status"]))
+    if "screened_dispositions" in expected:
+        check("screened_dispositions", set(expected["screened_dispositions"]) <= set(dispositions),
+              dispositions, sorted(expected["screened_dispositions"]))
+    if "expect_rejected" in expected:
+        got = any(c.screened_disposition == "REJECT" for c in consequences)
+        check("expect_rejected", got == expected["expect_rejected"], got, expected["expect_rejected"])
+    return checks
+
+
+def run_consequence_corpus(cases: Iterable[dict], *, scoring_version: str = ACTIVE_SCORING_VERSION,
+                           store: Optional[StateStore] = None) -> list[dict]:
+    selected = [c for c in cases if any(r.get("program_key") and r.get("stage") for r in c["records"])]
+    return [run_consequence_replay(c, scoring_version=scoring_version, store=store) for c in selected]
+
+
+def summarize_consequence_results(results: list[dict]) -> dict:
+    """Commercial-consequence observability across the corpus (no scoring impact)."""
+    from statistics import median
+
+    catalysts = [c for r in results for c in r["catalysts"]]
+    consequences = [c for r in results for c in r["consequences"]]
+    label_by_case = {r["case_id"]: (r.get("ground_truth") or {}).get("label") for r in results}
+    # Precision is graded only where a case declares consequence-level ground truth. A case whose label
+    # is about join-correctness (e.g. an M6 false-join case) is not a verdict on whether an individual
+    # record carries commercial merit, so it must not be scored as a false consequence.
+    graded_cases = {r["case_id"] for r in results if r.get("expected_consequence_ok") is not None}
+    case_of = {}
+    for r in results:
+        for c in r["consequences"]:
+            case_of[id(c)] = r["case_id"]
+
+    def has_role(c, roles):
+        return any(p["role"] in roles for p in c.get("participants", []))
+
+    directness_dist = {d: sum(c["directness"] == d for c in consequences)
+                       for d in ("DIRECT", "DOWNSTREAM", "SECOND_ORDER")}
+    mechanism_dist = {}
+    for c in consequences:
+        mechanism_dist[c["mechanism"]] = mechanism_dist.get(c["mechanism"], 0) + 1
+
+    accepted = [c for c in consequences if c["screened_disposition"] in ("STRIKE", "WATCH")]
+    rejected = [c for c in consequences if c["screened_disposition"] == "REJECT"]
+    graded_accepted = [c for c in accepted if case_of[id(c)] in graded_cases]
+    true_acc = sum(1 for c in graded_accepted if label_by_case.get(case_of[id(c)]) == "TRUE_POSITIVE")
+    false_acc = sum(1 for c in graded_accepted if label_by_case.get(case_of[id(c)]) == "TRUE_NEGATIVE")
+    decided = true_acc + false_acc
+
+    value_status = {}
+    for c in consequences:
+        s = (c.get("value") or {}).get("status", "UNKNOWN")
+        value_status[s] = value_status.get(s, 0) + 1
+
+    rejected_reasons = {}
+    for c in rejected:
+        for f in c.get("falsifiers", []):
+            if f.get("fatal"):
+                rejected_reasons[f["code"]] = rejected_reasons.get(f["code"], 0) + 1
+
+    # Catalyst lead time: first_observed_at -> case outcome.
+    leads = []
+    for r in results:
+        occurred = r.get("outcome_occurred_at")
+        for c in r["catalysts"]:
+            if occurred and c.get("first_observed_at"):
+                leads.append((_dt(occurred).date() - _dt(c["first_observed_at"]).date()).days)
+
+    mechanism_precision = {}
+    for mech in sorted(mechanism_dist):
+        rows = [c for c in graded_accepted if c["mechanism"] == mech]
+        t = sum(1 for c in rows if label_by_case.get(case_of[id(c)]) == "TRUE_POSITIVE")
+        f = sum(1 for c in rows if label_by_case.get(case_of[id(c)]) == "TRUE_NEGATIVE")
+        mechanism_precision[mech] = round(t / (t + f), 4) if (t + f) else None
+
+    return {
+        "consequence_engine_version": "commercial_consequence_v1",
+        "catalysts_created": len(catalysts),
+        "catalysts_contradicted": sum(c["status"] == "contradicted" for c in catalysts),
+        "duplicate_catalysts_collapsed": sum(r["duplicate_catalysts_collapsed"] for r in results),
+        "average_catalyst_lead_time_days": round(sum(leads) / len(leads), 1) if leads else None,
+        "median_catalyst_lead_time_days": median(leads) if leads else None,
+        "consequences_created": len(consequences),
+        "zero_consequence_catalysts": sum(r["consequence_count"] == 0 and r["catalyst_count"] > 0 for r in results),
+        "multi_consequence_cases": sum(r["consequence_count"] > 1 for r in results),
+        "directness_distribution": directness_dist,
+        "mechanism_distribution": dict(sorted(mechanism_dist.items())),
+        "mechanism_families_exercised": sorted(mechanism_dist),
+        "buyer_resolution_rate": round(sum(has_role(c, {"BUYER", "PRIME_RECIPIENT"}) for c in consequences) / len(consequences), 4) if consequences else None,
+        "capability_resolution_rate": round(sum(bool(c["capability_classes"]) for c in consequences) / len(consequences), 4) if consequences else None,
+        "value_status_distribution": dict(sorted(value_status.items())),
+        "rejected_consequences": len(rejected),
+        "rejected_consequence_reasons": dict(sorted(rejected_reasons.items())),
+        "consequence_precision": round(true_acc / decided, 4) if decided else None,
+        "false_consequence_rate": round(false_acc / decided, 4) if decided else None,
+        "mechanism_precision": mechanism_precision,
+        "expected_consequence_cases": sum(r.get("expected_consequence_ok") is not None for r in results),
+        "expected_consequence_passing": sum(bool(r.get("expected_consequence_ok")) for r in results),
+        "small_sample_warning": ("consequence precision rests on very few decided consequences; treat as directional"
+                                 if decided < 12 else None),
+    }
+
+
 def _check_expected_chain(expected: dict | None, resolution, transitions) -> list[dict]:
     if not expected:
         return []
