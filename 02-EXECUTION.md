@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M3–M7 closed; M8 in progress · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M3–M8 closed; M9 in progress · updated 2026-09-08_
 
 ## Active work
 
@@ -63,31 +63,39 @@ roles, structured falsification); `capabilities.py`/`value.py` supply specific c
 KNOWN/ESTIMATED/BOUNDED/UNKNOWN value. 43-case `corpus_m7.json` extends the frozen M6 corpus;
 `scoring_v1` unchanged. See `docs/replay/M7_CONSEQUENCE_REPORT.md`.
 
-### Milestone 8 — in progress
+### Milestone 8 — CLOSED
 
-M8 personalizes opportunities: which specific companies have a credible, evidence-backed path to
-capture a commercial consequence. Implemented offline-first per `docs/specs/M8_CAPABILITY_FIT.md`:
+M8 passed acceptance on 2026-09-08: `pyrnova/company.py` (evidence-backed company profiles) and
+`pyrnova/fit.py` (nine POSITIVE/NEGATIVE/UNKNOWN fit dimensions, structured blockers, capture posture
+PRIME/SUPPORT/TEAM/DEFEND/NO_FIT). 48-case `corpus_m8.json` extends the frozen M7 corpus; a recovered
+Operations Panel is stabilized. `scoring_v1` unchanged. See `docs/replay/M8_FIT_REPORT.md`.
 
-- `pyrnova/company.py` — durable, source-linked company capability profiles (specific normalized
-  capabilities, point-in-time capability/award filtering, deterministic id).
-- `pyrnova/fit.py` — the capability-fit engine: nine explicit fit dimensions
-  (POSITIVE/NEGATIVE/UNKNOWN), structured fatal/soft blockers, and capture posture
-  PRIME/SUPPORT/TEAM/DEFEND/NO_FIT. Fit confidence is separate from `scoring_v1`. A fit review queue
-  (ACCEPT_FIT/REJECT_FIT/DEFER) reuses `StateStore`.
-- `pyrnova/replay.py` adds `run_fit_replay`/`run_fit_corpus`/`summarize_fit_results`; CLI
-  `fit`/`fit-corpus`. `examples/replay/corpus_m8.json` extends frozen `corpus_m7.json` with 5 fit cases.
-- `pyrnova/ops*.py` + `ops_web/` — a stabilized internal Operations Panel (`python -m pyrnova.ops_server`).
+### Milestone 9 — in progress
 
-Active constraints: fit is explicit capability/evidence overlap only — no agency/NAICS/keyword/
-semantic-similarity-only fit; unknown stays unknown and is never PRIME; fit confidence stays distinct
-from opportunity quality, evidence confidence, and consequence confidence; strict point-in-time truth
-(no future capability/award leakage); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
+M9 replaces synthetic company-fit proof with real, evidence-backed company intelligence and
+point-in-time fit calibration. Implemented offline-first per `docs/specs/M9_REAL_COMPANY_GROUNDING.md`:
+
+- `pyrnova/grounding.py` — parses archived USAspending award bytes into temporally-provenanced facts
+  and builds `profile_as_of(company, cutoff)` using only evidence knowable at the cutoff (capabilities,
+  scale, vehicles, buyers all filtered point-in-time). Real Torch/MTSI evidence under
+  `examples/real_evidence/`.
+- `capabilities.py` gains specific real defense-services classes (additive; frozen corpora unchanged).
+- `replay.py` adds a grounded-profile branch, a real/synthetic metrics split, and a hard
+  temporal-leakage gate. CLI `profile`. `corpus_m9.json` extends frozen `corpus_m8.json` with 7 real
+  fit cases.
+
+Active constraints: NO future-knowledge profile construction — every profile fact is filtered
+point-in-time and carries temporal provenance; real-profile metrics are reported separately from
+synthetic (never blended); fit doctrine is unchanged (no broad-sector / agency-only / NAICS-only /
+keyword-only / semantic-only match; unknown stays UNKNOWN; certifications/clearances/teaming are not
+inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. Complete and record the unchanged M2 live acceptance gate after the reset.
-2. Accumulate more reviewed fit cases (and the un-exercised mechanism families) before drawing general
-   fit-precision conclusions.
+1. Complete and record the unchanged M2 live acceptance gate after the reset (gate opens
+   2026-09-09T00:00:00Z; still closed at this handover).
+2. Broaden real grounding (SAM/SEC/capability statements → certifications, clearances, vehicles) and
+   grow the graded real-fit sample before generalizing fit precision.
 3. Do not alter scoring or begin a later milestone without separate authority.
 
 ## Active constraints

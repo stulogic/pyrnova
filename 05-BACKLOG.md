@@ -58,6 +58,21 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 - Capability fit-matching thresholds and confidence calibration once a larger reviewed sample exists.
 - Contract-vehicle and set-aside eligibility depth (currently a single structured blocker each).
 
+## P1 — deferred real-profile / calibration work
+
+- Broaden real profile evidence beyond USAspending prime awards: SAM entity/eligibility (certifications,
+  set-asides, clearances), SEC EDGAR business descriptions/facilities/segments, and official capability
+  statements — each point-in-time with provenance, to fill the UNKNOWN certification/clearance/vehicle
+  gaps.
+- Profile additional real companies and grow the graded real-fit sample well beyond 7 before
+  generalizing fit precision; add real SUPPORT/TEAM cases once subcontract/teaming evidence is available.
+- Real subcontract/support signal (USAspending sub-award data) so "public prime award absent" is not
+  read as "no participation".
+- Profile-fact review (ACCEPT/REJECT/DEFER PROFILE FACT) reusing the fit-review pattern.
+- Operations Panel real-profile view (selected company, facts, evidence, cutoff, posture, blockers,
+  unknowns) — thin read/write over engine state; deferred in M9 to protect core progress.
+- USAspending publication-lag modeling so `available_at` reflects true knowability, not award start date.
+
 ## Deferred product/infrastructure work
 
 - Polished frontend, mobile apps, enterprise UI, self-serve dashboard.

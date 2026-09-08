@@ -17,10 +17,14 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - **M7: CLOSED.** Capital catalysts and commercial consequences turn resolved capital chains into
   explicit, evidence-backed commercial consequences (mechanism, directness, participant roles,
   capability, value, falsifiers) without inventing generic business ideas. `scoring_v1` unchanged.
-- **M8: IN PROGRESS.** Capability fit + opportunity personalization: evidence-backed company profiles
+- **M8: CLOSED.** Capability fit + opportunity personalization: evidence-backed company profiles
   matched against commercial-consequence requirements produce an explainable capture posture
   (PRIME/SUPPORT/TEAM/DEFEND/NO_FIT) with fit dimensions, structured blockers, and point-in-time truth.
-  A recovered internal Operations Panel is stabilized and sandbox-safe.
+  A recovered internal Operations Panel is stabilized and sandbox-safe. `scoring_v1` unchanged.
+- **M9: IN PROGRESS.** Real company grounding + production fit calibration: company profiles are built
+  from real archived USAspending evidence (Torch Technologies, Modern Technology Solutions), filtered
+  strictly point-in-time, then run through the fit engine against real historical opportunities.
+  Real-profile metrics are reported separately from synthetic; temporal leakage is a hard gate.
 
 ## Implemented and verified
 
@@ -194,6 +198,38 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   are sandbox-safe (the live-socket path skips when a loopback bind is forbidden; a handler-routing test
   covers the HTTP path without a port). See `docs/OPERATOR_CONSOLE.md`.
 
+## M9 real company grounding + fit calibration
+
+- **Real evidence ingestion** (`pyrnova/grounding.py`): `parse_usaspending_awards` turns archived
+  USAspending `spending_by_award` bytes into temporally-provenanced facts (contract history, capability
+  records, scale, contract vehicles, buyer agencies). Real award history for **Torch Technologies** and
+  **Modern Technology Solutions** is archived under `examples/real_evidence/` (public domain, keyless;
+  archive once, replay many).
+- **Point-in-time profiles** (`grounding.profile_as_of`): a `CompanyProfile` built from only evidence
+  knowable at a historical cutoff. Capabilities, scale, vehicles, and buyer agencies are ALL filtered
+  `available_at <= cutoff`, so a future mega-award or contract vehicle cannot leak backward.
+  `first_supportable_capability_date` answers "when did we first have evidence of capability X?"
+  (Torch SETA 2018-05-23, HWIL 2021-01-15). CLI `profile` renders a profile as of a date.
+- **Real capability vocabulary**: `capabilities.py` gains specific defense-services classes
+  (hardware-in-the-loop simulation, SETA, missile-defense engineering, modeling & simulation, test &
+  evaluation, specialty engineering); additive only, so frozen M4–M8 corpora are byte-for-byte
+  unchanged.
+- **Hard temporal-leakage gate**: `run_fit_replay` verifies that future-dated award refs declared in a
+  case's `leakage_probe` never appear in the as-of profile, and reports `temporal_leakage_violations`.
+- **`corpus_m9.json`** extends the frozen `corpus_m8.json` (55 cases) with **7 real fit cases** built
+  from archived evidence: PRIME (Torch Army SETA 2020, MTSI MDA specialty 2019, MTSI FAS 2021), DEFEND
+  (Torch incumbent weapons-SETA recompete, backed by a real follow-on award), SUPPORT (MTSI partial
+  capability on a HWIL+specialty requirement), NO_FIT (Torch vs radar hardware manufacturing — a real
+  defense firm correctly rejected for broad-sector matching; MTSI early-2010 insufficient evidence).
+  Two cases carry future-award leakage probes (MTSI 2024/2025, Torch 2021).
+- **Real-profile calibration (separate from synthetic M8)**: 7 graded real fits — fit precision 1.0,
+  no-fit precision 1.0, false-match rate 0.0, posture precision 1.0, **temporal leakage violations 0**,
+  capability coverage 0.857, buyer-history coverage 0.714, unknown rate 0.143 (tiny sample; warning
+  surfaced). Synthetic M8 metrics (12 graded fits, precision 1.0) are reported separately and never
+  blended. Under `scoring_v1`: 55 cases, STRIKE precision 0.9412, WATCH conversion 0.8571, FPR 0.125,
+  FNR 0.0, no STRIKE explosion (16 true / 1 inherited false). Frozen M4–M8 baselines unchanged. See
+  `docs/replay/M9_REAL_PROFILE_CALIBRATION.md` and `docs/specs/M9_REAL_COMPANY_GROUNDING.md`.
+
 ## M3 baseline
 
 - STRIKE precision: 0.6667
@@ -250,6 +286,16 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   timing) are read only from explicit record fields. No M8 live API calls were made.
 - The Operations Panel is internal-only, loopback-only tooling; source health means "an observation is
   persisted", not a live availability claim, and outcomes are operator-entered labels, not ground truth.
+- **M9 real-profile limitations (explicit):** 2 real companies (Torch, MTSI); 7 graded real fits — all
+  metrics are directional, not stable. Source coverage is USAspending prime-award history only: SAM
+  entity/eligibility, SEC filings, and official capability statements were NOT ingested, so
+  certifications, security clearances, contract-vehicle breadth, and teaming access are UNKNOWN (never
+  inferred). Public award data cannot prove subcontract/support activity, so absence of a public award
+  is not proof of non-participation (ambiguity preserved). TEAM posture is not exercised for real
+  profiles because public award data does not reveal teaming agreements (synthetic M8 covers TEAM).
+  USAspending publication lag means an award's real knowability is slightly after its start date, which
+  is used as `available_at` (a small, documented generosity). 4 live USAspending calls were made
+  (keyless, public domain, archived); no SAM calls.
 - Earlier limitations (M2 fresh-SAM gate, sparse STRIKE sample, binary-metric exclusions, restricted
   URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text, tiny inferred-join
   and consequence samples, two un-exercised mechanism families) still stand.
@@ -258,6 +304,6 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
 `2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`. M6–M8 remain offline; accumulate more reviewed fit, consequence, and inferred-join
-cases (and exercise the SUPPLY_DISPLACEMENT / TECHNOLOGY_MIGRATION mechanisms) before drawing general
-fit- or commercial-precision conclusions.
+`06-HISTORY.md`. Then broaden real-profile grounding: add SAM/SEC/capability-statement evidence
+(certifications, clearances, vehicles), profile more real companies, and grow the graded real-fit
+sample before generalizing fit precision.

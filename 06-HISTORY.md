@@ -103,7 +103,7 @@
   precision 0.875, WATCH conversion 0.8571, FPR 0.125, FNR 0.0, no STRIKE explosion. Frozen M4/M5/M6
   baselines unchanged. Test suite grew from 146 to 182 (tracked). No live API calls.
 
-## Milestone 8 — IN PROGRESS 2026-09-08
+## Milestone 8 — CLOSED 2026-09-08
 
 - Stabilized the recovered internal Operations Panel (`pyrnova/ops.py`, `ops_server.py`, `ops_web/`):
   a local-only, loopback-only analyst view over append-only state. Made its tests sandbox-safe (the
@@ -125,6 +125,27 @@
   sample; warning surfaced). Under `scoring_v1`: FNR 0.0, no new false strike, no STRIKE explosion.
   Frozen M4–M7 baselines unchanged. Test suite grew to 218 passing (1 sandbox skip). No live API calls.
   Each coherent block (panel, company, fit engine) was committed and pushed to origin/main.
+
+## Milestone 9 — IN PROGRESS 2026-09-08
+
+- Grounded real company profiles in archived USAspending prime-award evidence (public domain, keyless):
+  archived Torch Technologies and Modern Technology Solutions award history to `examples/real_evidence/`
+  (4 live USAspending calls; no SAM).
+- Added `pyrnova/grounding.py`: `parse_usaspending_awards` (temporally-provenanced facts) and
+  `profile_as_of(company, cutoff)` — a strict no-future-knowledge profile where capabilities, scale,
+  vehicles, and buyer agencies are all filtered `available_at <= cutoff`. `first_supportable_capability_date`
+  answers "when did we first have evidence of X?" (Torch SETA 2018, HWIL 2021). CLI `profile`.
+- Extended `capabilities.py` with specific defense-services classes (HWIL, SETA, missile defense, M&S,
+  T&E, specialty engineering); additive, frozen M4–M8 corpora unchanged.
+- Added a real/synthetic fit-metrics split and a hard temporal-leakage gate to `replay.py`.
+- Added `corpus_m9.json` (extends frozen `corpus_m8.json`, 55 cases) with 7 real fit cases: PRIME
+  (Torch Army SETA, MTSI MDA specialty, MTSI FAS), DEFEND (Torch incumbent recompete, real follow-on),
+  SUPPORT (MTSI partial capability), NO_FIT (Torch vs radar hardware — broad-sector rejection; MTSI
+  early-cutoff unknown), plus future-award leakage probes. Real-profile fit precision 1.0, no-fit
+  precision 1.0, false-match rate 0.0, posture precision 1.0, temporal leakage violations 0 — reported
+  SEPARATELY from synthetic M8 (12 fits, precision 1.0). Under `scoring_v1`: 55 cases, STRIKE precision
+  0.9412, FNR 0.0, no STRIKE explosion. Frozen M4–M8 unchanged. Test suite grew to 248 passing (1
+  sandbox skip). TEAM deferred for real profiles. Each block committed and pushed to origin/main.
 
 ## Repository authority normalization — 2026-09-08
 
