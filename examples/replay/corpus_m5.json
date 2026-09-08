@@ -1,0 +1,329 @@
+{
+  "corpus_id": "pyrnova-m5-cross-source-chains-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_m4.json",
+  "reviewed_at": "2026-09-08",
+  "cases": [
+    {
+      "case_id": "chain-navy-c5isr-lifecycle-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2025-01-22T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "NAVSEA-FY25-C5ISR-001",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "navsea:c5isr-sustainment-2025",
+          "summary": "FY25 C5ISR sustainment procurement forecast",
+          "agency": "Department of the Navy",
+          "downstream_refs": ["N0002425R5001"],
+          "available_at": "2023-11-15T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.navsea.navy.mil/procurement-forecast/NAVSEA-FY25-C5ISR-001",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "N0002425R5001",
+          "record_kind": "solicitation",
+          "stage": "PROCUREMENT",
+          "program_key": "navsea:c5isr-sustainment-2025",
+          "summary": "C5ISR sustainment solicitation",
+          "agency": "Department of the Navy",
+          "downstream_refs": ["CONT_AWD_N0002425C0007"],
+          "available_at": "2024-09-10T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/N0002425R5001/view",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_N0002425C0007",
+          "record_kind": "award",
+          "stage": "AWARD",
+          "program_key": "navsea:c5isr-sustainment-2025",
+          "summary": "C5ISR sustainment award",
+          "agency": "Department of the Navy",
+          "available_at": "2025-01-22T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_N0002425C0007",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_N0002425C0007-mod-2026",
+          "record_kind": "project_update",
+          "summary": "Sustainment option exercised (later evidence, excluded at cutoff)",
+          "available_at": "2026-06-30T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_N0002425C0007",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The NAVSEA FY25 C5ISR sustainment forecast will move through a SAM solicitation to a Navy award.",
+        "relevance": 0.72,
+        "predicted_buyer": "Department of the Navy",
+        "predicted_timing": "by early 2025",
+        "predicted_value_usd": 48000000
+      },
+      "expected_affected_entities": ["C5ISR sustainment and electronics integration vendors"],
+      "expected_buyer_program_owner": "Department of the Navy",
+      "expected_commercial_mechanism": "forecast to solicitation to sustainment award lifecycle",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "Department of the Navy",
+        "occurred_at": "2025-01-22T00:00:00+00:00",
+        "actual_value_usd": 51200000,
+        "source_ref": "CONT_AWD_N0002425C0007"
+      },
+      "expected_disposition": "STRIKE",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M5 chain review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "ACCEPT",
+        "reason": "A forecast, a matching SAM solicitation, and the USAspending award share the program identity and native identifiers, so this is one actionable procurement lifecycle.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "expected_chain": {
+        "min_relationships": 2,
+        "min_deterministic": 2,
+        "predicates": ["PRECEDES"],
+        "final_disposition": "STRIKE",
+        "promotion_causes": [
+          {"to": "WATCH", "stage": "MARKET_ENGAGEMENT"},
+          {"to": "STRIKE", "stage": "PROCUREMENT"}
+        ]
+      }
+    },
+    {
+      "case_id": "chain-doe-battery-hub-downstream-2022",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2022-05-19T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "grants_gov",
+          "source_ref": "DE-FOA-0002678",
+          "record_kind": "grant_nofo",
+          "stage": "FUNDING",
+          "program_key": "doe:battery-materials-hub-2022",
+          "summary": "Battery materials processing and manufacturing grants",
+          "agency": "Department of Energy",
+          "available_at": "2022-05-19T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.grants.gov/search-results-detail/DE-FOA-0002678",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "doe",
+          "source_ref": "doe-battery-hub-selections-2022-10-19",
+          "record_kind": "program_designation",
+          "stage": "PROGRAM",
+          "program_key": "doe:battery-materials-hub-2022",
+          "summary": "DOE announces battery materials hub selections",
+          "agency": "Department of Energy",
+          "available_at": "2022-10-19T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.energy.gov/articles/battery-materials-hub-selections-2022",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usaspending",
+          "source_ref": "CONT_AWD_DE_BATTERY_2023",
+          "record_kind": "award",
+          "stage": "AWARD",
+          "program_key": "doe:battery-materials-hub-2022",
+          "summary": "Downstream construction and equipment award to a selected hub",
+          "agency": "Department of Energy",
+          "available_at": "2023-08-01T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.usaspending.gov/award/CONT_AWD_DE_BATTERY_2023",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The DOE battery materials grant NOFO will select hubs and generate downstream construction and equipment spend.",
+        "relevance": 0.6,
+        "predicted_buyer": "Department of Energy",
+        "predicted_timing": "12-18 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["battery materials processing, construction, and equipment vendors"],
+      "expected_buyer_program_owner": "Department of Energy",
+      "expected_commercial_mechanism": "grant funding to hub selection to downstream commercial spend",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "downstream_award",
+        "buyer": "Department of Energy",
+        "occurred_at": "2023-08-01T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "CONT_AWD_DE_BATTERY_2023"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "MEDIUM"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M5 chain review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "At NOFO time the grant is a funding event only; downstream commercial spend is not yet a customer-specific procurement, so this stays a WATCH rather than a STRIKE.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": ["funding_without_executable_demand"],
+      "expected_chain": {
+        "min_relationships": 2,
+        "min_deterministic": 2,
+        "predicates": ["FUNDS", "PRECEDES"],
+        "final_disposition": "WATCH",
+        "promotion_causes": [
+          {"to": "WATCH", "stage": "FUNDING"}
+        ]
+      }
+    },
+    {
+      "case_id": "chain-false-join-hhs-dhs-cloud-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-02-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "HHS-2024-CLOUD-014",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "hhs:cloud-migration-2024",
+          "summary": "HHS cloud migration support services forecast",
+          "agency": "Department of Health and Human Services",
+          "available_at": "2024-02-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.hhs.gov/procurement-forecast/HHS-2024-CLOUD-014",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sam_opportunities",
+          "source_ref": "DHS-2024-CLOUD-221",
+          "record_kind": "rfi",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "dhs:cloud-migration-2024",
+          "summary": "DHS cloud migration request for information",
+          "agency": "Department of Homeland Security",
+          "available_at": "2024-03-05T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://sam.gov/opp/DHS-2024-CLOUD-221/view",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The HHS and DHS cloud-migration notices are stages of a single cross-agency cloud program.",
+        "relevance": 0.3,
+        "predicted_buyer": "Department of Health and Human Services",
+        "predicted_timing": "unclear",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["cloud migration and managed services vendors"],
+      "expected_buyer_program_owner": "Department of Health and Human Services",
+      "expected_commercial_mechanism": "asserted cross-agency cloud program (not supported)",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "no_shared_program",
+        "buyer": null,
+        "occurred_at": null,
+        "source_ref": "DHS-2024-CLOUD-221"
+      },
+      "expected_disposition": "REJECT",
+      "ground_truth": {"label": "TRUE_NEGATIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M5 chain review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Two different agencies with topically similar cloud notices and close timing share no program identifier or native crosswalk; joining them would be a topic-only inference.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": ["broad_topical_match", "speculative_causality"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "min_rejected": 1,
+        "final_disposition": "REJECT"
+      }
+    },
+    {
+      "case_id": "chain-faa-tracon-unresolved-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-06-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "FAA-2024-TRACON-777",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "faa:terminal-radar-modernization-2024",
+          "summary": "FAA terminal radar (TRACON) modernization forecast",
+          "agency": "Federal Aviation Administration",
+          "downstream_refs": ["FAA-SOL-PENDING"],
+          "available_at": "2024-06-01T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.faa.gov/procurement-forecast/FAA-2024-TRACON-777",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "faa",
+          "source_ref": "FAA-2024-TRACON-777-status-2026-09-01",
+          "record_kind": "unresolved_forecast",
+          "summary": "No solicitation or award had appeared as of the reviewed status check",
+          "available_at": "2026-09-01T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.faa.gov/procurement-forecast/FAA-2024-TRACON-777",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The FAA TRACON modernization forecast will convert to a solicitation and award.",
+        "relevance": 0.7,
+        "predicted_buyer": "Federal Aviation Administration",
+        "predicted_timing": "within 12 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["radar modernization and air-traffic systems vendors"],
+      "expected_buyer_program_owner": "Federal Aviation Administration",
+      "expected_commercial_mechanism": "forecast with a named but unfulfilled downstream solicitation",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "unresolved_forecast",
+        "buyer": "Federal Aviation Administration",
+        "occurred_at": null,
+        "source_ref": "FAA-2024-TRACON-777-status-2026-09-01"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "The forecast names a downstream solicitation reference that never materialized in the reviewed evidence; the chain stays a single partial stage and remains unresolved rather than negative.",
+      "reviewer": "Pyrnova M5 chain review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "A named forecast with a dangling downstream reference justifies monitoring, not promotion, until a real solicitation or award appears.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "LOW"
+      },
+      "failure_reasons": ["funding_without_executable_demand"],
+      "expected_chain": {
+        "max_relationships": 0,
+        "final_disposition": "WATCH"
+      }
+    }
+  ]
+}
