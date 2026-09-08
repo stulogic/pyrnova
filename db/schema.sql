@@ -122,9 +122,9 @@ CREATE TABLE event_evidence (
 CREATE TABLE relationship (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     subject_id      uuid NOT NULL,
-    predicate       text NOT NULL,                    -- AUTHORIZES|FUNDS|IMPLEMENTS|PRECEDES|CORROBORATES|CONTRADICTS|...
+    predicate       text NOT NULL,                    -- AUTHORIZES|FUNDS|IMPLEMENTS|PRECEDES|CORROBORATES|CONTRADICTS|AWARDED_TO|SUBSIDIARY_OF|LOCATED_AT|...
     object_id       uuid NOT NULL,
-    join_method     text,                             -- deterministic_program_key|deterministic_native_id|inferred_strong_attribute
+    join_method     text,                             -- deterministic_program_key|deterministic_native_id|inferred_strong_attribute|authoritative_entity_field
     confidence      real,                             -- per-relationship confidence 0..1
     rationale       text,                             -- why this edge exists (audit)
     first_observed_at timestamptz,                    -- earliest time both endpoints were knowable
@@ -262,6 +262,30 @@ CREATE TABLE review (
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX review_opportunity_created_idx ON review(opportunity_id, created_at DESC);
+
+-- M6 human review queue for uncertain (deferred) inferred cross-source joins. The engine scores an
+-- anchored inferred candidate into the review band [0.45, 0.60); a reviewer dispositions it. The
+-- pre-review confidence and prior automated recommendation are retained so this becomes durable
+-- calibration/training evidence. Dev implementation is append-only JSONL; this table is the
+-- production mirror. It never changes scoring_v1.
+CREATE TABLE join_review (
+    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    relationship_id text NOT NULL,                    -- stable id of the candidate inferred edge
+    decision        text NOT NULL CHECK (decision IN ('ACCEPT_JOIN','REJECT_JOIN','WATCH')),
+    reviewer        text NOT NULL,
+    reason          text,
+    pre_review_confidence real,                       -- engine's computed confidence at deferral
+    automated_recommendation text,                    -- prior automated disposition (e.g. 'DEFER')
+    subject_id      text,
+    object_id       text,
+    predicate       text,
+    join_method     text,
+    first_observed_at timestamptz,
+    reviewed_at     timestamptz,
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX join_review_relationship_idx ON join_review(relationship_id, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- PREDICTION + OUTCOME  (forward proof; graded later)

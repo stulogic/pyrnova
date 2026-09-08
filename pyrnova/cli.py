@@ -356,6 +356,43 @@ def cmd_chain_corpus(args) -> int:
     return 0
 
 
+def cmd_inferred_threshold(args) -> int:
+    from .replay import evaluate_inferred_threshold, load_corpus
+
+    report = evaluate_inferred_threshold(load_corpus(Path(args.corpus)))
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_join_review(args) -> int:
+    from .review_queue import adjudicate_join, override_rate, pending_reviews
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    if args.corpus:
+        # Populate the queue by resolving a corpus point-in-time (enqueues deferred inferred joins).
+        from .replay import load_corpus, run_chain_corpus
+        run_chain_corpus(load_corpus(Path(args.corpus)), store=store)
+    if args.action == "list":
+        pending = pending_reviews(store)
+        print(json.dumps({"pending": pending, "override_rate": override_rate(store)},
+                         indent=2, sort_keys=True))
+        return 0
+    if args.action == "decide":
+        if not (args.relationship_id and args.decision and args.reviewer):
+            print("decide requires --relationship-id, --decision, and --reviewer", file=sys.stderr)
+            return 2
+        review = adjudicate_join(store, args.relationship_id, decision=args.decision,
+                                 reviewer=args.reviewer, reason=args.reason or "")
+        print(json.dumps({"relationship_id": review.relationship_id, "decision": review.decision,
+                          "reviewer": review.reviewer, "pre_review_confidence": review.pre_review_confidence,
+                          "automated_recommendation": review.automated_recommendation,
+                          "reviewed_at": review.reviewed_at}, indent=2, sort_keys=True))
+        return 0
+    print(f"unknown join-review action: {args.action}", file=sys.stderr)
+    return 2
+
+
 def cmd_source_contribution(args) -> int:
     from .contribution import measure_replay_source_contribution
     from .replay import load_corpus
@@ -429,6 +466,19 @@ def main(argv=None) -> int:
     chain_corpus.add_argument("--scoring-version", default="scoring_v1")
     chain_corpus.add_argument("--verbose", action="store_true", help="include per-case chain detail")
     chain_corpus.set_defaults(func=cmd_chain_corpus)
+
+    threshold = sub.add_parser("inferred-threshold", help="evaluate inferred-join acceptance threshold behavior")
+    threshold.add_argument("--corpus", default="examples/replay/corpus_m6.json")
+    threshold.set_defaults(func=cmd_inferred_threshold)
+
+    jr = sub.add_parser("join-review", help="human review queue for uncertain (deferred) inferred joins")
+    jr.add_argument("action", choices=("list", "decide"))
+    jr.add_argument("--relationship-id", default=None)
+    jr.add_argument("--decision", default=None, choices=("ACCEPT_JOIN", "REJECT_JOIN", "WATCH"))
+    jr.add_argument("--reviewer", default=None)
+    jr.add_argument("--reason", default="")
+    jr.add_argument("--corpus", default=None, help="optionally resolve a corpus first to enqueue its deferred joins")
+    jr.set_defaults(func=cmd_join_review)
 
     contribution = sub.add_parser("source-contribution", help="measure source lift by deterministic replay ablation")
     contribution.add_argument("--corpus", default="examples/replay/corpus_m4.json")

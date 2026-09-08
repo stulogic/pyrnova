@@ -43,7 +43,21 @@ PREDICATE_BY_STAGE_PAIR = {
 DETERMINISTIC_METHODS = {"deterministic_program_key", "deterministic_native_id"}
 _DETERMINISTIC_CONFIDENCE = 0.95
 _CORROBORATION_CONFIDENCE = 0.90
-_INFERRED_CONFIDENCE = 0.60
+
+# Inferred-join calibration (M6). The *acceptance* threshold is frozen at 0.60 (see 04-DECISIONS
+# D-015). M6 refines the inferred path from a rubber-stamp into a weighted, explainable model whose
+# computed confidence must actually clear that gate. An "anchor" is an authoritative structured
+# identity (shared program identifier, matching entity UEI, or a specific program-number fragment);
+# without an anchor a pair is capped below the threshold, so agency + topic + chronology +
+# name-similarity can never combine into an accepted join (STRICT INFERENCE RULES 1-4). Pairs that
+# clear the DEFER floor but not the accept threshold are queued for human review, not linked.
+_INFERRED_ACCEPT_THRESHOLD = 0.60
+_INFERRED_DEFER_FLOOR = 0.45
+_NO_ANCHOR_CONFIDENCE_CAP = 0.55  # below the accept threshold, by construction
+
+# Entity-level predicates (M6) established only from authoritative structured fields on a record.
+ENTITY_PREDICATES = {"AWARDED_TO", "SUBSIDIARY_OF", "LOCATED_AT"}
+_ENTITY_FIELD_CONFIDENCE = 0.95
 
 _CONTRA_TERMS = {
     "cancel", "cancelled", "cancellation", "canceled", "withdraw", "withdrawn", "rescission",
@@ -89,8 +103,72 @@ class RejectedJoin:
 
     left_id: str
     right_id: str
-    reason: str            # agency_name_only | topic_overlap_only | chronological_proximity_only
+    reason: str            # agency_name_only | topic_overlap_only | inference_below_threshold |
+                           # inference_contradiction
     detail: str = ""
+
+
+@dataclass(frozen=True)
+class DeferredJoin:
+    """An anchored inferred link whose confidence lands in the ambiguous review band.
+
+    It is neither materialized nor discarded: it is handed to the human review queue with its full
+    scored rationale so a reviewer's disposition becomes durable calibration evidence.
+    """
+
+    left_id: str
+    right_id: str
+    subject_id: str
+    object_id: str
+    predicate: str
+    confidence: float
+    rationale: str
+    evidence_ids: tuple[str, ...] = ()
+    first_observed_at: str | None = None
+    automated_recommendation: str = "DEFER"
+
+    @property
+    def relationship_id(self) -> str:
+        return _edge_id(self.subject_id, self.predicate, self.object_id)
+
+    def to_queue_record(self) -> dict:
+        return {
+            "relationship_id": self.relationship_id,
+            "left_id": self.left_id,
+            "right_id": self.right_id,
+            "subject_id": self.subject_id,
+            "object_id": self.object_id,
+            "predicate": self.predicate,
+            "pre_review_confidence": self.confidence,
+            "join_method": "inferred_strong_attribute",
+            "automated_recommendation": self.automated_recommendation,
+            "rationale": self.rationale,
+            "evidence_ids": list(self.evidence_ids),
+            "first_observed_at": self.first_observed_at,
+        }
+
+
+@dataclass(frozen=True)
+class InferenceScore:
+    """Explainable, deterministic scoring of one candidate inferred join."""
+
+    confidence: float
+    anchored: bool
+    disposition: str                 # accept | defer | reject
+    factors: tuple[tuple[str, float], ...]
+    penalties: tuple[tuple[str, float], ...]
+    anchors: tuple[str, ...]
+    reject_reason: str | None = None
+
+    @property
+    def rationale(self) -> str:
+        pos = "; ".join(f"+{name} {weight:+.2f}" for name, weight in self.factors) or "no positive factors"
+        neg = "; ".join(f"{name} {weight:+.2f}" for name, weight in self.penalties)
+        anchor = f"anchors=[{', '.join(self.anchors)}]" if self.anchors else "no structured anchor"
+        parts = [f"inferred confidence {self.confidence:.2f}", anchor, pos]
+        if neg:
+            parts.append(f"penalties: {neg}")
+        return " | ".join(parts)
 
 
 @dataclass(frozen=True)
@@ -100,6 +178,9 @@ class ChainResolution:
     rejected: tuple[RejectedJoin, ...]
     duplicates_collapsed: int
     confidence: dict = field(default_factory=dict)
+    deferred: tuple[DeferredJoin, ...] = ()
+    entity_relationships: tuple[Relationship, ...] = ()
+    inference_scores: tuple[InferenceScore, ...] = ()  # every anchored candidate pair, for calibration
 
     @property
     def program_keys(self) -> tuple[str, ...]:
@@ -120,9 +201,12 @@ class ChainResolution:
             "relationships_total": len(self.relationships),
             "deterministic_relationships": len(deterministic),
             "inferred_relationships": len(inferred),
+            "deferred_joins": len(self.deferred),
             "corroborations": sum(r.predicate == "CORROBORATES" for r in self.relationships),
             "contradictions": sum(r.predicate == "CONTRADICTS" for r in self.relationships),
             "rejected_weak_joins": len(self.rejected),
+            "entity_relationships": len(self.entity_relationships),
+            "entity_predicates": sorted({r.predicate for r in self.entity_relationships}),
             "distinct_sources": len({s.source_id for s in self.signals}),
             "program_keys": list(self.program_keys),
             "stages_present": list(self.stages_present),
@@ -153,12 +237,18 @@ def signals_from_records(records: list[dict], *, as_of: str | None = None) -> li
             summary=record.get("summary") or record.get("record_kind") or record["source_ref"],
             available_at=available_at,
             agency=record.get("agency"),
+            geography=record.get("geography") or record.get("place_of_performance"),
             downstream_refs=tuple(record.get("downstream_refs") or ()),
             confidence=str(record.get("confidence") or "UNKNOWN"),
             meta={
                 "record_kind": record.get("record_kind"),
                 "program_identifier": record.get("program_identifier"),
                 "contradicts": bool(record.get("contradicts")),
+                "amount_usd": record.get("amount_usd"),
+                "entity_uei": record.get("recipient_uei") or record.get("entity_uei"),
+                "parent_uei": record.get("parent_uei"),
+                "entity_name": record.get("recipient") or record.get("entity_name"),
+                "place_of_performance": record.get("place_of_performance"),
             },
         ))
     return signals
@@ -233,6 +323,155 @@ def _chain_confidence(signals: list[ProgramSignal], relationships: list[Relation
         "contradicted": contradicted,
         "basis": basis,
     }
+
+
+def _norm_text(value: str | None) -> str | None:
+    text = " ".join(str(value or "").split()).casefold()
+    return text or None
+
+
+def _significant_tokens(*values: str | None) -> set[str]:
+    """Specific alphanumeric identifier tokens (len>=6 containing a digit) usable as a shared
+    program/solicitation-number fragment. Short, generic, and bare-year tokens are excluded."""
+    out: set[str] = set()
+    for value in values:
+        for raw in "".join(c if c.isalnum() else " " for c in str(value or "")).split():
+            token = raw.upper()
+            if len(token) >= 6 and any(ch.isdigit() for ch in token):
+                out.add(token)
+    return out
+
+
+def score_inferred_join(left: ProgramSignal, right: ProgramSignal) -> InferenceScore:
+    """Deterministically score a candidate inferred join from weighted structured evidence.
+
+    An "anchor" is authoritative structured identity: a shared explicit program identifier, matching
+    entity UEI, or a shared specific program/solicitation-number fragment. Without an anchor the
+    confidence is capped below the acceptance threshold, so agency + topic + chronology + name
+    similarity can never combine into an accepted join. Contradictions (agency conflict, temporal
+    impossibility, geographic/funding divergence) subtract and can invalidate an otherwise anchored
+    pair. The result is explainable: every factor and penalty is retained.
+    """
+    factors: list[tuple[str, float]] = []
+    penalties: list[tuple[str, float]] = []
+    anchors: list[str] = []
+
+    # --- Anchors (authoritative structured identity) ---
+    lu, ru = left.meta.get("entity_uei"), right.meta.get("entity_uei")
+    if lu and ru and str(lu).strip().upper() == str(ru).strip().upper():
+        factors.append(("authoritative_entity_match", 0.45))
+        anchors.append(f"entity_uei:{str(lu).strip().upper()}")
+
+    shared_id = _shared_program_identifier(left, right)
+    if shared_id:
+        factors.append(("shared_program_identifier", 0.45))
+        anchors.append(f"program_identifier:{shared_id}")
+
+    shared_fragment = _significant_tokens(left.source_ref, left.meta.get("program_identifier")) & \
+        _significant_tokens(right.source_ref, right.meta.get("program_identifier"))
+    if shared_fragment and not shared_id:
+        factors.append(("program_number_fragment", 0.25))
+        anchors.append(f"fragment:{sorted(shared_fragment)[0]}")
+
+    anchored = bool(anchors)
+
+    # --- Non-anchor positive factors ---
+    agency_left = _tokens(left.agency) - _AGENCY_STOP
+    agency_right = _tokens(right.agency) - _AGENCY_STOP
+    agency_known = bool(agency_left) and bool(agency_right)
+    agency_overlap = bool(agency_left & agency_right)
+    if agency_overlap:
+        factors.append(("agency_match", 0.15))
+
+    name_left = _tokens(left.summary) - _AGENCY_STOP
+    name_right = _tokens(right.summary) - _AGENCY_STOP
+    name_overlap, name_union = name_left & name_right, name_left | name_right
+    if name_overlap and name_union:
+        jaccard = len(name_overlap) / len(name_union)
+        factors.append(("program_name_similarity", round(min(0.15, 0.15 * jaccard), 3)))
+
+    la, ra = left.meta.get("amount_usd"), right.meta.get("amount_usd")
+    if isinstance(la, (int, float)) and isinstance(ra, (int, float)) and la > 0 and ra > 0:
+        ratio = max(la, ra) / min(la, ra)
+        if ratio <= 1.25:
+            factors.append(("funding_amount_proximity", 0.10))
+        elif ratio >= 10:
+            penalties.append(("funding_amount_divergence", 0.15))
+
+    lg = _norm_text(left.geography or left.meta.get("place_of_performance"))
+    rg = _norm_text(right.geography or right.meta.get("place_of_performance"))
+    if lg and rg:
+        factors.append(("geography_match", 0.05)) if lg == rg else penalties.append(("geography_conflict", 0.20))
+
+    # --- Contradiction penalties (gates) ---
+    if agency_known and not agency_overlap:
+        penalties.append(("agency_conflict", 0.40))
+    precursor, successor = sorted((left, right), key=lambda s: (_STAGE_ORDER[s.stage], s.available_at or ""))
+    if precursor.available_at and successor.available_at and precursor.available_at > successor.available_at:
+        penalties.append(("temporal_impossibility", 0.40))
+
+    confidence = max(0.0, min(0.95, round(sum(w for _, w in factors) - sum(w for _, w in penalties), 3)))
+    if not anchored:
+        confidence = min(confidence, _NO_ANCHOR_CONFIDENCE_CAP)
+
+    if anchored and confidence >= _INFERRED_ACCEPT_THRESHOLD:
+        disposition, reject_reason = "accept", None
+    elif anchored and confidence >= _INFERRED_DEFER_FLOOR:
+        disposition, reject_reason = "defer", None
+    else:
+        disposition = "reject"
+        reject_reason = ("inference_contradiction" if penalties else "inference_below_threshold") if anchored else None
+    return InferenceScore(
+        confidence=confidence, anchored=anchored, disposition=disposition,
+        factors=tuple(factors), penalties=tuple(penalties), anchors=tuple(anchors),
+        reject_reason=reject_reason,
+    )
+
+
+def _entity_rel(subject_id: str, predicate: str, object_id: str, signal: ProgramSignal,
+                evidence_ids: list[str], rationale: str) -> Relationship:
+    rel = Relationship(
+        subject_id=subject_id, predicate=predicate, object_id=object_id,
+        evidence_ids=list(evidence_ids), join_method="authoritative_entity_field",
+        confidence=_ENTITY_FIELD_CONFIDENCE, rationale=rationale,
+        first_observed_at=signal.available_at, available_at=signal.available_at,
+        meta={"source": f"{signal.source_id}:{signal.source_ref}", "stage": signal.stage},
+    )
+    rel.id = _edge_id(subject_id, predicate, object_id)
+    return rel
+
+
+def resolve_entity_relationships(
+    signals: list[ProgramSignal], *, evidence_by_signal_id: dict[str, str] | None = None,
+) -> list[Relationship]:
+    """Derive entity-level predicates (AWARDED_TO, SUBSIDIARY_OF, LOCATED_AT) only from authoritative
+    structured fields on a signal — never inferred from topic. Each edge is evidence-backed, temporal,
+    and deterministic."""
+    evidence_by_signal_id = evidence_by_signal_id or {}
+    rels: list[Relationship] = []
+    for signal in signals:
+        evidence = [e for e in (evidence_by_signal_id.get(signal.id),) if e]
+        uei = signal.meta.get("entity_uei")
+        if not uei:
+            continue
+        uei_norm = str(uei).strip().upper()
+        entity_node = f"entity:uei:{uei_norm}"
+        if signal.stage in ("AWARD", "PROCUREMENT"):
+            rels.append(_entity_rel(signal.id, "AWARDED_TO", entity_node, signal, evidence,
+                                    f"record names authoritative recipient UEI {uei_norm}"))
+        parent = signal.meta.get("parent_uei")
+        if parent and str(parent).strip().upper() != uei_norm:
+            rels.append(_entity_rel(entity_node, "SUBSIDIARY_OF", f"entity:uei:{str(parent).strip().upper()}",
+                                    signal, evidence, "record declares an authoritative parent UEI"))
+        place = _norm_text(signal.meta.get("place_of_performance") or signal.geography)
+        if place:
+            rels.append(_entity_rel(entity_node, "LOCATED_AT", f"place:{place}", signal, evidence,
+                                    f"record places entity at {place}"))
+    # Deterministic order and de-duplication by edge identity.
+    unique: dict[str, Relationship] = {}
+    for rel in sorted(rels, key=lambda r: (r.subject_id, r.predicate, r.object_id)):
+        unique.setdefault(rel.id, rel)
+    return list(unique.values())
 
 
 def resolve_chain(
@@ -312,24 +551,46 @@ def resolve_chain(
                 join_method="deterministic_native_id", confidence=_DETERMINISTIC_CONFIDENCE,
                 rationale=f"authoritative native-identifier crosswalk via {ref!r}")
 
-    # 3) Conservative inference / explicit rejection for un-linked cross-program pairs.
+    # 3) Weighted, explainable inference / deferral / explicit rejection for un-linked cross-program
+    #    pairs. An anchored pair is accepted only if its computed confidence clears the (frozen) 0.60
+    #    threshold; an anchored pair in [0.45, 0.60) is deferred to human review; everything else is
+    #    rejected. Pairs without a structured anchor keep the original categorical weak-join reasons.
     linked = seen_pairs | {(b, a) for a, b in seen_pairs}
     rejected: list[RejectedJoin] = []
+    deferred: list[DeferredJoin] = []
+    inference_scores: list[InferenceScore] = []
     for i, left in enumerate(ordered):
         for right in ordered[i + 1:]:
             if left.program_key == right.program_key:
                 continue
             if (left.id, right.id) in linked:
                 continue
-            shared_id = _shared_program_identifier(left, right)
-            same_agency = _same_agency(left.agency, right.agency)
-            if allow_inferred and shared_id and same_agency:
-                precursor, successor = sorted((left, right), key=lambda s: (_STAGE_ORDER[s.stage], s.available_at or ""))
+            precursor, successor = sorted((left, right), key=lambda s: (_STAGE_ORDER[s.stage], s.available_at or ""))
+            score = score_inferred_join(left, right) if allow_inferred else None
+            if score and score.anchored:
+                inference_scores.append(score)
+            if score and score.disposition == "accept":
                 add(precursor, successor, predicate=_predicate(precursor, successor),
-                    join_method="inferred_strong_attribute", confidence=_INFERRED_CONFIDENCE,
-                    rationale=f"shared structured program identifier {shared_id!r} and matching agency")
+                    join_method="inferred_strong_attribute", confidence=score.confidence,
+                    rationale=score.rationale)
                 continue
-            # Everything below is too weak to be a relationship — record why it was rejected.
+            if score and score.disposition == "defer":
+                predicate = _predicate(precursor, successor)
+                evidence_ids = tuple(e for e in (evidence_by_signal_id.get(precursor.id),
+                                                 evidence_by_signal_id.get(successor.id)) if e)
+                deferred.append(DeferredJoin(
+                    left_id=left.id, right_id=right.id, subject_id=precursor.id,
+                    object_id=successor.id, predicate=predicate, confidence=score.confidence,
+                    rationale=score.rationale, evidence_ids=evidence_ids,
+                    first_observed_at=_later(precursor.available_at, successor.available_at),
+                ))
+                continue
+            if score and score.anchored:
+                rejected.append(RejectedJoin(left.id, right.id,
+                                             score.reject_reason or "inference_below_threshold", score.rationale))
+                continue
+            # No structured anchor — preserve the original categorical weak-join rejections.
+            same_agency = _same_agency(left.agency, right.agency)
             if same_agency and _tokens(left.summary) & _tokens(right.summary):
                 rejected.append(RejectedJoin(left.id, right.id, "agency_name_only",
                                              "same agency and topical overlap, but no shared identifier"))
@@ -340,6 +601,8 @@ def resolve_chain(
                 rejected.append(RejectedJoin(left.id, right.id, "agency_name_only",
                                              "same agency without any shared identifier"))
 
+    entity_relationships = resolve_entity_relationships(
+        list(unique.values()), evidence_by_signal_id=evidence_by_signal_id)
     confidence = _chain_confidence(list(unique.values()), relationships)
     return ChainResolution(
         signals=tuple(ordered),
@@ -347,6 +610,9 @@ def resolve_chain(
         rejected=tuple(rejected),
         duplicates_collapsed=duplicates_collapsed,
         confidence=confidence,
+        deferred=tuple(deferred),
+        entity_relationships=tuple(entity_relationships),
+        inference_scores=tuple(inference_scores),
     )
 
 

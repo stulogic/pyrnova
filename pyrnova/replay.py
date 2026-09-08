@@ -176,6 +176,13 @@ def run_chain_replay(case: dict, *, scoring_version: str = ACTIVE_SCORING_VERSIO
     transitions = derive_transitions(case, scoring_version=scoring_version, subject_id=case["case_id"])
     metrics = resolution.metrics()
 
+    # Uncertain inferred joins are queued for human review, not linked (M6).
+    if store is not None and resolution.deferred:
+        from .review_queue import enqueue_deferred
+
+        for deferred_join in resolution.deferred:
+            enqueue_deferred(store, deferred_join.to_queue_record())
+
     outcome = case.get("actual_outcome") or {}
     first_signal_at = min((s.available_at for s in resolution.signals if s.available_at), default=None)
     chain_lead_time_days = None
@@ -195,6 +202,18 @@ def run_chain_replay(case: dict, *, scoring_version: str = ACTIVE_SCORING_VERSIO
             for r in resolution.relationships
         ],
         "rejected_joins": [{"reason": j.reason, "detail": j.detail} for j in resolution.rejected],
+        "deferred_joins": [
+            {"relationship_id": d.relationship_id, "predicate": d.predicate,
+             "confidence": d.confidence, "rationale": d.rationale,
+             "first_observed_at": d.first_observed_at} for d in resolution.deferred
+        ],
+        "entity_relationships": [
+            {"subject": r.subject_id, "predicate": r.predicate, "object": r.object_id,
+             "join_method": r.join_method, "confidence": r.confidence,
+             "first_observed_at": r.first_observed_at, "rationale": r.rationale}
+            for r in resolution.entity_relationships
+        ],
+        "ground_truth": case.get("ground_truth"),
         "transitions": transition_summary(transitions),
         "chain_lead_time_days": chain_lead_time_days,
         "expected_chain_checks": checks,
@@ -221,6 +240,19 @@ def _check_expected_chain(expected: dict | None, resolution, transitions) -> lis
     if "min_deterministic" in expected:
         want = expected["min_deterministic"]
         check("min_deterministic", metrics["deterministic_relationships"] >= want, metrics["deterministic_relationships"], want)
+    if "min_inferred" in expected:
+        want = expected["min_inferred"]
+        check("min_inferred", metrics["inferred_relationships"] >= want, metrics["inferred_relationships"], want)
+    if "max_inferred" in expected:
+        want = expected["max_inferred"]
+        check("max_inferred", metrics["inferred_relationships"] <= want, metrics["inferred_relationships"], want)
+    if "min_deferred" in expected:
+        want = expected["min_deferred"]
+        check("min_deferred", metrics["deferred_joins"] >= want, metrics["deferred_joins"], want)
+    if "entity_predicates" in expected:
+        got = metrics["entity_predicates"]
+        want = sorted(expected["entity_predicates"])
+        check("entity_predicates", set(want) <= set(got), got, want)
     if "min_rejected" in expected:
         want = expected["min_rejected"]
         check("min_rejected", metrics["rejected_weak_joins"] >= want, metrics["rejected_weak_joins"], want)
@@ -283,6 +315,57 @@ def run_chain_corpus(cases: Iterable[dict], *, scoring_version: str = ACTIVE_SCO
     return [run_chain_replay(c, scoring_version=scoring_version, store=store) for c in selected]
 
 
+def evaluate_inferred_threshold(cases: Iterable[dict],
+                                candidate_thresholds: tuple[float, ...] = (0.45, 0.50, 0.55, 0.60, 0.65, 0.70)) -> dict:
+    """Sweep the inferred-join acceptance threshold over every anchored candidate in the corpus.
+
+    Each anchored candidate is paired with its case's ground-truth label (which reports whether the
+    intended cross-source linkage is real), so precision and false-join rate can be reported at each
+    candidate threshold. This is calibration evidence only; it does not change the frozen threshold.
+    """
+    from .chains import signals_from_records
+
+    scored: list[tuple[float, bool | None]] = []  # (confidence, is_true_join)
+    for case in cases:
+        if not any(r.get("program_key") and r.get("stage") for r in case["records"]):
+            continue
+        resolution = _resolve_case_chain(case)
+        label = (case.get("ground_truth") or {}).get("label")
+        is_true = True if label == "TRUE_POSITIVE" else False if label == "TRUE_NEGATIVE" else None
+        for score in resolution.inference_scores:
+            scored.append((score.confidence, is_true))
+
+    sweep = []
+    for threshold in candidate_thresholds:
+        accepted = [truth for conf, truth in scored if conf >= threshold]
+        decided = [t for t in accepted if t is not None]
+        true_accepts = sum(1 for t in decided if t)
+        false_accepts = sum(1 for t in decided if t is False)
+        sweep.append({
+            "threshold": threshold,
+            "accepted": len(accepted),
+            "true_joins": true_accepts,
+            "false_joins": false_accepts,
+            "precision": round(true_accepts / len(decided), 4) if decided else None,
+            "deferred_below": sum(1 for conf, _ in scored if conf < threshold),
+        })
+    return {
+        "active_threshold": 0.60,
+        "anchored_candidates": len(scored),
+        "sweep": sweep,
+        "recommendation": (
+            "keep threshold at 0.60: too few reviewed anchored inferred candidates to justify a change"
+            if len(scored) < 10 else "sufficient sample — review sweep before any change"
+        ),
+    }
+
+
+def _resolve_case_chain(case: dict):
+    from .chains import resolve_chain, signals_from_records
+
+    return resolve_chain(signals_from_records(case["records"]))
+
+
 def summarize_chain_results(results: list[dict]) -> dict:
     """Aggregate cross-source chain observability across the corpus (no scoring impact)."""
     def total(key: str) -> int:
@@ -291,15 +374,37 @@ def summarize_chain_results(results: list[dict]) -> dict:
     leads = [r["chain_lead_time_days"] for r in results if r.get("chain_lead_time_days") is not None]
     checked = [r for r in results if r.get("expected_chain_ok") is not None]
     promotions = [c for r in results for c in r["transitions"]["promotion_causes"]]
+
+    # Inferred-join calibration. A case's ground-truth label reports whether its intended cross-source
+    # join is real, so we score inferred accepts/rejects against it. A "false join" is an accepted
+    # inferred relationship in a case whose ground truth is a true negative.
+    def label(r: dict) -> str | None:
+        return (r.get("ground_truth") or {}).get("label")
+
+    accepted_inferred = [r for r in results if r["chain_metrics"]["inferred_relationships"] > 0]
+    true_accepts = [r for r in accepted_inferred if label(r) == "TRUE_POSITIVE"]
+    false_accepts = [r for r in accepted_inferred if label(r) == "TRUE_NEGATIVE"]
+    inferred_precision = round(len(true_accepts) / len(accepted_inferred), 4) if accepted_inferred else None
+    false_join_rate = round(len(false_accepts) / len(accepted_inferred), 4) if accepted_inferred else None
+    entity_predicates = sorted({p for r in results for p in r["chain_metrics"].get("entity_predicates", [])})
     return {
         "chain_cases": len(results),
         "cross_source_relationships": total("relationships_total"),
         "deterministic_relationships": total("deterministic_relationships"),
         "inferred_relationships": total("inferred_relationships"),
+        "deferred_joins": total("deferred_joins"),
         "corroborations": total("corroborations"),
         "contradictions": total("contradictions"),
         "rejected_weak_joins": total("rejected_weak_joins"),
         "duplicates_collapsed": total("duplicates_collapsed"),
+        "entity_relationships": total("entity_relationships"),
+        "entity_predicates_exercised": entity_predicates,
+        "inferred_accepted_cases": len(accepted_inferred),
+        "inferred_true_join_cases": len(true_accepts),
+        "inferred_false_join_cases": len(false_accepts),
+        "inferred_precision": inferred_precision,
+        "inferred_false_join_rate": false_join_rate,
+        "deferred_join_cases": sum(r["chain_metrics"]["deferred_joins"] > 0 for r in results),
         "promotion_events": len(promotions),
         "promotion_causes_by_stage": {
             stage: sum(p["stage"] == stage for p in promotions)
@@ -308,4 +413,9 @@ def summarize_chain_results(results: list[dict]) -> dict:
         "median_chain_lead_time_days": sorted(leads)[len(leads) // 2] if leads else None,
         "expected_chain_cases": len(checked),
         "expected_chain_passing": sum(bool(r["expected_chain_ok"]) for r in checked),
+        "small_sample_warning": (
+            "inferred-join precision is measured on very few accepted inferred joins; treat as "
+            "directional, not a stable rate"
+            if accepted_inferred and len(accepted_inferred) < 10 else None
+        ),
     }
