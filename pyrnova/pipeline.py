@@ -7,6 +7,7 @@ source-agnostic: it takes already-fetched raw pages so it runs identically on li
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
@@ -30,6 +31,14 @@ class Report:
     strikes: list[Opportunity] = field(default_factory=list)
     rejected: list[Opportunity] = field(default_factory=list)
     stats: dict = field(default_factory=dict)
+
+
+def _stable_opportunity_id(opp: Opportunity) -> str:
+    """Stable source-derived identity for rerun review/history joins."""
+    source = str(opp.meta.get("source") or "unknown")
+    source_ref = str(opp.meta.get("award_id") or opp.meta.get("notice_id") or "")
+    identity = "|".join((source, source_ref, str(opp.expected_action_at or ""), opp.title))
+    return f"{source}:{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:24]}"
 
 
 def _archive_record(archive: EvidenceArchive, source_id: str, record: dict, opp: Opportunity):
@@ -81,6 +90,7 @@ def run(
     lead_times: list[int] = []
 
     for opp in candidates:
+        opp.id = _stable_opportunity_id(opp)
         opp.customer_id = profile.name
         # ARCHIVE (per-item evidence, content-addressed) — moat accumulation starts here.
         src = "usaspending" if opp.catalyst.kind == "recompete_expiry" else "sam_opportunities"

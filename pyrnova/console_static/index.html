@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pyrnova Operator Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><span class="mark">PYR</span><strong>Pyrnova</strong> <span class="muted">Operator Console v0.1</span></div>
+    <div id="run-status" class="status neutral">No run loaded</div>
+  </header>
+
+  <main>
+    <section class="control-panel">
+      <div class="section-label">01 · Target & run</div>
+      <div class="controls">
+        <label class="profile-field">Target<select id="profile"></select></label>
+        <label>Mode<select id="mode"><option value="live">Live / current</option><option value="fixtures">Offline fixtures</option></select></label>
+        <label>Forward window<input id="window-days" type="number" min="1" value="540"></label>
+        <label>SAM lookback<input id="lookback-days" type="number" min="1" value="30"></label>
+        <label>Min award ($)<input id="min-amount" type="number" min="0" step="100000" value="1000000"></label>
+        <label>Min relevance<input id="threshold" type="number" min="0" max="1" step="0.05" value="0.3"></label>
+        <button id="run-button" class="primary">Run Capture Radar</button>
+      </div>
+      <div id="profile-detail" class="profile-detail"></div>
+    </section>
+
+    <section id="summary-section" class="hidden">
+      <div class="section-label">02 · Run summary</div>
+      <div id="source-status" class="source-grid"></div>
+      <div id="metrics" class="metric-grid"></div>
+      <div id="run-meta" class="run-meta"></div>
+    </section>
+
+    <section id="queue-section" class="hidden">
+      <div class="queue-head">
+        <div><div class="section-label">03 · Candidate review</div><h1>Ranked intelligence queue</h1></div>
+        <div class="actions"><span id="approved-count">0 approved</span><button id="brief-button" disabled>Generate selected brief</button></div>
+      </div>
+      <div class="filters">
+        <label>Type<select id="filter-type"><option value="">All types</option><option value="presolicitation">Pre-solicitation</option><option value="recompete_expiry">Recompete</option></select></label>
+        <label>Review<select id="filter-review"><option value="">Pending + reviewed</option><option value="pending">Pending</option><option value="reviewed">Reviewed</option></select></label>
+        <label>Source<select id="filter-source"><option value="">All sources</option><option value="sam_opportunities">SAM</option><option value="usaspending">USAspending</option></select></label>
+        <label>Posture<select id="filter-posture"><option value="">All postures</option><option value="defend">Defend</option><option value="capture">Capture</option></select></label>
+        <label>Min relevance<input id="filter-relevance" type="number" min="0" max="1" step="0.05" value="0"></label>
+      </div>
+      <div class="workbench">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Candidate</th><th>Type / source</th><th>Agency</th><th>Scores R · C · A</th><th>Timing</th><th>Review</th></tr></thead>
+            <tbody id="candidate-list"></tbody>
+          </table>
+        </div>
+        <aside id="detail" class="detail empty"><p>Select a candidate to inspect evidence and adjudicate.</p></aside>
+      </div>
+    </section>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

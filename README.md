@@ -48,6 +48,22 @@ pytest -q
 Output: a **Pyrnova Signal Brief** (Markdown) under `out/`, plus an append-only prediction log and
 scoreboard events — the proprietary history that must start accumulating on Day 1.
 
+## Operator Console v0.1
+
+The local operator workstation wraps the same kernel without adding a customer portal or changing
+the JSONL storage contract. It lists profiles, runs Capture Radar, shows per-source status and evidence,
+stores append-only candidate adjudications, and exports only explicitly selected approved STRIKEs.
+
+```bash
+source .venv/bin/activate
+python -m pyrnova.cli console
+# open http://127.0.0.1:8765
+```
+
+Use **Offline fixtures** for a deterministic local walkthrough. Live USAspending requires network
+access; live SAM results also require `SAM_API_KEY`. Operator state is stored beneath
+`PYRNOVA_STATE_DIR` and generated reports beneath `PYRNOVA_OUT_DIR` (default `var/state` and `out`).
+
 ## Design rules (from the authority)
 
 - Deterministic core is authoritative (IDs, timestamps, evidence, calculations, state). AI is a bounded

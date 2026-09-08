@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 from . import scoreboard
 from .archive import build_archive
+from .acquisition import fetch_live_rows, fixture_rows
 from .brief import render_capture_radar_report, render_signal_brief
 from .config import load_config
 from .match import CapabilityProfile
@@ -32,64 +32,6 @@ def _load_profile(path: str) -> CapabilityProfile:
     return CapabilityProfile.from_dict(data)
 
 
-def _fixture_rows() -> tuple[list[dict], list[dict]]:
-    awards = json.loads((FIXTURES / "usaspending_awards.json").read_text())["results"]
-    notices = json.loads((FIXTURES / "sam_opportunities.json").read_text())["opportunitiesData"]
-    return awards, notices
-
-
-def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
-    from .sources.usaspending import USAspendingClient
-
-    award_rows: list[dict] = []
-    seen: set = set()
-    # Action-date window: awards acted on in the last ~6 years may still be active/expiring soon.
-    start = (as_of - timedelta(days=6 * 365)).isoformat()
-    end = as_of.isoformat()
-    naics = profile.naics or None
-    client = USAspendingClient()
-
-    def _collect(**kw):
-        for _raw, results in client.search_awards(
-            action_date_start=start, action_date_end=end, max_pages=3, limit=100, **kw
-        ):
-            for r in results:
-                key = r.get("generated_internal_id") or r.get("Award ID")
-                if key and key not in seen:
-                    seen.add(key)
-                    award_rows.append(r)
-
-    # Pass 1 (anchor): the target company's own awards — incumbency + their upcoming recompetes.
-    for name in profile.search_names:
-        _collect(recipient_search=[name])
-    # Pass 2 (market): recompete landscape in the target's NAICS they could compete for.
-    if naics:
-        _collect(naics_codes=naics)
-    # NOTE: agency-name filtering is intentionally omitted (brittle toptier/subtier naming);
-    # agency relevance is handled deterministically by the capability matcher instead.
-
-    notice_rows: list[dict] = []
-    if cfg.has_sam:
-        from .sources.sam import SamClient
-
-        sam = SamClient(cfg.sam_api_key)
-        posted_from = (as_of - timedelta(days=30)).strftime("%m/%d/%Y")
-        posted_to = as_of.strftime("%m/%d/%Y")
-        for ptype in ("r", "p", "s"):  # Sources Sought, Presolicitation, Special Notice
-            try:
-                _raw, rows = sam.search(
-                    posted_from=posted_from, posted_to=posted_to, ptype=ptype,
-                    naics=(naics[0] if naics else None), limit=100,
-                )
-                notice_rows.extend(rows)
-            except Exception as exc:  # pragma: no cover - network dependent
-                print(f"[warn] SAM {ptype} fetch failed: {exc}", file=sys.stderr)
-    else:
-        print("[info] SAM_API_KEY not set — running recompete-only (USAspending). "
-              "Set SAM_API_KEY to include pre-solicitation intelligence.", file=sys.stderr)
-    return award_rows, notice_rows
-
-
 def cmd_capture_radar(args) -> int:
     cfg = load_config()
     profile = _load_profile(args.profile)
@@ -98,9 +40,14 @@ def cmd_capture_radar(args) -> int:
     store = StateStore(cfg.state_dir)
 
     if args.fixtures:
-        award_rows, notice_rows = _fixture_rows()
+        award_rows, notice_rows = fixture_rows(FIXTURES)
     else:
-        award_rows, notice_rows = _live_rows(cfg, profile, as_of, args.window_days)
+        award_rows, notice_rows, statuses = fetch_live_rows(
+            cfg, profile, as_of, sam_lookback_days=args.lookback_days
+        )
+        for status in statuses:
+            suffix = f" — {status.detail}" if status.detail else ""
+            print(f"source {status.source}: {status.status} ({status.records} records){suffix}")
 
     report = run(
         profile=profile,
@@ -167,6 +114,7 @@ def main(argv=None) -> int:
     src.add_argument("--fixtures", action="store_true", help="run offline from bundled fixtures")
     cr.add_argument("--as-of", default=None, help="YYYY-MM-DD (default today)")
     cr.add_argument("--window-days", type=int, default=540, help="recompete forward window")
+    cr.add_argument("--lookback-days", type=int, default=30, help="SAM posting lookback window")
     cr.add_argument("--threshold", type=float, default=0.3, help="relevance threshold for STRIKE")
     cr.add_argument("--min-amount", type=float, default=0.0, help="minimum award amount for recompete")
     cr.add_argument("--reviewer", default=None, help="human reviewer name (upgrades recommend→accept)")
@@ -175,8 +123,20 @@ def main(argv=None) -> int:
     sb = sub.add_parser("scoreboard", help="print accumulated scoreboard totals")
     sb.set_defaults(func=cmd_scoreboard)
 
+    console = sub.add_parser("console", help="launch the local Operator Console")
+    console.add_argument("--host", default="127.0.0.1")
+    console.add_argument("--port", type=int, default=8765)
+    console.set_defaults(func=lambda args: _serve_console(args.host, args.port))
+
     args = p.parse_args(argv)
     return args.func(args)
+
+
+def _serve_console(host: str, port: int) -> int:
+    from .console import serve
+
+    serve(host=host, port=port)
+    return 0
 
 
 if __name__ == "__main__":

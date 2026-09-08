@@ -23,6 +23,9 @@ pyrnova = "pyrnova.cli:main"
 [tool.setuptools.packages.find]
 include = ["pyrnova*"]
 
+[tool.setuptools.package-data]
+pyrnova = ["console_static/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
