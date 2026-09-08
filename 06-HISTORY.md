@@ -42,6 +42,22 @@
   STRIKEs appeared; each new source contributed one WATCH under ablation.
 - Preserved `scoring_v1` and the frozen M2 SAM acceptance path.
 
+## Milestone 5 — IN PROGRESS 2026-09-08
+
+- Added cross-source capital-chain resolution (`pyrnova/chains.py`): typed, temporal, evidence-backed
+  relationships via a deterministic-program-key / native-identifier / conservative-inference
+  hierarchy, with agency-name-only, topic-only, and chronology-only matches rejected and counted.
+- Added opportunity evolution (`pyrnova/transitions.py`) derived by replaying `scoring_v1`
+  point-in-time; it records disposition changes and their causing evidence without fabricating
+  unsupported promotions.
+- Extended `Relationship` with temporal/confidence/method provenance and added `OpportunityTransition`,
+  mirrored in `db/schema.sql`.
+- Added `corpus_m5.json` (extends the frozen `corpus_m4.json`) with four reviewed chain cases:
+  a forecast→solicitation→award lifecycle (WATCH→STRIKE, 434-day lead), a grant→downstream-spend
+  chain that stays WATCH, a rejected tempting false join, and an unresolved partial chain.
+- Kept the M4 baseline byte-for-byte unchanged; the M5 corpus added one hand-reviewed true-positive
+  STRIKE and no false positive, with `scoring_v1` unmodified. Test suite grew from 87 to 109.
+
 ## Repository authority normalization — 2026-09-08
 
 - Declared `~/Documents/Pyrnova/main` the sole canonical working copy.

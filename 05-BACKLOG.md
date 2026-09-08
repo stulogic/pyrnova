@@ -20,6 +20,19 @@ Backlog presence is not implementation authority. `02-EXECUTION.md` controls act
 Every source must pass the coverage/selectivity/provenance/replay/API-efficiency test in
 `docs/specs/M4_SOURCE_EXPANSION.md` before implementation.
 
+## P1 — deferred cross-source (graph) work
+
+- Exercise and calibrate the conservative `inferred_strong_attribute` join path against reviewed cases
+  before relaxing its 0.60 confidence.
+- Entity-level predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`) once recipient/entity evidence
+  justifies them.
+- Explicit budget/appropriation precursor stages (INTENT/AUTHORIZATION/FUNDING linkage groundwork)
+  from a focused official source, without turning M5 into another source-expansion milestone.
+- Richer chain-confidence modeling (source independence weighting, expected-stage completeness) only
+  if per-relationship confidence proves insufficient.
+- Human-review queue for inferred cross-source joins with persisted reviewer/decision/outcome for
+  future calibration.
+
 ## Deferred product/infrastructure work
 
 - Polished frontend, mobile apps, enterprise UI, self-serve dashboard.

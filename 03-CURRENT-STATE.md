@@ -9,6 +9,8 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - **M3: CLOSED.** The formal acceptance review passed on 2026-09-08.
 - **M4: CLOSED.** Offline-first source expansion passed its implementation and regression gates on
   2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
+- **M5: IN PROGRESS.** Cross-source capital-chain resolution, opportunity evolution, and chain
+  observability are implemented and offline-validated; acceptance is pending final review.
 
 ## Implemented and verified
 
@@ -24,7 +26,7 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - Automated classification, evidence, temporal, calibration, value, WATCH, failure-taxonomy,
   mechanism, and model-versus-human diagnostics.
 - Full-corpus `scoring_v2_candidate` comparison completed and rejected; `scoring_v1` unchanged.
-- 87 tests pass; compilation and diff-integrity checks pass.
+- 109 tests pass; compilation and diff-integrity checks pass.
 - `SAM_API_KEY` loads from the repository-local, gitignored `.env`; file mode is `600`. The value is
   never documented or logged.
 - Grants.gov Search2, focused SEC EDGAR submissions/companyfacts, and official agency procurement
@@ -37,6 +39,21 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   STRIKE precision 0.6667, false-positive rate 0.3333, and false-negative rate 0.0; WATCH conversion
   is 0.8667 and median measurable lead time is 297.5 days. Each new source adds one WATCH in ablation,
   zero STRIKEs, and zero measured precision change.
+- M5 cross-source resolution (`pyrnova/chains.py`, `pyrnova/transitions.py`) links source-native
+  signals into typed, temporal, evidence-backed relationships (`AUTHORIZES`, `FUNDS`, `IMPLEMENTS`,
+  `PRECEDES`, `CORROBORATES`, `CONTRADICTS`) via a deterministic-program-key / native-identifier /
+  conservative-inference hierarchy; weak matches (agency-name-only, topic-only, chronology-only) are
+  rejected and counted. Every relationship carries `first_observed_at`, so replay answers "when could
+  we first have known this?". Opportunity transitions are derived by replaying `scoring_v1`
+  point-in-time and never fabricate an unsupported promotion.
+- `corpus_m5.json` extends the frozen `corpus_m4.json` with four reviewed chain cases. The M4 baseline
+  is byte-for-byte unchanged. The M5 corpus (27 cases) shows STRIKE precision 0.75, WATCH conversion
+  0.875, false-positive rate 0.25, false-negative rate 0.0, median lead time 297.5 days: one added
+  hand-reviewed true-positive lifecycle STRIKE, no false positive, and no `scoring_v1` change. All
+  seven chain-carrying cases resolve into seven deterministic cross-source relationships with one
+  rejected weak join; the flagship Navy lifecycle chain spans forecast → solicitation → award over
+  434 days and is promoted WATCH→STRIKE by the procurement solicitation. See
+  `docs/replay/M5_CHAIN_RESOLUTION.md`.
 
 ## M3 baseline
 
@@ -66,6 +83,11 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   supply-disruption, customer-concentration, and geographic-change claims remains human-supervised.
 - No M4 live API calls were made. Current connectivity, provider quotas, and cadence remain unknown
   until a separately justified LIVE-SAFE or ACCEPTANCE request.
+- The M5 chain corpus is four reviewed cases; every accepted join is deterministic. The conservative
+  `inferred_strong_attribute` path is implemented and unit-tested but not yet exercised by a corpus
+  case, and entity-level predicates (`AWARDED_TO`, `SUBSIDIARY_OF`, `LOCATED_AT`) plus explicit
+  budget/appropriation precursor stages await reviewed primary evidence. No M5 live API calls were
+  made.
 
 ## Exact next action
 

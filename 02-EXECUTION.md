@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M4 closed · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M4 closed; M5 in progress · updated 2026-09-08_
 
 ## Active work
 
@@ -40,6 +40,25 @@ The 23-case M4 corpus adds one reviewed case per new source family without chang
 baseline. `scoring_v1` remains unchanged: no new STRIKEs, no precision regression, and each new source
 adds one conservative WATCH in leave-one-source-out replay. See
 `docs/replay/M4_SOURCE_CONTRIBUTION.md`.
+
+### Milestone 5 — in progress
+
+M5 is cross-source intelligence and capital-chain resolution: connecting apparently separate source
+signals into one economic story on evidence. Implemented offline-first per
+`docs/specs/M5_CROSS_SOURCE_INTELLIGENCE.md`:
+
+- `pyrnova/chains.py` resolves typed, temporal, evidence-backed relationships with a
+  deterministic-program-key / native-identifier / conservative-inference hierarchy and explicit
+  rejection of weak (agency/topic/chronology) matches.
+- `pyrnova/transitions.py` derives opportunity evolution by replaying `scoring_v1` point-in-time.
+- `Relationship` gains temporal/confidence fields and `OpportunityTransition` is added, both mirrored
+  in `db/schema.sql`.
+- `examples/replay/corpus_m5.json` extends the frozen `corpus_m4.json` with four reviewed chain cases;
+  results are in `docs/replay/M5_CHAIN_RESOLUTION.md`. `scoring_v1` is unchanged.
+
+Active constraint: chain resolution enriches evidence, timing, provenance, and explanation only. It
+must not create a candidate, promote a disposition, or alter `scoring_v1`. Prefer deterministic and
+native-identifier joins; never materialize a topic-, agency-name-, or chronology-only join.
 
 ## Immediate sequence
 
