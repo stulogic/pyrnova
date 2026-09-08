@@ -101,4 +101,3 @@ def attach_program_signal(
         "program_key": signal.program_key,
     })
     return True
-

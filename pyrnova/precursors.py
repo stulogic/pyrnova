@@ -92,4 +92,3 @@ def build_program_chains(signals: list[ProgramSignal]) -> list[ProgramChain]:
         ))
         chains.append(ProgramChain(program_key=program_key, signals=ordered))
     return chains
-
