@@ -1,0 +1,197 @@
+{
+  "corpus_id": "pyrnova-m4-source-expansion-v1",
+  "schema_version": "replay_case_v1",
+  "extends": "corpus_v1.json",
+  "reviewed_at": "2026-09-08",
+  "cases": [
+    {
+      "case_id": "grant-tech-hubs-nofo-2023",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2023-05-12T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "grants_gov",
+          "source_ref": "EDA-TECHHUBSPHASE1-2023",
+          "record_kind": "grant_nofo",
+          "stage": "FUNDING",
+          "program_key": "eda:regional-technology-innovation-hubs",
+          "available_at": "2023-05-12T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://apply07.grants.gov/grantsws/rest/opportunity/att/download/328435",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "eda",
+          "source_ref": "tech-hubs-designations-2023-10-23",
+          "record_kind": "program_designation",
+          "stage": "OUTCOME",
+          "program_key": "eda:regional-technology-innovation-hubs",
+          "available_at": "2023-10-23T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.eda.gov/news/press-release/2023/10/23/biden-harris-administration-designates-31-tech-hubs-across-america",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "EDA's Phase 1 Tech Hubs NOFO will lead to regional designations and strategy-development grants.",
+        "relevance": 0.82,
+        "predicted_buyer": "U.S. Economic Development Administration",
+        "predicted_timing": "within 6 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["regional technology consortia and industrial ecosystems"],
+      "expected_buyer_program_owner": "U.S. Economic Development Administration",
+      "expected_commercial_mechanism": "Tech Hubs designation and strategy-development grants",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "program_designation_and_grants",
+        "buyer": "U.S. Economic Development Administration",
+        "occurred_at": "2023-10-23T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "tech-hubs-designations-2023-10-23"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova M4 primary-source review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "The NOFO is direct funding evidence but not a customer-specific procurement or award.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 164,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": ["program_designation", "grant"]
+    },
+    {
+      "case_id": "capex-intel-sec-2023",
+      "mechanism_family": "capex_expansion",
+      "replay_as_of": "2023-01-27T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "sec_edgar",
+          "source_ref": "0000050863-23-000006",
+          "record_kind": "capex_disclosure",
+          "stage": "INTENT",
+          "program_key": "intel:idm-2-capacity",
+          "available_at": "2023-01-27T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086323000006/intc-20221231.htm",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sec_edgar",
+          "source_ref": "0000050863-24-000010",
+          "record_kind": "project_update",
+          "stage": "OUTCOME",
+          "program_key": "intel:idm-2-capacity",
+          "available_at": "2024-01-26T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.sec.gov/Archives/edgar/data/50863/000005086324000010/intc-20231230.htm",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Intel's disclosed multi-site manufacturing expansion will create continuing construction, equipment, and supplier demand, with cadence dependent on financing and incentives.",
+        "relevance": 0.84,
+        "predicted_buyer": "Intel Corporation",
+        "predicted_timing": "multi-year",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": ["semiconductor construction, equipment, and supply-chain vendors"],
+      "expected_buyer_program_owner": "Intel Corporation",
+      "expected_commercial_mechanism": "IDM 2.0 manufacturing capacity investment",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "continuing_capex_with_cadence_risk",
+        "buyer": "Intel Corporation",
+        "occurred_at": "2024-01-26T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "0000050863-24-000010"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "PARTIAL", "confidence": "MEDIUM"},
+      "ambiguity_notes": "The filing supports material planned capacity investment, but timing and downstream vendor demand remain contingent and should not become a STRIKE.",
+      "reviewer": "Pyrnova M4 primary-source review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Issuer-filed capex evidence is attributable and material but not a customer-specific procurement.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": ["no_procurement_mechanism"],
+      "watch_duration_days": 364,
+      "watch_transition": "WATCH",
+      "watch_transition_evidence": ["project_update"]
+    },
+    {
+      "case_id": "proc-dot-mvssr-forecast-2024",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2024-08-22T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "acquisition_forecast",
+          "source_ref": "DOT-672696-89",
+          "record_kind": "procurement_forecast",
+          "stage": "MARKET_ENGAGEMENT",
+          "program_key": "faa:mvss-r:26-modifications",
+          "available_at": "2024-08-22T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.transportation.gov/procurement-forecast-opportunity/procurement-forecast-opportunity-672696-89",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "dot",
+          "source_ref": "DOT-672696-89-status-2026-09-08",
+          "record_kind": "unresolved_forecast",
+          "stage": "OUTCOME",
+          "program_key": "faa:mvss-r:26-modifications",
+          "available_at": "2026-09-08T00:00:00+00:00",
+          "strength": 2,
+          "source_role": "primary",
+          "url": "https://www.transportation.gov/procurement-forecast-opportunity/procurement-forecast-opportunity-672696-89",
+          "applies_to_candidate": false
+        }
+      ],
+      "candidate": {
+        "hypothesis": "FAA may procure 26 MVSS-R modifications near the forecasted award window.",
+        "relevance": 0.76,
+        "predicted_buyer": "Federal Aviation Administration",
+        "predicted_timing": "by December 2024",
+        "predicted_value_usd": 15000000
+      },
+      "expected_affected_entities": ["radar modification and aerospace electronics vendors"],
+      "expected_buyer_program_owner": "Federal Aviation Administration",
+      "expected_commercial_mechanism": "forecasted sole-source MVSS-R modification procurement",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "unresolved_forecast",
+        "buyer": "Federal Aviation Administration",
+        "occurred_at": null,
+        "actual_value_usd": null,
+        "source_ref": "DOT-672696-89-status-2026-09-08"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {"label": "AMBIGUOUS", "confidence": "LOW"},
+      "ambiguity_notes": "The official forecast is planning information, expressly non-binding, and the reviewed page did not establish a later award; it remains unresolved rather than negative.",
+      "reviewer": "Pyrnova M4 primary-source review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Named requirement and timing justify monitoring, not a STRIKE, until SAM or award corroboration appears.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "LOW"
+      },
+      "failure_reasons": ["funding_without_executable_demand"],
+      "watch_duration_days": null,
+      "watch_transition": "WATCH",
+      "watch_transition_evidence": []
+    }
+  ]
+}

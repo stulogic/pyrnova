@@ -15,6 +15,7 @@ from pyrnova.state import StateStore
 
 FIXTURE = Path(__file__).parent / "fixtures" / "replay_chips_2022.json"
 CORPUS = Path(__file__).parents[1] / "examples" / "replay" / "corpus_v1.json"
+M4_CORPUS = Path(__file__).parents[1] / "examples" / "replay" / "corpus_m4.json"
 
 
 def _chips_case() -> dict:
@@ -141,3 +142,15 @@ def test_full_corpus_scoring_comparison_and_metrics():
     assert metrics["evidence_level_contribution"]
     assert metrics["human_adjudications"] == len(cases)
     assert len(metrics["calibration"]) == 6
+
+
+def test_m4_corpus_extends_frozen_m3_baseline_and_is_deterministic():
+    baseline = load_corpus(CORPUS)
+    expanded = load_corpus(M4_CORPUS)
+    assert len(baseline) == 20
+    assert len(expanded) == 23
+    assert {case["case_id"] for case in baseline} < {case["case_id"] for case in expanded}
+    first = run_corpus(expanded, scoring_version="scoring_v1")
+    assert first == run_corpus(expanded, scoring_version="scoring_v1")
+    added = {result["case_id"]: result for result in first if result["case_id"] not in {case["case_id"] for case in baseline}}
+    assert {result["system_disposition"] for result in added.values()} == {"WATCH"}

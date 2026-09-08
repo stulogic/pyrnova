@@ -158,11 +158,19 @@ def run_replay(case: dict, *, store: Optional[StateStore] = None, scoring_versio
     return result
 
 
-def load_corpus(path: Path) -> list[dict]:
-    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+def load_corpus(path: Path, _seen: set[Path] | None = None) -> list[dict]:
+    path = Path(path).resolve()
+    seen = set(_seen or ())
+    if path in seen:
+        raise ValueError(f"cyclic corpus extension: {path}")
+    seen.add(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
     cases = payload.get("cases") if isinstance(payload, dict) else payload
     if not isinstance(cases, list):
         raise ValueError("corpus must be a list or an object containing cases")
+    if isinstance(payload, dict) and payload.get("extends"):
+        base_path = (path.parent / str(payload["extends"])).resolve()
+        cases = load_corpus(base_path, seen) + cases
     seen = set()
     for case in cases:
         validate_case(case, require_quality=True)

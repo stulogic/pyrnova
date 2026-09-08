@@ -332,6 +332,18 @@ def cmd_compare_scoring(args) -> int:
     return 0
 
 
+def cmd_source_contribution(args) -> int:
+    from .contribution import measure_replay_source_contribution
+    from .replay import load_corpus
+
+    cases = load_corpus(Path(args.corpus))
+    report = measure_replay_source_contribution(cases, scoring_version=args.scoring_version)
+    if args.source:
+        report = {args.source: report.get(args.source)}
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -382,6 +394,12 @@ def main(argv=None) -> int:
     compare.add_argument("--baseline", default="scoring_v1")
     compare.add_argument("--challenger", default="scoring_v2_candidate")
     compare.set_defaults(func=cmd_compare_scoring)
+
+    contribution = sub.add_parser("source-contribution", help="measure source lift by deterministic replay ablation")
+    contribution.add_argument("--corpus", default="examples/replay/corpus_m4.json")
+    contribution.add_argument("--source", default=None)
+    contribution.add_argument("--scoring-version", default="scoring_v1")
+    contribution.set_defaults(func=cmd_source_contribution)
 
     args = p.parse_args(argv)
     return args.func(args)

@@ -56,11 +56,13 @@ class Entity:
 class Event:
     """Source-independent occurrence connected to its archived evidence."""
 
-    kind: str  # 'award' | 'notice_posted' | 'regulatory_precursor'
+    kind: str  # 'award' | 'notice_posted' | 'regulatory_precursor' | 'program_signal'
     source_id: str
     source_ref: str
     summary: str
     occurred_at: Optional[str] = None
+    stage: Optional[str] = None
+    program_key: Optional[str] = None
     evidence_ids: list[str] = field(default_factory=list)
     id: str = field(default_factory=_uid)
     meta: dict = field(default_factory=dict)

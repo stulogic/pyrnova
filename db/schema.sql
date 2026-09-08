@@ -93,6 +93,8 @@ CREATE INDEX claim_evidence_idx ON claim(evidence_id);
 CREATE TABLE event (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     kind            text NOT NULL,                    -- 'award' | 'notice_posted' | 'amendment' | 'cancellation'
+    stage           text CHECK (stage IN ('INTENT','AUTHORIZATION','FUNDING','PROGRAM','MARKET_ENGAGEMENT','PROCUREMENT','AWARD','OUTCOME')),
+    program_key     text,                             -- explicit source/crosswalk identity; never topic-inferred
     occurred_at     timestamptz,
     agency_id       uuid REFERENCES entity(id),
     recipient_id    uuid REFERENCES entity(id),
@@ -100,6 +102,7 @@ CREATE TABLE event (
     meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
     created_at      timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX event_program_stage_idx ON event(program_key, stage);
 
 CREATE TABLE event_evidence (
     event_id        uuid NOT NULL REFERENCES event(id),
