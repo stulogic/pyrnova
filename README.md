@@ -23,6 +23,7 @@ falsification, and a recommended action.
   `docs/targets/torch_technologies.md`).
 - Review discipline: `docs/specs/REVIEW_TEMPLATE.md`. Supporting precursor research:
   `docs/research/PRECURSOR_CASEBOOK.md`.
+- Local internal review surface: `docs/OPERATOR_CONSOLE.md`.
 
 ## The kernel pipeline
 

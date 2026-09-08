@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pyrnova Operator Console</title>
+  <link rel="stylesheet" href="/styles.css?v=2">
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">PYRNOVA / INTERNAL</span><h1>Operator Console</h1></div>
+    <div class="target"><label for="target">Target company</label><select id="target"></select></div>
+  </header>
+  <main>
+    <section class="rail">
+      <article><span class="eyebrow">RUN STATUS</span><div id="runs"></div></article>
+      <article><span class="eyebrow">SOURCE HEALTH</span><div id="sources"></div></article>
+      <article><span class="eyebrow">OUTCOMES</span><div id="metrics"></div></article>
+    </section>
+    <section class="workspace">
+      <div class="toolbar"><div><span class="eyebrow">HUMAN REVIEW QUEUE</span><h2>Candidate intelligence</h2></div><button id="export">Generate Signal Brief</button></div>
+      <div id="message" role="status"></div>
+      <div id="queue"></div>
+    </section>
+  </main>
+  <template id="candidate">
+    <article class="candidate">
+      <div class="candidate-head"><div><span class="agency"></span><h3></h3></div><span class="disposition"></span></div>
+      <div class="scores"></div>
+      <div class="consequence"></div>
+      <div class="evidence"></div>
+      <form class="review-form">
+        <div class="row"><label>Decision<select name="decision"><option>WATCH</option><option>ACCEPT</option><option>REJECT</option></select></label><label>Posture<select name="posture"><option>PRIME</option><option selected>SUPPORT</option><option>TEAM</option><option>DEFEND</option></select></label><label>Reviewer<input name="reviewer" required placeholder="Name"></label></div>
+        <label>Notes<textarea name="notes" rows="2" placeholder="Analyst notes and next checks"></textarea></label>
+        <label>Falsification<textarea name="falsification" rows="2" placeholder="What would make this wrong or not worth pursuing?"></textarea></label>
+        <label>Decision reason<input name="reason" placeholder="Why this disposition?"></label>
+        <div class="actions"><button type="submit">Save adjudication</button><select name="outcome"><option>UNKNOWN</option><option>CONTACTED</option><option>QUALIFIED</option><option>WON</option><option>LOST</option><option>NO_ACTION</option></select><button type="button" class="save-outcome secondary">Save outcome</button></div>
+      </form>
+    </article>
+  </template>
+  <script src="/app.js?v=2" defer></script>
+</body>
+</html>
