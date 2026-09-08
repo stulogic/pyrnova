@@ -7,7 +7,8 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - **M2: CONDITIONAL PASS / EXTERNAL SAM ACCEPTANCE PENDING.** All implemented behavior is green; a
   fresh post-quota-reset SAM call is the sole formal closure gate.
 - **M3: CLOSED.** The formal acceptance review passed on 2026-09-08.
-- **M4: NOT STARTED.** A planning stub exists; no source-expansion implementation is authorized.
+- **M4: CLOSED.** Offline-first source expansion passed its implementation and regression gates on
+  2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
 
 ## Implemented and verified
 
@@ -23,9 +24,19 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 - Automated classification, evidence, temporal, calibration, value, WATCH, failure-taxonomy,
   mechanism, and model-versus-human diagnostics.
 - Full-corpus `scoring_v2_candidate` comparison completed and rejected; `scoring_v1` unchanged.
-- 52 tests pass; compilation and diff-integrity checks pass.
+- 87 tests pass; compilation and diff-integrity checks pass.
 - `SAM_API_KEY` loads from the repository-local, gitignored `.env`; file mode is `600`. The value is
   never documented or logged.
+- Grants.gov Search2, focused SEC EDGAR submissions/companyfacts, and official agency procurement
+  forecast CSV artifacts now have deterministic identity, exact-byte archival, offline fixtures,
+  malformed/error handling, conservative normalization, and reusable source-call controls.
+- M4 source expansion replays archived bytes through normalization, SEC CIK entity resolution,
+  evidence, and partial program chains without creating candidates. Explicit joins support
+  INTENT → AUTHORIZATION → FUNDING → PROGRAM → MARKET ENGAGEMENT → PROCUREMENT → AWARD → OUTCOME.
+- The 23-case M4 corpus extends rather than edits the frozen M3 corpus. Under `scoring_v1`, it keeps
+  STRIKE precision 0.6667, false-positive rate 0.3333, and false-negative rate 0.0; WATCH conversion
+  is 0.8667 and median measurable lead time is 297.5 days. Each new source adds one WATCH in ablation,
+  zero STRIKEs, and zero measured precision change.
 
 ## M3 baseline
 
@@ -46,8 +57,18 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   retained separately from current URL reachability.
 - Local JSONL state and filesystem evidence archive are development implementations; production
   PostgreSQL/object storage remain deferred.
+- Grants.gov replay evidence is still one reviewed historical case; SEC EDGAR one visible historical
+  case; and procurement forecast one unresolved case. These prove conservative coverage, not broad
+  predictive lift.
+- Agency procurement forecasts are heterogeneous. M4 supports explicit official CSV artifacts, but
+  each agency still requires a reviewed field mapping; PDF/HTML/spreadsheet variants are deferred.
+- SEC filing metadata and filed capex facts are normalized; full-text semantic extraction of facility,
+  supply-disruption, customer-concentration, and geographic-change claims remains human-supervised.
+- No M4 live API calls were made. Current connectivity, provider quotas, and cadence remain unknown
+  until a separately justified LIVE-SAFE or ACCEPTANCE request.
 
 ## Exact next action
 
-Run the M2 live acceptance sequence in `02-EXECUTION.md` at or after `2026-09-09T00:00:00Z`, then record
-the acceptance timestamp and raw SAM archive hash here and in `06-HISTORY.md`.
+Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
+`2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
+`06-HISTORY.md`.

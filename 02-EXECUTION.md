@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate, then M4 planning only · updated 2026-09-08_
+_Current execution window: M2 external closure gate; M4 closed · updated 2026-09-08_
 
 ## Active work
 
@@ -29,12 +29,24 @@ exact external response.
 M3 passed closure review on 2026-09-08. Its corpus, metrics, versioning, challenger evaluation, and
 known limitations are in `docs/replay/M3_BASELINE.md`. `scoring_v1` remains active.
 
+### Milestone 4 — CLOSED
+
+M4 passed offline implementation/replay acceptance on 2026-09-08. Active source expansion comprises
+Grants.gov Search2, focused SEC EDGAR submissions/companyfacts, and explicitly configured official
+agency procurement forecast artifacts. All default to archived responses/fixtures; source-call modes,
+budgets, fingerprints, backoff metadata, breaker state, and metrics are explicit.
+
+The 23-case M4 corpus adds one reviewed case per new source family without changing the 20-case M3
+baseline. `scoring_v1` remains unchanged: no new STRIKEs, no precision regression, and each new source
+adds one conservative WATCH in leave-one-source-out replay. See
+`docs/replay/M4_SOURCE_CONTRIBUTION.md`.
+
 ## Immediate sequence
 
-1. Complete and record the M2 live acceptance gate after the reset.
-2. Re-run the M3 corpus and confirm the deterministic baseline remains unchanged.
-3. Review the M4 authority stub in `docs/specs/M4_SOURCE_EXPANSION.md`.
-4. Do not execute M4 until a separate implementation instruction authorizes it.
+1. Complete and record the unchanged M2 live acceptance gate after the reset.
+2. Re-run the frozen M3 corpus and confirm its deterministic baseline remains unchanged.
+3. Expand new-source historical cases only as reviewed primary evidence becomes available; do not
+   alter scoring or begin a later milestone without separate authority.
 
 ## Active constraints
 

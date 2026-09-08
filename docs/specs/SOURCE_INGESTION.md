@@ -52,6 +52,8 @@ Missing provider quota information must remain `unknown`; do not infer remaining
 
 ## Current implementation boundary
 
-SAM raw archival, sanitized request provenance, immutable hashing, and offline fixtures exist. Broader
-mode/config/cursor instrumentation should be added per adapter only when M4 authorizes that source; do
-not build a generic orchestration framework merely to satisfy this doctrine aesthetically.
+SAM raw archival, sanitized request provenance, immutable hashing, and offline fixtures remain intact.
+M4 adds small adapter-neutral controls for explicit modes, sanitized request fingerprints, budgets,
+call/cache/error accounting, retry metadata, and breaker state. Grants.gov, SEC EDGAR, and official
+agency forecast adapters use those controls while retaining source-specific transport/cadence logic;
+there is no generic orchestration platform.

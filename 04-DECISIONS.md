@@ -14,6 +14,10 @@ Durable decisions are append-only. A later decision must identify what it supers
 | D-008 | 2026-09-08 | Live external calls are scarce infrastructure: archive once, replay many. | Protects quotas and makes offline development, replay, and acceptance roles explicit. |
 | D-009 | 2026-09-08 | Keep the current flat Python/test layout until scale creates navigation cost. | Avoids churn with no behavioral benefit; conceptual boundaries are already clear. |
 | D-010 | 2026-09-08 | Root authority documents supersede dated execution handovers and research. | Removes competing “canonical” claims and gives agents a short mandatory reading path. |
+| D-011 | 2026-09-08 | M4 sources enter as conservative evidence/WATCH inputs; none independently manufactures a STRIKE. | More records must not weaken selectivity or bypass the existing evidence and human-review gates. |
+| D-012 | 2026-09-08 | Program chains use explicit `program_key` or source-reference crosswalks across the eight M4 stages. | Partial and uncertain chains are representable without inferring relationships from topical similarity. |
+| D-013 | 2026-09-08 | Adopt small adapter-neutral source controls, not a generic ingestion platform. | OFFLINE/LIVE-SAFE/ACCEPTANCE, request identity, budgets, accounting, retry metadata, and circuit state are reusable while transport stays source-specific. |
+| D-014 | 2026-09-08 | Preserve `corpus_v1.json` and extend it with `corpus_m4.json`. | M3 remains reproducible while M4 can measure incremental source contribution and leave-one-source-out lift. |
 
 The original strategic adjudication and 30-day authority are preserved under `docs/research/` and
 `docs/archive/` for provenance; they no longer control current execution.

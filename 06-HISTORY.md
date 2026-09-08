@@ -29,6 +29,19 @@
 - Evaluated `scoring_v2_candidate` across the full corpus and rejected it as under-evidenced; no scoring
   change was made.
 
+## Milestone 4 — CLOSED 2026-09-08
+
+- Added offline-first Grants.gov Search2, focused SEC EDGAR submissions/companyfacts, and official
+  agency procurement forecast ingestion with exact raw archival and deterministic identities.
+- Added shared source modes, sanitized request fingerprints, per-source budgets/accounting, retry
+  metadata, circuit state, and explicit unknown quota handling; no M4 live calls were made.
+- Added deterministic SEC CIK resolution and explicit partial program chains spanning INTENT through
+  OUTCOME without topic-inferred joins or new-source candidate creation.
+- Extended the frozen M3 replay corpus to 23 reviewed M4 cases and added source-ablation measurement.
+  STRIKE precision stayed 0.6667, false-positive rate 0.3333, false-negative rate 0.0, and no new
+  STRIKEs appeared; each new source contributed one WATCH under ablation.
+- Preserved `scoring_v1` and the frozen M2 SAM acceptance path.
+
 ## Repository authority normalization — 2026-09-08
 
 - Declared `~/Documents/Pyrnova/main` the sole canonical working copy.

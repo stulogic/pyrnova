@@ -6,15 +6,14 @@ Backlog presence is not implementation authority. `02-EXECUTION.md` controls act
 
 - Complete the post-reset M2 SAM acceptance and formal closure.
 - Confirm M3 reproducibility after M2 closes.
-- Obtain explicit authority before beginning M4 source expansion.
+- Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
+  general lift conclusions.
 
-## P1 — M4 candidates, not started
+## P1 — deferred source expansion
 
-- Grants.gov program and opportunity coverage.
-- SEC EDGAR capex and corporate-change signals.
 - Federal budgets, appropriations, and agency budget justifications.
-- Procurement forecasts, RFIs, sources-sought, and stronger SAM chain coverage.
-- State-capital and industrial-policy sources.
+- Additional per-agency forecast mappings, archived amendments, and forecast → SAM → award crosswalks.
+- State and local capital-program sources beyond the federal/industrial-policy path established in M4.
 - Selected regulatory and enforcement sources.
 - Commercial web change detection only after higher-authority sources justify it.
 

@@ -30,8 +30,10 @@ falsification, and a recommended action.
 OBSERVE → ARCHIVE → NORMALIZE → RESOLVE → DETECT → MATCH → REVIEW → STRIKE → OUTCOME
 ```
 
-Active sources: **USAspending** (keyless), **SAM.gov** (needs `SAM_API_KEY`), and bounded Federal
-Register context. Grants.gov and other M4 sources are not implemented.
+Active sources: **USAspending** (keyless), **SAM.gov** (needs `SAM_API_KEY`), bounded Federal
+Register context, **Grants.gov**, focused **SEC EDGAR**, and explicitly configured official agency
+procurement forecasts. M4 sources default to offline archived responses/fixtures and enrich or create
+WATCH evidence conservatively; they do not independently manufacture STRIKEs.
 
 ## Quickstart (local, no cloud)
 
@@ -67,3 +69,5 @@ credentials needed to move to production storage.
 
 Historical evaluation commands and the current empirical baseline are documented in
 `docs/replay/M3_BASELINE.md`. The canonical challenge corpus is `examples/replay/corpus_v1.json`.
+M4 source-expansion evaluation extends that frozen baseline in `examples/replay/corpus_m4.json`; run
+`python -m pyrnova.cli source-contribution --source grants_gov` for source ablation metrics.

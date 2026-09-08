@@ -1,6 +1,6 @@
-# Milestone 4 authority stub — source expansion and signal coverage
+# Milestone 4 — source expansion and signal coverage
 
-_Status: prepared, not authorized for implementation._
+_Status: CLOSED 2026-09-08; implementation refinements recorded below._
 
 ## Core question
 
@@ -36,4 +36,18 @@ A source proposal must state:
 - No source is accepted because access is easy.
 - No scoring or mechanism complexity before corpus evidence demonstrates the need.
 
-Implementation begins only under a later explicit M4 execution instruction.
+Implementation was activated by the explicit M4 execution instruction recorded on 2026-09-08; this
+document does not authorize later milestones or broader source families.
+
+## Implemented refinement
+
+- Grants.gov Search2, SEC EDGAR submissions/companyfacts, and official agency procurement forecast
+  artifacts are the accepted first source families.
+- New-source observations replay through one offline integration boundary into normalized records,
+  SEC CIK entities, archived evidence, and explicitly keyed partial program chains.
+- Program stages are `INTENT`, `AUTHORIZATION`, `FUNDING`, `PROGRAM`, `MARKET_ENGAGEMENT`,
+  `PROCUREMENT`, `AWARD`, and `OUTCOME`; no stage is required and no join is inferred from topic alone.
+- New sources are evidence/enrichment/WATCH inputs by default. Candidate creation and STRIKE promotion
+  remain behind existing direct-opportunity, capability, evidence, and human-review gates.
+- Source contribution is measured with deterministic leave-one-source-out replay against the M4 corpus;
+  the frozen M3 corpus and `scoring_v1` are unchanged.
