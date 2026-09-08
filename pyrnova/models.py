@@ -114,6 +114,91 @@ class OpportunityTransition:
 
 
 @dataclass
+class Participant:
+    """An economically distinct actor in a capital catalyst / consequence (M7).
+
+    Roles are not interchangeable: who controls the money, who owns the program, who buys, who
+    receives the prime award, and who benefits downstream are different economic positions.
+    """
+
+    role: str  # FUNDING_AUTHORITY|PROGRAM_OWNER|BUYER|PRIME_RECIPIENT|BENEFICIARY|SUPPLIER|SUBCONTRACTOR|AFFECTED_ENTITY|REGULATED_ENTITY
+    entity_ref: Optional[str] = None      # canonical node id (entity:uei:..., agency key) where known
+    name: Optional[str] = None
+    evidence_ids: list = field(default_factory=list)
+    basis: str = ""
+
+
+@dataclass
+class CapitalCatalyst:
+    """An evidence-backed change likely to alter economic behavior, expenditure, or capital allocation.
+
+    One catalyst per resolved program chain (deterministic identity from ``program_key``); it references
+    canonical graph objects (signals, relationships) rather than duplicating them.
+    """
+
+    program_key: str
+    catalyst_type: str  # BUDGET_APPROPRIATION|PROGRAM_ESTABLISHMENT|PROCUREMENT_LIFECYCLE|REGULATORY_MANDATE|CAPACITY_BUILDOUT|SUPPLY_DISRUPTION
+    summary: str
+    controlling_institution: Optional[str] = None      # program owner / funding authority
+    triggering_evidence_ids: list = field(default_factory=list)   # source-native signal/evidence ids
+    supporting_relationship_ids: list = field(default_factory=list)
+    participants: list = field(default_factory=list)   # list[Participant]
+    geography: Optional[str] = None
+    effective_date: Optional[str] = None
+    activation_window: Optional[dict] = None           # {"start":..., "end":...}
+    stages_present: list = field(default_factory=list)
+    confidence: float = 0.0                            # catalyst confidence — distinct from opportunity score
+    first_observed_at: Optional[str] = None
+    available_at: Optional[str] = None
+    status: str = "active"                             # active | contradicted | superseded
+    contradictions: list = field(default_factory=list)
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class ConsequenceFalsifier:
+    """Structured negative commercial evidence (M7). A fatal falsifier kills the consequence."""
+
+    code: str
+    detail: str = ""
+    fatal: bool = False
+
+
+@dataclass
+class CommercialConsequence:
+    """A specific, evidence-backed economic behavior a catalyst is likely to cause (M7).
+
+    Distinct from Opportunity/STRIKE: a consequence explains "this catalyst likely causes economic
+    behavior X, via mechanism M, for participant role R, requiring capability C, over timeframe T,
+    supported by this evidence, subject to these assumptions and falsifiers." A STRIKE is only surfaced
+    after consequence analysis and existing screening.
+    """
+
+    catalyst_id: str
+    program_key: str
+    mechanism: str          # one of the mechanism families
+    directness: str         # DIRECT | DOWNSTREAM | SECOND_ORDER
+    mechanism_confidence: float = 0.0
+    mechanism_rationale: str = ""
+    participants: list = field(default_factory=list)      # list[Participant] relevant to this consequence
+    capability_classes: list = field(default_factory=list)  # list[dict] from capabilities.CapabilityClass
+    likely_spend_category: Optional[str] = None
+    timing: Optional[dict] = None                          # {"expected_at":..., "window":..., "basis":...}
+    geography: Optional[str] = None
+    value: dict = field(default_factory=dict)              # value.ValueEstimate as dict
+    evidence_ids: list = field(default_factory=list)
+    assumptions: list = field(default_factory=list)
+    falsifiers: list = field(default_factory=list)         # list[ConsequenceFalsifier as dict]
+    confidence: float = 0.0                                # consequence confidence — distinct from score
+    screened_disposition: str = "WATCH"                    # STRIKE | WATCH | REJECT (recommendation only)
+    screening_basis: str = ""
+    first_supportable_at: Optional[str] = None
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
 class EvidenceAssessment:
     """Opportunity-specific evidence weight, separate from provenance and polarity."""
 
