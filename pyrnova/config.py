@@ -15,6 +15,30 @@ def _get(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
+def _local_secret(name: str) -> str:
+    """Read one value from the repository-local, gitignored ``.env`` file."""
+    env_path = Path(__file__).resolve().parents[1] / ".env"
+    try:
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ""
+    prefix = f"{name}="
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line.startswith(prefix):
+            continue
+        value = line[len(prefix):].strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        return value
+    return ""
+
+
+def _sam_api_key() -> str:
+    """Prefer an explicit process value, then Pyrnova's private local file."""
+    return _get("SAM_API_KEY") or _local_secret("SAM_API_KEY")
+
+
 @dataclass(frozen=True)
 class Config:
     sam_api_key: str
@@ -40,7 +64,7 @@ class Config:
 
 def load_config() -> Config:
     return Config(
-        sam_api_key=_get("SAM_API_KEY"),
+        sam_api_key=_sam_api_key(),
         archive_backend=_get("PYRNOVA_ARCHIVE_BACKEND", "local"),
         archive_dir=Path(_get("PYRNOVA_ARCHIVE_DIR", "./var/archive")),
         s3_endpoint_url=_get("PYRNOVA_S3_ENDPOINT_URL"),

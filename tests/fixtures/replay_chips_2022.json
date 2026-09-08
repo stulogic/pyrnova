@@ -1,0 +1,67 @@
+{
+  "case_id": "chips-act-to-commercial-fab-nofo",
+  "mechanism_family": "grants_industrial_policy",
+  "replay_as_of": "2022-08-09T23:59:59+00:00",
+  "records": [
+    {
+      "source_id": "congress",
+      "source_ref": "PLAW-117publ167",
+      "record_kind": "policy_funding",
+      "event_at": "2022-08-09T00:00:00+00:00",
+      "published_at": "2022-08-09T00:00:00+00:00",
+      "retrieved_at": "2026-09-08T00:00:00+00:00",
+      "available_at": "2022-08-09T00:00:00+00:00",
+      "strength": 5,
+      "source_role": "primary",
+      "applies_to_candidate": true,
+      "url": "https://www.congress.gov/117/plaws/publ167/PLAW-117publ167.pdf"
+    },
+    {
+      "source_id": "nist",
+      "source_ref": "commercial-fabrication-facilities-nofo",
+      "record_kind": "solicitation",
+      "published_at": "2023-02-28T00:00:00+00:00",
+      "available_at": "2023-02-28T00:00:00+00:00",
+      "strength": 5,
+      "source_role": "primary",
+      "applies_to_candidate": true,
+      "url": "https://www.nist.gov/chips/chips-incentives-funding-opportunities"
+    },
+    {
+      "source_id": "commerce",
+      "source_ref": "globalfoundries-award-2024-11-20",
+      "record_kind": "award",
+      "published_at": "2024-11-20T00:00:00+00:00",
+      "available_at": "2024-11-20T00:00:00+00:00",
+      "strength": 4,
+      "source_role": "primary",
+      "applies_to_candidate": false,
+      "url": "https://www.commerce.gov/news/press-releases/2024/11/biden-harris-administration-announces-chips-incentives-award"
+    }
+  ],
+  "candidate": {
+    "hypothesis": "Commerce/NIST will issue a semiconductor manufacturing funding opportunity.",
+    "relevance": 0.75,
+    "predicted_buyer": "Department of Commerce / NIST",
+    "predicted_timing": "within 6-12 months",
+    "predicted_value_usd": null
+  },
+  "actual_outcome": {
+    "occurred": true,
+    "kind": "solicitation",
+    "buyer": "Department of Commerce / NIST",
+    "occurred_at": "2023-02-28T00:00:00+00:00",
+    "actual_value_usd": null,
+    "later_award": "GlobalFoundries award announced 2024-11-20, up to $1.5B"
+  },
+  "expected_affected_entities": ["US semiconductor manufacturers"],
+  "expected_buyer_program_owner": "Department of Commerce / NIST",
+  "expected_commercial_mechanism": "CHIPS incentives funding opportunity",
+  "expected_disposition": "WATCH",
+  "ground_truth": {"label": "TRUE_POSITIVE", "confidence": "HIGH"},
+  "ambiguity_notes": "Award ceiling is not treated as predicted or disbursed value.",
+  "reviewer": "Pyrnova corpus review 2026-09-08",
+  "watch_duration_days": 203,
+  "watch_transition": "STRIKE",
+  "watch_transition_evidence": ["solicitation"]
+}

@@ -24,6 +24,11 @@ def notice_rows():
 
 
 @pytest.fixture
+def precursor_rows():
+    return json.loads((FIXTURES / "federal_register_documents.json").read_text())["results"]
+
+
+@pytest.fixture
 def profile():
     from pyrnova.match import CapabilityProfile
 

@@ -12,6 +12,10 @@ INTELLIGENCE_METRICS = {
     "evidence_items",
     "predictions_logged",
     "lead_time_days",
+    "duplicate_opportunities",
+    "review_accepts",
+    "review_watches",
+    "review_rejects",
 }
 COMMERCIAL_METRICS = {
     "targeted_accounts",

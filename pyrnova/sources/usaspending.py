@@ -17,6 +17,7 @@ from . import http
 from .registry import get_spec
 
 CONTRACT_TYPE_CODES = ["A", "B", "C", "D"]
+RawAwardPage = tuple[bytes, list[dict]]
 
 REQUEST_FIELDS = [
     "Award ID",
@@ -27,6 +28,9 @@ REQUEST_FIELDS = [
     "Awarding Agency",
     "Awarding Sub Agency",
     "Contract Award Type",
+    "Description",
+    "NAICS Code",
+    "PSC Code",
     "recipient_id",
     "generated_internal_id",
 ]
@@ -48,6 +52,10 @@ def build_payload(
     page: int = 1,
     limit: int = 100,
 ) -> dict:
+    if page < 1:
+        raise ValueError("page must be at least 1")
+    if not 1 <= limit <= 100:
+        raise ValueError("limit must be between 1 and 100")
     filters: dict = {
         "award_type_codes": CONTRACT_TYPE_CODES,
         "time_period": [{"start_date": action_date_start, "end_date": action_date_end}],
@@ -88,8 +96,10 @@ class USAspendingClient:
         action_date_end: str,
         max_pages: int = 2,
         limit: int = 100,
-    ) -> list[tuple[bytes, list[dict]]]:
+    ) -> list[RawAwardPage]:
         """Return a list of (raw_bytes, results) per page so raw evidence can be archived per pull."""
+        if max_pages < 1:
+            raise ValueError("max_pages must be at least 1")
         pages: list[tuple[bytes, list[dict]]] = []
         for page in range(1, max_pages + 1):
             payload = build_payload(
@@ -109,3 +119,52 @@ class USAspendingClient:
             if not (parsed.get("page_metadata", {}) or {}).get("hasNext"):
                 break
         return pages
+
+    def search_recipient_history(
+        self,
+        *,
+        recipient_names: list[str],
+        action_date_start: str,
+        action_date_end: str,
+        max_pages: int = 2,
+        limit: int = 100,
+    ) -> list[RawAwardPage]:
+        """Fetch a target's award history for incumbent and buyer context.
+
+        Rows and raw response bytes are deliberately returned unchanged; normalizers own
+        canonical representation and the caller archives each raw page as provenance.
+        """
+        names = [name.strip() for name in recipient_names if name and name.strip()]
+        if not names:
+            return []
+        return self.search_awards(
+            recipient_search=names,
+            action_date_start=action_date_start,
+            action_date_end=action_date_end,
+            max_pages=max_pages,
+            limit=limit,
+        )
+
+    def search_market_history(
+        self,
+        *,
+        naics_codes: Optional[list[str]],
+        agency_name: Optional[str] = None,
+        action_date_start: str,
+        action_date_end: str,
+        max_pages: int = 2,
+        limit: int = 100,
+    ) -> list[RawAwardPage]:
+        """Fetch comparable awards to identify incumbent/competitor context.
+
+        This is intentionally a thin source adapter: it does not infer a competitor,
+        merge records, or alter the source response.
+        """
+        return self.search_awards(
+            naics_codes=naics_codes,
+            agency_name=agency_name,
+            action_date_start=action_date_start,
+            action_date_end=action_date_end,
+            max_pages=max_pages,
+            limit=limit,
+        )

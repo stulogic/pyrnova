@@ -27,6 +27,7 @@ class CapabilityProfile:
     exclusions: list[str] = field(default_factory=list)    # hard "cannot pursue" keywords
     incumbencies: list[str] = field(default_factory=list)
     recipient_names: list[str] = field(default_factory=list)  # USAspending recipient search anchors
+    precursor_terms: list[str] = field(default_factory=list)  # bounded Federal Register queries
 
     @classmethod
     def from_dict(cls, d: dict) -> "CapabilityProfile":
@@ -43,6 +44,7 @@ class CapabilityProfile:
             exclusions=list(d.get("exclusions", [])),
             incumbencies=list(d.get("incumbencies", [])),
             recipient_names=list(d.get("recipient_names", [])),
+            precursor_terms=list(d.get("precursor_terms", [])),
         )
 
     @property

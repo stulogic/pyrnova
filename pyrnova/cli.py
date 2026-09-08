@@ -32,16 +32,19 @@ def _load_profile(path: str) -> CapabilityProfile:
     return CapabilityProfile.from_dict(data)
 
 
-def _fixture_rows() -> tuple[list[dict], list[dict]]:
+def _fixture_rows() -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     awards = json.loads((FIXTURES / "usaspending_awards.json").read_text())["results"]
     notices = json.loads((FIXTURES / "sam_opportunities.json").read_text())["opportunitiesData"]
-    return awards, notices
+    precursor_path = FIXTURES / "federal_register_documents.json"
+    precursors = json.loads(precursor_path.read_text()).get("results", []) if precursor_path.exists() else []
+    return awards, notices, precursors, []
 
 
 def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
     from .sources.usaspending import USAspendingClient
 
     award_rows: list[dict] = []
+    source_observations: list[dict] = []
     seen: set = set()
     # Action-date window: awards acted on in the last ~6 years may still be active/expiring soon.
     start = (as_of - timedelta(days=6 * 365)).isoformat()
@@ -77,17 +80,56 @@ def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
         posted_to = as_of.strftime("%m/%d/%Y")
         for ptype in ("r", "p", "s"):  # Sources Sought, Presolicitation, Special Notice
             try:
-                _raw, rows = sam.search(
+                observations = sam.search_observations(
                     posted_from=posted_from, posted_to=posted_to, ptype=ptype,
-                    naics=(naics[0] if naics else None), limit=100,
+                    naics=(naics[0] if naics else None), limit=100, max_pages=1,
                 )
-                notice_rows.extend(rows)
+                for observation in observations:
+                    notice_rows.extend(observation.rows)
+                    source_observations.append({
+                        "source_id": "sam_opportunities",
+                        "source_ref": f"search:{ptype}:{observation.request_params['offset']}",
+                        "request_url": observation.request_url,
+                        "request_params": observation.request_params,
+                        "fetched_at": observation.fetched_at,
+                        "raw_response": observation.raw_response,
+                    })
             except Exception as exc:  # pragma: no cover - network dependent
                 print(f"[warn] SAM {ptype} fetch failed: {exc}", file=sys.stderr)
     else:
         print("[info] SAM_API_KEY not set — running recompete-only (USAspending). "
               "Set SAM_API_KEY to include pre-solicitation intelligence.", file=sys.stderr)
-    return award_rows, notice_rows
+    precursor_rows: list[dict] = []
+    if profile.precursor_terms:
+        from .sources.federal_register import FederalRegisterClient
+
+        fr = FederalRegisterClient()
+        seen_docs: set[str] = set()
+        start_date = (as_of - timedelta(days=3 * 365)).isoformat()
+        for term in profile.precursor_terms[:3]:
+            try:
+                for page in fr.search_documents(
+                    term=term,
+                    document_types=["NOTICE", "PROPOSED_RULE", "RULE"],
+                    publication_date_start=start_date,
+                    publication_date_end=as_of.isoformat(),
+                    max_pages=1,
+                    per_page=100,
+                ):
+                    for document in page.documents:
+                        ref = document.get("document_number")
+                        if ref and ref not in seen_docs:
+                            seen_docs.add(ref)
+                            row = dict(document)
+                            row["_pyrnova_observation"] = {
+                                "request_params": page.request_params,
+                                "fetched_at": page.fetched_at,
+                                "request_url": page.source_url,
+                            }
+                            precursor_rows.append(row)
+            except Exception as exc:  # pragma: no cover - network dependent
+                print(f"[warn] Federal Register fetch failed for {term!r}: {exc}", file=sys.stderr)
+    return award_rows, notice_rows, precursor_rows, source_observations
 
 
 def cmd_capture_radar(args) -> int:
@@ -98,14 +140,21 @@ def cmd_capture_radar(args) -> int:
     store = StateStore(cfg.state_dir)
 
     if args.fixtures:
-        award_rows, notice_rows = _fixture_rows()
+        award_rows, notice_rows, precursor_rows, source_observations = _fixture_rows()
     else:
-        award_rows, notice_rows = _live_rows(cfg, profile, as_of, args.window_days)
+        award_rows, notice_rows, precursor_rows, source_observations = _live_rows(
+            cfg, profile, as_of, args.window_days
+        )
+    if args.sam_records:
+        observed = json.loads(Path(args.sam_records).read_text(encoding="utf-8"))
+        notice_rows.extend(observed.get("opportunitiesData", []))
 
     report = run(
         profile=profile,
         award_rows=award_rows,
         notice_rows=notice_rows,
+        precursor_rows=precursor_rows,
+        source_observations=source_observations,
         archive=archive,
         store=store,
         as_of=as_of,
@@ -125,10 +174,11 @@ def cmd_capture_radar(args) -> int:
 
     print(f"profile         : {profile.name}")
     print(f"as-of           : {as_of.isoformat()}")
-    print(f"awards / notices: {len(award_rows)} / {len(notice_rows)}")
+    print(f"awards / notices / precursors: {len(award_rows)} / {len(notice_rows)} / {len(precursor_rows)}")
     print(f"candidates      : {report.stats['candidates']}")
     print(f"STRIKEs         : {report.stats['strikes']} "
           f"(recompete {report.stats['recompete']}, presol {report.stats['presolicitation']})")
+    print(f"WATCH / deduped : {report.stats['watch']} / {report.stats['duplicate_candidates']}")
     print(f"avg lead time   : {report.stats['avg_lead_time_days']} days")
     print(f"signal brief    : {brief_path}")
     print(f"capture radar   : {radar_path}")
@@ -156,6 +206,132 @@ def cmd_scoreboard(args) -> int:
     return 0
 
 
+def cmd_adjudicate(args) -> int:
+    from .models import Catalyst, Opportunity, to_record
+    from .review import adjudicate, apply_review
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    record = store.latest("opportunities", args.opportunity_id)
+    if not record:
+        print(f"opportunity not found: {args.opportunity_id}", file=sys.stderr)
+        return 2
+    catalyst = record.get("catalyst") or {}
+    opp = Opportunity(
+        id=record["id"],
+        title=record.get("title") or "untitled",
+        catalyst=Catalyst(
+            kind=catalyst.get("kind") or "unknown",
+            detected_by=catalyst.get("detected_by") or "unknown",
+        ),
+        state=record.get("state") or "candidate",
+        relevance_score=float(record.get("relevance_score") or 0),
+        confidence=float(record.get("confidence") or 0),
+        meta=dict(record.get("meta") or {}),
+    )
+    review = adjudicate(
+        opp, decision=args.decision, reviewer=args.reviewer, reason=args.reason or ""
+    )
+    apply_review(opp, review)
+    store.append("reviews", to_record(review))
+    updated = dict(record)
+    updated["state"] = opp.state
+    updated["meta"] = opp.meta
+    store.append("opportunities", updated)
+    scoreboard.record(
+        store,
+        {"ACCEPT": "review_accepts", "WATCH": "review_watches", "REJECT": "review_rejects"}[
+            review.human_decision
+        ],
+        opportunity_id=opp.id,
+        reviewer=review.reviewer,
+    )
+    print(f"{opp.id}: {review.human_decision} by {review.reviewer} at {review.reviewed_at}")
+    return 0
+
+
+def cmd_replay(args) -> int:
+    from .replay import run_replay
+
+    cfg = load_config()
+    case = json.loads(Path(args.case).read_text(encoding="utf-8"))
+    result = run_replay(case, store=StateStore(cfg.state_dir), scoring_version=args.scoring_version)
+    if args.inspect_excluded:
+        result = {"case_id": result["case_id"], "excluded_future_records": result["excluded_future_records"]}
+    rendered = json.dumps(result, indent=2, sort_keys=True)
+    if args.output:
+        Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+        print(args.output)
+    else:
+        print(rendered)
+    return 0
+
+
+def cmd_metrics(args) -> int:
+    from .metrics import evaluation_snapshot
+
+    cfg = load_config()
+    print(json.dumps(evaluation_snapshot(StateStore(cfg.state_dir), args.scoring_version), indent=2, sort_keys=True))
+    return 0
+
+
+def _persist_replay_report(cfg, store, results: list[dict], metrics: dict, kind: str) -> dict:
+    from .replay import report_id
+
+    report = {
+        "id": report_id(results, kind),
+        "kind": kind,
+        "scoring_versions": sorted({r["scoring_version"] for r in results}),
+        "result_ids": sorted(r["id"] for r in results),
+        "metrics": metrics,
+    }
+    store.append("replay_reports", report)
+    cfg.out_dir.mkdir(parents=True, exist_ok=True)
+    path = cfg.out_dir / f"replay_report_{report['id']}.json"
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {**report, "output": str(path)}
+
+
+def cmd_replay_corpus(args) -> int:
+    from .metrics import summarize_results
+    from .replay import load_corpus, run_corpus
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    cases = load_corpus(Path(args.corpus))
+    results = run_corpus(cases, scoring_version=args.scoring_version, mechanism=args.mechanism, store=store)
+    report = _persist_replay_report(cfg, store, results, summarize_results(results), "corpus")
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_compare_scoring(args) -> int:
+    from .metrics import summarize_results
+    from .replay import load_corpus, run_corpus
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    cases = load_corpus(Path(args.corpus))
+    baseline = run_corpus(cases, scoring_version=args.baseline, mechanism=args.mechanism, store=store)
+    challenger = run_corpus(cases, scoring_version=args.challenger, mechanism=args.mechanism, store=store)
+    baseline_metrics, challenger_metrics = summarize_results(baseline), summarize_results(challenger)
+    changed = [
+        {"case_id": old["case_id"], "baseline": old["system_disposition"], "challenger": new["system_disposition"]}
+        for old, new in zip(baseline, challenger)
+        if old["system_disposition"] != new["system_disposition"]
+    ]
+    combined = baseline + challenger
+    report = _persist_replay_report(
+        cfg,
+        store,
+        combined,
+        {"baseline": baseline_metrics, "challenger": challenger_metrics, "changed_dispositions": changed},
+        "scoring-comparison",
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -169,11 +345,43 @@ def main(argv=None) -> int:
     cr.add_argument("--window-days", type=int, default=540, help="recompete forward window")
     cr.add_argument("--threshold", type=float, default=0.3, help="relevance threshold for STRIKE")
     cr.add_argument("--min-amount", type=float, default=0.0, help="minimum award amount for recompete")
-    cr.add_argument("--reviewer", default=None, help="human reviewer name (upgrades recommend→accept)")
+    cr.add_argument("--reviewer", default=None, help="legacy label only; use adjudicate for a human decision")
+    cr.add_argument("--sam-records", default=None, help="append a saved SAM opportunities JSON observation")
     cr.set_defaults(func=cmd_capture_radar)
 
     sb = sub.add_parser("scoreboard", help="print accumulated scoreboard totals")
     sb.set_defaults(func=cmd_scoreboard)
+
+    adj = sub.add_parser("adjudicate", help="persist a named ACCEPT/WATCH/REJECT decision")
+    adj.add_argument("opportunity_id")
+    adj.add_argument("--decision", required=True, choices=("ACCEPT", "WATCH", "REJECT"))
+    adj.add_argument("--reviewer", required=True)
+    adj.add_argument("--reason", default="")
+    adj.set_defaults(func=cmd_adjudicate)
+
+    replay = sub.add_parser("replay", help="run a deterministic point-in-time replay case")
+    replay.add_argument("--case", required=True)
+    replay.add_argument("--output", default=None)
+    replay.add_argument("--scoring-version", default="scoring_v1")
+    replay.add_argument("--inspect-excluded", action="store_true")
+    replay.set_defaults(func=cmd_replay)
+
+    metrics = sub.add_parser("metrics", help="print evaluation metrics from durable state")
+    metrics.add_argument("--scoring-version", default=None)
+    metrics.set_defaults(func=cmd_metrics)
+
+    corpus = sub.add_parser("replay-corpus", help="run the canonical replay challenge corpus")
+    corpus.add_argument("--corpus", default="examples/replay/corpus_v1.json")
+    corpus.add_argument("--mechanism", default=None)
+    corpus.add_argument("--scoring-version", default="scoring_v1")
+    corpus.set_defaults(func=cmd_replay_corpus)
+
+    compare = sub.add_parser("compare-scoring", help="compare two scoring versions on the full corpus")
+    compare.add_argument("--corpus", default="examples/replay/corpus_v1.json")
+    compare.add_argument("--mechanism", default=None)
+    compare.add_argument("--baseline", default="scoring_v1")
+    compare.add_argument("--challenger", default="scoring_v2_candidate")
+    compare.set_defaults(func=cmd_compare_scoring)
 
     args = p.parse_args(argv)
     return args.func(args)

@@ -101,6 +101,30 @@ CREATE TABLE event (
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE event_evidence (
+    event_id        uuid NOT NULL REFERENCES event(id),
+    evidence_id     uuid NOT NULL REFERENCES evidence(id),
+    role            text NOT NULL DEFAULT 'supporting',
+    PRIMARY KEY (event_id, evidence_id)
+);
+
+-- Generic evidence-backed graph edge. Sources terminate at normalized entities/events; source-native
+-- fields remain in evidence/meta rather than defining this relationship model.
+CREATE TABLE relationship (
+    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    subject_id      uuid NOT NULL,
+    predicate       text NOT NULL,
+    object_id       uuid NOT NULL,
+    meta            jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE relationship_evidence (
+    relationship_id uuid NOT NULL REFERENCES relationship(id),
+    evidence_id     uuid NOT NULL REFERENCES evidence(id),
+    PRIMARY KEY (relationship_id, evidence_id)
+);
+
 CREATE TABLE catalyst (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     kind            text NOT NULL,                    -- 'recompete_expiry' | 'sources_sought' | 'rfi' | 'presolicitation' | 'special_notice'
@@ -144,6 +168,7 @@ CREATE TABLE capability_profile (
 -- ---------------------------------------------------------------------------
 CREATE TABLE opportunity (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    identity_key    text NOT NULL UNIQUE,             -- deterministic source-native opportunity identity
     customer_id     uuid REFERENCES customer(id),
     catalyst_id     uuid REFERENCES catalyst(id),
     -- lifecycle: candidate -> reviewing -> strike (qualified) | rejected
@@ -173,6 +198,10 @@ CREATE TABLE opportunity_evidence (
     opportunity_id  uuid NOT NULL REFERENCES opportunity(id),
     evidence_id     uuid NOT NULL REFERENCES evidence(id),
     role            text,                             -- 'primary' | 'incumbent' | 'context' | 'contra'
+    strength        smallint CHECK (strength BETWEEN 1 AND 5),
+    strength_class  text,
+    polarity        text CHECK (polarity IN ('supporting','contradictory')),
+    basis           text,
     PRIMARY KEY (opportunity_id, evidence_id)
 );
 
@@ -182,13 +211,19 @@ CREATE TABLE opportunity_evidence (
 CREATE TABLE review (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     opportunity_id  uuid NOT NULL REFERENCES opportunity(id),
-    decision        text NOT NULL,                    -- 'accept' | 'reject'
+    decision        text NOT NULL,                    -- legacy/system or human decision label
     reason          text,
     confidence      real,
     reviewer        text,
+    human_decision  text CHECK (human_decision IN ('ACCEPT','WATCH','REJECT')),
+    system_disposition text NOT NULL DEFAULT 'WATCH'
+                    CHECK (system_disposition IN ('STRIKE','WATCH','REJECT')),
+    score_at_review real,
+    reviewed_at     timestamptz,
     customer_feedback text,
     created_at      timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX review_opportunity_created_idx ON review(opportunity_id, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- PREDICTION + OUTCOME  (forward proof; graded later)
@@ -211,6 +246,56 @@ CREATE TABLE outcome (
     result          text NOT NULL,                    -- 'confirmed' | 'refuted' | 'partial' | 'pending'
     evidence_id     uuid REFERENCES evidence(id),
     notes           text
+);
+
+CREATE TABLE replay_evaluation (
+    id              text PRIMARY KEY,
+    case_id         text NOT NULL,
+    replay_as_of    timestamptz NOT NULL,
+    mechanism_family text NOT NULL,
+    system_disposition text NOT NULL CHECK (system_disposition IN ('STRIKE','WATCH','REJECT')),
+    score           real NOT NULL,
+    scoring_version text NOT NULL,
+    evidence_policy_version text NOT NULL,
+    threshold_version text NOT NULL,
+    mechanism_rule_version text NOT NULL,
+    ground_truth_label text NOT NULL CHECK (ground_truth_label IN ('TRUE_POSITIVE','TRUE_NEGATIVE','PARTIAL','AMBIGUOUS')),
+    lead_time_days  int,
+    directionally_correct boolean,
+    false_positive  boolean,
+    false_negative  boolean,
+    result          jsonb NOT NULL,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE scoring_policy_version (
+    version         text PRIMARY KEY,
+    evidence_policy_version text NOT NULL,
+    threshold_version text NOT NULL,
+    mechanism_rule_version text NOT NULL,
+    parameters      jsonb NOT NULL,
+    status          text NOT NULL CHECK (status IN ('ACTIVE','CANDIDATE','REJECTED','RETIRED')),
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE replay_case (
+    case_id         text PRIMARY KEY,
+    mechanism_family text NOT NULL,
+    replay_as_of    timestamptz NOT NULL,
+    ground_truth_label text NOT NULL CHECK (ground_truth_label IN ('TRUE_POSITIVE','TRUE_NEGATIVE','PARTIAL','AMBIGUOUS')),
+    ground_truth_confidence text NOT NULL CHECK (ground_truth_confidence IN ('HIGH','MEDIUM','LOW')),
+    reviewer        text NOT NULL,
+    case_record     jsonb NOT NULL,
+    admitted_at     timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE replay_report (
+    id              text PRIMARY KEY,
+    kind            text NOT NULL,
+    scoring_versions text[] NOT NULL,
+    result_ids      text[] NOT NULL,
+    metrics         jsonb NOT NULL,
+    created_at      timestamptz NOT NULL DEFAULT now()
 );
 
 -- Reserved for dormant pipelines (declared, never populated in initial phase):

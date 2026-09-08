@@ -1,0 +1,1323 @@
+{
+  "corpus_id": "pyrnova-m3-corpus-v1",
+  "schema_version": "replay_case_v1",
+  "reviewed_at": "2026-09-08",
+  "cases": [
+    {
+      "case_id": "proc-nasa-hls-2019",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2019-09-30T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "nasa",
+          "source_ref": "NNH19ZCQ001K-APPENDIX-H",
+          "record_kind": "solicitation",
+          "available_at": "2019-09-30T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.nasa.gov/humans-in-space/nextstep-h-human-landing-system/",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "nasa",
+          "source_ref": "HLS-base-period-selections-2020-04-30",
+          "record_kind": "award",
+          "available_at": "2020-04-30T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.nasa.gov/humans-in-space/nasa-selects-blue-origin-dynetics-spacex-for-artemis-human-landers/",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "NASA will award Human Landing System design and development contracts under Appendix H.",
+        "relevance": 0.92,
+        "predicted_buyer": "NASA Human Landing System Program",
+        "predicted_timing": "within 12 months",
+        "predicted_value_usd": 1000000000
+      },
+      "expected_affected_entities": [
+        "human landing system providers"
+      ],
+      "expected_buyer_program_owner": "NASA Human Landing System Program",
+      "expected_commercial_mechanism": "NextSTEP-2 Appendix H contract awards",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "NASA Human Landing System Program",
+        "occurred_at": "2020-04-30T00:00:00+00:00",
+        "actual_value_usd": 967000000,
+        "source_ref": "HLS-base-period-selections-2020-04-30"
+      },
+      "expected_disposition": "STRIKE",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "ACCEPT",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": []
+    },
+    {
+      "case_id": "proc-usps-ngdv-2016",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2016-09-16T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "usps",
+          "source_ref": "NGDV-prototype-selection-2016",
+          "record_kind": "sources_sought",
+          "available_at": "2016-09-16T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://about.usps.com/news/statements/091616.htm",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "usps",
+          "source_ref": "NGDV-production-award-2021-02-23",
+          "record_kind": "award",
+          "available_at": "2021-02-23T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://about.usps.com/newsroom/national-releases/2021/0223-multi-billion-dollar-modernization-of-postal-delivery-vehicle-fleet.htm",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "USPS prototype testing will progress to a production vehicle contract.",
+        "relevance": 0.85,
+        "predicted_buyer": "U.S. Postal Service",
+        "predicted_timing": "multi-year acquisition",
+        "predicted_value_usd": 500000000
+      },
+      "expected_affected_entities": [
+        "postal vehicle manufacturers"
+      ],
+      "expected_buyer_program_owner": "U.S. Postal Service",
+      "expected_commercial_mechanism": "NGDV production IDIQ award",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "U.S. Postal Service",
+        "occurred_at": "2021-02-23T00:00:00+00:00",
+        "actual_value_usd": 482000000,
+        "source_ref": "NGDV-production-award-2021-02-23"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 1621,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "award"
+      ]
+    },
+    {
+      "case_id": "proc-gsa-oasis-plus-2023",
+      "mechanism_family": "procurement",
+      "replay_as_of": "2023-06-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "gsa",
+          "source_ref": "OASIS-plus-final-solicitation-2023",
+          "record_kind": "solicitation",
+          "available_at": "2023-06-15T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.gsa.gov/buy-through-us/products-and-services/professional-services/buy-services/oasis-plus/sellers-guide/solicitations-continuously-open",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "gsa",
+          "source_ref": "OASIS-plus-first-awards-2024-07-31",
+          "record_kind": "award",
+          "available_at": "2024-07-31T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.gsa.gov/about-gsa/newsroom/news-releases/gsa-announces-first-oasis-award-decisions-07312024",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "GSA will make multiple OASIS+ professional-services contract awards.",
+        "relevance": 0.88,
+        "predicted_buyer": "U.S. General Services Administration",
+        "predicted_timing": "within 18 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "professional services contractors"
+      ],
+      "expected_buyer_program_owner": "U.S. General Services Administration",
+      "expected_commercial_mechanism": "OASIS+ multiple-award IDIQ",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "U.S. General Services Administration",
+        "occurred_at": "2024-07-31T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "OASIS-plus-first-awards-2024-07-31"
+      },
+      "expected_disposition": "STRIKE",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "ACCEPT",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": []
+    },
+    {
+      "case_id": "proc-army-heating-lines-1987",
+      "mechanism_family": "procurement",
+      "replay_as_of": "1987-09-01T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "us_army",
+          "source_ref": "RFP-DAJA76-87-R-0729",
+          "record_kind": "solicitation",
+          "available_at": "1987-08-01T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.gao.gov/products/b-228152.3",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "gao",
+          "source_ref": "B-228152.3-funding-expiry",
+          "record_kind": "cancellation",
+          "available_at": "1987-09-30T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.gao.gov/products/b-228152.3",
+          "applies_to_candidate": true,
+          "contradicts": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The Army heating-line replacement RFP will produce a competitive contract award.",
+        "relevance": 0.75,
+        "predicted_buyer": "U.S. Army",
+        "predicted_timing": "within 90 days",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "heating infrastructure contractors"
+      ],
+      "expected_buyer_program_owner": "U.S. Army",
+      "expected_commercial_mechanism": "competitive construction award",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "cancellation",
+        "buyer": "U.S. Army",
+        "occurred_at": null,
+        "actual_value_usd": null,
+        "source_ref": "B-228152.3-funding-expiry"
+      },
+      "expected_disposition": "STRIKE",
+      "ground_truth": {
+        "label": "TRUE_NEGATIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Later primary adjudication confirms funds expired and the solicitation was cancelled.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [
+        "expired_stale",
+        "no_actionable_commercial_path",
+        "contradictory_evidence"
+      ]
+    },
+    {
+      "case_id": "grant-chips-fab-2022",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2022-08-09T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "congress",
+          "source_ref": "PLAW-117publ167",
+          "record_kind": "policy_funding",
+          "available_at": "2022-08-09T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.congress.gov/117/plaws/publ167/PLAW-117publ167.pdf",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "nist",
+          "source_ref": "commercial-fabrication-facilities-nofo",
+          "record_kind": "solicitation",
+          "available_at": "2023-02-28T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.nist.gov/chips/chips-incentives-funding-opportunities",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Commerce/NIST will issue a semiconductor manufacturing funding opportunity.",
+        "relevance": 0.75,
+        "predicted_buyer": "Department of Commerce / NIST",
+        "predicted_timing": "within 6-12 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "US semiconductor manufacturers"
+      ],
+      "expected_buyer_program_owner": "Department of Commerce / NIST",
+      "expected_commercial_mechanism": "CHIPS incentives funding opportunity",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "solicitation",
+        "buyer": "Department of Commerce / NIST",
+        "occurred_at": "2023-02-28T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "commercial-fabrication-facilities-nofo"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 203,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "solicitation"
+      ]
+    },
+    {
+      "case_id": "grant-bead-nofo-2021",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2021-11-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "congress",
+          "source_ref": "PLAW-117-58-BEAD",
+          "record_kind": "policy_funding",
+          "available_at": "2021-11-15T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.congress.gov/117/plaws/publ58/PLAW-117publ58.pdf",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "ntia",
+          "source_ref": "BEAD-NOFO-2022-05-13",
+          "record_kind": "solicitation",
+          "available_at": "2022-05-13T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://broadbandusa.ntia.gov/funding-programs/broadband-equity-access-and-deployment-bead-program",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "NTIA will open state broadband infrastructure funding under BEAD.",
+        "relevance": 0.82,
+        "predicted_buyer": "National Telecommunications and Information Administration",
+        "predicted_timing": "within 12 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "states and broadband providers"
+      ],
+      "expected_buyer_program_owner": "National Telecommunications and Information Administration",
+      "expected_commercial_mechanism": "BEAD grant program",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "solicitation",
+        "buyer": "National Telecommunications and Information Administration",
+        "occurred_at": "2022-05-13T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "BEAD-NOFO-2022-05-13"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 179,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "solicitation"
+      ]
+    },
+    {
+      "case_id": "grant-nevi-guidance-2021",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2021-11-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "congress",
+          "source_ref": "PLAW-117-58-NEVI",
+          "record_kind": "policy_funding",
+          "available_at": "2021-11-15T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.congress.gov/117/plaws/publ58/PLAW-117publ58.pdf",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "fhwa",
+          "source_ref": "NEVI-guidance-2022-02-10",
+          "record_kind": "program_guidance",
+          "available_at": "2022-02-10T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.fhwa.dot.gov/environment/nevi/",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "FHWA will operationalize formula funding for interstate EV charging deployment.",
+        "relevance": 0.8,
+        "predicted_buyer": "Federal Highway Administration",
+        "predicted_timing": "within 6 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "state DOTs and charging infrastructure vendors"
+      ],
+      "expected_buyer_program_owner": "Federal Highway Administration",
+      "expected_commercial_mechanism": "NEVI formula program implementation",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "program_launch",
+        "buyer": "Federal Highway Administration",
+        "occurred_at": "2022-02-10T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "NEVI-guidance-2022-02-10"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 87,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "program_guidance"
+      ]
+    },
+    {
+      "case_id": "grant-tech-hubs-2022",
+      "mechanism_family": "grants_industrial_policy",
+      "replay_as_of": "2022-08-09T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "congress",
+          "source_ref": "PLAW-117publ167-tech-hubs",
+          "record_kind": "policy_funding",
+          "available_at": "2022-08-09T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.congress.gov/117/plaws/publ167/PLAW-117publ167.pdf",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "eda",
+          "source_ref": "tech-hubs-designations-2023-10-23",
+          "record_kind": "award",
+          "available_at": "2023-10-23T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.eda.gov/funding/programs/regional-technology-and-innovation-hubs",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "EDA will solicit and designate regional technology hubs.",
+        "relevance": 0.72,
+        "predicted_buyer": "U.S. Economic Development Administration",
+        "predicted_timing": "within 18 months",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "regional innovation consortia"
+      ],
+      "expected_buyer_program_owner": "U.S. Economic Development Administration",
+      "expected_commercial_mechanism": "Regional Technology and Innovation Hubs grants",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "award",
+        "buyer": "U.S. Economic Development Administration",
+        "occurred_at": "2023-10-23T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "tech-hubs-designations-2023-10-23"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 440,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "award"
+      ]
+    },
+    {
+      "case_id": "reg-osha-covid-ets-2021",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2021-11-05T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "federal_register",
+          "source_ref": "86-FR-61402",
+          "record_kind": "final_rule",
+          "available_at": "2021-11-05T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.federalregister.gov/documents/2021/11/05/2021-23643/covid-19-vaccination-and-testing-emergency-temporary-standard",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "supreme_court",
+          "source_ref": "NFIB-v-OSHA-2022-01-13",
+          "record_kind": "judicial_stay",
+          "available_at": "2022-01-13T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.supremecourt.gov/opinions/21pdf/21a244_hgci.pdf",
+          "applies_to_candidate": true,
+          "contradicts": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Large employers will sustain compliance spending under OSHA's vaccination-or-testing ETS.",
+        "relevance": 0.82,
+        "predicted_buyer": "Large U.S. employers",
+        "predicted_timing": "within 90 days",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "employers with 100 or more employees"
+      ],
+      "expected_buyer_program_owner": "Large U.S. employers",
+      "expected_commercial_mechanism": "testing, recordkeeping, and compliance services",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "judicial_stay",
+        "buyer": "Large U.S. employers",
+        "occurred_at": null,
+        "actual_value_usd": null,
+        "source_ref": "NFIB-v-OSHA-2022-01-13"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_NEGATIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [
+        "contradictory_evidence",
+        "no_actionable_commercial_path"
+      ],
+      "watch_duration_days": 69,
+      "watch_transition": "REJECT",
+      "watch_transition_evidence": [
+        "judicial_stay"
+      ]
+    },
+    {
+      "case_id": "reg-sec-climate-2022",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2022-03-21T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "sec",
+          "source_ref": "33-11042",
+          "record_kind": "proposed_rule",
+          "available_at": "2022-03-21T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.sec.gov/files/rules/proposed/2022/33-11042.pdf",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "sec",
+          "source_ref": "33-11275",
+          "record_kind": "final_rule",
+          "available_at": "2024-03-06T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.sec.gov/files/rules/final/2024/33-11275.pdf",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Public companies will need expanded climate-disclosure controls and reporting support.",
+        "relevance": 0.78,
+        "predicted_buyer": "U.S. public companies",
+        "predicted_timing": "after final rule",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "SEC registrants and assurance providers"
+      ],
+      "expected_buyer_program_owner": "U.S. public companies",
+      "expected_commercial_mechanism": "climate disclosure implementation",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "final_rule",
+        "buyer": "U.S. public companies",
+        "occurred_at": "2024-03-06T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "33-11275"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "PARTIAL",
+        "confidence": "MEDIUM"
+      },
+      "ambiguity_notes": "A final rule issued, but litigation and an SEC stay make realized spending and timing uncertain.",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 716,
+      "watch_transition": "WATCH",
+      "watch_transition_evidence": [
+        "final_rule"
+      ]
+    },
+    {
+      "case_id": "reg-fda-traceability-2020",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2020-09-23T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "fda",
+          "source_ref": "FSMA-204-proposed-rule-2020",
+          "record_kind": "proposed_rule",
+          "available_at": "2020-09-23T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-proposed-rule-food-traceability",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "fda",
+          "source_ref": "FSMA-204-final-rule-2022",
+          "record_kind": "final_rule",
+          "available_at": "2022-11-21T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-final-rule-requirements-additional-traceability-records-certain-foods",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Covered food businesses will need enhanced traceability records and systems.",
+        "relevance": 0.8,
+        "predicted_buyer": "Food manufacturers, processors, and retailers",
+        "predicted_timing": "after final rule",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "businesses handling foods on the traceability list"
+      ],
+      "expected_buyer_program_owner": "Food manufacturers, processors, and retailers",
+      "expected_commercial_mechanism": "traceability software and implementation services",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "final_rule",
+        "buyer": "Food manufacturers, processors, and retailers",
+        "occurred_at": "2022-11-21T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "FSMA-204-final-rule-2022"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 789,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "final_rule"
+      ]
+    },
+    {
+      "case_id": "reg-epa-methane-2021",
+      "mechanism_family": "regulation_compliance",
+      "replay_as_of": "2021-11-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "federal_register",
+          "source_ref": "86-FR-63110",
+          "record_kind": "proposed_rule",
+          "available_at": "2021-11-15T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.federalregister.gov/documents/2021/11/15/2021-24202/standards-of-performance-for-new-reconstructed-and-modified-sources-and-emissions-guidelines-for",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "federal_register",
+          "source_ref": "89-FR-16820",
+          "record_kind": "final_rule",
+          "available_at": "2024-03-08T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.federalregister.gov/documents/2024/03/08/2024-00366/standards-of-performance-for-new-reconstructed-and-modified-sources-and-emissions-guidelines-for",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Oil and gas operators will need methane monitoring and emissions-control services.",
+        "relevance": 0.84,
+        "predicted_buyer": "Oil and natural gas operators",
+        "predicted_timing": "after final standards",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "oil and gas facilities"
+      ],
+      "expected_buyer_program_owner": "Oil and natural gas operators",
+      "expected_commercial_mechanism": "monitoring, inspection, and emissions controls",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "final_rule",
+        "buyer": "Oil and natural gas operators",
+        "occurred_at": "2024-03-08T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "89-FR-16820"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 844,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "final_rule"
+      ]
+    },
+    {
+      "case_id": "capex-intel-ohio-2022",
+      "mechanism_family": "capex_expansion",
+      "replay_as_of": "2022-01-21T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "intel",
+          "source_ref": "ohio-fabs-announcement-2022",
+          "record_kind": "capex_announcement",
+          "available_at": "2022-01-21T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.intel.com/content/www/us/en/newsroom/news/intel-announces-next-us-site-landmark-investment-ohio.html",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "intel",
+          "source_ref": "ohio-construction-update-2024",
+          "record_kind": "project_update",
+          "available_at": "2024-02-01T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.intel.com/content/www/us/en/newsroom/resources/intel-ohio.html",
+          "applies_to_candidate": true,
+          "contradicts": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Intel's Ohio fab announcement will create near-term construction and supplier demand on the announced schedule.",
+        "relevance": 0.86,
+        "predicted_buyer": "Intel Corporation",
+        "predicted_timing": "construction beginning in 2022",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "semiconductor construction and equipment suppliers"
+      ],
+      "expected_buyer_program_owner": "Intel Corporation",
+      "expected_commercial_mechanism": "new semiconductor fabrication facilities",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "construction_with_delay",
+        "buyer": "Intel Corporation",
+        "occurred_at": "2022-09-09T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "ohio-construction-update-2024"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "PARTIAL",
+        "confidence": "MEDIUM"
+      },
+      "ambiguity_notes": "Construction began, but the production schedule moved; timing accuracy is partial.",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 231,
+      "watch_transition": "WATCH",
+      "watch_transition_evidence": [
+        "project_update"
+      ]
+    },
+    {
+      "case_id": "capex-tsmc-arizona-2020",
+      "mechanism_family": "capex_expansion",
+      "replay_as_of": "2020-05-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "tsmc",
+          "source_ref": "arizona-fab-announcement-2020",
+          "record_kind": "capex_announcement",
+          "available_at": "2020-05-15T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://pr.tsmc.com/english/news/2033",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "tsmc",
+          "source_ref": "arizona-investment-expansion-2022",
+          "record_kind": "project_update",
+          "available_at": "2022-12-06T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://pr.tsmc.com/english/news/2977",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "TSMC will build an Arizona fab and create construction and equipment demand.",
+        "relevance": 0.9,
+        "predicted_buyer": "Taiwan Semiconductor Manufacturing Company",
+        "predicted_timing": "construction beginning in 2021",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "semiconductor equipment and construction suppliers"
+      ],
+      "expected_buyer_program_owner": "Taiwan Semiconductor Manufacturing Company",
+      "expected_commercial_mechanism": "Arizona semiconductor fab construction",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "construction",
+        "buyer": "Taiwan Semiconductor Manufacturing Company",
+        "occurred_at": "2021-06-01T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "arizona-investment-expansion-2022"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "MEDIUM"
+      },
+      "ambiguity_notes": "The outcome chain is clear; the exact construction-start day is treated as approximate.",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 382,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "project_update"
+      ]
+    },
+    {
+      "case_id": "capex-amazon-hq2-2018",
+      "mechanism_family": "capex_expansion",
+      "replay_as_of": "2018-11-13T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "amazon",
+          "source_ref": "hq2-arlington-announcement-2018",
+          "record_kind": "capex_announcement",
+          "available_at": "2018-11-13T00:00:00+00:00",
+          "strength": 3,
+          "source_role": "primary",
+          "url": "https://www.aboutamazon.com/news/company-news/amazon-selects-new-york-city-and-northern-virginia-for-new-headquarters",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "arlington_county",
+          "source_ref": "hq2-phase-two-pause-2023",
+          "record_kind": "project_update",
+          "available_at": "2023-03-03T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "secondary",
+          "url": "https://www.arlingtonva.us/About-Arlington/Newsroom/Articles/2023/Arlington-County-Statement-on-Amazons-HQ2",
+          "applies_to_candidate": true,
+          "contradicts": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Amazon's full announced HQ2 buildout will proceed on the initial expansion trajectory.",
+        "relevance": 0.78,
+        "predicted_buyer": "Amazon",
+        "predicted_timing": "multi-year buildout",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "commercial construction and workplace vendors"
+      ],
+      "expected_buyer_program_owner": "Amazon",
+      "expected_commercial_mechanism": "headquarters construction and fit-out",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "phase_two_pause",
+        "buyer": "Amazon",
+        "occurred_at": null,
+        "actual_value_usd": null,
+        "source_ref": "hq2-phase-two-pause-2023"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_NEGATIVE",
+        "confidence": "MEDIUM"
+      },
+      "ambiguity_notes": "Metropolitan Park proceeded, but the tested full-buildout hypothesis did not; the second phase was paused.",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "REJECT",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "MEDIUM"
+      },
+      "failure_reasons": [
+        "contradictory_evidence",
+        "speculative_causality"
+      ],
+      "watch_duration_days": 1571,
+      "watch_transition": "REJECT",
+      "watch_transition_evidence": [
+        "project_update"
+      ]
+    },
+    {
+      "case_id": "disruption-colonial-pipeline-2021",
+      "mechanism_family": "disruption_distress",
+      "replay_as_of": "2021-05-08T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "cisa",
+          "source_ref": "AA21-131A-darkside-ransomware",
+          "record_kind": "disruption",
+          "available_at": "2021-05-08T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-131a",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "tsa",
+          "source_ref": "pipeline-security-directive-2021",
+          "record_kind": "compliance_action",
+          "available_at": "2021-05-27T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.tsa.gov/news/press/releases/2021/05/27/dhs-announces-first-cybersecurity-requirements-critical-pipeline",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The pipeline ransomware disruption will force near-term cybersecurity remediation demand.",
+        "relevance": 0.82,
+        "predicted_buyer": "U.S. pipeline operators",
+        "predicted_timing": "within 30 days",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "critical pipeline owners and operators"
+      ],
+      "expected_buyer_program_owner": "U.S. pipeline operators",
+      "expected_commercial_mechanism": "cybersecurity assessment and remediation",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "compliance_action",
+        "buyer": "U.S. pipeline operators",
+        "occurred_at": "2021-05-27T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "pipeline-security-directive-2021"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 19,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "compliance_action"
+      ]
+    },
+    {
+      "case_id": "disruption-abbott-formula-2022",
+      "mechanism_family": "disruption_distress",
+      "replay_as_of": "2022-02-17T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "fda",
+          "source_ref": "abbott-powdered-formula-investigation-2022",
+          "record_kind": "disruption",
+          "available_at": "2022-02-17T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.fda.gov/food/outbreaks-foodborne-illness/fda-investigation-cronobacter-infections-powdered-infant-formula-february-2022",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "fda",
+          "source_ref": "abbott-consent-decree-restart-2022",
+          "record_kind": "remediation",
+          "available_at": "2022-05-16T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.fda.gov/media/168262/download",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The formula plant shutdown will create urgent remediation and replacement-supply demand.",
+        "relevance": 0.76,
+        "predicted_buyer": "Infant formula manufacturers and federal agencies",
+        "predicted_timing": "within 90 days",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "formula manufacturers, labs, logistics providers"
+      ],
+      "expected_buyer_program_owner": "Infant formula manufacturers and federal agencies",
+      "expected_commercial_mechanism": "plant remediation and emergency supply replacement",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "remediation",
+        "buyer": "Infant formula manufacturers and federal agencies",
+        "occurred_at": "2022-05-16T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "abbott-consent-decree-restart-2022"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 88,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "remediation"
+      ]
+    },
+    {
+      "case_id": "disruption-east-palestine-2023",
+      "mechanism_family": "disruption_distress",
+      "replay_as_of": "2023-02-06T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "ntsb",
+          "source_ref": "east-palestine-investigation-2023",
+          "record_kind": "disruption",
+          "available_at": "2023-02-06T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.ntsb.gov/investigations/Pages/RRD23MR005.aspx",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "epa",
+          "source_ref": "unilateral-order-norfolk-southern-2023",
+          "record_kind": "remediation_order",
+          "available_at": "2023-02-21T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://www.epa.gov/newsreleases/epa-orders-norfolk-southern-conduct-all-cleanup-actions-associated-east-palestine",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "The derailment will create funded environmental cleanup and monitoring demand.",
+        "relevance": 0.88,
+        "predicted_buyer": "Norfolk Southern under U.S. EPA oversight",
+        "predicted_timing": "within 30 days",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "environmental remediation and monitoring contractors"
+      ],
+      "expected_buyer_program_owner": "Norfolk Southern under U.S. EPA oversight",
+      "expected_commercial_mechanism": "CERCLA cleanup and monitoring",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "remediation_order",
+        "buyer": "Norfolk Southern under U.S. EPA oversight",
+        "occurred_at": "2023-02-21T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "unilateral-order-norfolk-southern-2023"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 15,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "remediation_order"
+      ]
+    },
+    {
+      "case_id": "tech-ie11-retirement-2021",
+      "mechanism_family": "technology_migration",
+      "replay_as_of": "2021-05-19T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "microsoft",
+          "source_ref": "IE11-retirement-announcement-2021",
+          "record_kind": "deprecation",
+          "available_at": "2021-05-19T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://learn.microsoft.com/en-us/lifecycle/announcements/internet-explorer-11-end-of-support",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "microsoft",
+          "source_ref": "IE11-retirement-2022-06-15",
+          "record_kind": "deprecation_effective",
+          "available_at": "2022-06-15T00:00:00+00:00",
+          "strength": 5,
+          "source_role": "primary",
+          "url": "https://learn.microsoft.com/en-us/lifecycle/announcements/internet-explorer-11-end-of-support",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Organizations dependent on Internet Explorer 11 will need browser and application migration work.",
+        "relevance": 0.86,
+        "predicted_buyer": "Organizations using Internet Explorer 11",
+        "predicted_timing": "by June 2022",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "enterprise IT organizations"
+      ],
+      "expected_buyer_program_owner": "Organizations using Internet Explorer 11",
+      "expected_commercial_mechanism": "browser and legacy application migration",
+      "actual_outcome": {
+        "occurred": true,
+        "kind": "deprecation_effective",
+        "buyer": "Organizations using Internet Explorer 11",
+        "occurred_at": "2022-06-15T00:00:00+00:00",
+        "actual_value_usd": null,
+        "source_ref": "IE11-retirement-2022-06-15"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "TRUE_POSITIVE",
+        "confidence": "HIGH"
+      },
+      "ambiguity_notes": "",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "HIGH"
+      },
+      "failure_reasons": [],
+      "watch_duration_days": 392,
+      "watch_transition": "STRIKE",
+      "watch_transition_evidence": [
+        "deprecation_effective"
+      ]
+    },
+    {
+      "case_id": "tech-nist-sha1-transition-2022",
+      "mechanism_family": "technology_migration",
+      "replay_as_of": "2022-12-15T23:59:59+00:00",
+      "records": [
+        {
+          "source_id": "nist",
+          "source_ref": "SHA-1-transition-2030-announcement",
+          "record_kind": "standards_change",
+          "available_at": "2022-12-15T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://www.nist.gov/news-events/news/2022/12/nist-retires-sha-1-cryptographic-algorithm",
+          "applies_to_candidate": true
+        },
+        {
+          "source_id": "nist",
+          "source_ref": "SHA-1-transition-deadline-2030",
+          "record_kind": "deadline",
+          "available_at": "2030-12-31T00:00:00+00:00",
+          "strength": 4,
+          "source_role": "primary",
+          "url": "https://csrc.nist.gov/projects/hash-functions",
+          "applies_to_candidate": true
+        }
+      ],
+      "candidate": {
+        "hypothesis": "Organizations using SHA-1 will fund migration to approved hash algorithms before 2030.",
+        "relevance": 0.7,
+        "predicted_buyer": "Government and regulated technology operators",
+        "predicted_timing": "before 2030",
+        "predicted_value_usd": null
+      },
+      "expected_affected_entities": [
+        "software vendors and system operators"
+      ],
+      "expected_buyer_program_owner": "Government and regulated technology operators",
+      "expected_commercial_mechanism": "cryptographic migration and validation",
+      "actual_outcome": {
+        "occurred": false,
+        "kind": "unresolved_future_deadline",
+        "buyer": "Government and regulated technology operators",
+        "occurred_at": null,
+        "actual_value_usd": null,
+        "source_ref": "SHA-1-transition-deadline-2030"
+      },
+      "expected_disposition": "WATCH",
+      "ground_truth": {
+        "label": "AMBIGUOUS",
+        "confidence": "LOW"
+      },
+      "ambiguity_notes": "The transition requirement is authoritative, but the 2030 outcome and measurable demand are not yet resolved.",
+      "reviewer": "Pyrnova primary-source corpus review 2026-09-08",
+      "human_adjudication": {
+        "human_decision": "WATCH",
+        "reason": "Primary-source chain reviewed against the replay cutoff and later outcome.",
+        "reviewer": "Pyrnova corpus reviewer",
+        "confidence": "LOW"
+      },
+      "failure_reasons": [
+        "no_actionable_commercial_path"
+      ]
+    }
+  ]
+}

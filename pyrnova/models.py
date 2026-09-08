@@ -53,6 +53,43 @@ class Entity:
 
 
 @dataclass
+class Event:
+    """Source-independent occurrence connected to its archived evidence."""
+
+    kind: str  # 'award' | 'notice_posted' | 'regulatory_precursor'
+    source_id: str
+    source_ref: str
+    summary: str
+    occurred_at: Optional[str] = None
+    evidence_ids: list[str] = field(default_factory=list)
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class Relationship:
+    """Evidence-backed edge between canonical records."""
+
+    subject_id: str
+    predicate: str
+    object_id: str
+    evidence_ids: list[str] = field(default_factory=list)
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class EvidenceAssessment:
+    """Opportunity-specific evidence weight, separate from provenance and polarity."""
+
+    evidence_id: str
+    strength: int  # 1 weak topic, 2 context, 3 named relation, 4 contracting, 5 causal/program
+    strength_class: str
+    polarity: str  # supporting | contradictory
+    basis: str
+
+
+@dataclass
 class Catalyst:
     kind: str  # 'recompete_expiry' | 'sources_sought' | 'rfi' | 'presolicitation' | 'special_notice' | 'solicitation'
     detected_by: str
@@ -81,6 +118,10 @@ class Opportunity:
     recommended_action: str = ""
     relevance_reasons: list = field(default_factory=list)
     evidence: list = field(default_factory=list)   # list[Evidence]
+    evidence_roles: dict = field(default_factory=dict)  # evidence id -> primary|context|supporting|contra
+    evidence_assessments: list = field(default_factory=list)  # list[EvidenceAssessment]
+    events: list = field(default_factory=list)     # list[Event]
+    relationships: list = field(default_factory=list)  # list[Relationship]
     id: str = field(default_factory=_uid)
     meta: dict = field(default_factory=dict)
 
@@ -104,10 +145,14 @@ class Prediction:
 @dataclass
 class Review:
     opportunity_id: str
-    decision: str  # 'accept' | 'reject' | 'recommend'
+    decision: str  # legacy/system: 'recommend' | 'watch' | 'reject'; human: accept/watch/reject
     reason: str = ""
     confidence: Optional[float] = None
-    reviewer: str = "auto-recommend/v1"
+    reviewer: Optional[str] = "auto-recommend/v1"
+    human_decision: Optional[str] = None  # ACCEPT | WATCH | REJECT
+    system_disposition: str = "WATCH"  # STRIKE | WATCH | REJECT
+    score_at_review: Optional[float] = None
+    reviewed_at: Optional[str] = None
     customer_feedback: Optional[str] = None
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     id: str = field(default_factory=_uid)

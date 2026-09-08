@@ -19,6 +19,7 @@
   "set_asides": [],
   "exclusions": ["construction", "janitorial", "grounds maintenance", "food service", "custodial"],
   "incumbencies": [],
+  "precursor_terms": ["missile radar", "missile warning", "space sensing"],
   "_provenance": {
     "note": "Constructed from publicly attributable, general knowledge of the company for a FIRST-PASS profile. The founder should validate/refine against Torch's own site and the company's live USAspending recipient page before customer use. No certifications, clearances, or specific contract vehicles are asserted.",
     "known_public_facts": [

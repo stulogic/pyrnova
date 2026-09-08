@@ -17,7 +17,46 @@ def _pct(x: float) -> str:
 
 
 def _money(x) -> str:
-    return f"${x:,.0f}" if isinstance(x, (int, float)) else "n/a"
+    return f"${x:,.0f}" if isinstance(x, (int, float)) else "unknown"
+
+
+def _history_md(opp: Opportunity) -> list[str]:
+    rows = opp.meta.get("historical_awards") or []
+    if not rows:
+        return ["- **Historical award / competitor context:** none linked"]
+    rendered = []
+    for row in rows:
+        recipient = row.get("recipient_name") or "unknown recipient"
+        rendered.append(
+            f"{recipient} · {_money(row.get('amount'))} · ends {row.get('end_date') or 'unknown'}"
+        )
+    return ["- **Historical award / competitor context:** " + "; ".join(rendered)]
+
+
+def _precursor_md(opp: Opportunity) -> list[str]:
+    rows = opp.meta.get("upstream_precursors") or []
+    if not rows:
+        return ["- **Upstream precursor:** none linked"]
+    rendered = []
+    for row in rows:
+        label = row.get("title") or row.get("document_number") or "Federal Register document"
+        if row.get("url"):
+            label = f"[{label}]({row['url']})"
+        rendered.append(f"{label} ({row.get('role', 'supporting')})")
+    return [
+        "- **Upstream precursor/context:** " + "; ".join(rendered)
+        + ". Agency/topic overlap does not by itself prove a program relationship or procurement intent."
+    ]
+
+
+def _chain(opp: Opportunity) -> str:
+    precursors = [e for e in opp.events if e.kind == "regulatory_precursor"]
+    primary = [e for e in opp.events if e.kind == "notice_posted"]
+    context = [e for e in opp.events if e.kind == "award"]
+    parts = [f"{e.kind} ({e.source_id})" for e in precursors + primary]
+    if context:
+        parts.append(f"historical award context ({context[0].source_id})")
+    return " → ".join(parts) if parts else "primary signal only"
 
 
 def _item_md(n: int, opp: Opportunity) -> str:
@@ -35,6 +74,8 @@ def _item_md(n: int, opp: Opportunity) -> str:
     lines = [
         f"### SIGNAL {n:02d} — {opp.title}{tag}{flag}",
         "",
+        f"- **Assessment:** STRIKE · human-review gate: {review_status.replace('_', ' ')}",
+        f"- **Opportunity hypothesis:** {opp.meta.get('opportunity_hypothesis') or opp.title}",
         f"- **What we found:** {opp.catalyst.summary}",
         f"- **Why it matters:** {opp.recommended_action.split(';')[0].strip().capitalize()}.",
         f"- **Customer fit:** relevance **{_pct(opp.relevance_score)}**"
@@ -42,17 +83,27 @@ def _item_md(n: int, opp: Opportunity) -> str:
         f"- **Agency / program:** {opp.agency or 'n/a'}"
         + (f" · NAICS {opp.naics}" if opp.naics else "")
         + (f" · PSC {opp.psc}" if opp.psc else ""),
-        f"- **Incumbent / history:** {opp.incumbent or 'n/a'}",
-        f"- **Timing:** expected action ~ **{opp.expected_action_at or 'n/a'}**"
+        f"- **Incumbent / history:** {opp.incumbent or 'unknown'}",
+        f"- **Timing:** expected action ~ **{opp.expected_action_at or 'unknown'}**"
         + (f" ({opp.catalyst.horizon_days} days out)" if opp.catalyst.horizon_days is not None else ""),
         f"- **Value (est.):** {_money(opp.value_usd)}",
         f"- **Evidence:** {', '.join(ev_links) if ev_links else 'archived (content-addressed)'}",
+        f"- **Evidence roles:** supporting/primary **{sum(1 for r in opp.evidence_roles.values() if r != 'contra')}** · "
+        f"contradictory **{sum(1 for r in opp.evidence_roles.values() if r == 'contra')}**",
+        "- **Evidence strength:** " + (
+            "; ".join(
+                f"{a.strength_class}={a.strength}/5 ({a.polarity})"
+                for a in opp.evidence_assessments
+            ) or "not assessed"
+        ),
+        f"- **Catalyst chain:** {_chain(opp)}",
         f"- **Reasons NOT to pursue (falsification):** {opp.falsification}",
         f"- **Recommended next action:** {opp.recommended_action}",
         f"- **Confidence (in the intelligence):** {_pct(opp.confidence)}  ·  "
         f"**Attractiveness (opportunity):** {_pct(opp.attractiveness)}  *(kept separate)*",
         "",
     ]
+    lines[8:8] = _history_md(opp) + _precursor_md(opp)
     return "\n".join(lines)
 
 
@@ -98,6 +149,8 @@ def render_capture_radar_report(report: Report) -> str:
         "",
         f"- Recompete/expiry STRIKEs: **{s.get('recompete', 0)}**",
         f"- Pre-solicitation STRIKEs: **{s.get('presolicitation', 0)}**",
+        f"- WATCH candidates: **{s.get('watch', 0)}** · duplicates suppressed: "
+        f"**{s.get('duplicate_candidates', 0)}**",
         f"- 🛡️ Defend (your recompetes): **{s.get('defend', 0)}**  ·  🎯 Capture (displace incumbent): "
         f"**{s.get('capture', 0)}**",
         f"- Avg lead time: **{s.get('avg_lead_time_days', 'n/a')} days**",

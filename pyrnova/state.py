@@ -35,3 +35,10 @@ class StateStore:
 
     def count(self, stream: str) -> int:
         return sum(1 for _ in self.read(stream))
+
+    def latest(self, stream: str, record_id: str) -> dict | None:
+        found = None
+        for record in self.read(stream):
+            if record.get("id") == record_id:
+                found = record
+        return found

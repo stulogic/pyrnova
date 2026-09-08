@@ -46,8 +46,8 @@ REGISTRY: dict[str, SourceSpec] = {
         base_url="https://www.federalregister.gov/api/v1",
         rights="us_gov_work",
         retention_tier="B",  # durable immutable publication
-        active=False,
-        notes="P0-B. Add only where it enriches Capture Radar without jeopardizing the core.",
+        active=True,
+        notes="Procurement-adjacent upstream evidence; agency/topic links never prove procurement intent.",
     ),
     "grants_gov": SourceSpec(
         id="grants_gov",

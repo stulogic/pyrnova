@@ -10,6 +10,7 @@ from typing import Any, Optional
 
 from .sources.usaspending import award_url
 from .sources.sam import notice_class_from_type
+from .sources.federal_register import document_url
 
 
 def parse_date(value: Any) -> Optional[date]:
@@ -43,10 +44,35 @@ def normalize_award(row: dict) -> dict:
         "agency": row.get("Awarding Agency"),
         "sub_agency": row.get("Awarding Sub Agency"),
         "contract_type": row.get("Contract Award Type"),
-        "naics": _stringify(row.get("naics") or row.get("NAICS")),
+        "naics": _code(row.get("naics") or row.get("NAICS") or row.get("NAICS Code")),
+        "psc": _code(row.get("psc") or row.get("PSC") or row.get("PSC Code")),
+        "description": row.get("Description") or row.get("description"),
         "generated_internal_id": gen_id,
         "url": award_url(gen_id),
         "_raw_ref": row.get("Award ID"),
+    }
+
+
+def normalize_precursor(row: dict) -> dict:
+    """Federal Register result -> generic precursor record; missing remains missing."""
+    agencies = row.get("agencies") or []
+    agency_names = [a.get("name") or a.get("raw_name") for a in agencies if isinstance(a, dict)]
+    doc_no = row.get("document_number")
+    return {
+        "precursor_id": doc_no,
+        "title": row.get("title"),
+        "document_type": row.get("type"),
+        "agency_names": [name for name in agency_names if name],
+        "publication_date": parse_date(row.get("publication_date")),
+        "effective_on": parse_date(row.get("effective_on")),
+        "comments_close_on": parse_date(row.get("comments_close_on")),
+        "abstract": row.get("abstract"),
+        "search_excerpt": row.get("excerpts"),
+        "action": row.get("action"),
+        "docket_ids": list(row.get("docket_ids") or []),
+        "url": row.get("html_url") or document_url(doc_no),
+        "official_pdf_url": row.get("pdf_url"),
+        "_raw_ref": doc_no,
     }
 
 
@@ -93,3 +119,9 @@ def _stringify(value: Any) -> Optional[str]:
     if value in (None, ""):
         return None
     return str(value).strip()
+
+
+def _code(value: Any) -> Optional[str]:
+    if isinstance(value, dict):
+        value = value.get("code")
+    return _stringify(value)

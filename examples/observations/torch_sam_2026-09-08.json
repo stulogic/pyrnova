@@ -1,0 +1,26 @@
+{
+  "_provenance": {
+    "status": "previously observed live SAM notice; reduced replay record, not a raw API snapshot",
+    "observed_at": "2026-09-08",
+    "recorded_in": "docs/outbound/torch_technologies_brief.md",
+    "unknown_fields_remain_null": true
+  },
+  "opportunitiesData": [
+    {
+      "noticeId": "cff5e619408a467ca8f3db1f030b6f37",
+      "title": "Forward-Based Mode Radar Next Prototype",
+      "type": "Presolicitation",
+      "baseType": "Presolicitation",
+      "solicitationNumber": null,
+      "organizationName": "Missile Defense Agency",
+      "naicsCode": null,
+      "classificationCode": null,
+      "typeOfSetAsideDescription": null,
+      "postedDate": null,
+      "responseDeadLine": null,
+      "active": null,
+      "archiveDate": null,
+      "uiLink": "https://sam.gov/workspace/contract/opp/cff5e619408a467ca8f3db1f030b6f37/view"
+    }
+  ]
+}
