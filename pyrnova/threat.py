@@ -310,3 +310,452 @@ def declared_exposures(
 def persist_exposures(store, exposures) -> None:
     for exp in exposures:
         store.append("exposures", to_record(exp))
+
+
+# --------------------------------------------------------------------------- severity / confidence
+
+# Severity is a magnitude BAND of a KNOWN dollar figure at risk (evidence, not invented probability).
+# Absent an amount, severity stays UNKNOWN or a conservative mechanism default — never fabricated.
+_SEVERITY_BANDS = ((100_000_000, "CRITICAL"), (25_000_000, "HIGH"), (5_000_000, "MODERATE"), (0, "LOW"))
+
+
+def severity_from_amount(amount) -> str:
+    if amount is None:
+        return "UNKNOWN"
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return "UNKNOWN"
+    for threshold, level in _SEVERITY_BANDS:
+        if amount > threshold:
+            return level
+    return "LOW"
+
+
+def _max_severity(*levels: str) -> str:
+    known = [l for l in levels if l in SEVERITY_LEVELS]
+    return max(known, key=SEVERITY_LEVELS.index) if known else "UNKNOWN"
+
+
+def _confidence_from_exposures(exposures: list[Exposure], catalyst_strength: int) -> tuple[str, str]:
+    """Ordinal evidence confidence, distinct from severity. A CANDIDATE-only exposure caps at LOW."""
+    if not exposures:
+        return "UNKNOWN", "no evidenced exposure"
+    classes = {e.link_class for e in exposures}
+    joins = {e.join_method for e in exposures}
+    if classes & {"CONFIRMED"} and joins & {"deterministic_identifier", "deterministic_native_id"} \
+            and catalyst_strength >= 3:
+        return "HIGH", "deterministic exposure link + direct catalyst evidence"
+    if classes & {"CONFIRMED", "INFERRED"} and catalyst_strength >= 2:
+        return "MEDIUM", "confirmed/inferred exposure with corroborating catalyst evidence"
+    if classes & {"CONFIRMED", "INFERRED"}:
+        return "LOW", "exposure established but catalyst evidence is thin"
+    return "LOW", "only a candidate (weak) exposure supports this thesis"
+
+
+def _falsifier(code: str, detail: str, fatal: bool = False) -> dict:
+    return to_record(ConsequenceFalsifier(code=code, detail=detail, fatal=fatal))
+
+
+# --------------------------------------------------------------------------- catalyst helpers
+
+def _catalysts(records, kind, as_of):
+    return [r for r in _visible(records, as_of) if r.get("catalyst_kind") == kind]
+
+
+def _strength(rec: dict) -> int:
+    try:
+        return int(rec.get("evidence_strength") or 3)
+    except (TypeError, ValueError):
+        return 3
+
+
+def _exp_of(exposures, relation):
+    return [e for e in exposures if e.relation_type == relation]
+
+
+def _mk_threat(subject_ref, subject_name, mechanism, anchor_ref, exposures, catalyst_rec, **kw) -> Threat:
+    threat = Threat(
+        subject_ref=subject_ref, subject_name=subject_name, mechanism=mechanism,
+        exposure_ids=[e.id for e in exposures],
+        catalyst_id=(catalyst_rec or {}).get("catalyst_id"),
+        evidence_ids=sorted({*(kw.pop("evidence_ids", [])),
+                             *[e for e in [(catalyst_rec or {}).get("evidence_id"),
+                                           (catalyst_rec or {}).get("source_ref")] if e],
+                             *[eid for exp in exposures for eid in exp.evidence_ids]}),
+        available_at=kw.pop("available_at", (catalyst_rec or {}).get("available_at")),
+        first_observed_at=kw.pop("available_at_first", (catalyst_rec or {}).get("available_at")),
+        **kw,
+    )
+    threat.id = threat_id(subject_ref, mechanism, anchor_ref)
+    return threat
+
+
+# --------------------------------------------------------------------------- mechanism assessors
+# Each returns (threats, rejections). A mechanism that finds exposure + a real adverse catalyst emits a
+# threat; a mechanism that finds an event but no material exposure emits a rejection (zero-threat).
+
+def _assess_sanctions(subject_ref, subject_name, exposures, records, weak, as_of):
+    threats, rejections = [], []
+    confirmed = [e for e in _exp_of(exposures, "SANCTIONED_COUNTERPARTY")
+                 if e.link_class in ("CONFIRMED", "INFERRED")]
+    for exp in confirmed:
+        relation = exp.meta.get("counterparty_relation", "COUNTERPARTY")
+        category = "REVENUE" if relation == "CUSTOMER" else "CONTINUITY"
+        catalyst_rec = {"evidence_id": exp.target_ref, "available_at": exp.available_at,
+                        "evidence_strength": 5, "catalyst_id": exp.meta.get("catalyst_id")}
+        confidence, cbasis = _confidence_from_exposures([exp], 5)
+        severity = "HIGH" if relation in ("SUPPLIER", "CUSTOMER") else "MODERATE"
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "SANCTIONS_EXPOSURE", exp.target_ref, [exp], catalyst_rec,
+            affected_value_category=category,
+            economic_effect=(f"OFAC designation of the subject's {relation.lower()} "
+                             f"({exp.target_name}) exposes the subject to secondary sanctions, forced "
+                             f"contract termination, and loss of that {relation.lower()} relationship"),
+            severity=severity, severity_basis=f"{relation.lower()} dependency on a sanctioned party",
+            confidence=confidence, confidence_basis=cbasis, horizon="IMMEDIATE", status="ACTIVE",
+            falsifiers=[_falsifier("relationship_ended",
+                                   "subject can show the counterparty relationship ended before the "
+                                   "designation date", fatal=True),
+                        _falsifier("general_license_covers",
+                                   "an OFAC general license authorizes the specific activity")],
+            mitigations=["terminate or wind down the counterparty relationship",
+                         "qualify a compliant substitute supplier/customer",
+                         "seek OFAC guidance / general-license coverage"],
+        ))
+    # Weak name-only candidates that never became a confirmed exposure => explicit rejection.
+    for w in _visible(weak, as_of):
+        rejections.append(ThreatRejection(
+            subject_ref=subject_ref, subject_name=subject_name, mechanism="SANCTIONS_EXPOSURE",
+            reason_code="WEAK_NAME_MATCH_ONLY",
+            detail=(f"'{w['counterparty_name']}' shares token(s) {w['shared_tokens']} with OFAC "
+                    f"designation '{w['designation'].get('sdn_name')}' but no authoritative identifier "
+                    f"resolves them; a name resemblance is never a sanctions hit"),
+            evidence_ids=w.get("evidence_ids", []), available_at=w.get("available_at"),
+        ))
+    return threats, rejections
+
+
+def _assess_incumbent_displacement(subject_ref, subject_name, exposures, records, as_of):
+    threats, rejections = [], []
+    incumbencies = _exp_of(exposures, "INCUMBENT_POSITION")
+    for rec in _catalysts(records, "recompete", as_of):
+        target = rec.get("program_key") or rec.get("target_ref")
+        held = [e for e in incumbencies if e.target_ref == target]
+        signal = rec.get("displacement_signal")
+        if not held:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name,
+                mechanism="INCUMBENT_DISPLACEMENT", reason_code="NO_EXPOSURE",
+                detail=f"recompete on {target} but the subject holds no incumbent position on it",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        if not signal:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name,
+                mechanism="INCUMBENT_DISPLACEMENT", reason_code="RECOMPETE_NOT_A_THREAT",
+                detail=("a recompete alone is not a threat; no displacement evidence (named competitor, "
+                        "protest, set-aside change, or mandated new entrant) is present"),
+                exposure_ids=[e.id for e in held],
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        exp = held[0]
+        amount = exp.meta.get("amount_usd")
+        confidence, cbasis = _confidence_from_exposures(held, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "INCUMBENT_DISPLACEMENT", target, held, rec,
+            affected_value_category="CONTRACT_POSITION",
+            economic_effect=(f"recompete of {exp.target_name} with {signal.replace('_', ' ')} evidence "
+                             f"threatens the subject's incumbent contract position"),
+            severity=severity_from_amount(amount),
+            severity_basis=(f"incumbent contract value ${amount:,.0f}" if amount
+                            else "incumbent contract value unknown"),
+            confidence=confidence, confidence_basis=f"{cbasis}; displacement signal: {signal}",
+            horizon="NEAR_TERM", status="ACTIVE",
+            falsifiers=[_falsifier("incumbent_readvantage",
+                                   "incumbent retains a decisive past-performance / transition advantage"),
+                        _falsifier("recompete_cancelled",
+                                   "the recompete is cancelled and the incumbent bridged", fatal=True)],
+            mitigations=["invest in the recompete capture (past performance, price-to-win)",
+                         "pursue a teaming position with the likely awardee"],
+        ))
+    return threats, rejections
+
+
+def _assess_program_change(subject_ref, subject_name, exposures, records, as_of):
+    threats, rejections = [], []
+    dependencies = _exp_of(exposures, "PROGRAM")
+    for kind, mechanism, horizon in (("program_cancellation", "PROGRAM_CANCELLATION_OR_DELAY", "NEAR_TERM"),
+                                     ("program_delay", "PROGRAM_CANCELLATION_OR_DELAY", "MEDIUM_TERM"),
+                                     ("funding_reduction", "PROGRAM_CONTRACTION", "MEDIUM_TERM")):
+        for rec in _catalysts(records, kind, as_of):
+            target = rec.get("program_key") or rec.get("target_ref")
+            dep = [e for e in dependencies if e.target_ref == target]
+            if not dep:
+                rejections.append(ThreatRejection(
+                    subject_ref=subject_ref, subject_name=subject_name, mechanism=mechanism,
+                    reason_code="NO_EXPOSURE",
+                    detail=f"{kind} on {target} but the subject has no evidenced dependency on it",
+                    evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                    available_at=rec.get("available_at")))
+                continue
+            exp = dep[0]
+            at_risk = rec.get("amount_delta_usd")
+            if at_risk is None:
+                at_risk = exp.meta.get("amount_usd")
+            confidence, cbasis = _confidence_from_exposures(dep, _strength(rec))
+            effect = {"program_cancellation": "cancellation eliminates",
+                      "program_delay": "delay defers",
+                      "funding_reduction": "funding reduction shrinks"}[kind]
+            threats.append(_mk_threat(
+                subject_ref, subject_name, mechanism, target, dep, rec,
+                affected_value_category=("CONTINUITY" if kind == "program_cancellation" else "REVENUE"),
+                economic_effect=(f"{exp.target_name}: {effect} the subject's program-dependent revenue"),
+                severity=severity_from_amount(at_risk),
+                severity_basis=(f"program revenue at risk ${float(at_risk):,.0f}" if at_risk
+                                else "program revenue at risk unknown"),
+                confidence=confidence, confidence_basis=cbasis, horizon=horizon, status="ACTIVE",
+                falsifiers=[_falsifier("funding_restored",
+                                       "appropriations restore the program before impact", fatal=True),
+                            _falsifier("subject_not_dependent",
+                                       "the program is a minor share of subject revenue")],
+                mitigations=["diversify away from the contracting program",
+                             "reposition capabilities toward funded adjacent programs"],
+            ))
+    return threats, rejections
+
+
+def _assess_regulatory(subject_ref, subject_name, exposures, records, as_of):
+    threats, rejections = [], []
+    regs = _exp_of(exposures, "REGULATION") + _exp_of(exposures, "CERTIFICATION")
+    for rec in _catalysts(records, "regulatory_mandate", as_of):
+        target = rec.get("target_ref")
+        relevant = [e for e in regs if e.target_ref == target or e.relation_type == "CERTIFICATION"]
+        if not relevant:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name,
+                mechanism="REGULATORY_COMPLIANCE_EXPOSURE", reason_code="NO_EXPOSURE",
+                detail=f"regulatory mandate {target} does not apply to the subject's activities",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        eligibility = bool(rec.get("eligibility_gated"))
+        mechanism = "ELIGIBILITY_OR_CERTIFICATION_RISK" if eligibility else "REGULATORY_COMPLIANCE_EXPOSURE"
+        cost = rec.get("compliance_cost_usd")
+        exp = relevant[0]
+        confidence, cbasis = _confidence_from_exposures(relevant, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, mechanism, str(target), relevant, rec,
+            affected_value_category=("ELIGIBILITY" if eligibility else "COST_BASE"),
+            economic_effect=(f"{rec.get('summary') or target}: "
+                             + ("failure to certify in time removes the subject from eligibility"
+                                if eligibility else
+                                "compliance imposes a new cost the subject must absorb")),
+            severity=(_max_severity(severity_from_amount(cost), "MODERATE") if not eligibility
+                      else "HIGH"),
+            severity_basis=(f"compliance cost ${float(cost):,.0f}" if cost
+                            else ("loss of contract eligibility" if eligibility
+                                  else "new compliance cost of unknown magnitude")),
+            confidence=confidence, confidence_basis=cbasis,
+            horizon=rec.get("horizon") or "MEDIUM_TERM", status="ACTIVE",
+            dual_opportunity_ref=rec.get("dual_opportunity_ref"),
+            falsifiers=[_falsifier("exempt", "the subject qualifies for an exemption/safe harbor",
+                                   fatal=True),
+                        _falsifier("already_compliant",
+                                   "the subject already meets the requirement", fatal=True)],
+            mitigations=["begin certification/compliance program now",
+                         "engage a compliance vendor (the dual opportunity side)"],
+        ))
+    return threats, rejections
+
+
+def _assess_customer_concentration(subject_ref, subject_name, exposures, records, as_of):
+    threats, rejections = [], []
+    concentrations = [e for e in _exp_of(exposures, "CUSTOMER") + _exp_of(exposures, "REVENUE_CONCENTRATION")
+                      if (e.meta.get("revenue_share") or 0) >= 0.25]
+    for rec in _catalysts(records, "customer_adverse_change", as_of):
+        target = rec.get("target_ref") or rec.get("program_key")
+        dep = [e for e in concentrations if e.target_ref == target]
+        if not dep:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name, mechanism="CUSTOMER_CONCENTRATION",
+                reason_code="IMMATERIAL",
+                detail=f"adverse change at {target} but it is not a concentrated (>=25%) customer",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        exp = dep[0]
+        share = exp.meta.get("revenue_share")
+        confidence, cbasis = _confidence_from_exposures(dep, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "CUSTOMER_CONCENTRATION", str(target), dep, rec,
+            affected_value_category="REVENUE",
+            economic_effect=(f"adverse change at {exp.target_name} ({int(share * 100)}% of revenue) "
+                             f"threatens a concentrated revenue base"),
+            severity=_max_severity("HIGH" if share >= 0.4 else "MODERATE"),
+            severity_basis=f"revenue concentration {int(share * 100)}%",
+            confidence=confidence, confidence_basis=cbasis, horizon="MEDIUM_TERM", status="ACTIVE",
+            falsifiers=[_falsifier("diversified_since",
+                                   "subject has diversified its revenue base since the concentration")],
+            mitigations=["accelerate customer diversification"],
+        ))
+    return threats, rejections
+
+
+_ASSESSORS = (_assess_incumbent_displacement, _assess_program_change, _assess_regulatory,
+              _assess_customer_concentration)
+
+
+def assess_threats(
+    subject_ref: str,
+    subject_name: str,
+    exposures: list[Exposure],
+    catalyst_records: list[dict],
+    *,
+    weak_candidates: Optional[list[dict]] = None,
+    as_of: Optional[str] = None,
+) -> tuple[list[Threat], list[ThreatRejection]]:
+    """Run every mechanism assessor over a subject's exposures + adverse-change catalyst records.
+
+    Returns ``(threats, rejections)``. Zero threats with one or more rejections is a common, valid,
+    high-quality result: most events must not become a threat for a given subject.
+    """
+    threats: list[Threat] = []
+    rejections: list[ThreatRejection] = []
+    st, sr = _assess_sanctions(subject_ref, subject_name, exposures, catalyst_records,
+                               weak_candidates or [], as_of)
+    threats += st
+    rejections += sr
+    for assessor in _ASSESSORS:
+        t, r = assessor(subject_ref, subject_name, exposures, catalyst_records, as_of)
+        threats += t
+        rejections += r
+    threats.sort(key=lambda x: (x.mechanism, x.subject_ref, x.id))
+    return threats, rejections
+
+
+# --------------------------------------------------------------------------- duality
+
+def link_duality(threats: list[Threat], opportunities: list[dict]) -> int:
+    """Cross-link a threat and an opportunity/consequence that share a catalyst (M15 duality).
+
+    The SAME catalyst may threaten one entity and create an opportunity for another (a sanctioned
+    supplier threatens the importer AND opens demand for a compliant substitute). Both sides point back
+    to the common ``catalyst_id`` — source facts are never duplicated. Returns the number of links made.
+    """
+    by_cat: dict[str, list[dict]] = {}
+    for opp in opportunities:
+        cat = opp.get("catalyst_id")
+        if cat:
+            by_cat.setdefault(cat, []).append(opp)
+    linked = 0
+    for threat in threats:
+        if threat.catalyst_id and threat.catalyst_id in by_cat and not threat.dual_opportunity_ref:
+            threat.dual_opportunity_ref = by_cat[threat.catalyst_id][0].get("id")
+            threat.meta["dual_sided"] = True
+            linked += 1
+    return linked
+
+
+# --------------------------------------------------------------------------- company threat surface
+
+def company_threat_surface(subject_ref: str, threats: list[Threat]) -> dict:
+    """Structured, grouped view of the active threats affecting one company (M15 foundation).
+
+    Shares the CompanyProfile/entity layer (keyed by ``subject_ref``); it composes existing Threat
+    records rather than introducing a parallel company model. Not the full Company Opportunity Surface —
+    just enough structure for future code to ask "what active threats affect Company X?".
+    """
+    mine = [t for t in threats if t.subject_ref == subject_ref
+            and t.status in ("WATCH", "ACTIVE", "MITIGATED")]
+    def group(attr):
+        out: dict[str, int] = {}
+        for t in mine:
+            out[getattr(t, attr)] = out.get(getattr(t, attr), 0) + 1
+        return out
+    return {
+        "subject_ref": subject_ref,
+        "subject_name": next((t.subject_name for t in mine), None),
+        "active_threat_count": len(mine),
+        "by_mechanism": group("mechanism"),
+        "by_severity": group("severity"),
+        "by_confidence": group("confidence"),
+        "by_horizon": group("horizon"),
+        "threats": [
+            {"id": t.id, "mechanism": t.mechanism, "severity": t.severity, "confidence": t.confidence,
+             "horizon": t.horizon, "affected_value_category": t.affected_value_category,
+             "economic_effect": t.economic_effect, "exposure_ids": t.exposure_ids,
+             "evidence_ids": t.evidence_ids, "dual_opportunity_ref": t.dual_opportunity_ref}
+            for t in sorted(mine, key=lambda t: (-SEVERITY_LEVELS.index(t.severity), t.mechanism))
+        ],
+    }
+
+
+def persist_threats(store, threats, rejections=()) -> None:
+    for threat in threats:
+        store.append("threats", to_record(threat))
+    for rejection in rejections:
+        store.append("threat_rejections", to_record(rejection))
+
+
+# --------------------------------------------------------------------------- outcome linkage (M15/L)
+
+# Observed threat outcomes. UNKNOWN is the honest default; an unresolved threat is NEVER auto-labelled a
+# false alarm. Terminal/negative labels require an explicit, dated, sourced observation.
+THREAT_OUTCOME_LABELS = (
+    "MATERIALIZED",       # the adverse effect happened (contract lost, program cancelled, penalty)
+    "AVOIDED",            # the threatened effect did not occur (evidenced, not merely unresolved)
+    "MITIGATED",          # action reduced the effect
+    "DELAYED",            # the effect was pushed out
+    "EXPOSURE_ENDED",     # the underlying exposure lapsed
+    "FALSE_ALARM",        # the thesis was wrong (evidenced)
+    "UNKNOWN",
+)
+_THREAT_TERMINAL = frozenset({"MATERIALIZED", "AVOIDED", "MITIGATED", "EXPOSURE_ENDED", "FALSE_ALARM"})
+_THREAT_OUTCOME_RANK = {"MATERIALIZED": 6, "AVOIDED": 6, "FALSE_ALARM": 6, "MITIGATED": 5,
+                        "EXPOSURE_ENDED": 5, "DELAYED": 2, "UNKNOWN": 0}
+
+
+def threat_outcome_observation(
+    threat_id_: str, label: str, observed_at: str, source_id: str, source_ref: str,
+    *, evidence_strength: int = 3, notes: str = "",
+) -> dict:
+    """Validate + build one append-only threat-outcome observation.
+
+    Negative/terminal outcomes require an explicit source (never inferred from absence), mirroring
+    :mod:`pyrnova.outcomes`.
+    """
+    if label not in THREAT_OUTCOME_LABELS:
+        raise ValueError(f"unknown threat outcome label: {label!r}")
+    if label == "UNKNOWN":
+        raise ValueError("UNKNOWN is a resolved default, not an observable outcome")
+    if not observed_at:
+        raise ValueError(f"{label} requires observed_at (the point-in-time gate)")
+    if label in _THREAT_TERMINAL and (not source_ref or int(evidence_strength) < 3):
+        raise ValueError(f"{label} is authoritative: needs source_ref and evidence_strength >= 3")
+    return {"threat_id": threat_id_, "label": label, "observed_at": observed_at,
+            "source_id": source_id, "source_ref": source_ref,
+            "evidence_strength": int(evidence_strength), "notes": notes}
+
+
+def resolve_threat_outcome(observations, *, as_of: str) -> dict:
+    """Resolve a threat's outcome as of a cutoff. Future-dated observations are excluded; with none
+    knowable the outcome is UNKNOWN — never an inferred false alarm."""
+    known, future = [], []
+    for obs in observations or ():
+        oa = obs.get("observed_at")
+        if not oa:
+            continue
+        (known if oa <= as_of else future).append(obs)
+    if not known:
+        return {"label": "UNKNOWN", "resolved": False, "as_of": as_of,
+                "future_excluded_count": len(future), "false_alarm_inferred_from_absence": False}
+    known.sort(key=lambda o: (_THREAT_OUTCOME_RANK.get(o["label"], 0), o["observed_at"],
+                              int(o.get("evidence_strength", 0))))
+    winner = known[-1]
+    return {"label": winner["label"], "resolved": True, "as_of": as_of,
+            "basis": {"source_id": winner.get("source_id"), "source_ref": winner.get("source_ref"),
+                      "observed_at": winner.get("observed_at")},
+            "future_excluded_count": len(future), "false_alarm_inferred_from_absence": False}
