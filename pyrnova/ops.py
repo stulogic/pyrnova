@@ -60,10 +60,27 @@ def opportunity_from_record(record: dict) -> Opportunity:
 
 
 class OperatorConsole:
-    def __init__(self, store: StateStore, profiles_dir: Path, out_dir: Path):
+    def __init__(self, store: StateStore, profiles_dir: Path, out_dir: Path,
+                 source_state_dir: Path | None = None):
         self.store = store
         self.profiles_dir = Path(profiles_dir)
         self.out_dir = Path(out_dir)
+        # M12: optional durable source-state directory for the Operations Panel source view.
+        self.source_state_dir = Path(source_state_dir) if source_state_dir else None
+
+    def source_operations(self) -> dict:
+        """M12 Operations Panel view: durable per-source health + operator controls (read-only).
+
+        Returns an empty, well-formed report when no durable source-state directory is configured, so
+        the panel degrades gracefully rather than erroring."""
+        if not self.source_state_dir:
+            return {"configured": False, "source_count": 0, "sources": []}
+        from .scheduler import SourceScheduler
+        from .sources.source_state import SourceStateStore
+
+        report = SourceScheduler(SourceStateStore(self.source_state_dir)).health_report()
+        report["configured"] = True
+        return report
 
     def targets(self) -> list[dict]:
         rows = []
@@ -175,6 +192,7 @@ class OperatorConsole:
             "targets": self.targets(),
             "runs": sorted(runs.values(), key=lambda item: item["last_activity"] or "", reverse=True),
             "source_health": source_health,
+            "source_operations": self.source_operations(),
             "queue": queue,
             "scoreboard": totals(self.store),
         }

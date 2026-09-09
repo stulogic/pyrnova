@@ -1,0 +1,339 @@
+"""M12 — durable source integration: scheduler / jobs over the existing source primitives.
+
+This layer *composes* three things that already exist independently and wires them into a runnable,
+offline-default job runner:
+
+- ``sources.control.SourceControl`` — mode, budget, circuit breaker, retry metadata, metrics.
+- ``sources.source_state.SourceStateStore`` — durable cross-restart budget/breaker/checkpoint + a
+  request-dedupe/cache index.
+- ``sources.registry`` — which sources are active, with rights/retention.
+- ``archive.EvidenceArchive`` — exact-byte Tier-B storage (dedupe/cache/archive/resume).
+
+It performs **no HTTP of its own** and imports no adapter. Live fetching happens only when the caller
+supplies a ``fetcher`` callable AND the effective mode is not OFFLINE. The default mode is OFFLINE, so a
+scheduler run never reaches the network unless a caller explicitly opts a source into a live mode and
+hands it a fetcher — the anti-accumulation / offline-first doctrine, enforced structurally.
+
+Operator controls (pause/resume, mode override, breaker reset) are persisted in the source's durable
+state document under ``operator`` and survive restarts. ``health()`` renders an operator-visible view of
+every source: mode, budget remaining, circuit state, cache hits, calls avoided, checkpoint, last change,
+and paused status — the data the Operations Panel surfaces.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any, Callable, Optional
+
+from .sources.control import (
+    CircuitOpen,
+    CircuitState,
+    ExternalCallBlocked,
+    RequestBudgetExceeded,
+    SourceControl,
+    SourceMode,
+    request_fingerprint,
+)
+from .sources.registry import REGISTRY, active_sources
+from .sources.source_state import SourceStateStore
+
+# Job actions (the outcome of one scheduled request).
+CACHE_HIT = "cache_hit"           # served from the dedupe/cache index (no budget spent)
+OFFLINE_REPLAY = "offline_replay"  # OFFLINE fixture bytes archived + indexed (no network)
+LIVE_FETCH = "live_fetch"          # a live call was authorized and made
+SKIPPED_PAUSED = "skipped_paused"  # operator paused this source
+SKIPPED_OFFLINE = "skipped_offline"  # OFFLINE mode, nothing cached, no fixture bytes
+SKIPPED_BUDGET = "skipped_budget"  # durable budget exhausted for this epoch
+CIRCUIT_OPEN = "circuit_open"      # breaker is open; next poll deferred
+ERROR = "error"                    # fetcher raised; failure recorded, backoff advised
+
+
+@dataclass
+class SourceJobResult:
+    source_id: str
+    action: str
+    mode: str
+    request_fingerprint: Optional[str] = None
+    content_sha256: Optional[str] = None
+    from_archive: bool = False
+    checkpoint: Optional[str] = None
+    reason: str = ""
+    retry: Optional[dict] = None
+    error: Optional[str] = None
+
+    def as_dict(self) -> dict:
+        return {k: v for k, v in asdict(self).items() if v is not None or k in ("from_archive",)}
+
+
+class SourceScheduler:
+    """Offline-default job runner that ties durable state, control, and archive together per source."""
+
+    def __init__(
+        self,
+        state_store: SourceStateStore,
+        *,
+        archive: Any = None,
+        default_mode: SourceMode | str = SourceMode.OFFLINE,
+        budget_epoch: Optional[str] = None,
+    ):
+        self.state = state_store
+        self.archive = archive
+        self.default_mode = self._as_mode(default_mode)
+        self.budget_epoch = budget_epoch
+
+    @staticmethod
+    def _as_mode(mode: SourceMode | str) -> SourceMode:
+        return mode if isinstance(mode, SourceMode) else SourceMode(str(mode).upper().replace("-", "_"))
+
+    # ------------------------------------------------------------------ operator controls
+
+    def _operator(self, source_id: str) -> dict:
+        return self.state.load(source_id).get("operator") or {}
+
+    def _set_operator(self, source_id: str, **changes) -> None:
+        doc = self.state.load(source_id)
+        operator = dict(doc.get("operator") or {})
+        operator.update(changes)
+        doc["operator"] = operator
+        self.state.save(source_id, doc)
+
+    def pause(self, source_id: str, *, reason: str = "") -> None:
+        self._set_operator(source_id, paused=True, paused_reason=reason)
+
+    def resume(self, source_id: str) -> None:
+        self._set_operator(source_id, paused=False, paused_reason="")
+
+    def is_paused(self, source_id: str) -> bool:
+        return bool(self._operator(source_id).get("paused"))
+
+    def set_mode(self, source_id: str, mode: SourceMode | str) -> None:
+        """Persist an operator mode override for a source (e.g. OFFLINE -> LIVE_SAFE)."""
+        self._set_operator(source_id, mode_override=self._as_mode(mode).value)
+
+    def clear_mode(self, source_id: str) -> None:
+        self._set_operator(source_id, mode_override=None)
+
+    def effective_mode(self, source_id: str, requested: SourceMode | str | None = None) -> SourceMode:
+        if requested is not None:
+            return self._as_mode(requested)
+        override = self._operator(source_id).get("mode_override")
+        return self._as_mode(override) if override else self.default_mode
+
+    def reset_breaker(self, source_id: str) -> None:
+        doc = self.state.load(source_id)
+        doc["breaker"] = {"state": CircuitState.CLOSED.value, "consecutive_failures": 0,
+                          "next_permitted_poll": None}
+        self.state.save(source_id, doc)
+
+    # ------------------------------------------------------------------ control hydration
+
+    def control_for(
+        self, source_id: str, *, mode: SourceMode | str | None = None, max_calls: Optional[int] = None
+    ) -> SourceControl:
+        """Build a fresh SourceControl at the effective mode and hydrate durable budget/breaker/metrics."""
+        control = SourceControl(self.effective_mode(source_id, mode), max_calls=max_calls)
+        return self.state.hydrate_control(source_id, control, budget_epoch=self.budget_epoch)
+
+    def _persist(self, source_id: str, control: SourceControl) -> None:
+        self.state.persist_control(source_id, control, budget_epoch=self.budget_epoch)
+
+    # ------------------------------------------------------------------ one scheduled request
+
+    def run_job(
+        self,
+        source_id: str,
+        *,
+        request: dict,
+        fetcher: Optional[Callable[[dict], bytes]] = None,
+        offline_bytes: Optional[bytes] = None,
+        mode: SourceMode | str | None = None,
+        max_calls: Optional[int] = None,
+        checkpoint: Optional[str] = None,
+        now: Any = None,
+        changed: bool = True,
+        retention_tier: str = "B",
+    ) -> SourceJobResult:
+        """Run one point-in-time source request under durable budget/dedupe/cache/breaker/checkpoint.
+
+        Resolution order (offline-safe):
+          1. operator paused           -> SKIPPED_PAUSED
+          2. request already indexed   -> CACHE_HIT (served from archive, no budget)
+          3. OFFLINE + fixture bytes   -> OFFLINE_REPLAY (archive + index, no network)
+          4. OFFLINE + nothing cached  -> SKIPPED_OFFLINE
+          5. live mode + fetcher       -> reserve budget / check breaker -> LIVE_FETCH | SKIPPED_BUDGET
+                                          | CIRCUIT_OPEN | ERROR
+        """
+        eff_mode = self.effective_mode(source_id, mode)
+        fp = request_fingerprint(
+            request.get("method", "GET"), request.get("url", ""),
+            params=request.get("params"), headers=request.get("headers"), payload=request.get("payload"),
+        )
+
+        if self.is_paused(source_id):
+            return SourceJobResult(source_id, SKIPPED_PAUSED, eff_mode.value, fp,
+                                   reason=self._operator(source_id).get("paused_reason") or "operator paused",
+                                   checkpoint=self.state.get_checkpoint(source_id))
+
+        control = self.control_for(source_id, mode=eff_mode, max_calls=max_calls)
+
+        # 2. dedupe / cache: an equivalent request was already fetched and archived.
+        seen = self.state.seen_request(source_id, fp)
+        if seen and eff_mode != SourceMode.ACCEPTANCE:
+            control.prepare(request_fingerprint=fp, cache_hit=True)  # accounts calls_avoided
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, CACHE_HIT, eff_mode.value, fp,
+                                   content_sha256=seen.get("content_sha256"), from_archive=True,
+                                   reason="served from dedupe/cache index",
+                                   checkpoint=self.state.get_checkpoint(source_id))
+
+        # 3/4. OFFLINE: replay a fixture (archive + index) or skip. Never touches the network.
+        if eff_mode == SourceMode.OFFLINE:
+            if offline_bytes is None:
+                return SourceJobResult(source_id, SKIPPED_OFFLINE, eff_mode.value, fp,
+                                       reason="OFFLINE: no cached response and no fixture bytes",
+                                       checkpoint=self.state.get_checkpoint(source_id))
+            sha = self._archive_and_index(source_id, fp, offline_bytes, request, retention_tier)
+            control.record_cache_hit(request_fingerprint=fp)  # offline replay avoids a live call
+            control.record_success(now=now, changed=changed)
+            if checkpoint is not None:
+                self.state.set_checkpoint(source_id, checkpoint)
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, OFFLINE_REPLAY, eff_mode.value, fp, content_sha256=sha,
+                                   from_archive=True, reason="archived offline fixture bytes",
+                                   checkpoint=checkpoint or self.state.get_checkpoint(source_id))
+
+        # 5. live mode: authorize (budget + breaker), then fetch.
+        if fetcher is None:
+            return SourceJobResult(source_id, SKIPPED_OFFLINE, eff_mode.value, fp,
+                                   reason=f"{eff_mode.value} requested but no fetcher supplied",
+                                   checkpoint=self.state.get_checkpoint(source_id))
+        try:
+            control.prepare(request_fingerprint=fp, now=now)
+        except CircuitOpen as exc:
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, CIRCUIT_OPEN, eff_mode.value, fp, reason=str(exc),
+                                   checkpoint=self.state.get_checkpoint(source_id))
+        except RequestBudgetExceeded as exc:
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, SKIPPED_BUDGET, eff_mode.value, fp, reason=str(exc),
+                                   checkpoint=self.state.get_checkpoint(source_id))
+        except ExternalCallBlocked as exc:
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, SKIPPED_OFFLINE, eff_mode.value, fp, reason=str(exc),
+                                   checkpoint=self.state.get_checkpoint(source_id))
+
+        try:
+            content = fetcher(request)
+        except Exception as exc:  # noqa: BLE001 — the scheduler owns backoff, not the fetcher
+            control.record_failure("service", now=now)
+            retry = control.retry_metadata(control.breaker.consecutive_failures, reason=str(exc))
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, ERROR, eff_mode.value, fp, reason="fetcher raised",
+                                   retry=_retry_dict(retry), error=str(exc),
+                                   checkpoint=self.state.get_checkpoint(source_id))
+
+        sha = self._archive_and_index(source_id, fp, content, request, retention_tier)
+        control.record_success(now=now, changed=changed)
+        if checkpoint is not None:
+            self.state.set_checkpoint(source_id, checkpoint)
+        self._persist(source_id, control)
+        return SourceJobResult(source_id, LIVE_FETCH, eff_mode.value, fp, content_sha256=sha,
+                               reason="live retrieval archived", checkpoint=checkpoint or
+                               self.state.get_checkpoint(source_id))
+
+    # ------------------------------------------------------------------ archive + index
+
+    def _archive_and_index(self, source_id: str, fp: str, content: bytes, request: dict,
+                           retention_tier: str) -> str:
+        from .archive import sha256_hex
+
+        sha = sha256_hex(content)
+        source_url = request.get("url")
+        if self.archive is not None:
+            self.archive.put(content=content, source_id=source_id, retention_tier=retention_tier,
+                             source_url=source_url)
+        self.state.record_request(source_id, fp, content_sha256=sha,
+                                  fetched_at=_iso_now(), source_url=source_url)
+        return sha
+
+    # ------------------------------------------------------------------ health / operator view
+
+    def health(self, source_ids: Optional[list[str]] = None) -> list[dict]:
+        """Operator-visible per-source health, merging durable state with a hydrated control snapshot."""
+        ids = source_ids if source_ids is not None else self.known_sources()
+        rows = []
+        for sid in ids:
+            doc = self.state.load(sid)
+            control = self.control_for(sid)
+            snap = control.snapshot()
+            operator = doc.get("operator") or {}
+            spec = REGISTRY.get(sid)
+            rows.append({
+                "source_id": sid,
+                "name": spec.name if spec else sid,
+                "active": bool(spec.active) if spec else None,
+                "retention_tier": spec.retention_tier if spec else None,
+                "mode": self.effective_mode(sid).value,
+                "paused": bool(operator.get("paused")),
+                "paused_reason": operator.get("paused_reason") or "",
+                "budget_limit": snap.get("budget_limit"),
+                "budget_remaining": snap.get("budget_remaining"),
+                "circuit_state": snap.get("circuit_state"),
+                "next_permitted_poll": snap.get("next_permitted_poll"),
+                "cache_hits": snap.get("cache_hits"),
+                "calls_avoided": snap.get("calls_avoided"),
+                "calls_made": snap.get("calls_made"),
+                "retryable_errors": snap.get("retryable_errors"),
+                "terminal_errors": snap.get("terminal_errors"),
+                "last_successful_call": snap.get("last_successful_call"),
+                "last_detected_change": snap.get("last_detected_change"),
+                "checkpoint": doc.get("checkpoint"),
+                "indexed_requests": len(doc.get("requests") or {}),
+            })
+        return rows
+
+    def known_sources(self) -> list[str]:
+        """Active registry sources plus any that already have a durable state file."""
+        ids = {s.id for s in active_sources()}
+        for path in sorted(Path(self.state.root).glob("*.json")):
+            ids.add(path.stem)
+        return sorted(ids)
+
+    def health_report(self) -> dict:
+        rows = self.health()
+        return {
+            "generated_at": _iso_now(),
+            "default_mode": self.default_mode.value,
+            "budget_epoch": self.budget_epoch,
+            "source_count": len(rows),
+            "paused_count": sum(1 for r in rows if r["paused"]),
+            "open_circuits": sum(1 for r in rows if r["circuit_state"] == CircuitState.OPEN.value),
+            "total_calls_avoided": sum(r.get("calls_avoided") or 0 for r in rows),
+            "total_calls_made": sum(r.get("calls_made") or 0 for r in rows),
+            "sources": rows,
+        }
+
+
+def _iso_now() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _retry_dict(retry: Any) -> dict:
+    if retry is None:
+        return {}
+    if hasattr(retry, "__dict__"):
+        return {k: v for k, v in vars(retry).items() if not k.startswith("_")}
+    try:
+        return dict(asdict(retry))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+__all__ = [
+    "SourceScheduler", "SourceJobResult",
+    "CACHE_HIT", "OFFLINE_REPLAY", "LIVE_FETCH", "SKIPPED_PAUSED", "SKIPPED_OFFLINE",
+    "SKIPPED_BUDGET", "CIRCUIT_OPEN", "ERROR",
+]

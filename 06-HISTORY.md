@@ -281,3 +281,20 @@
 - **Frozen invariants:** scoring_v1 and fit.py unchanged; M4–M10 corpora byte-for-byte unchanged; M9
   canonical base still loads (55). Full suite: 284 passed, 1 skipped. No live calls. See
   `docs/specs/M11_OUTCOME_LEARNING.md`. Next: M12 durable-source integration.
+
+## M12 CLOSED (2026-09-09) — durable source integration (scheduler / jobs)
+
+- **`pyrnova/scheduler.py` (additive).** `SourceScheduler` composes the previously separate primitives —
+  `SourceStateStore` (durable budget/breaker/checkpoint/dedupe), `SourceControl` (mode/budget/breaker/
+  retry/metrics), the registry, and `EvidenceArchive` — into an offline-default `run_job`. Performs no
+  HTTP and imports no adapter; a live call happens only when a caller opts a source into a live mode AND
+  supplies a `fetcher`.
+- **Capabilities wired:** durable budgets (persist across restart within a `budget_epoch`; new epoch
+  resets), request dedupe + cache/archive reuse, exponential+jitter backoff metadata, persisted circuit
+  breaker that defers the next poll when open, checkpoint/resume, source-health report, and persisted
+  operator controls (pause/resume, mode override, breaker reset).
+- **Operations Panel extension:** `OperatorConsole(source_state_dir=...).source_operations()` surfaces
+  durable per-source health read-only and degrades to an empty well-formed report when unconfigured.
+- **Invariants:** control.py, source_state.py, adapters, fit.py, and scoring_v1 unchanged; frozen M4–M11
+  corpora byte-for-byte unchanged; ACCEPTANCE never serves cached bytes; no live calls in the suite.
+  Full suite: 298 passed, 1 skipped. See `docs/specs/M12_SOURCE_INTEGRATION.md`.

@@ -53,6 +53,20 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external
   frozen 55-case M9 corpus (FNR 0.0, one inherited false strike, no STRIKE explosion); frozen M4–M9
   corpora byte-for-byte unchanged. Full suite: 272 passed, 1 skipped. No live calls. See
   `docs/replay/M10_MULTISOURCE_CALIBRATION.md` and `06-HISTORY.md`.
+- **M12: CLOSED 2026-09-09.** Durable source integration — scheduler/jobs (`pyrnova/scheduler.py`)
+  composing `SourceStateStore` + `SourceControl` + registry + `EvidenceArchive` into an **offline-default**
+  job runner. `run_job` resolves one point-in-time request through: operator-pause → durable
+  dedupe/cache index (served from archive, no budget) → OFFLINE fixture replay (archived, no network) →
+  OFFLINE skip → live authorize (budget reserve + circuit check) → fetch/archive/index. Live calls happen
+  ONLY when a caller both opts a source into a live mode and supplies a `fetcher` — no network by
+  omission. Durable budgets persist across restart within a `budget_epoch` (new epoch resets); backoff
+  via `retry_metadata`; circuit breaker persisted and defers the next poll when open (`reset_breaker`
+  control); checkpoint/resume per source; `health()`/`health_report()` operator view; operator controls
+  pause/resume, mode override, breaker reset (all persisted). Lightweight Operations Panel extension:
+  `OperatorConsole(source_state_dir=...).source_operations()` surfaces durable source health read-only and
+  degrades gracefully when unconfigured. ACCEPTANCE never serves cached bytes. `control.py`,
+  `source_state.py`, adapters, `fit.py`, and `scoring_v1` all unchanged; frozen M4–M11 corpora unchanged.
+  Full suite: 298 passed, 1 skipped. No live calls. See `docs/specs/M12_SOURCE_INTEGRATION.md`.
 - **M11: CLOSED 2026-09-09.** Production opportunity lifecycle + append-only outcome learning
   (`pyrnova/outcomes.py`). Twelve authoritative point-in-time outcome labels (WON, LOST, PARTICIPATED,
   NO_BID, AWARD_TO_OTHER, CANCELLED, EXPIRED, DELAYED, PARTIAL_CAPTURE, SUBCONTRACT_CAPTURE,
@@ -369,8 +383,7 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external
 M2 CLOSED (`2026-09-09T07:14Z`, hash `574813de…`). M10 CLOSED
 (`docs/replay/M10_MULTISOURCE_CALIBRATION.md`). M11 CLOSED (`docs/specs/M11_OUTCOME_LEARNING.md`).
 
-M12 (next): integrate durable `SourceState` (`pyrnova/sources/source_state.py`) with the adapters and a
-scheduler/jobs layer — budgets, dedupe, cache, archive, backoff, circuit breaker, checkpoint/resume,
-source-health, operator controls — plus a lightweight Operations Panel extension. Offline default; no
-live calls without a separately justified acceptance request. `scoring_v1`/`fit.py` unchanged; frozen
-corpora unchanged.
+M12 CLOSED (`docs/specs/M12_SOURCE_INTEGRATION.md`). The offline-default scheduler is ready to drive real
+adapters; live ingestion (wiring a source `fetcher` under LIVE-SAFE/ACCEPTANCE) still requires a
+separately justified request and provisioned keys — do not initiate without one. No milestone is
+currently in progress; await the next brief.
