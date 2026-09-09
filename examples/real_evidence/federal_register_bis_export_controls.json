@@ -1,0 +1,299 @@
+{
+  "_note": "Real Federal Register documents (public domain) \u2014 BIS/Commerce export-control & Entity List rules. Archived once for offline replay (M18 observed adverse-event evidence). Not customer data.",
+  "provenance": {
+    "source_id": "federal_register",
+    "family": "regulatory_adverse_event",
+    "endpoint": "https://www.federalregister.gov/api/v1/documents.json",
+    "query": {
+      "conditions[agencies][]": "industry-and-security-bureau",
+      "conditions[type][]": "RULE",
+      "conditions[term]": "entity list",
+      "order": "newest"
+    },
+    "retrieved_at": "2026-09-09",
+    "record_count": 8,
+    "content_sha256": "a94148cdaf70ffb4ae40b5ede8abb431e8adfd41f6b65f29d1543abef5c56953",
+    "calls_made": 1,
+    "license": "US Government work, public domain"
+  },
+  "results": [
+    {
+      "document_number": "2026-17231",
+      "title": "Revisions to the Entity List",
+      "type": "Rule",
+      "publication_date": "2026-08-24",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "In this rule, the Bureau of Industry and Security (BIS) revises the Export Administration Regulations (EAR) by removing two addresses associated with Arrow Electronics (Hong Kong) Co., Ltd. from the Entity List under the destination of China, People's Republic of (China). This determination follows the removal from the Entity List of Arrow China Electronics Trading Co., Ltd., and the removal of six aliases for Arrow Electronics (Hong Kong) Co., Ltd. in November 2025.",
+      "action": "Final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/08/24/2026-17231/revisions-to-the-entity-list",
+      "regulation_id_numbers": [
+        "0694-AK49"
+      ],
+      "docket_ids": [
+        "Docket No. 260818-0014"
+      ]
+    },
+    {
+      "document_number": "2026-17230",
+      "title": "Removal From the Entity List",
+      "type": "Rule",
+      "publication_date": "2026-08-24",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "In this rule, the Bureau of Industry and Security (BIS) amends the Export Administration Regulations (EAR) by removing one entity from the Entity List under the destination of Turkey.",
+      "action": "Final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/08/24/2026-17230/removal-from-the-entity-list",
+      "regulation_id_numbers": [
+        "0694-AK52"
+      ],
+      "docket_ids": [
+        "Docket No. 260818-0012"
+      ]
+    },
+    {
+      "document_number": "2026-16078",
+      "title": "DPAS Directive Allocation Order and Additional Requirements for Recoverable Critical Minerals and Materials",
+      "type": "Rule",
+      "publication_date": "2026-08-06",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "The Bureau of Industry and Security (\"BIS\") is publishing this temporary final rule to restrict the exportation of black mass and tungsten waste and scrap without a license. Specifically, as of August 27, 2026, U.S. persons engaged in the sale of black mass and tungsten waste and scrap must allocate 100 percent of monthly sales to U.S. persons, unless an adjustment or exception is obtained in advance from BIS. This action is taken pursuant to section 101 of the Defense Production Act of 1950, as amended (\"DPA\" or the \"Act\"), the Defense Priorities and Allocations System (15 CFR part 700) and Presidential Determination Pursuant to Section 101 of the Defense Production Act of 1950, as Amended, on Recoverable Critical Minerals and Materials, dated July 30, 2026 (\"DPA Determination on Recoverable CMMs\"), in which the President authorized the Department of Commerce (\"Commerce\") to address the scarcity of recoverable critical minerals and materials (\"CMMs\"). BIS invites the public to submit comments on whether any additional sales requirements are necessary or appropriate to promote the national defense.",
+      "action": "Temporary final rule; Request for comments.",
+      "html_url": "https://www.federalregister.gov/documents/2026/08/06/2026-16078/dpas-directive-allocation-order-and-additional-requirements-for-recoverable-critical-minerals-and",
+      "regulation_id_numbers": [],
+      "docket_ids": [
+        "Docket No. 260804-0143"
+      ]
+    },
+    {
+      "document_number": "2026-14942",
+      "title": "Implementation of EAR Export Controls on Silencers, Mufflers, and Sound Suppressors; and Other Firearms Related Changes",
+      "type": "Rule",
+      "publication_date": "2026-07-23",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "The Department of Commerce (Commerce), Bureau of Industry and Security (BIS) is revising the Export Administration Regulations (EAR) and the Commerce Control List (CCL) to appropriately control certain silencers, mufflers, and sound suppressors (sound suppressors) that will no longer be described on the International Traffic in Arms Regulations U.S. Munitions List (USML). This interim final rule (IFR) complements a Department of State interim final rule published elsewhere in this issue of the Federal Register (International Traffic in Arms Regulations: USML Category I Firearm Suppressors (1400-AG11) (State IFR)). This transfer of jurisdiction will reduce the regulatory burden on exports of sound suppressors. This IFR also revises the EAR to allow firearms and related items to be temporarily exported and reexported under a license exception as tools of trade, thereby relieving exporters of the regulatory burden of applying for authorization. Finally, this IFR clarifies which items fall within the scope of the EAR's entry clearance requirements for a temporary import.",
+      "action": "Interim final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/07/23/2026-14942/implementation-of-ear-export-controls-on-silencers-mufflers-and-sound-suppressors-and-other-firearms",
+      "regulation_id_numbers": [
+        "0694-AK35"
+      ],
+      "docket_ids": [
+        "Docket No. 260408-0094"
+      ]
+    },
+    {
+      "document_number": "2026-14132",
+      "title": "Enhanced Favorable Treatment for the United Arab Emirates Under the Export Administration Regulations",
+      "type": "Rule",
+      "publication_date": "2026-07-14",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "In this final rule, the Bureau of Industry and Security (BIS) amends the Export Administration Regulations (EAR) to provide enhanced favorable treatment for the United Arab Emirates (UAE). Specifically, BIS is removing the UAE from Country Groups D:3 and D:4 and adding the UAE to Country Group A:5. More license exceptions will now be available, including Strategic Trade Authorization (STA) for the UAE Government and approved commercial entities in the UAE. STA will authorize the export, reexport, or transfer (in-country) of military items; certain commercial satellites and spacecraft; and dual-use items useful in, inter alia, oil and gas production, desalination, and civil nuclear power generation. The UAE Government and approved commercial entities will also have license-free access to advanced computing items, consistent with the May 2025 U.S.-UAE Artificial Intelligence Cooperation framework, without compromising U.S. digital infrastructure buildout.",
+      "action": "Final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/07/14/2026-14132/enhanced-favorable-treatment-for-the-united-arab-emirates-under-the-export-administration",
+      "regulation_id_numbers": [
+        "0694-AK54"
+      ],
+      "docket_ids": [
+        "Docket No. 260710-0168"
+      ]
+    },
+    {
+      "document_number": "2026-06851",
+      "title": "Extension of Authorized Integrated Circuit (IC) Designer Status and Application Deadline To Become an Approved IC Designer",
+      "type": "Rule",
+      "publication_date": "2026-04-09",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "The Bureau of Industry and Security (BIS) is revising the Export Administration Regulations (EAR) by extending by about eight months the triggering date for authorized integrated circuit designer status and submission date for applications to become an approved integrated circuit (IC) designer. The new date is December 31, 2026.",
+      "action": "Final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/04/09/2026-06851/extension-of-authorized-integrated-circuit-ic-designer-status-and-application-deadline-to-become-an",
+      "regulation_id_numbers": [
+        "0694-AJ98"
+      ],
+      "docket_ids": [
+        "Docket No. 260406-0093"
+      ]
+    },
+    {
+      "document_number": "2026-01059",
+      "title": "Streamlining Export Controls for Drone Exports",
+      "type": "Rule",
+      "publication_date": "2026-01-21",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "The Bureau of Industry and Security (BIS) is easing export controls on certain civil Unmanned Aerial Vehicles (UAVs) and related technologies, which currently need a license to be exported to most countries. In particular, this interim final rule (IFR): a) allows less sensitive UAVs--namely, commercial UAVs with a maximum endurance of less than one hour, for which there is broad foreign availability--to be exported to most Wassenaar Arrangement Participating States (Country Group A:1) without a license; and b) allows more capable non-military UAVs--namely, certain long-range cargo delivery and agricultural spraying drones--to be exported to certain U.S. partners and allies (Country Group A:5) under License Exception Strategic Trade Authorization (STA). Exports pursuant to License Exception STA are subject to notification and reporting requirements to ensure the security of the exports. BIS is making these changes pursuant to Executive Order (E.O.) 14307, \"Unleashing American Drone Dominance.\"",
+      "action": "Interim final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/01/21/2026-01059/streamlining-export-controls-for-drone-exports",
+      "regulation_id_numbers": [
+        "0694-AK30"
+      ],
+      "docket_ids": [
+        "Docket No. 251222-0187"
+      ]
+    },
+    {
+      "document_number": "2026-00789",
+      "title": "Revision to License Review Policy for Advanced Computing Commodities",
+      "type": "Rule",
+      "publication_date": "2026-01-15",
+      "agencies": [
+        {
+          "raw_name": "DEPARTMENT OF COMMERCE",
+          "name": "Commerce Department",
+          "id": 54,
+          "url": "https://www.federalregister.gov/agencies/commerce-department",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/54",
+          "parent_id": null,
+          "slug": "commerce-department"
+        },
+        {
+          "raw_name": "Bureau of Industry and Security",
+          "name": "Industry and Security Bureau",
+          "id": 241,
+          "url": "https://www.federalregister.gov/agencies/industry-and-security-bureau",
+          "json_url": "https://www.federalregister.gov/api/v1/agencies/241",
+          "parent_id": 54,
+          "slug": "industry-and-security-bureau"
+        }
+      ],
+      "abstract": "The Bureau of Industry and Security (BIS) is revising its license review policy for exports of certain semiconductors to China and Macau--changing it from a presumption of denial to a case-by-case review. The semiconductors covered by this rule are the Nvidia H200 and its equivalents, as well as less advanced chips--provided that (1) the semiconductors are commercially available in the United States at the time of publication of this rule and (2) the exporter certifies that: there is sufficient supply of this product in the United States; production of this product for exports to China will not divert global foundry capacity for similar or more advanced products for end users in the United States; the recipient has demonstrated sufficient security procedures; and the item undergoes independent, third-party testing in the United States to verify its performance specifications.",
+      "action": "Final rule.",
+      "html_url": "https://www.federalregister.gov/documents/2026/01/15/2026-00789/revision-to-license-review-policy-for-advanced-computing-commodities",
+      "regulation_id_numbers": [
+        "0694-AK43"
+      ],
+      "docket_ids": [
+        "Docket No. 260112-0028"
+      ]
+    }
+  ]
+}

@@ -398,6 +398,11 @@ def _mk_threat(subject_ref, subject_name, mechanism, anchor_ref, exposures, cata
         **kw,
     )
     threat.id = threat_id(subject_ref, mechanism, anchor_ref)
+    # M18 (Workstream H): the catalyst's durable authority (OBSERVED vs MODELED/SYNTHETIC/PROBE) travels
+    # with the threat. Absent an explicit class the catalyst is MODELED — no old fixture is relabelled.
+    cclass = (catalyst_rec or {}).get("catalyst_class")
+    threat.meta["catalyst_class"] = cclass if cclass in ("OBSERVED", "MODELED", "SYNTHETIC", "PROBE") \
+        else "MODELED"
     return threat
 
 
@@ -943,6 +948,13 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
         propagation = propagate_threats(threats, case["relationships"],
                                         max_depth=case.get("max_depth", 2), as_of=as_of)
 
+    # M18 (Workstream M): resolve a PROPAGATED threat's later outcome separately from the direct one, so
+    # direct-vs-propagated calibration can begin. Future-dated observations are excluded (temporal truth).
+    propagated_outcome = None
+    if case.get("propagated_outcome_observations"):
+        propagated_outcome = resolve_threat_outcome(case["propagated_outcome_observations"],
+                                                    as_of=case.get("outcome_as_of", as_of))
+
     # M16: per-case detection quality (never false-from-absence) for calibration.
     from .threat_calibration import classify_detection
     detection = None
@@ -980,6 +992,9 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
     if "outcome_label" in expected:
         got = (outcome or {}).get("label")
         check("outcome_label", got == expected["outcome_label"], got, expected["outcome_label"])
+    if "catalyst_class" in expected:
+        got = (threats[0].meta.get("catalyst_class") if threats else None)
+        check("catalyst_class", got == expected["catalyst_class"], got, expected["catalyst_class"])
     if "detection_quality" in expected:
         check("detection_quality", detection == expected["detection_quality"], detection,
               expected["detection_quality"])
@@ -995,6 +1010,17 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
         if "max_depth_reached" in expected:
             check("max_depth_reached", pstats["max_depth_reached"] == expected["max_depth_reached"],
                   pstats["max_depth_reached"], expected["max_depth_reached"])
+        if "cycles_prevented" in expected:
+            check("cycles_prevented", pstats["cycles_prevented"] == expected["cycles_prevented"],
+                  pstats["cycles_prevented"], expected["cycles_prevented"])
+        if "duplicate_threats_suppressed" in expected:
+            check("duplicate_threats_suppressed",
+                  pstats["duplicate_threats_suppressed"] == expected["duplicate_threats_suppressed"],
+                  pstats["duplicate_threats_suppressed"], expected["duplicate_threats_suppressed"])
+    if "propagated_outcome_label" in expected:
+        got = (propagated_outcome or {}).get("label")
+        check("propagated_outcome_label", got == expected["propagated_outcome_label"], got,
+              expected["propagated_outcome_label"])
 
     return {
         "case_id": case["case_id"],
@@ -1010,6 +1036,7 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
         "rejection_count": len(rejections),
         "dual_links": dual_links,
         "outcome": outcome,
+        "propagated_outcome": propagated_outcome,
         "detection_quality": detection,
         "propagation": ({"propagated_threats": [to_record(t) for t in propagation["propagated_threats"]],
                          "beneficiary_opportunities": propagation["beneficiary_opportunities"],
@@ -1168,3 +1195,68 @@ def summarize_m17(results: list[dict]) -> dict:
     }
     base["threat_quality_over_time"] = threat_quality_over_time(results)
     return base
+
+
+def summarize_m18(results: list[dict]) -> dict:
+    """M18 metrics: everything ``summarize_m17`` reports, plus catalyst-authority (OBSERVED vs MODELED),
+    relationship-independence/diversity (Workstream K), and direct-vs-propagated outcome calibration
+    (Workstream M). Additive; never republishes a rate without its denominator."""
+    from .relationships import independence_metrics
+    from .threat_calibration import propagated_outcome_calibration
+
+    base = summarize_m17(results)
+    direct = [t for r in results for t in r["threats"]]
+    propagated = [t for r in results if r.get("propagation")
+                  for t in r["propagation"]["propagated_threats"]]
+
+    def cclass(t):
+        return (t.get("meta") or {}).get("catalyst_class", "MODELED")
+
+    # Realized propagation chains (root company -> target company) for the independence rollup.
+    chains = []
+    for r in results:
+        if not r.get("propagation"):
+            continue
+        direct_by_id = {t["id"]: t for t in r["threats"]}
+        for pt in r["propagation"]["propagated_threats"]:
+            root = direct_by_id.get((pt.get("meta") or {}).get("root_threat_id"))
+            path = (pt.get("meta") or {}).get("propagation_path") or [{}]
+            families = {e.split(":", 1)[0].lower() for e in (pt.get("evidence_ids") or [])}
+            chains.append({
+                "root_ref": root.get("subject_ref") if root else None,
+                "target_ref": pt.get("subject_ref"),
+                "relation": path[-1].get("relation"),
+                "source_family": ("federal_register" if "fr" in families else
+                                  "usaspending" if any(f.startswith("usa") for f in families) else None),
+                "observed_catalyst": cclass(pt) == "OBSERVED",
+            })
+
+    catalyst_authority = {}
+    for t in direct:
+        catalyst_authority[cclass(t)] = catalyst_authority.get(cclass(t), 0) + 1
+
+    base["catalyst_authority"] = {
+        "direct_by_class": dict(sorted(catalyst_authority.items())),
+        "observed_direct_threats": sum(1 for t in direct if cclass(t) == "OBSERVED"),
+        "modeled_direct_threats": sum(1 for t in direct if cclass(t) == "MODELED"),
+        "observed_propagated_threats": sum(1 for t in propagated if cclass(t) == "OBSERVED"),
+        "observed_vs_modeled_distinct": True,  # the distinction is durable on every threat's meta
+    }
+    exercised_edges = [e for r in results for e in c_relationships(r)]
+    base["relationship_independence"] = independence_metrics(exercised_edges, chains=chains)
+    base["propagated_outcome_calibration"] = propagated_outcome_calibration(results)
+    base["negative_cases"] = sum(1 for r in results if not r["threats"] and r["rejections"])
+    return base
+
+
+def c_relationships(result: dict) -> list[dict]:
+    """The relationship edges a case exercised (empty-safe helper for the independence rollup)."""
+    prop = result.get("propagation")
+    if not prop:
+        return []
+    edges = []
+    for pt in prop.get("propagated_threats", []):
+        for hop in (pt.get("meta") or {}).get("propagation_path") or []:
+            edges.append({"from_ref": hop.get("from_ref"), "to_ref": hop.get("to_ref"),
+                          "relation": hop.get("relation")})
+    return edges

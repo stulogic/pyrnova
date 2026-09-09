@@ -159,6 +159,7 @@ def propagate_threats(
                     evidence_ids=sorted(set(seed.evidence_ids) | set(hop["evidence_ids"])),
                     meta={"propagated": True, "root_threat_id": root_id,
                           "propagation_depth": depth + 1,
+                          "catalyst_class": seed.meta.get("catalyst_class", "MODELED"),
                           "propagation_path": (seed.meta.get("propagation_path") or []) + [hop]},
                 )
                 pt.id = threat_id(to_ref, seed.mechanism, f"{root_id}:{depth + 1}")

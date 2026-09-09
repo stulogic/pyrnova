@@ -1,0 +1,219 @@
+{
+  "corpus_id": "corpus_m18",
+  "schema_version": 1,
+  "extends": "corpus_m17.json",
+  "reviewed_at": "2026-09-09",
+  "notes": "M18 extends corpus_m17 (byte-identical) with the first REAL, OBSERVED adverse-event propagation chains that are INDEPENDENT of the SAIC<->Torch pair. The observed catalyst is a real, archived Federal Register BIS/Commerce export-control rule (FR 2026-17231, 'Revisions to the Entity List', RIN 0694-AK49, published 2026-08-24) in examples/real_evidence/federal_register_bis_export_controls.json; pyrnova.adverse_events.parse_federal_register_adverse reproduces it and pyrnova.adverse_events.to_regulatory_catalyst emits the catalyst_class=OBSERVED catalyst used here (see tests/test_m18_observed_catalyst.py). The two flagship chains traverse REAL, archived, program-anchored relationship edges grounded by pyrnova.relationships.ground_subaward_edges from examples/real_evidence/usaspending_subawards_torch.json: Parsons Government Services -> Torch (MDA prime award HQ085821C0015) and Intuitive Research & Technology -> Torch (Army prime award W31P4Q23FC001) -- neither is SAIC. Parsons/Intuitive incumbency is established from the authoritative sub-award PRIME fields (relationships.exposed_prime_awards_from_subawards, 0 new calls). The export-control exposure of each prime is INFERRED (missile-defense R&D subject to EAR), so direct threats are MODERATE/MEDIUM and degrade to LOW/LOW one hop downstream -- confidence never increases. Negative discipline (Workstream D/P): the SAME real rule produces NO threat for a company with no evidenced exposure to it, and a REAL single-occurrence (weak) edge terminates propagation. Observed vs modeled catalyst authority is durable on every threat. scoring_v1/fit.py untouched; no fabricated relationships; every hop auditable.",
+  "threat_cases": [
+    {
+      "case_id": "m18-obs-export-control-parsons-torch",
+      "real_subject": true,
+      "note": "PRIMARY M18 chain. REAL observed adverse event (FR 2026-17231 BIS Entity List revision, RIN 0694-AK49) -> REGULATORY_COMPLIANCE_EXPOSURE on Parsons Government Services (inferred EAR exposure via its MDA missile-defense R&D prime HQ085821C0015) -> propagated one hop to Torch Technologies via the REAL, program-anchored Parsons->Torch sub-award edge. Independent of SAIC<->Torch (different company, agency MDA, program). Confidence/severity degrade (MODERATE/MEDIUM -> LOW/LOW), never increase.",
+      "subject": {"ref": "co_parsons", "name": "Parsons Government Services Inc."},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls (Entity List revision RIN 0694-AK49)", "deterministic": false, "confidence": 0.6, "available_at": "2024-09-17", "source_ref": "usa:subaward:PO-0011221", "rationale": "Parsons primes MDA missile-defense R&D (HQ085821C0015, NAICS 541715 sensor/command-and-control); its controlled-technology work is subject to EAR export controls (inferred, not a deterministic identifier match)"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "eligibility_gated": false, "horizon": "MEDIUM_TERM", "summary": "Revisions to the Entity List"}
+      ],
+      "relationships": [
+        {"from_ref": "co_parsons", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["usa:subaward:PO-0011221"], "available_at": "2024-09-17"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"],
+        "severity": {"REGULATORY_COMPLIANCE_EXPOSURE": "MODERATE"},
+        "confidence": {"REGULATORY_COMPLIANCE_EXPOSURE": "MEDIUM"},
+        "catalyst_class": "OBSERVED",
+        "propagated_threats": 1,
+        "beneficiary_opportunities": 0,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m18-obs-export-control-intuitive-torch",
+      "real_subject": true,
+      "note": "SECOND independent M18 chain. Same REAL observed FR export-control rule -> REGULATORY_COMPLIANCE_EXPOSURE on Intuitive Research & Technology (inferred EAR exposure via its Army weapon-system engineering prime W31P4Q23FC001) -> propagated one hop to Torch via the REAL, program-anchored Intuitive->Torch sub-award edge. A DIFFERENT company pair, agency (Army) and program from chain 1 -- proving propagation is not tied to one structural relationship.",
+      "subject": {"ref": "co_intuitive", "name": "Intuitive Research and Technology Corporation"},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls (Entity List revision RIN 0694-AK49)", "deterministic": false, "confidence": 0.6, "available_at": "2024-01-19", "source_ref": "usa:subaward:AE-T-TOR-002", "rationale": "Intuitive primes Army weapon-system engineering (W31P4Q23FC001); its controlled defense-article work is subject to EAR export controls (inferred)"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "eligibility_gated": false, "horizon": "MEDIUM_TERM", "summary": "Revisions to the Entity List"}
+      ],
+      "relationships": [
+        {"from_ref": "co_intuitive", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["usa:subaward:AE-T-TOR-002"], "available_at": "2024-01-19"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"],
+        "confidence": {"REGULATORY_COMPLIANCE_EXPOSURE": "MEDIUM"},
+        "catalyst_class": "OBSERVED",
+        "propagated_threats": 1,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m18-obs-export-control-no-exposure-negative",
+      "real_subject": true,
+      "note": "NEGATIVE (Workstream D/P). The SAME real observed BIS rule (target EAR:0694-AK49) does NOT threaten a company whose only declared regulation exposure is a DIFFERENT rule -- a real adverse event is never an automatic exposure. NO_EXPOSURE rejection, zero threat, zero propagation. This is the core discipline: a BIS/EAR action requires an evidenced exposure to THAT action.",
+      "subject": {"ref": "co_torch", "name": "Torch Technologies Inc"},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-UNRELATED", "target_name": "Unrelated EAR provision", "deterministic": false, "confidence": 0.6, "available_at": "2024-01-01", "source_ref": "usa:subaward:unrelated"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "horizon": "MEDIUM_TERM", "summary": "Revisions to the Entity List"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m18-obs-weak-edge-terminates-ntsi",
+      "real_subject": true,
+      "note": "WEAK-LINK TERMINATION on REAL independent evidence. Same real observed catalyst -> REGULATORY_COMPLIANCE_EXPOSURE on NTSI, LLC (a real MDA prime, HQ085823C0001). NTSI subcontracts Torch on ONE occasion only, so the real NTSI->Torch edge is name_only_weak: the direct threat exists but propagation TERMINATES rather than manufacturing an indirect threat. Independent pair, real weak edge.",
+      "subject": {"ref": "co_ntsi", "name": "NTSI, LLC"},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls (Entity List revision RIN 0694-AK49)", "deterministic": false, "confidence": 0.6, "available_at": "2023-03-16", "source_ref": "usa:subaward:S23-31001-TOR", "rationale": "NTSI primes MDA sensor/command-and-control R&D (HQ085823C0001); inferred EAR exposure"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "horizon": "MEDIUM_TERM", "summary": "Revisions to the Entity List"}
+      ],
+      "relationships": [
+        {"from_ref": "co_ntsi", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "REJECTED", "join_method": "name_only_weak", "evidence_ids": ["usa:subaward:S23-31001-TOR"], "available_at": "2023-03-16"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"], "catalyst_class": "OBSERVED", "propagated_threats": 0, "max_depth_reached": 0}
+    },
+    {
+      "case_id": "m18-obs-future-catalyst-excluded",
+      "real_subject": true,
+      "note": "TEMPORAL TRUTH. The real observed catalyst is published 2026-08-24; evaluated as of 2026-01-01 it is not yet knowable and is excluded, so NO threat and NO rejection arise -- a future adverse event never influences an earlier threat state.",
+      "subject": {"ref": "co_parsons", "name": "Parsons Government Services Inc."},
+      "replay_as_of": "2026-01-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls", "deterministic": false, "confidence": 0.6, "available_at": "2024-09-17", "source_ref": "usa:subaward:PO-0011221"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "summary": "Revisions to the Entity List"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 0}
+    },
+    {
+      "case_id": "m18-beneficiary-substitute",
+      "synthetic_probe": true,
+      "note": "BENEFICIARY side (Workstream J). A real observed export-control threat on an exposed prime opens a substitution opportunity for a competitor holding an explicit SUBSTITUTE_FOR edge (a modeled competitor relationship -- beneficiary edges are not derivable from sub-award evidence). The threatened entity carries the threat; the substitute gets an opportunity, not a threat.",
+      "subject": {"ref": "co_ben_prime", "name": "Beneficiary-probe Prime Inc."},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls", "deterministic": false, "confidence": 0.6, "available_at": "2024-01-01", "source_ref": "probe:reg"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "summary": "Revisions to the Entity List"}
+      ],
+      "relationships": [
+        {"from_ref": "co_ben_prime", "to_ref": "co_ben_substitute", "to_name": "Substitute Competitor LLC", "relation": "SUBSTITUTE_FOR", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:competes"], "available_at": "2025-01-01"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"], "propagated_threats": 0, "beneficiary_opportunities": 1}
+    },
+    {
+      "case_id": "m18-cycle-prevented",
+      "synthetic_probe": true,
+      "note": "CYCLE PREVENTION invariant on the M18 metrics path. A relationship cycle A<->B is never traversed twice: the threat propagates A->B once, and the B->A edge is refused because A is already on the path. Deterministic, no duplicate.",
+      "subject": {"ref": "co_cyc_a", "name": "Cycle Probe A"},
+      "replay_as_of": "2026-09-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "EAR:0694-AK49", "target_name": "BIS EAR export controls", "deterministic": false, "confidence": 0.6, "available_at": "2024-01-01", "source_ref": "probe:reg"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "catalyst_class": "OBSERVED", "catalyst_id": "cat_fr_2026-17231", "target_ref": "EAR:0694-AK49", "available_at": "2026-08-24", "source_id": "federal_register", "source_ref": "fr:doc:2026-17231", "evidence_id": "fr:doc:2026-17231", "evidence_strength": 4, "summary": "Revisions to the Entity List"}
+      ],
+      "relationships": [
+        {"from_ref": "co_cyc_a", "to_ref": "co_cyc_b", "to_name": "Cycle Probe B", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:cyc:ab"], "available_at": "2025-01-01"},
+        {"from_ref": "co_cyc_b", "to_ref": "co_cyc_a", "to_name": "Cycle Probe A", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:cyc:ba"], "available_at": "2025-01-01"}
+      ],
+      "expected": {"threat_count": 1, "propagated_threats": 1, "cycles_prevented": 1, "max_depth_reached": 1}
+    },
+    {
+      "case_id": "m18-duplicate-suppressed",
+      "synthetic_probe": true,
+      "note": "DUPLICATE-PROPAGATION invariant on the M18 metrics path. A diamond A->B, A->C, B->D, C->D reaches D by two paths; the same (subject, mechanism, root) threat is emitted for D only ONCE -- shared exposure never multiplies into duplicate threats. Uses a HIGH-confidence PROGRAM_CONTRACTION seed so propagation can reach depth 2 (degrading HIGH->MEDIUM->LOW).",
+      "subject": {"ref": "co_dup_a", "name": "Diamond Probe A", "uei": "UEIM18DUP"},
+      "replay_as_of": "2026-09-01",
+      "award_records": [
+        {"source_ref": "probe:award:dup", "available_at": "2022-01-01", "recipient_uei": "UEIM18DUP", "program_key": "prog:m18-dup", "program_name": "Diamond probe program", "amount_usd": 300000000, "agency": "Department of the Army"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "prog:m18-dup", "available_at": "2025-06-01", "source_ref": "model:reduce:m18-dup", "amount_delta_usd": 300000000, "evidence_strength": 4}
+      ],
+      "relationships": [
+        {"from_ref": "co_dup_a", "to_ref": "co_dup_b", "to_name": "Diamond Probe B", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:dup:ab"], "available_at": "2025-01-01"},
+        {"from_ref": "co_dup_a", "to_ref": "co_dup_c", "to_name": "Diamond Probe C", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:dup:ac"], "available_at": "2025-01-01"},
+        {"from_ref": "co_dup_b", "to_ref": "co_dup_d", "to_name": "Diamond Probe D", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:dup:bd"], "available_at": "2025-01-01"},
+        {"from_ref": "co_dup_c", "to_ref": "co_dup_d", "to_name": "Diamond Probe D", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["probe:dup:cd"], "available_at": "2025-01-01"}
+      ],
+      "expected": {"threat_count": 1, "propagated_threats": 3, "duplicate_threats_suppressed": 1, "max_depth_reached": 2}
+    },
+    {
+      "case_id": "m18-propagated-outcome-materialized",
+      "synthetic_probe": true,
+      "note": "PROPAGATED-OUTCOME CALIBRATION begins (Workstream M). A modeled program cancellation threatens an incumbent (direct) and propagates one hop to a dependent subcontractor; BOTH later resolve MATERIALIZED via explicit dated observations. Directional structured outcomes on probe subjects (no real-company future fact asserted). Distinguishes resolved DIRECT from resolved PROPAGATED.",
+      "subject": {"ref": "co_dir_root", "name": "Directional Root Inc", "uei": "UEIM18RT"},
+      "replay_as_of": "2024-01-01",
+      "outcome_as_of": "2025-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:m18root", "available_at": "2020-01-01", "recipient_uei": "UEIM18RT", "program_key": "prog:m18-root", "program_name": "Directional root program", "amount_usd": 200000000, "agency": "Department of the Army"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "program_key": "prog:m18-root", "available_at": "2023-06-01", "source_ref": "model:cancel:m18-root", "amount_delta_usd": 200000000, "evidence_strength": 4}
+      ],
+      "relationships": [
+        {"from_ref": "co_dir_root", "to_ref": "co_dir_dep", "to_name": "Directional Dependent LLC", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["dir:subaward:m18dep"], "available_at": "2021-01-01"}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-direct", "label": "MATERIALIZED", "observed_at": "2024-09-01", "source_id": "usaspending", "source_ref": "dir:m18:root-cancelled", "evidence_strength": 4}
+      ],
+      "propagated_outcome_observations": [
+        {"threat_id": "resolved-propagated", "label": "MATERIALIZED", "observed_at": "2025-02-01", "source_id": "usaspending", "source_ref": "dir:m18:dep-lost-subcontract", "evidence_strength": 4, "notes": "dependent lost its subcontract scope after the prime program was cancelled"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"], "propagated_threats": 1, "outcome_label": "MATERIALIZED", "propagated_outcome_label": "MATERIALIZED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m18-outcome-regulatory-materialized",
+      "synthetic_probe": true,
+      "note": "Resolved-outcome expansion. A REGULATORY_COMPLIANCE_EXPOSURE threat (modeled export-control mandate) resolved MATERIALIZED -- the compliance cost was incurred. Directional structured observation; grows the resolved-outcome denominator with a mechanism family under-represented in the resolved set.",
+      "subject": {"ref": "co_dir_reg", "name": "Directional Regulatory Inc"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "reg:dir-export-control", "target_name": "Directional export-control regime", "deterministic": true, "available_at": "2021-01-01", "source_ref": "dir:reg:held"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "reg:dir-export-control", "available_at": "2022-09-01", "source_ref": "model:mandate:dir", "evidence_strength": 3, "compliance_cost_usd": 8000000, "summary": "new export-control compliance mandate"}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-direct", "label": "MATERIALIZED", "observed_at": "2023-11-01", "source_id": "sec", "source_ref": "dir:reg:cost-incurred", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"], "outcome_label": "MATERIALIZED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m18-outcome-regulatory-avoided",
+      "synthetic_probe": true,
+      "note": "Resolved-outcome expansion. A REGULATORY_COMPLIANCE_EXPOSURE threat was AVOIDED -- the mandate was withdrawn/deferred before impact. AVOIDED stays TRUE_THREAT (the warning was correct at prediction time). Directional structured observation.",
+      "subject": {"ref": "co_dir_reg2", "name": "Directional Regulatory Avoid Inc"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "reg:dir-avoid", "target_name": "Directional regulation (avoid)", "deterministic": true, "available_at": "2021-01-01", "source_ref": "dir:reg2:held"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "reg:dir-avoid", "available_at": "2022-10-01", "source_ref": "model:mandate:dir2", "evidence_strength": 3, "compliance_cost_usd": 6000000, "summary": "proposed compliance mandate later withdrawn"}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-direct", "label": "AVOIDED", "observed_at": "2023-08-01", "source_id": "federal_register", "source_ref": "dir:reg2:withdrawn", "evidence_strength": 4, "notes": "the proposed rule was withdrawn before the compliance deadline"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"], "outcome_label": "AVOIDED", "detection_quality": "TRUE_THREAT"}
+    }
+  ]
+}

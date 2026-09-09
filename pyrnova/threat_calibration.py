@@ -140,6 +140,65 @@ def calibrate_threats(results: list[dict]) -> dict:
     }
 
 
+def propagated_outcome_calibration(results: list[dict]) -> dict:
+    """M18 (Workstream M) — begin distinguishing DIRECT-threat outcomes from PROPAGATED-threat outcomes.
+
+    A propagated threat is a weaker, inherited warning; whether it later materialized is a different
+    calibration question from the direct threat's. This reports resolved counts and confirmed precision
+    for each, each WITH its denominator, and honestly flags the (small) sample. Absence is never a false
+    alert on either side. Propagated resolution reads a case's ``propagated_outcome`` (resolved by
+    ``run_threat_case`` from ``propagated_outcome_observations``, future-excluded)."""
+    d_resolved = d_true = d_false = 0
+    p_total = p_resolved = p_true = p_false = 0
+    d_lead, p_lead = [], []
+    for r in results:
+        if r.get("threats"):
+            outcome = r.get("outcome") or {}
+            if outcome.get("resolved"):
+                d_resolved += 1
+                det = classify_detection(outcome.get("label"), r["threats"][0].get("confidence"))
+                if det == "TRUE_THREAT":
+                    d_true += 1
+                elif det == "FALSE_ALERT":
+                    d_false += 1
+                lt = _days_between(r["threats"][0].get("available_at"),
+                                   (outcome.get("basis") or {}).get("observed_at"))
+                if lt is not None:
+                    d_lead.append(lt)
+        prop = (r.get("propagation") or {}).get("propagated_threats") if r.get("propagation") else None
+        if prop:
+            p_total += len(prop)
+            po = r.get("propagated_outcome") or {}
+            if po.get("resolved"):
+                p_resolved += 1
+                det = classify_detection(po.get("label"), prop[0].get("confidence"))
+                if det == "TRUE_THREAT":
+                    p_true += 1
+                elif det == "FALSE_ALERT":
+                    p_false += 1
+                lt = _days_between(prop[0].get("available_at"), (po.get("basis") or {}).get("observed_at"))
+                if lt is not None:
+                    p_lead.append(lt)
+
+    def rate(n, d):
+        return round(n / d, 4) if d else None
+    return {
+        "resolved_direct": d_resolved,
+        "resolved_propagated": p_resolved,
+        "propagated_threats_total": p_total,
+        "direct_confirmed_precision": rate(d_true, d_true + d_false),
+        "direct_precision_denominator": d_true + d_false,
+        "propagated_confirmed_precision": rate(p_true, p_true + p_false),
+        "propagated_precision_denominator": p_true + p_false,
+        "direct_median_lead_time_days": median(d_lead) if d_lead else None,
+        "propagated_median_lead_time_days": median(p_lead) if p_lead else None,
+        "false_alert_from_absence": 0,
+        "small_sample_warning": (
+            "propagated-outcome calibration rests on very few resolved propagated threats; treat as "
+            "directional only" if p_resolved < 10 else None),
+    }
+
+
 def _evidence_family(evidence_id: str) -> str:
     """Coarse source-family bucket from an evidence id (the token before the first ':')."""
     token = str(evidence_id).split(":", 1)[0].strip().lower()

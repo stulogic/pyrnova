@@ -131,6 +131,67 @@ def ground_subaward_edges(
     return edges
 
 
+def exposed_prime_awards_from_subawards(
+    parsed: dict, prime_name: str, *, min_anchor_id_len: int = 6,
+) -> set:
+    """Establish a PRIME's incumbency from the authoritative sub-award PRIME fields (M18, 0 new calls).
+
+    A FSRS sub-award record names not only the subrecipient but the *prime* recipient and the globally
+    unique prime-award PIID it was issued under. So the same archived bytes that ground a
+    ``SUBCONTRACTOR_OF`` edge also authoritatively assert that ``prime_name`` HOLDS those prime awards —
+    which is exactly the "prime-side exposure evidence" M17 lacked for Torch's non-SAIC primes. This
+    returns the set of prime-award ids (length ``>= min_anchor_id_len``, so a short local order number
+    like ``"0002"`` can never manufacture a false anchor) on which ``prime_name`` is the prime recipient.
+
+    Passing this set as ``exposed_prime_award_ids`` to :func:`ground_subaward_edges` promotes that prime's
+    edge to a program-anchored (CONFIRMED / deterministic_native_id) real relationship — grounding a
+    SECOND real company relationship independent of SAIC<->Torch entirely from already-archived evidence.
+    """
+    def _norm(s: str) -> str:
+        return " ".join((s or "").upper().split())
+    want = _norm(prime_name)
+    ids: set[str] = set()
+    for s in parsed.get("subawards", []):
+        if _norm(s.get("prime") or "") != want:
+            continue
+        pid = str(s.get("prime_award_id") or "")
+        if len(pid) >= min_anchor_id_len:
+            ids.add(pid)
+    return ids
+
+
+def independence_metrics(edges: list[dict], chains: Optional[list[dict]] = None) -> dict:
+    """Compact relationship-diversity / independence rollup (Workstream K).
+
+    Prevents "20 real propagation cases that are all one underlying relationship" from reading as
+    breadth. ``edges`` are grounded relationship edges; optional ``chains`` describe realized propagation
+    chains (dicts with any of: ``root_ref``/``target_ref``/``relation``/``program``/``agency``/
+    ``source_family``/``observed_catalyst``). Simple counts only — no invented score.
+    """
+    edges = edges or []
+    pairs = {(e.get("from_ref"), e.get("to_ref")) for e in edges}
+    metrics = {
+        "relationship_edges": len(edges),
+        "unique_company_pairs": len(pairs),
+        "unique_relationship_types": sorted({e.get("relation") for e in edges if e.get("relation")}),
+        "distinct_primes": len({e.get("from_ref") for e in edges}),
+        "distinct_subs": len({e.get("to_ref") for e in edges}),
+    }
+    if chains is not None:
+        cpairs = {(c.get("root_ref"), c.get("target_ref")) for c in chains}
+        metrics.update({
+            "propagation_chains": len(chains),
+            "distinct_chain_company_pairs": len(cpairs),
+            "distinct_chain_roots": len({c.get("root_ref") for c in chains}),
+            "distinct_programs": len({c.get("program") for c in chains if c.get("program")}),
+            "distinct_agencies": len({c.get("agency") for c in chains if c.get("agency")}),
+            "distinct_source_families": sorted({c.get("source_family") for c in chains
+                                                if c.get("source_family")}),
+            "observed_catalyst_chains": sum(1 for c in chains if c.get("observed_catalyst")),
+        })
+    return metrics
+
+
 def summarize_relationship_graph(edges: list[dict]) -> dict:
     """Compact, denominator-honest rollup of a grounded relationship graph."""
     by_strength: dict[str, int] = {}
