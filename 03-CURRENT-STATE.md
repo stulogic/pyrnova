@@ -1,9 +1,37 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M14 CLOSED — multi-source expansion +
-cross-source chains; M2–M13 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M15 CLOSED — first-class threat intelligence +
+exposure graph; M2–M14 CLOSED)._
 
 ## Milestone status
+
+- **M15: CLOSED 2026-09-09.** First-class threat intelligence + exposure graph — threat as a durable
+  PEER of commercial consequence, not a negated opportunity or a generic alarm. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen M4–M11 corpora byte-for-byte unchanged; only `models.py` and
+  `ops.py` gained additive edits; new `pyrnova/threat.py`). New objects: `Exposure` (WHO/WHAT is exposed
+  to WHAT, with `join_method`/`link_class` so a weak fuzzy-name resemblance is a CANDIDATE, never a
+  CONFIRMED exposure), `Threat` (severity and confidence as **orthogonal ordinals**, never one magic
+  number; UNKNOWN valid; deterministic identity; `dual_opportunity_ref`), and `ThreatRejection`
+  (zero-threat is first-class). Engine (`threat.py`) implements **seven** evidence-safe mechanisms —
+  SANCTIONS_EXPOSURE, INCUMBENT_DISPLACEMENT, PROGRAM_CONTRACTION, PROGRAM_CANCELLATION_OR_DELAY,
+  REGULATORY_COMPLIANCE_EXPOSURE, ELIGIBILITY_OR_CERTIFICATION_RISK, CUSTOMER_CONCENTRATION — plus
+  duality (`link_duality`, shared `catalyst_id`, no duplicated facts), a `company_threat_surface`
+  (foundation for roadmap area 4), and append-only threat-outcome linkage (future-excluded; an unresolved
+  threat is never auto-labelled a false alarm). Severity is a magnitude band of a KNOWN dollar figure (no
+  invented probabilities); confidence is an ordinal from exposure link-class + catalyst strength.
+  `corpus_m15.json` extends the frozen lineage with **17 threat cases** (own point-in-time replay;
+  `scoring_v1` untouched): sanctions confirmed/dual/weak-reject/unknown, real Torch incumbency (award
+  `W31P4Q21F0038`, $623M, `examples/real_evidence/`), recompete-not-a-threat, program cancellation +
+  contraction, regulatory compliance, eligibility+dual, customer concentration, zero-threat, future
+  exclusion, severity/confidence split, threat evolution + outcome. Metrics (directional): 11 threats /
+  4 zero-threat rejections, 6 mechanism families exercised, severity {CRITICAL 2, HIGH 7, MODERATE 2}
+  distinct from confidence {HIGH 7, MEDIUM 3, LOW 1}, 2 dual-sided, 15 CONFIRMED / 4 INFERRED exposures,
+  2 weak candidates rejected, false_exposure_rate 0.0, temporal_leakage_violations 0. Sanctions cases run
+  REAL linkage semantics against the committed illustrative OFAC fixture; `tests/test_m15_real_ofac.py`
+  (guarded) proves the same code on the **19,365 real archived SDN designations**. Operations Panel gained
+  a thin read-only `threat_operations()` view. No STRIKE/threat explosion; no secret leakage; no temporal
+  leakage. Full suite: **373 passed**. Spec `docs/specs/M15_THREAT_INTELLIGENCE.md`; evidence
+  `docs/replay/M15_THREAT_INTELLIGENCE.md`.
 
 - **M14: CLOSED 2026-09-09.** Multi-source intelligence expansion + continuous operations. Five families
   now operational on real bytes across five distinct economic domains (USAspending, SAM, SEC EDGAR, OFAC,
@@ -421,6 +449,14 @@ cross-source chains; M2–M13 CLOSED)._
 - SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
 
 ## Exact next action
+
+M15 CLOSED (`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/replay/M15_THREAT_INTELLIGENCE.md`) — threat
+is first-class, exposure is explicitly modelled, and both peer commercial consequence. No milestone in
+progress; await the next brief. Roadmap area 1 is DELIVERED; areas 4 (company threat/opportunity surface)
+and 10 (thesis evolution) now have M15 foundations (`company_threat_surface`, append-only threat state)
+ready to build on when authorised. `scoring_v1`/`fit.py` remain frozen absent a justified milestone.
+
+### Prior next action (retained for continuity)
 
 M13 CLOSED (`docs/specs/M13_LIVE_OPERATIONS.md`, `docs/replay/M13_LIVE_OPERATIONS.md`). M2 CLOSED
 (`2026-09-09T07:14Z`, hash `574813de…`). M10–M12 CLOSED. Controlled live USAspending operation is proven

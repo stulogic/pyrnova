@@ -19,6 +19,24 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
+## P1 — deferred threat intelligence (M15 delivered the foundation)
+
+M15 delivered first-class threat intelligence + the exposure graph (roadmap area 1 → DELIVERED; see
+`docs/specs/M15_THREAT_INTELLIGENCE.md`). Carried-forward, not-yet-built threat work:
+
+- Exercise the remaining `EXPOSURE_RELATIONS` families with real archived evidence: supplier-dependency,
+  geography/facility, commodity-input, technology-substitution, procurement-vehicle (M15 exercised
+  sanctioned-counterparty, program/incumbency, regulation/certification, customer-concentration).
+- Measure threat selectivity against a **real event stream** (the M15 corpus is mechanism-dense by
+  design; the explosion guardrail must be proven on a live feed where most events reject).
+- Threat-outcome calibration at scale (threat precision once enough real outcomes resolve) via the
+  append-only threat-outcome ledger.
+- A real (non-probe) sanctions-exposure counterparty linkage once counterparty-relationship evidence is
+  archived; today's confirmed positives are clearly-labelled controlled probes against real designations.
+- Evidence-backed mitigation modelling (no autonomous action on threats — a roadmap boundary).
+
+Each still honours point-in-time truth, deterministic-vs-weak linkage, and no invented probability.
+
 ## P1 — deferred source expansion
 
 - Federal budgets, appropriations, and agency budget justifications.

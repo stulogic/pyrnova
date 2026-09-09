@@ -1,5 +1,19 @@
 # Pyrnova milestone history
 
+## Milestone 15 — CLOSED 2026-09-09
+
+- First-class threat intelligence + exposure graph (roadmap area 1 → DELIVERED). New `Exposure`/`Threat`/
+  `ThreatRejection` objects; evidence-safe exposure linkage (deterministic-identifier vs weak-candidate);
+  seven threat mechanisms; severity and confidence as orthogonal ordinals (no invented probability);
+  first-class zero-threat; threat/opportunity duality; company threat surface; append-only point-in-time
+  threat-outcome linkage. `pyrnova/threat.py` new; `models.py`/`ops.py` additive; `scoring_v1`/`fit.py`/
+  `replay.py`/frozen M4–M11 corpora byte-for-byte unchanged.
+- `corpus_m15.json`: 17 point-in-time threat cases (own replay). 11 threats / 4 zero-threat rejections,
+  6 mechanisms, 2 dual-sided, 1 real evidence-backed threat (Torch, award `W31P4Q21F0038`), 2 weak
+  candidates rejected, 0 temporal leakage. Real OFAC linkage proven on the 19,365 archived designations
+  (guarded test). Operations Panel gained a thin read-only threat view. Full suite: 373 passed. Details:
+  `docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/replay/M15_THREAT_INTELLIGENCE.md`.
+
 ## Foundation and commercial wedge
 
 - Capture Radar kernel established with USAspending and SAM adapters, deterministic evidence archive,

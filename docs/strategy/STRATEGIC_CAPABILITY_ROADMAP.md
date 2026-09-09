@@ -57,7 +57,7 @@ as extensions of the evidence graph, never as a replacement stack bolted on late
 Each area records: what it is, why it matters, the discipline that keeps it *Pyrnova* rather than
 speculation, and current status.
 
-### 1. First-class threat intelligence — `RECORDED`
+### 1. First-class threat intelligence — `DELIVERED` (M15, 2026-09-09)
 
 Threat becomes a first-class intelligence object, not merely "negative opportunity evidence." Model the
 chain: **EXPOSURE → CATALYST → THREAT MECHANISM → AFFECTED ASSET / REVENUE / POSITION → PROBABILITY →
@@ -68,6 +68,19 @@ exposure, regulatory liability, technology substitution, buyer-priority changes,
 away from a company's capabilities. Discipline: a threat is only asserted from retained evidence with
 explicit probability/severity/horizon; no unsupported alarm. Mirrors the opportunity path, reusing the
 consequence engine (`catalysts.py`/mechanism taxonomy) rather than a parallel stack.
+
+**Delivered in M15** (`docs/specs/M15_THREAT_INTELLIGENCE.md`): first-class `Exposure`/`Threat`/
+`ThreatRejection` objects; an evidence-safe exposure graph (deterministic-identifier vs weak-candidate);
+seven threat mechanisms; severity and confidence as orthogonal ordinals (no invented probability);
+first-class zero-threat; threat/opportunity duality; a company threat surface; append-only point-in-time
+threat-outcome linkage. **Carried forward** (newly surfaced, `RECORDED`): (a) exercise the remaining
+`EXPOSURE_RELATIONS` families with real evidence — supplier-dependency, geography/facility,
+commodity-input, technology-substitution, procurement-vehicle; (b) a **live threat-feed selectivity
+measurement** (the M15 corpus is mechanism-dense by design; the explosion guardrail must be measured
+against a real event stream where most events reject); (c) threat-outcome **calibration at scale**
+(threat precision once enough outcomes resolve); (d) a real (non-probe) sanctions-exposure counterparty
+linkage once counterparty-relationship evidence is archived; (e) evidence-backed mitigation modelling
+(no autonomous action). These sit below active authority until a justified milestone.
 
 ### 2. Negative-space intelligence — `RECORDED`
 
@@ -88,7 +101,7 @@ amount, probability, timing, and provenance at each hop. Extends existing capita
 and upstream to political intent. Discipline: every hop is evidence-backed with confidence and temporal
 ordering; inferred hops are auditable, never silently asserted.
 
-### 4. Company opportunity surface — `RECORDED`
+### 4. Company opportunity surface — `RECORDED` (M15 foundation: `company_threat_surface`)
 
 Continuously model "everything in the observable economy becoming more or less favorable to this
 company," combining opportunities, threats, buyers, capabilities, incumbencies, geography, partners,
@@ -135,7 +148,7 @@ says another, a procurement action contradicts guidance). Discipline: **preserve
 intelligence rather than silently resolving them.** Contradictions are retained, surfaced, and
 provenance-linked, not auto-collapsed. Reinforces the "unknown stays unknown" doctrine.
 
-### 10. Intelligence memory / thesis evolution — `RECORDED`
+### 10. Intelligence memory / thesis evolution — `RECORDED` (M15 foundation: append-only threat state + evolution cases)
 
 Persist how an intelligence thesis evolves over time (weak WATCH → funding → buyer confirmation →
 capability fit → PRIME → solicitation → award → observed outcome). Supports auditability, customer
@@ -202,3 +215,5 @@ without a later fundamental redesign, while keeping Pyrnova's differentiated cen
 | Date       | Area(s) | Change                                              | Reference |
 |------------|---------|-----------------------------------------------------|-----------|
 | 2026-09-09 | 1–15    | Roadmap created; all 15 areas recorded (`RECORDED`) | Phase 0   |
+| 2026-09-09 | 1       | Area 1 → `DELIVERED` (M15); 5 follow-on threat capabilities carried forward (`RECORDED`) | M15 |
+| 2026-09-09 | 4, 10   | Noted M15 foundations (`company_threat_surface`; append-only threat state + evolution) | M15 |

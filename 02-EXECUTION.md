@@ -1,9 +1,24 @@
 # Pyrnova execution authority
 
-_Current execution window: M14 CLOSED (multi-source intelligence expansion + continuous operations,
-2026-09-09); M2–M13 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M15 CLOSED (first-class threat intelligence + exposure graph, 2026-09-09);
+M2–M14 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 15 — CLOSED 2026-09-09 (first-class threat intelligence + exposure graph)
+
+Spec `docs/specs/M15_THREAT_INTELLIGENCE.md` (canonical semantics); evidence
+`docs/replay/M15_THREAT_INTELLIGENCE.md`. Additive only: `scoring_v1`/`fit.py`/`replay.py`/frozen M4–M11
+corpora byte-for-byte unchanged (additive edits only to `models.py`/`ops.py`; new `pyrnova/threat.py`).
+Threat is a first-class PEER of commercial consequence via `Exposure` + `Threat` + `ThreatRejection`,
+with severity and confidence kept as orthogonal ordinals (no invented probability). **Seven** evidence-
+safe mechanisms; sanctions linkage is deterministic-identifier-only (weak name matches rejected);
+zero-threat is first-class; duality cross-links a threat and an opportunity sharing a catalyst without
+duplicating facts; `company_threat_surface` and append-only threat-outcome linkage seed roadmap areas 4
+and 10. `corpus_m15.json` extends the frozen lineage with 17 point-in-time threat cases (own replay);
+one real evidence-backed threat (Torch, award `W31P4Q21F0038`); 2 dual-sided cases. Real OFAC linkage
+proven on the 19,365 archived designations (guarded test). Operations Panel gained a thin read-only
+threat view. No threat/temporal/secret leakage; full suite **373 passed**. No further M15 action.
 
 ### Milestone 14 — CLOSED 2026-09-09 (multi-source intelligence expansion + continuous operations)
 
@@ -120,7 +135,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M14 CLOSED — no milestone in progress; await the next brief.
+1. M2–M15 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`
