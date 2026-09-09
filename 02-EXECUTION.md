@@ -1,8 +1,21 @@
 # Pyrnova execution authority
 
-_Current execution window: M13 CLOSED (controlled live operations, 2026-09-09); M2–M12 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M14 IN PROGRESS (multi-source intelligence expansion + continuous operations);
+M2–M13 closed · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 14 — IN PROGRESS (multi-source intelligence expansion + continuous operations)
+
+Spec: `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`; manifest: `docs/specs/SOURCE_MANIFEST.md` (machine-
+readable `pyrnova/sources/registry.py`). Additive only: `scoring_v1`/`fit.py`/frozen corpora unchanged;
+the M12/M13 ingestion primitives (`control.py`/`source_state.py`/`scheduler.py`/`live_ops.py`/`archive.py`)
+are reused without redesign (Workstream 2 finding). M14 broadens coverage to nine registered families
+across distinct economic domains — adding `sbir` (federal R&D precursor) and `sanctions_ofac`
+(sanctions/trade exposure) — proves cross-source intelligence chains (SBIR→USAspending by UEI; SEC+
+USAspending company linkage) reusing `chains.py`/`multisource.py`, and enforces conservative per-source
+live-call budgets (archive-first). Strategic roadmap: `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`.
+Acceptance gate in the M14 spec; close only on honest breadth, otherwise document blockers and leave open.
 
 ### Milestone 13 — CLOSED 2026-09-09
 
@@ -25,17 +38,11 @@ material, stable identity + idempotent ingest + cross-source separation, evidenc
 deterministic disposition, one persisted live adjudication, full regression) passed. Details in
 `03-CURRENT-STATE.md` and `06-HISTORY.md`. No further M2 action.
 
-### Milestone 10 — ACTIVE (environment unblocked 2026-09-09)
+### Milestone 10 — CLOSED 2026-09-09
 
-M10 (multi-source company intelligence + subcontract/teaming resolution) is specified in
-`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`. Its prior blocker (org egress denying the keyless data
-hosts, no `SAM_API_KEY`) is lifted: `SAM_API_KEY` present, `api.usaspending.gov` POST → 200,
-`data.sec.gov` GET → 200 (with a descriptive User-Agent). Execute the spec end to end with its 21-point
-acceptance gate unweakened: ≥2 real source families with material evidence beyond USAspending,
-point-in-time filtering with a hard temporal-leakage gate, `fit.py`/`scoring_v1` unchanged (M10 is
-additive grounding + data + metrics), corpus extends the frozen `corpus_m9.json`, and real-profile
-metrics reported separately from synthetic. Do not fabricate evidence; archive-once/replay-many for all
-real bytes.
+M10 (multi-source company intelligence + subcontract/teaming resolution) passed its 21-point acceptance
+gate offline on real archived evidence (`git` close commit `5a2e819`; see `03-CURRENT-STATE.md` and
+`docs/replay/M10_MULTISOURCE_CALIBRATION.md`). `fit.py`/`scoring_v1` unchanged. No further M10 action.
 
 ### Milestone 3 — CLOSED
 
@@ -105,19 +112,19 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2 CLOSED — no further action (external gate passed 2026-09-09, hash `574813de…`).
-2. M10 (ACTIVE): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` end to end. The environment is now
-   unblocked (SAM key present; USAspending + SEC reachable). Ground ≥2 real source families with material
-   evidence beyond USAspending, keep the point-in-time / temporal-leakage gate hard, extend the frozen
-   `corpus_m9.json`, and report real metrics separately from synthetic. Do not fabricate evidence or
-   weaken the 21-point gate.
-3. Do not alter `scoring_v1` or `fit.py` semantics (M10 is additive). Do not begin M11: it is strictly
-   gated on a clean M10 close, which has not yet occurred.
+1. M2–M13 CLOSED — no further action.
+2. M14 (IN PROGRESS): execute `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`. Reuse the M12/M13 ingestion
+   primitives without redesign; add the `sbir` and `sanctions_ofac` families offline-first (archive-first,
+   conservative live-call budgets); demonstrate ≥2 cross-source chains reusing `chains.py`/`multisource.py`;
+   keep point-in-time truth, provenance, and weak-join rejection intact.
+3. Do not alter `scoring_v1` or `fit.py` semantics (M14 is additive). Prefer bulk/archive over live calls;
+   never spend SAM/authenticated quota on historical development.
 
 ## Active constraints
 
 - Preserve current M2/M3 behavior unless a reproducible defect requires a narrow repair.
 - No scoring change for metric cosmetics or a single case.
-- No frontend, source sprawl, commercial automation, or unrelated refactor.
+- No frontend, source sprawl, commercial automation, or unrelated refactor. New sources must pass the
+  `M4_SOURCE_EXPANSION.md` test and honor `SOURCE_INGESTION.md`.
 - Keep `.env`, live archives, local state, customer data, and generated outputs out of Git.
 - Use `~/Documents/Pyrnova` on `main` as the only working copy.
