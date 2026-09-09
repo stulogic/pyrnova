@@ -1,5 +1,29 @@
 # Pyrnova milestone history
 
+## Milestone 17 — CLOSED 2026-09-09
+
+- Real relationship propagation + continuous threat operations. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m16` byte-for-byte unchanged; new
+  `relationships.py`; additive edits to `selectivity.py`/`scheduler.py`/`threat.py`/`threat_calibration.py`/
+  `ops.py`).
+- Real relationship graph grounding (`ground_subaward_edges`): archived USAspending sub-award bytes → 22
+  real `SUBCONTRACTOR_OF` edges (1 program-anchored deterministic SAIC, 11 authoritative-repeat, 10
+  single-occurrence weak/terminating); a short local order number never manufactures a false anchor.
+- Two real, deterministic SAIC→Torch propagation chains (Prime-Award-ID-anchored): GSA `47QFSA20F0057`
+  ($1.43B) `PROGRAM_CONTRACTION` and Army `W31P4Q21F0095` ($825.8M) `PROGRAM_CANCELLATION_OR_DELAY`, each
+  propagating one hop to Torch with degraded (never increased) severity/confidence; corpus edges match
+  what grounding derives from the archived bytes.
+- Continuous selectivity wired into the scheduler (`record_selectivity_run`/`selectivity_report`,
+  persisted append-only in the durable M12/M13 source-state doc). Threat quality over time
+  (`threat_quality_over_time`/`summarize_m17`): per-mechanism precision with denominators + source-family
+  contribution + propagation quality, from append-only predictions + later outcomes. Company threat
+  network view (`company_threat_network_view`).
+- `corpus_m17` (11 cases) extends `corpus_m16` → 46 cases all pass. 32 direct threats, 5 propagated across
+  4 chains (2 real), 2 beneficiary opportunities, max depth 2, no explosion; resolved outcomes 5 → 12,
+  precision 0.9167 over 12 (one honest FALSE_ALARM), median lead 336 days, false_alert_from_absence 0.
+  0 live API calls. Full suite: 428 passed. See `docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`,
+  `docs/replay/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`.
+
 ## Milestone 16 — CLOSED 2026-09-09
 
 - Threat calibration + exposure expansion + live selectivity + cross-company propagation. Additive only

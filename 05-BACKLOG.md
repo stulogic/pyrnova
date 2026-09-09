@@ -22,23 +22,28 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 ## P1 — deferred threat intelligence (M15+M16 delivered the foundation)
 
 M15 delivered first-class threat intelligence + the exposure graph; M16 added exposure-family expansion,
-real event-stream selectivity, bounded cross-company propagation, and a calibration framework
-(`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`).
-Carried-forward, not-yet-built threat work:
+real event-stream selectivity, bounded cross-company propagation, and a calibration framework; **M17**
+grounded a real relationship graph from archived sub-awards, proved two real deterministic SAIC→Torch
+propagation chains, wired the selectivity funnel into the scheduler, and grew calibration to 12 resolved
+outcomes (`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`,
+`docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`). Carried-forward, not-yet-built threat work:
 
 - Remaining `EXPOSURE_RELATIONS` families still unexercised: commodity-input, procurement-vehicle
   (supplier/technology/geography done in M16; sanctioned-counterparty/program/incumbency/regulation/
   certification/customer-concentration in M15).
-- Seed a **real propagation case from archived sub-award/teaming edges** (M10 Torch sub-awards) in place
-  of illustrative relationship edges; the propagation semantics are proven, the real edges are the gap.
-- Wire the **selectivity funnel into the live scheduler/`live_ops`** so it is measured continuously under
-  a per-source budget (M16 measured it on the archived OFAC batch).
-- Threat-outcome **calibration at scale** — precision currently rests on 5 resolved outcomes; grow the
-  resolved set before any non-directional claim.
+- **A second real company relationship** for propagation. M17's two real chains both run through the
+  SAIC↔Torch pair (distinct programs, one company relationship). Archiving prime-side exposure evidence
+  for another of Torch's real primes (Parsons/KBR/NTSI have real sub-award edges but no archived
+  prime-award exposure yet), or a distinct prime↔sub pair, would give a second independent real chain.
+- **Real adverse-event feeds** so the direct-threat catalyst is archived, not modeled: BIS/export
+  controls, WARN/facility closure, regulatory enforcement, program/budget status — added only when they
+  materially improve exposure/outcome evidence and pass the M4 source test; never for source count.
+- Threat-outcome **calibration at scale** — precision now rests on 12 resolved outcomes (was 5); keep
+  growing the resolved set with real evidence before any non-directional per-mechanism claim.
+- Run the continuous selectivity funnel under a **live per-source budget** (`live_ops`), building on
+  M17's scheduler integration (M16/M17 measured it offline on archived batches).
 - A real (non-probe) sanctions-exposure counterparty linkage once counterparty-relationship evidence is
   archived; today's confirmed positives are clearly-labelled controlled probes against real designations.
-- Threat-relevant source families (BIS/export-controls, WARN, facility/closure) — only when they
-  materially improve exposure evidence and pass the M4 source test; never for source count.
 - Evidence-backed mitigation modelling (no autonomous action on threats — a roadmap boundary).
 
 Each still honours point-in-time truth, deterministic-vs-weak linkage, and no invented probability.

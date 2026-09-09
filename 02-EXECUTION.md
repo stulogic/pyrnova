@@ -1,9 +1,26 @@
 # Pyrnova execution authority
 
-_Current execution window: M16 CLOSED (threat calibration + exposure expansion + live selectivity,
-2026-09-09); M2–M15 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M17 CLOSED (real relationship propagation + continuous threat operations,
+2026-09-09); M2–M16 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 17 — CLOSED 2026-09-09 (real relationship propagation + continuous threat operations)
+
+Spec `docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md` (canonical); evidence
+`docs/replay/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`. Additive only: `scoring_v1`/`fit.py`/`replay.py`/
+frozen corpora (incl. `corpus_m16`) byte-for-byte unchanged; new `relationships.py`; additive edits to
+`selectivity.py`/`scheduler.py`/`threat.py`/`threat_calibration.py`/`ops.py`. Grounds a REAL relationship
+graph from archived sub-awards (22 real `SUBCONTRACTOR_OF` edges; strength mapped honestly:
+program-anchored deterministic → CONFIRMED, repeat → INFERRED, single occurrence → weak/terminating);
+proves **two real, deterministic SAIC→Torch propagation chains** (Prime-Award-ID-anchored; severity/
+confidence degrade, never increase; no explosion); wires the selectivity funnel into normal scheduler
+operation (`record_selectivity_run`/`selectivity_report`, persisted in the durable M12/M13 source-state
+doc); measures **threat quality over time** (per-mechanism precision with denominators, source
+contribution) from append-only predictions + later outcomes; adds a **company threat network view**.
+`corpus_m17` (11 cases) extends `corpus_m16` → **46 cases all pass**; resolved outcomes **5 → 12**,
+precision **0.9167 over 12**, median lead **336 days**. **0 live API calls**; full suite **428 passed**.
+No further M17 action.
 
 ### Milestone 16 — CLOSED 2026-09-09 (threat calibration + exposure expansion + live selectivity)
 
@@ -148,7 +165,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M16 CLOSED — no milestone in progress; await the next brief.
+1. M2–M17 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`

@@ -1,9 +1,35 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M16 CLOSED — threat calibration + exposure
-expansion + live selectivity; M2–M15 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M17 CLOSED — real relationship propagation +
+continuous threat operations; M2–M16 CLOSED)._
 
 ## Milestone status
+
+- **M17: CLOSED 2026-09-09.** Real relationship propagation + continuous threat operations. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m16` byte-for-byte unchanged; new
+  `relationships.py`; additive edits to `selectivity.py`/`scheduler.py`/`threat.py`/`threat_calibration.py`/
+  `ops.py`). **Real relationship graph grounding** (`relationships.ground_subaward_edges`): archived
+  USAspending sub-award bytes → 22 real `SUBCONTRACTOR_OF` edges (1 program-anchored deterministic, 11
+  authoritative-repeat, 10 single-occurrence weak/terminating); a short local order number can never
+  manufacture a false deterministic anchor. **Two real, deterministic propagation chains** — Torch is a
+  repeat subcontractor to SAIC on the **same** prime awards SAIC holds (Prime-Award-ID matched): GSA
+  `47QFSA20F0057` ($1.43B) → `PROGRAM_CONTRACTION` on SAIC → propagated one hop to Torch (HIGH/MEDIUM);
+  Army `W31P4Q21F0095` ($825.8M) → `PROGRAM_CANCELLATION_OR_DELAY` → propagated to Torch. Severity/
+  confidence degrade and never increase (proven per-threat); corpus edges are the same edges grounding
+  derives from the archived bytes. **Continuous selectivity** (`selectivity.source_run_funnel` +
+  `SourceScheduler.record_selectivity_run`/`selectivity_report`): the exposure→threat funnel persists per
+  source run in the durable M12/M13 source-state doc (append-only, bounded, empty-safe) — not a second
+  metrics store. **Threat quality over time** (`threat_calibration.threat_quality_over_time` +
+  `threat.summarize_m17`): durable aggregates from append-only predictions + later outcomes (per-mechanism
+  precision with denominators, source-family contribution, propagation quality). **Company threat network
+  view** (`ops.company_threat_network_view`): direct + inbound-propagated + outbound-network threats for
+  one company with relationship paths + outcome status. `corpus_m17` (11 new cases) extends `corpus_m16`
+  → 35 → **46 cases all pass**. Merged metrics: 32 direct threats, **5 propagated across 4 chains (2
+  real)**, 2 beneficiary opportunities, max depth 2 (no explosion), 0 cycles/duplicates; **resolved
+  outcomes 5 → 12**, confirmed precision **0.9167 over 12** (one honest FALSE_ALARM), median lead **336
+  days**, `false_alert_from_absence` 0. **0 live API calls**; full suite **428 passed**. Spec
+  `docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`; evidence
+  `docs/replay/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`.
 
 - **M16: CLOSED 2026-09-09.** Threat calibration + exposure-family expansion + real-stream selectivity +
   cross-company propagation. Additive only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl.
@@ -472,12 +498,15 @@ expansion + live selectivity; M2–M15 CLOSED)._
 
 ## Exact next action
 
-M16 CLOSED (`docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`,
-`docs/replay/M16_THREAT_CALIBRATION_PROPAGATION.md`) — Pyrnova stays selective on a real 19k-event stream,
-models supplier/technology/geography exposure families, propagates exposure safely across company
-relationships, and calibrates historical warnings. No milestone in progress; await the next brief.
-`scoring_v1`/`fit.py` remain frozen absent a justified milestone. See the M16 spec's limitations for the
-directional (small-N) calibration and illustrative-edge caveats.
+M17 CLOSED (`docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`,
+`docs/replay/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`) — Pyrnova now follows a REAL economic relationship
+graph (grounded from archived sub-awards), propagates threats across two real deterministic SAIC→Torch
+chains without an alarm explosion, measures the selectivity funnel continuously as part of source
+operation, and calibrates threat quality over time (resolved outcomes 5 → 12, precision 0.9167 with
+denominator). No milestone in progress; await the next brief. `scoring_v1`/`fit.py` remain frozen absent
+a justified milestone. See the M17 spec's limitations: one real company relationship (SAIC↔Torch)
+grounds both chains; a second real company pair and real adverse-event feeds (BIS/WARN/enforcement) are
+the highest-value next grounding (recorded in `05-BACKLOG.md` / roadmap).
 
 ### Prior next action (retained for continuity)
 

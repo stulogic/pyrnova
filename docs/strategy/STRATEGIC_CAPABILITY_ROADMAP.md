@@ -87,8 +87,20 @@ still on 5 resolved outcomes (needs volume); (d) still open; (e) still open.
 teaming edges** (M10 Torch sub-awards) rather than illustrative edges; (g) **wire selectivity into the
 live scheduler/live_ops** so the funnel is measured continuously under budget; (h) **threat-relevant
 source families** (BIS/export-controls, WARN notices, facility/closure data) — deferred in M16 (none
-needed; never add a source for count) but the natural next exposure-evidence expansion. These sit below
-active authority until a justified milestone.
+needed; never add a source for count) but the natural next exposure-evidence expansion.
+
+**Advanced in M17** (`docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`): (f) **DONE** — a real
+relationship graph is grounded from archived sub-awards (`relationships.ground_subaward_edges`; edge
+strength mapped honestly to propagation behavior) and drives **two real, deterministic SAIC→Torch
+propagation chains** (Prime-Award-ID-anchored; no explosion; confidence never increases). (g) **DONE at
+the scheduler layer** — the selectivity funnel is persisted per source run in the durable source-state
+doc (`record_selectivity_run`/`selectivity_report`); a live per-source-budget run of it remains open.
+(c) advanced — resolved outcomes grew 5 → 12 (precision 0.9167 with denominator); still needs real
+volume. (h) still open (no source added — none needed). **Newly surfaced in M17** (`RECORDED`): (i) a
+**second real company relationship** for an independent real chain (M17's two chains share the SAIC↔Torch
+pair — needs archived prime-side exposure for another real prime, or a distinct prime↔sub pair); (j) a
+**company threat network view** was delivered (`ops.company_threat_network_view`) as an M17 foundation
+for area 4 below. These sit below active authority until a justified milestone.
 
 ### 2. Negative-space intelligence — `RECORDED`
 
@@ -226,3 +238,4 @@ without a later fundamental redesign, while keeping Pyrnova's differentiated cen
 | 2026-09-09 | 1       | Area 1 → `DELIVERED` (M15); 5 follow-on threat capabilities carried forward (`RECORDED`) | M15 |
 | 2026-09-09 | 4, 10   | Noted M15 foundations (`company_threat_surface`; append-only threat state + evolution) | M15 |
 | 2026-09-09 | 1       | M16 advanced area 1 (3 more families, live selectivity, propagation, calibration); 3 new follow-ons (f,g,h) recorded | M16 |
+| 2026-09-09 | 1, 4    | M17 advanced area 1 (real relationship graph + 2 real propagation chains (f DONE), scheduler selectivity (g), calibration 5→12); company threat network view (area-4 foundation); follow-ons (i,j) recorded | M17 |
