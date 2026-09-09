@@ -138,3 +138,100 @@ def calibrate_threats(results: list[dict]) -> dict:
             "threat calibration rests on very few resolved outcomes; precision is directional, not a "
             "stable rate" if resolved_n < 20 else None),
     }
+
+
+def _evidence_family(evidence_id: str) -> str:
+    """Coarse source-family bucket from an evidence id (the token before the first ':')."""
+    token = str(evidence_id).split(":", 1)[0].strip().lower()
+    return token or "unknown"
+
+
+def threat_quality_over_time(results: list[dict]) -> dict:
+    """M17 — durable threat-quality aggregates derived from append-only predictions + later outcomes.
+
+    Answers, over time and WITHOUT mutating any original prediction: how many warnings were issued,
+    resolved, materialized, mitigated/avoided, delayed, false-alerted, or remain unresolved; the median
+    lead time; per-mechanism reliability (precision reported only WITH its denominator); and which source
+    families contribute *useful* (resolved-true) warning signal. Absence is never a false alert.
+    """
+    per_mech: dict[str, dict[str, int]] = {}
+    family_useful: dict[str, int] = {}
+    family_total: dict[str, int] = {}
+    lead_times = []
+    issued = resolved = materialized = mitig_avoided = delayed = false_alerts = true_threats = 0
+
+    for r in results:
+        if not r.get("threats"):
+            continue
+        threat = r["threats"][0]
+        issued += 1
+        mech = threat.get("mechanism", "UNKNOWN")
+        outcome = r.get("outcome") or {}
+        label = outcome.get("label")
+        detection = classify_detection(label, threat.get("confidence"))
+        families = {_evidence_family(e) for e in (threat.get("evidence_ids") or [])} or {"unknown"}
+        for fam in families:
+            family_total[fam] = family_total.get(fam, 0) + 1
+
+        mrec = per_mech.setdefault(mech, {"issued": 0, "resolved": 0, "true": 0, "false": 0})
+        mrec["issued"] += 1
+        if not outcome.get("resolved"):
+            continue
+        resolved += 1
+        mrec["resolved"] += 1
+        if detection == "TRUE_THREAT":
+            true_threats += 1
+            mrec["true"] += 1
+            for fam in families:
+                family_useful[fam] = family_useful.get(fam, 0) + 1
+        elif detection == "FALSE_ALERT":
+            false_alerts += 1
+            mrec["false"] += 1
+        if label == "MATERIALIZED":
+            materialized += 1
+        elif label in ("MITIGATED", "AVOIDED"):
+            mitig_avoided += 1
+        elif label == "DELAYED":
+            delayed += 1
+        observed_at = (outcome.get("basis") or {}).get("observed_at")
+        lt = _days_between(threat.get("available_at"), observed_at)
+        if lt is not None:
+            lead_times.append(lt)
+
+    def rate(n, d):
+        return round(n / d, 4) if d else None
+
+    mechanism_reliability = {
+        mech: {
+            "issued": v["issued"], "resolved": v["resolved"],
+            "confirmed_precision": rate(v["true"], v["true"] + v["false"]),
+            "precision_denominator": v["true"] + v["false"],
+        }
+        for mech, v in sorted(per_mech.items())
+    }
+    source_contribution = {
+        fam: {"threats_backed": family_total[fam],
+              "resolved_true_backed": family_useful.get(fam, 0)}
+        for fam in sorted(family_total)
+    }
+    return {
+        "warnings_issued": issued,
+        "resolved": resolved,
+        "unresolved": issued - resolved,
+        "materialized": materialized,
+        "mitigated_or_avoided": mitig_avoided,
+        "delayed": delayed,
+        "false_alerts": false_alerts,
+        "confirmed_true": true_threats,
+        "resolution_rate": rate(resolved, issued),
+        "confirmed_precision": rate(true_threats, true_threats + false_alerts),
+        "confirmed_precision_denominator": true_threats + false_alerts,
+        "median_lead_time_days": median(lead_times) if lead_times else None,
+        "lead_time_sample": len(lead_times),
+        "mechanism_reliability": mechanism_reliability,
+        "source_family_contribution": source_contribution,
+        "false_alert_from_absence": 0,
+        "small_sample_warning": (
+            "threat-quality rates rest on few resolved outcomes; treat per-mechanism precision as "
+            "directional" if resolved < 20 else None),
+    }

@@ -1131,3 +1131,40 @@ def summarize_m16(results: list[dict]) -> dict:
         "calibration": calibrate_threats(results),
     })
     return base
+
+
+def summarize_m17(results: list[dict]) -> dict:
+    """M17 metrics: everything ``summarize_m16`` reports, plus propagation-quality detail (Workstream G)
+    and durable threat-quality-over-time (Workstreams D/F). Additive; never republishes a rate without
+    its denominator."""
+    from .threat_calibration import threat_quality_over_time
+
+    base = summarize_m16(results)
+    propagated = [t for r in results if r.get("propagation")
+                  for t in r["propagation"]["propagated_threats"]]
+    pstats = [r["propagation"]["stats"] for r in results if r.get("propagation")]
+    depths = [t["meta"]["propagation_depth"] for t in propagated if t.get("meta")]
+    real_prop_cases = sum(1 for r in results if r.get("real_subject") and r.get("propagation")
+                          and r["propagation"]["stats"]["propagated_threats"] > 0)
+    base["propagation_quality"] = {
+        "direct_threats": base["direct_threats"],
+        "propagated_threats": base["propagated_threats"],
+        "real_propagation_cases": real_prop_cases,
+        "propagation_chains": sum(1 for s in pstats if s["propagated_threats"] > 0),
+        "beneficiary_opportunities": base["beneficiary_opportunities"],
+        "avg_propagation_depth": (round(sum(depths) / len(depths), 3) if depths else None),
+        "max_propagation_depth": base["max_propagation_depth"],
+        "cycles_prevented": base["cycles_prevented"],
+        "duplicate_propagation_suppressed": base["duplicate_propagation_suppressed"],
+        "weak_or_exhausted_terminations": base["weak_propagation_terminations"],
+        # A propagated threat's confidence is ALWAYS <= its root's — proven per-threat, not asserted.
+        "confidence_never_increases": all(
+            CONFIDENCE_LEVELS.index(t["confidence"])
+            <= CONFIDENCE_LEVELS.index(next(
+                (d["confidence"] for r in results for d in r["threats"]
+                 if d["id"] == t["meta"].get("root_threat_id")), t["confidence"]))
+            for t in propagated if t.get("meta")),
+        "propagation_explosion": base["propagated_threats"] > base["direct_threats"],
+    }
+    base["threat_quality_over_time"] = threat_quality_over_time(results)
+    return base
