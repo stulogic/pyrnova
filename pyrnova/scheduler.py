@@ -302,7 +302,17 @@ class SourceScheduler:
                 return SourceJobResult(source_id, SKIPPED_OFFLINE, eff_mode.value, fp,
                                        reason="OFFLINE: no cached response and no fixture bytes",
                                        checkpoint=self.state.get_checkpoint(source_id))
-            sha = self._archive_and_index(source_id, fp, offline_bytes, request, retention_tier)
+            try:
+                sha = self._archive_and_index(source_id, fp, offline_bytes, request, retention_tier)
+            except Exception as exc:  # noqa: BLE001 — a storage fault must not crash the runner
+                control.record_failure("service", now=now)
+                retry = control.retry_metadata(control.breaker.consecutive_failures,
+                                               reason=f"archive/index failed: {exc}")
+                self._persist(source_id, control)
+                return SourceJobResult(source_id, ERROR, eff_mode.value, fp,
+                                       reason="archive/index failed on offline replay",
+                                       retry=_retry_dict(retry), error=str(exc),
+                                       checkpoint=self.state.get_checkpoint(source_id))
             control.record_cache_hit(request_fingerprint=fp)  # offline replay avoids a live call
             control.record_success(now=now, changed=changed)
             if checkpoint is not None:
@@ -345,7 +355,20 @@ class SourceScheduler:
                                    retry=_retry_dict(retry), error=str(exc),
                                    checkpoint=self.state.get_checkpoint(source_id))
 
-        sha = self._archive_and_index(source_id, fp, content, request, retention_tier)
+        try:
+            sha = self._archive_and_index(source_id, fp, content, request, retention_tier)
+        except Exception as exc:  # noqa: BLE001 — the live call already happened; count it, back off, no crash
+            # A storage fault AFTER a successful live fetch: the external call was spent, so record it as a
+            # failure (engaging backoff/circuit to prevent a retry storm under a persistent archive outage)
+            # and persist the control so the spent budget is durable. Downstream state is never half-written.
+            control.record_failure("service", now=now)
+            retry = control.retry_metadata(control.breaker.consecutive_failures,
+                                           reason=f"archive/index failed after live fetch: {exc}")
+            self._persist(source_id, control)
+            return SourceJobResult(source_id, ERROR, eff_mode.value, fp,
+                                   reason="archive/index failed after live fetch",
+                                   retry=_retry_dict(retry), error=str(exc),
+                                   checkpoint=self.state.get_checkpoint(source_id))
         control.record_success(now=now, changed=changed)
         if checkpoint is not None:
             self.state.set_checkpoint(source_id, checkpoint)
@@ -381,6 +404,16 @@ class SourceScheduler:
             snap = control.snapshot()
             operator = doc.get("operator") or {}
             spec = REGISTRY.get(sid)
+            # Surface the DURABLE budget ceiling from persisted state. control_for builds a fresh control
+            # without the caller's max_calls, so the snapshot's budget_limit would otherwise be null; the
+            # persisted budget (within the active epoch) is the authoritative operator view.
+            budget = doc.get("budget") or {}
+            budget_limit = snap.get("budget_limit")
+            budget_remaining = snap.get("budget_remaining")
+            if budget_limit is None and isinstance(budget.get("max_calls"), int):
+                budget_limit = budget["max_calls"]
+                made = budget.get("calls_made") if isinstance(budget.get("calls_made"), int) else 0
+                budget_remaining = max(0, budget_limit - made)
             rows.append({
                 "source_id": sid,
                 "name": spec.name if spec else sid,
@@ -389,8 +422,8 @@ class SourceScheduler:
                 "mode": self.effective_mode(sid).value,
                 "paused": bool(operator.get("paused")),
                 "paused_reason": operator.get("paused_reason") or "",
-                "budget_limit": snap.get("budget_limit"),
-                "budget_remaining": snap.get("budget_remaining"),
+                "budget_limit": budget_limit,
+                "budget_remaining": budget_remaining,
                 "circuit_state": snap.get("circuit_state"),
                 "next_permitted_poll": snap.get("next_permitted_poll"),
                 "cache_hits": snap.get("cache_hits"),

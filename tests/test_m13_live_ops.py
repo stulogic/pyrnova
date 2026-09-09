@@ -215,3 +215,95 @@ def test_usaspending_request_targets_the_public_search_endpoint():
 def test_usaspending_record_count_is_robust_to_garbage():
     assert usaspending_record_count(b"not json") == 0
     assert usaspending_record_count(json.dumps({"results": [1, 2, 3]}).encode()) == 3
+
+
+# ------------------------------------------------------------------ fault injection (WS-F)
+
+def test_health_surfaces_durable_budget_after_restart(tmp_path):
+    sched = _sched(tmp_path)
+    sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                  max_calls=3, fetcher=lambda rq: b'{"results":[]}')
+    fresh = _sched(tmp_path)  # simulate restart: health must still know the ceiling and remaining
+    row = fresh.health([SID])[0]
+    assert row["budget_limit"] == 3 and row["budget_remaining"] == 2
+
+
+def test_circuit_breaker_state_persists_across_restart(tmp_path):
+    sched = _sched(tmp_path)
+
+    def boom(rq):
+        raise RuntimeError("provider 500")
+
+    # Default failure threshold is 3; drive the breaker open.
+    for _ in range(3):
+        sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                      max_calls=10, fetcher=boom)
+    fresh = _sched(tmp_path)
+    assert fresh.control_for(SID).circuit_state.value == "open"
+    # A reborn scheduler must not call the fetcher while the circuit is open (no call storm).
+    called = {"n": 0}
+
+    def counting(rq):
+        called["n"] += 1
+        raise RuntimeError("should not run")
+
+    r = fresh.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                      max_calls=10, fetcher=counting)
+    assert r.action == "circuit_open" and called["n"] == 0
+    fresh.reset_breaker(SID)
+    assert _sched(tmp_path).control_for(SID).circuit_state.value == "closed"
+
+
+def test_archive_failure_after_live_fetch_is_handled_without_crash_or_storm(tmp_path):
+    from pyrnova.archive import LocalEvidenceArchive
+
+    class BoomArchive(LocalEvidenceArchive):
+        def put(self, *a, **k):
+            raise IOError("disk full")
+
+    st = SourceStateStore(tmp_path / "state")
+    sched = SourceScheduler(st, archive=BoomArchive(tmp_path / "arch"), budget_epoch="e")
+    calls = {"n": 0}
+
+    def fetch(rq):
+        calls["n"] += 1
+        return b'{"results":[]}'
+
+    # Threshold failures should open the circuit and stop calling the fetcher — no unbounded retry storm.
+    for _ in range(5):
+        r = sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                          max_calls=50, fetcher=fetch)
+        assert r.action in ("error", "circuit_open")  # never an unhandled exception
+    assert sched.control_for(SID).circuit_state.value == "open"
+    assert calls["n"] < 5  # the breaker stopped the storm before every attempt hit the network
+    # State is not half-written: the failed request was never indexed as a served response.
+    assert len(st.load(SID).get("requests") or {}) == 0
+
+
+def test_malformed_live_bytes_are_archived_without_corrupting_downstream(tmp_path):
+    sched = _sched(tmp_path)
+    runner = LiveRunner(sched, SID, mode="LIVE_SAFE", max_calls=5,
+                        fetcher=lambda rq: b"<<not json at all>>",
+                        record_counter=usaspending_record_count)
+    e = runner.run(usaspending_request(_payload("a")))
+    assert e.action == LIVE_FETCH           # archived exact bytes even though unparseable
+    assert e.records_returned == 0          # record counter degrades to 0, never raises
+    # Repeat is a clean cache hit — the malformed payload did not corrupt the dedupe index.
+    again = runner.run(usaspending_request(_payload("a")))
+    assert again.action == CACHE_HIT
+
+
+def test_budget_exhaustion_never_invokes_the_fetcher(tmp_path):
+    sched = _sched(tmp_path)
+    calls = {"n": 0}
+
+    def fetch(rq):
+        calls["n"] += 1
+        return b'{"results":[]}'
+
+    sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                  max_calls=1, fetcher=fetch)
+    assert calls["n"] == 1
+    r = sched.run_job(SID, request=usaspending_request(_payload("b")), mode="LIVE_SAFE",
+                      max_calls=1, fetcher=fetch)
+    assert r.action == "skipped_budget" and calls["n"] == 1  # no call attempted once budget is gone
