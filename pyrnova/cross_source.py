@@ -168,6 +168,25 @@ def corporate_procurement_linkage(
     }
 
 
+def persist_chain(store: Any, chain: dict, *, chain_id: str, title: str) -> dict:
+    """Append a compact, durable record of a demonstrated cross-source chain for the Operations Panel.
+
+    Stores only the summary the panel needs (families, join counts, confidence, lead time) — not raw
+    evidence. Uses the engine's append-only JSONL contract (`state.StateStore`)."""
+    record = {
+        "id": chain_id,
+        "title": title,
+        "families": chain.get("families", []),
+        "cross_family_accepted": len(chain.get("cross_family_accepted_joins", [])),
+        "rejected_weak_joins": len(chain.get("rejected_weak_joins", [])),
+        "deferred_joins": len(chain.get("deferred_joins", [])),
+        "chain_confidence": (chain.get("chain_confidence") or {}).get("value"),
+        "lead_time_days": chain.get("lead_time_days"),
+    }
+    store.append("cross_source_chains", record)
+    return record
+
+
 def _iso_date(value: Any) -> Optional[str]:
     if value is None:
         return None
@@ -200,4 +219,5 @@ __all__ = [
     "usaspending_award_records",
     "build_cross_source_chain",
     "corporate_procurement_linkage",
+    "persist_chain",
 ]

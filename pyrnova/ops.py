@@ -84,7 +84,38 @@ class OperatorConsole:
         report["configured"] = True         # avoided, circuit state, poll cadence + next_poll_at, due
         # M13: the operating-cost / call-telemetry view — "what does source operation cost in calls?"
         report["operating_cost"] = operating_cost_report(scheduler)
+        # M14: the broader source mesh — group the health rows by economic-domain family, and surface
+        # recently demonstrated cross-source chains (thin read; the panel is not redesigned).
+        report["families"] = self._family_view(report.get("sources", []))
+        report["cross_source_chains"] = self.recent_cross_source_chains()
         return report
+
+    def _family_view(self, source_rows: list[dict]) -> list[dict]:
+        """Roll up per-source health rows into an economic-domain family view (M14 source mesh)."""
+        from .sources.registry import REGISTRY
+
+        health_by_id = {r.get("source_id"): r for r in source_rows}
+        families: dict[str, dict] = {}
+        for spec in REGISTRY.values():
+            fam = families.setdefault(spec.family, {
+                "family": spec.family, "sources": [], "operational": 0, "calls_made": 0,
+                "calls_avoided": 0,
+            })
+            row = health_by_id.get(spec.id, {})
+            fam["sources"].append(spec.id)
+            if spec.status == "operational":
+                fam["operational"] += 1
+            fam["calls_made"] += row.get("calls_made") or 0
+            fam["calls_avoided"] += row.get("calls_avoided") or 0
+        return [families[f] for f in sorted(families)]
+
+    def recent_cross_source_chains(self, limit: int = 10) -> list[dict]:
+        """Recent demonstrated cross-source chains (empty-safe; append-only JSONL)."""
+        try:
+            rows = list(self.store.read("cross_source_chains"))
+        except Exception:  # noqa: BLE001 — the panel degrades gracefully if the collection is absent
+            return []
+        return rows[-limit:][::-1]
 
     def targets(self) -> list[dict]:
         rows = []

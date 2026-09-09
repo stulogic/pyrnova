@@ -1,10 +1,27 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M13 CLOSED — controlled live operations; M2
-external SAM gate closed)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M14 IN PROGRESS — multi-source expansion +
+cross-source chains; M2–M13 CLOSED)._
 
 ## Milestone status
 
+- **M14: IN PROGRESS 2026-09-09.** Multi-source intelligence expansion + continuous operations.
+  Additive only — `scoring_v1`, `fit.py`, and frozen corpora byte-for-byte unchanged; the M12/M13
+  ingestion primitives are reused without redesign (Workstream 2 finding). The source registry
+  (`pyrnova/sources/registry.py`) became the durable manifest (family/signals/access/cadence/budget/
+  reliability/status/priority/identifiers/links per source) and now declares **nine families across
+  distinct economic domains**, adding `sbir` (federal R&D precursor) and `sanctions_ofac` (sanctions/
+  trade exposure) as keyless, archive-first adapters (`pyrnova/sources/sbir.py`, `pyrnova/sources/ofac.py`;
+  OFFLINE-first, zero live calls made). `pyrnova/cross_source.py` demonstrates two real cross-source
+  chains reusing `chains.py`/`multisource.py`: **Chain A** SBIR→USAspending (Torch, anchored on the
+  authoritative UEI `YA63J5PVEZE6` read from the recipient endpoint; 2 cross-family accepted joins,
+  3 rejected weak joins, chain confidence 0.60, 2 independent sources, ~6.8-year R&D→procurement lead
+  time), and **Chain B** SAIC SEC EDGAR + USAspending deterministic entity merge (3 families, 8 facts).
+  The Operations Panel gained a thin family-mesh + cross-source-chains readout (unconfigured-branch
+  contract preserved). Point-in-time truth, provenance, and weak-join rejection verified; no STRIKE
+  explosion; no secret leakage. Spec `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`, manifest
+  `docs/specs/SOURCE_MANIFEST.md`, evidence `docs/replay/M14_MULTISOURCE_EXPANSION.md`. See the M14
+  acceptance gate and closure decision in those docs and `06-HISTORY.md`.
 - **M13: CLOSED 2026-09-09.** Controlled live operations + end-to-end production validation. M2 status
   was verified first (CLOSED, see below). Additive only — `scoring_v1`, `fit.py`, `control.py`,
   `source_state.py`, adapters, and frozen M4–M12 corpora all unchanged. The M12 scheduler gained poll
