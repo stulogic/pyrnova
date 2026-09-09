@@ -153,6 +153,7 @@ def to_regulatory_catalyst(
         "catalyst_kind": "regulatory_mandate",
         "catalyst_class": event.get("catalyst_class", "OBSERVED"),
         "catalyst_id": f"cat_fr_{event.get('event_id')}",
+        "family": "regulatory_adverse_event",
         "target_ref": tref,
         "available_at": event.get("available_at"),
         "source_id": event.get("source_id"),
@@ -165,6 +166,148 @@ def to_regulatory_catalyst(
         "summary": event.get("title"),
         "event_type": event.get("event_type"),
     }
+
+
+USASPENDING_SOURCE_ID = "usaspending"
+
+# Coarse, deterministic contract-modification event type from the source-native action fields.
+def _contract_event_type(action_type: Optional[str], action_desc: Optional[str], fao: float) -> str:
+    desc = (action_desc or "").upper()
+    at = (action_type or "").upper()
+    if "TERMINAT" in desc or at in ("F", "G", "H", "J", "K", "L", "M") and "TERMINAT" in desc:
+        return "CONTRACT_TERMINATION"
+    if fao < 0:
+        return "CONTRACT_DEOBLIGATION"
+    return "CONTRACT_MODIFICATION"
+
+
+def contract_target_ref(event: dict) -> str:
+    """Deterministic exposure/catalyst join key for a contract-modification adverse event.
+
+    The key is the globally-unique contract PIID. An exposed company's PROGRAM/INCUMBENT exposure must
+    carry the SAME ``target_ref`` (its own award's PIID) for the threat engine to link them — a
+    deterministic native-id join, never a name/industry/geography resemblance. This is exactly the
+    *deterministic observed exposure* anchor M18 lacked (M19 Workstream A)."""
+    return str(event.get("piid") or event.get("event_id") or "")
+
+
+def parse_usaspending_contract_modifications(
+    raw: bytes | str, *, source_id: str = USASPENDING_SOURCE_ID,
+) -> dict:
+    """Parse archived USAspending contract-modification bytes into OBSERVED adverse-event records.
+
+    This is M19's **second adverse-event family**, materially independent of the BIS/Federal Register
+    export-control family: a real, dated, source-native contract *deobligation* (negative
+    ``federal_action_obligation`` modification) on a specific PIID held by a specific recipient (UEI). It
+    is the archived evidence for a **deterministic observed exposure** — the incumbent recipient is joined
+    to the event by exact native identifiers (PIID + recipient UEI), not by inference.
+
+    Accepts the committed evidence wrapper (``{"provenance": {...}, "results": [...]}``) or a bare
+    ``{"results": [...]}``. Each result row carries the award identity (``piid``, ``recipient_uei``,
+    ``recipient_name``) alongside the transaction fields (``modification_number``, ``action_date``,
+    ``action_type``/``action_type_description``, ``federal_action_obligation``). Never raises; returns
+    empty structures on bad input. Nothing potentially useful is discarded — the raw row is retained.
+
+    Discipline: a deobligation is NOT itself a threat. Source-native semantics are preserved (a small
+    routine funding pull-back is not a program cancellation); the threat engine applies a materiality gate
+    and requires a matching deterministic PROGRAM exposure before any threat is emitted.
+    """
+    try:
+        payload = json.loads(raw) if isinstance(raw, (bytes, str, bytearray)) else raw
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    results = payload.get("results")
+    if not isinstance(results, list):
+        results = []
+    raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else (raw if isinstance(raw, (bytes, bytearray)) else b"")
+    archive_hash = hashlib.sha256(bytes(raw_bytes)).hexdigest() if raw_bytes else None
+
+    events: list[dict] = []
+    for row in results:
+        if not isinstance(row, dict):
+            continue
+        piid = row.get("piid")
+        mod = row.get("modification_number")
+        if not piid or mod is None:
+            continue
+        try:
+            fao = float(row.get("federal_action_obligation"))
+        except (TypeError, ValueError):
+            continue
+        action_date = row.get("action_date")
+        events.append({
+            "event_id": f"{piid}:{mod}",
+            "catalyst_class": "OBSERVED",
+            "source_id": source_id,
+            "family": "contract_modification",
+            "event_type": _contract_event_type(row.get("action_type"),
+                                               row.get("action_type_description"), fao),
+            "piid": str(piid),
+            "modification_number": str(mod),
+            "recipient_name": row.get("recipient_name"),
+            "recipient_uei": (str(row.get("recipient_uei")).strip().upper()
+                              if row.get("recipient_uei") else None),
+            "agency": row.get("awarding_agency"),
+            "action_type": row.get("action_type"),
+            "action_type_description": row.get("action_type_description"),
+            "federal_action_obligation": fao,
+            # Magnitude of the funding change (positive for a deobligation) — what the contraction puts at
+            # risk. Source-native sign is retained separately in ``federal_action_obligation``.
+            "amount_delta_usd": abs(fao) if fao < 0 else 0.0,
+            "action_date": action_date,
+            "available_at": action_date,  # a modification is knowable at its action date
+            "source_ref": f"usaspending:txn:{piid}:{mod}",
+            "evidence_id": f"usaspending:txn:{piid}:{mod}",
+            "generated_internal_id": row.get("generated_internal_id"),
+            "archive_hash": archive_hash,
+            "raw": row,
+        })
+    events.sort(key=lambda e: (e.get("action_date") or "", e["event_id"]), reverse=True)
+    return {"source_id": source_id, "family": "contract_modification",
+            "archive_hash": archive_hash, "events": events}
+
+
+def to_contract_contraction_catalyst(
+    event: dict,
+    *,
+    evidence_strength: int = 5,
+    materiality_floor_usd: Optional[float] = None,
+    horizon: str = "MEDIUM_TERM",
+) -> dict:
+    """Turn one OBSERVED contract-deobligation event into a ``funding_reduction`` catalyst the existing
+    threat engine consumes (``pyrnova.threat._assess_program_change`` -> ``PROGRAM_CONTRACTION``).
+
+    The catalyst's ``target_ref`` is the exact PIID, so it links ONLY to a subject whose deterministic
+    PROGRAM/INCUMBENT exposure is that same PIID (deterministic native-id join). It carries the OBSERVED
+    authority, the source-native evidence id, the action date (knowability), the deobligated magnitude,
+    and an optional ``materiality_floor_usd`` (a routine sub-threshold pull-back is rejected IMMATERIAL by
+    the engine — deterministic identity alone never guarantees a threat). It creates NO exposure.
+    """
+    piid = contract_target_ref(event)
+    cat = {
+        "catalyst_kind": "funding_reduction",
+        "catalyst_class": event.get("catalyst_class", "OBSERVED"),
+        "catalyst_id": f"cat_usasp_{event.get('event_id')}",
+        "family": "contract_modification",
+        "program_key": piid,
+        "target_ref": piid,
+        "available_at": event.get("available_at"),
+        "source_id": event.get("source_id"),
+        "source_ref": event.get("source_ref"),
+        "evidence_id": event.get("evidence_id"),
+        "evidence_strength": int(evidence_strength),
+        "amount_delta_usd": event.get("amount_delta_usd"),
+        "recipient_uei": event.get("recipient_uei"),
+        "horizon": horizon,
+        "summary": (f"{event.get('event_type', 'CONTRACT_MODIFICATION').replace('_', ' ').title()} "
+                    f"on {piid} ({event.get('modification_number')})"),
+        "event_type": event.get("event_type"),
+    }
+    if materiality_floor_usd is not None:
+        cat["materiality_floor_usd"] = float(materiality_floor_usd)
+    return cat
 
 
 def summarize_adverse_events(parsed: dict) -> dict:

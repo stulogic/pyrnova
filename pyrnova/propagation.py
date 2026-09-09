@@ -160,6 +160,10 @@ def propagate_threats(
                     meta={"propagated": True, "root_threat_id": root_id,
                           "propagation_depth": depth + 1,
                           "catalyst_class": seed.meta.get("catalyst_class", "MODELED"),
+                          # M19: the deterministic-vs-inferred exposure authority is retained on every hop
+                          # so a propagated threat from a deterministic observed exposure stays auditable.
+                          "exposure_join_class": seed.meta.get("exposure_join_class", "candidate"),
+                          "adverse_event_family": seed.meta.get("adverse_event_family"),
                           "propagation_path": (seed.meta.get("propagation_path") or []) + [hop]},
                 )
                 pt.id = threat_id(to_ref, seed.mechanism, f"{root_id}:{depth + 1}")

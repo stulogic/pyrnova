@@ -363,6 +363,29 @@ def _confidence_from_exposures(exposures: list[Exposure], catalyst_strength: int
     return "LOW", "only a candidate (weak) exposure supports this thesis"
 
 
+_DETERMINISTIC_JOINS = {"deterministic_identifier", "deterministic_native_id"}
+
+
+def exposure_join_class(exposures) -> str:
+    """Classify a threat's exposure evidence as DETERMINISTIC / INFERRED / CANDIDATE (M19 Workstream A).
+
+    * ``deterministic`` — at least one CONFIRMED exposure joined by an authoritative native identifier
+      (PIID/UEI/CAGE/ent_num/CIK): linkage strictly stronger than fuzzy name, broad industry, shared
+      geography, modeled incumbency, or an inferred prime relationship.
+    * ``inferred`` — a CONFIRMED/INFERRED exposure resting on a strong attribute, not a native id.
+    * ``candidate`` — only a weak/candidate exposure supports the thesis.
+
+    This is a first-class, durable label (parallel to catalyst authority) travelling on every ``Threat``,
+    so deterministic-vs-inferred threats can be counted and a deterministic HIGH-confidence chain is
+    auditable. It classifies the EXPOSURE join only; it never by itself sets severity or confidence."""
+    exposures = list(exposures or ())
+    if any(e.link_class == "CONFIRMED" and e.join_method in _DETERMINISTIC_JOINS for e in exposures):
+        return "deterministic"
+    if any(e.link_class in ("CONFIRMED", "INFERRED") for e in exposures):
+        return "inferred"
+    return "candidate"
+
+
 def _falsifier(code: str, detail: str, fatal: bool = False) -> dict:
     return to_record(ConsequenceFalsifier(code=code, detail=detail, fatal=fatal))
 
@@ -403,6 +426,11 @@ def _mk_threat(subject_ref, subject_name, mechanism, anchor_ref, exposures, cata
     cclass = (catalyst_rec or {}).get("catalyst_class")
     threat.meta["catalyst_class"] = cclass if cclass in ("OBSERVED", "MODELED", "SYNTHETIC", "PROBE") \
         else "MODELED"
+    # M19 (Workstream A/L): the deterministic-vs-inferred exposure authority travels with the threat.
+    threat.meta["exposure_join_class"] = exposure_join_class(exposures)
+    fam = (catalyst_rec or {}).get("family")
+    if fam:
+        threat.meta["adverse_event_family"] = fam
     return threat
 
 
@@ -517,9 +545,47 @@ def _assess_program_change(subject_ref, subject_name, exposures, records, as_of)
                     available_at=rec.get("available_at")))
                 continue
             exp = dep[0]
+            # M19 (Workstream P): temporal exposure-window validity. A deterministic relationship can
+            # still be historically invalid — if the incumbency lapsed before the adverse event, the
+            # subject was not exposed at event time. Future exposure evidence never creates a past threat.
+            cat_at = rec.get("available_at")
+            if exp.valid_to and cat_at and cat_at > exp.valid_to:
+                rejections.append(ThreatRejection(
+                    subject_ref=subject_ref, subject_name=subject_name, mechanism=mechanism,
+                    reason_code="EXPOSURE_ENDED",
+                    detail=(f"{kind} on {target} at {cat_at}, but the subject's incumbency ended "
+                            f"{exp.valid_to}; deterministic identity does not make a lapsed exposure a "
+                            f"threat"),
+                    exposure_ids=[exp.id],
+                    evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                    available_at=cat_at))
+                continue
             at_risk = rec.get("amount_delta_usd")
             if at_risk is None:
                 at_risk = exp.meta.get("amount_usd")
+            # M19 (Workstream K/O): materiality gate for a contraction. A real, deterministically-linked
+            # deobligation that is trivially small relative to the contract is a routine funding
+            # adjustment, NOT a program contraction — so deterministic identity alone never manufactures a
+            # threat. Only funding reductions are gated (a cancellation/delay is categorical). The floor
+            # ($1M) sits below every modeled corpus reduction and is overridable per-catalyst.
+            if kind == "funding_reduction" and at_risk is not None:
+                try:
+                    magnitude = abs(float(at_risk))
+                except (TypeError, ValueError):
+                    magnitude = None
+                floor = rec.get("materiality_floor_usd")
+                floor = float(floor) if floor is not None else 1_000_000.0
+                if magnitude is not None and magnitude < floor:
+                    rejections.append(ThreatRejection(
+                        subject_ref=subject_ref, subject_name=subject_name, mechanism=mechanism,
+                        reason_code="IMMATERIAL",
+                        detail=(f"deobligation of ${magnitude:,.0f} on {target} is below the "
+                                f"${floor:,.0f} materiality floor; a routine funding pull-back on a large "
+                                f"contract is not a program contraction"),
+                        exposure_ids=[exp.id],
+                        evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                        available_at=cat_at))
+                    continue
             confidence, cbasis = _confidence_from_exposures(dep, _strength(rec))
             effect = {"program_cancellation": "cancellation eliminates",
                       "program_delay": "delay defers",
@@ -995,6 +1061,14 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
     if "catalyst_class" in expected:
         got = (threats[0].meta.get("catalyst_class") if threats else None)
         check("catalyst_class", got == expected["catalyst_class"], got, expected["catalyst_class"])
+    if "exposure_join_class" in expected:
+        got = (threats[0].meta.get("exposure_join_class") if threats else None)
+        check("exposure_join_class", got == expected["exposure_join_class"], got,
+              expected["exposure_join_class"])
+    if "adverse_event_family" in expected:
+        got = (threats[0].meta.get("adverse_event_family") if threats else None)
+        check("adverse_event_family", got == expected["adverse_event_family"], got,
+              expected["adverse_event_family"])
     if "detection_quality" in expected:
         check("detection_quality", detection == expected["detection_quality"], detection,
               expected["detection_quality"])
@@ -1246,6 +1320,151 @@ def summarize_m18(results: list[dict]) -> dict:
     base["relationship_independence"] = independence_metrics(exercised_edges, chains=chains)
     base["propagated_outcome_calibration"] = propagated_outcome_calibration(results)
     base["negative_cases"] = sum(1 for r in results if not r["threats"] and r["rejections"])
+    return base
+
+
+# M19 (Workstream K): map a threat/rejection to its OBSERVED adverse-event family from durable signals.
+_FAMILY_BY_EVIDENCE_PREFIX = (
+    ("usaspending:txn:", "contract_modification"),
+    ("fr:", "regulatory_adverse_event"),
+)
+
+
+def adverse_event_family(record: dict) -> Optional[str]:
+    """The adverse-event family of a threat/rejection record, from its durable meta or evidence ids.
+
+    Prefers an explicit ``meta.adverse_event_family`` (set at threat construction for the new family);
+    otherwise infers from an evidence-id prefix. Returns ``None`` when no adverse-event family is
+    identifiable (e.g. a sanctions/modeled case)."""
+    fam = (record.get("meta") or {}).get("adverse_event_family")
+    if fam:
+        return fam
+    for eid in record.get("evidence_ids") or ():
+        for prefix, family in _FAMILY_BY_EVIDENCE_PREFIX:
+            if str(eid).startswith(prefix):
+                return family
+    return None
+
+
+def summarize_m19(results: list[dict]) -> dict:
+    """M19 metrics: everything ``summarize_m18`` reports, plus explicit **deterministic-vs-inferred**
+    exposure/threat/outcome accounting (Workstream A/L) and **multi-family selectivity** across the
+    OBSERVED adverse-event families (Workstream K). Additive; never republishes a rate without its
+    denominator.
+
+    A threat's exposure authority (``meta.exposure_join_class`` in {deterministic, inferred, candidate})
+    is a durable label set at construction from the exposure link-class + join method — deterministic
+    means a CONFIRMED native-id join (PIID/UEI/CAGE/ent_num/CIK), stronger than any name/industry/
+    geography/modeled-incumbency/inferred-prime resemblance. Deterministic identity NEVER by itself
+    implies a threat: the immaterial/wrong-award/lapsed-exposure rejections are counted too."""
+    from .threat_calibration import classify_detection
+
+    base = summarize_m18(results)
+    direct = [t for r in results for t in r["threats"]]
+    propagated = [t for r in results if r.get("propagation")
+                  for t in r["propagation"]["propagated_threats"]]
+    exposures = [e for r in results for e in r["exposures"]]
+
+    def join_class(t):
+        return (t.get("meta") or {}).get("exposure_join_class", "candidate")
+
+    def det_counts(threats):
+        out = {"deterministic": 0, "inferred": 0, "candidate": 0}
+        for t in threats:
+            out[join_class(t)] = out.get(join_class(t), 0) + 1
+        return out
+
+    det_exposures = sum(1 for e in exposures if e["link_class"] == "CONFIRMED"
+                        and e.get("join_method") in ("deterministic_identifier", "deterministic_native_id"))
+    inferred_exposures = sum(1 for e in exposures if e["link_class"] == "INFERRED"
+                             or (e["link_class"] == "CONFIRMED"
+                                 and e.get("join_method") not in ("deterministic_identifier",
+                                                                  "deterministic_native_id")))
+
+    # Deterministic-vs-inferred resolved DIRECT outcomes, each with its denominator (Workstream L).
+    res = {"deterministic": {"resolved": 0, "true": 0, "false": 0},
+           "inferred": {"resolved": 0, "true": 0, "false": 0}}
+    for r in results:
+        if not r.get("threats"):
+            continue
+        outcome = r.get("outcome") or {}
+        if not outcome.get("resolved"):
+            continue
+        cls = join_class(r["threats"][0])
+        bucket = res.get(cls if cls in res else "inferred")
+        bucket["resolved"] += 1
+        det = classify_detection(outcome.get("label"), r["threats"][0].get("confidence"))
+        if det == "TRUE_THREAT":
+            bucket["true"] += 1
+        elif det == "FALSE_ALERT":
+            bucket["false"] += 1
+
+    def precision(b):
+        d = b["true"] + b["false"]
+        return {"resolved": b["resolved"], "confirmed_precision": (round(b["true"] / d, 4) if d else None),
+                "precision_denominator": d}
+
+    # Multi-family selectivity across the OBSERVED adverse-event families (Workstream K/Q). Uses the same
+    # results — a new family that becomes noisy would show a high threat/event ratio here.
+    families: dict[str, dict] = {}
+    for r in results:
+        seen_fams = set()
+        for t in r["threats"]:
+            fam = adverse_event_family(t)
+            if not fam:
+                continue
+            f = families.setdefault(fam, {"cases": 0, "direct_threats": 0, "rejections": 0,
+                                          "deterministic_threats": 0, "inferred_threats": 0,
+                                          "propagated_threats": 0})
+            f["direct_threats"] += 1
+            f["deterministic_threats" if join_class(t) == "deterministic" else "inferred_threats"] += 1
+            seen_fams.add(fam)
+        for rj in r["rejections"]:
+            fam = adverse_event_family(rj)
+            if not fam:
+                continue
+            f = families.setdefault(fam, {"cases": 0, "direct_threats": 0, "rejections": 0,
+                                          "deterministic_threats": 0, "inferred_threats": 0,
+                                          "propagated_threats": 0})
+            f["rejections"] += 1
+            seen_fams.add(fam)
+        if r.get("propagation"):
+            for pt in r["propagation"]["propagated_threats"]:
+                fam = adverse_event_family(pt)
+                if fam:
+                    families.setdefault(fam, {"cases": 0, "direct_threats": 0, "rejections": 0,
+                                              "deterministic_threats": 0, "inferred_threats": 0,
+                                              "propagated_threats": 0})["propagated_threats"] += 1
+                    seen_fams.add(fam)
+        for fam in seen_fams:
+            families[fam]["cases"] += 1
+    for fam, f in families.items():
+        events = f["direct_threats"] + f["rejections"]
+        f["threat_to_event_ratio"] = round(f["direct_threats"] / events, 3) if events else None
+
+    observed_det_high = sum(
+        1 for t in direct
+        if (t.get("meta") or {}).get("catalyst_class") == "OBSERVED"
+        and join_class(t) == "deterministic" and t.get("confidence") == "HIGH")
+
+    base["deterministic_vs_inferred"] = {
+        "deterministic_exposures": det_exposures,
+        "inferred_exposures": inferred_exposures,
+        "candidate_exposures": base.get("exposure_candidate_weak", 0),
+        "deterministic_direct_threats": det_counts(direct)["deterministic"],
+        "inferred_direct_threats": det_counts(direct)["inferred"] + det_counts(direct)["candidate"],
+        "deterministic_propagated_threats": det_counts(propagated)["deterministic"],
+        "inferred_propagated_threats": (det_counts(propagated)["inferred"]
+                                        + det_counts(propagated)["candidate"]),
+        "resolved_deterministic": precision(res["deterministic"]),
+        "resolved_inferred": precision(res["inferred"]),
+        # The headline M19 claim: OBSERVED catalyst + deterministic exposure + HIGH confidence.
+        "observed_deterministic_high_confidence_threats": observed_det_high,
+        "small_sample_warning": ("deterministic-vs-inferred splits rest on a small corpus; treat as "
+                                 "directional, not stable rates"),
+    }
+    base["multi_family_selectivity"] = dict(sorted(families.items()))
+    base["adverse_event_families_exercised"] = sorted(families.keys())
     return base
 
 

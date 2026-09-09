@@ -1,0 +1,211 @@
+{
+  "corpus_id": "corpus_m19",
+  "note": "M19 — deterministic OBSERVED exposure + a second adverse-event family (procurement contract contraction), extending the frozen corpus_m18. Every case replays point-in-time; scoring_v1 is untouched. The flagship chain is a REAL, archived USAspending contract deobligation on SAIC's exact prime PIID 47QFSA20F0057 (deterministic native-id incumbency: SAIC UEI MMLKPW9JLX64) propagating one hop to a real program-anchored subcontractor (Torch) on the SAME PIID. Deterministic identity NEVER by itself implies a threat: immaterial, wrong-award, and lapsed-exposure cases are zero-threat. See tests/test_m19_deterministic_exposure.py (honesty gate) and pyrnova/adverse_events.parse_usaspending_contract_modifications.",
+  "extends": "corpus_m18.json",
+  "threat_cases": [
+    {
+      "case_id": "m19-det-contraction-saic-torch",
+      "real_subject": true,
+      "note": "FLAGSHIP deterministic OBSERVED chain. A REAL archived USAspending deobligation (mod P00256, -$5,152,916.35, action date 2024-05-06) on SAIC's exact prime PIID 47QFSA20F0057 is an OBSERVED contract_modification catalyst. SAIC's exposure is DETERMINISTIC (its own award recipient UEI MMLKPW9JLX64 == the deobligated award's PIID; deterministic_native_id / CONFIRMED) -> a HIGH-confidence (deterministic exposure + observed catalyst) PROGRAM_CONTRACTION direct threat at MODERATE severity (the >$5M deobligated magnitude). It propagates one hop to Torch on the SAME PIID via the real program-anchored SAIC->Torch sub-award edge, degrading HIGH->MEDIUM (confidence never increases). Second adverse-event family, materially independent of BIS/Federal Register export controls.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA OASIS SB HWIL systems-of-systems engineering", "amount_usd": 1432695358.81, "agency": "General Services Administration", "available_at": "2020-05-05", "period_start": "2020-05-05", "period_end": "2025-11-04", "source_ref": "usaspending:award:47QFSA20F0057"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_usasp_47QFSA20F0057:P00256", "family": "contract_modification", "program_key": "47QFSA20F0057", "target_ref": "47QFSA20F0057", "amount_delta_usd": 5152916.35, "available_at": "2024-05-06", "evidence_strength": 5, "source_id": "usaspending", "source_ref": "usaspending:txn:47QFSA20F0057:P00256", "evidence_id": "usaspending:txn:47QFSA20F0057:P00256", "summary": "Contract Deobligation on 47QFSA20F0057 (P00256)", "event_type": "CONTRACT_DEOBLIGATION"}
+      ],
+      "relationships": [
+        {"from_ref": "co_saic", "from_name": "Science Applications International Corporation", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "confidence": 0.9, "available_at": "2016-06-23", "evidence_ids": ["P010277776"], "source_id": "usaspending_subawards"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "severity": {"PROGRAM_CONTRACTION": "MODERATE"},
+        "confidence": {"PROGRAM_CONTRACTION": "HIGH"},
+        "catalyst_class": "OBSERVED",
+        "exposure_join_class": "deterministic",
+        "adverse_event_family": "contract_modification",
+        "propagated_threats": 1,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m19-det-contraction-saic-low-severity",
+      "real_subject": true,
+      "note": "A SECOND real deterministic OBSERVED contraction on the same PIID: deobligation P00330 (-$3,393,990.60, 2025-05-19). Confidence stays HIGH (deterministic exposure + observed catalyst) but severity is LOW because the deobligated magnitude is below the $5M MODERATE band. Confidence and severity are orthogonal: a deterministic join does NOT mechanically inflate severity (Workstream H).",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2025-07-01",
+      "award_records": [
+        {"recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA OASIS SB HWIL systems-of-systems engineering", "amount_usd": 1432695358.81, "agency": "General Services Administration", "available_at": "2020-05-05", "period_start": "2020-05-05", "period_end": "2025-11-04", "source_ref": "usaspending:award:47QFSA20F0057"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_usasp_47QFSA20F0057:P00330", "family": "contract_modification", "program_key": "47QFSA20F0057", "target_ref": "47QFSA20F0057", "amount_delta_usd": 3393990.6, "available_at": "2025-05-19", "evidence_strength": 5, "source_id": "usaspending", "source_ref": "usaspending:txn:47QFSA20F0057:P00330", "evidence_id": "usaspending:txn:47QFSA20F0057:P00330", "summary": "Contract Deobligation on 47QFSA20F0057 (P00330)", "event_type": "CONTRACT_DEOBLIGATION"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "severity": {"PROGRAM_CONTRACTION": "LOW"},
+        "confidence": {"PROGRAM_CONTRACTION": "HIGH"},
+        "catalyst_class": "OBSERVED",
+        "exposure_join_class": "deterministic",
+        "adverse_event_family": "contract_modification"
+      }
+    },
+    {
+      "case_id": "m19-det-contraction-immaterial-negative",
+      "real_subject": true,
+      "note": "NEGATIVE DETERMINISTIC CASE (Workstream O). The SAME deterministic incumbency (SAIC on 47QFSA20F0057), but a REAL tiny deobligation (mod P00281, -$31,616.47, 2024-08-26) is a routine funding pull-back below the $1M materiality floor -> IMMATERIAL, zero-threat. Exact identity is not a threat.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-10-01",
+      "award_records": [
+        {"recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA OASIS SB HWIL systems-of-systems engineering", "amount_usd": 1432695358.81, "agency": "General Services Administration", "available_at": "2020-05-05", "period_start": "2020-05-05", "period_end": "2025-11-04", "source_ref": "usaspending:award:47QFSA20F0057"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_usasp_47QFSA20F0057:P00281", "family": "contract_modification", "program_key": "47QFSA20F0057", "target_ref": "47QFSA20F0057", "amount_delta_usd": 31616.47, "available_at": "2024-08-26", "evidence_strength": 5, "source_id": "usaspending", "source_ref": "usaspending:txn:47QFSA20F0057:P00281", "evidence_id": "usaspending:txn:47QFSA20F0057:P00281", "summary": "Contract Deobligation on 47QFSA20F0057 (P00281)", "event_type": "CONTRACT_DEOBLIGATION"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_count": 1,
+        "rejection_reasons": ["IMMATERIAL"]
+      }
+    },
+    {
+      "case_id": "m19-det-wrong-award-no-exposure",
+      "real_subject": true,
+      "note": "NEGATIVE DETERMINISTIC CASE (Workstream O). SAIC is a real incumbent on a DIFFERENT real PIID (Army W31P4Q21F0095, $825.8M), but the material deobligation is on 47QFSA20F0057. Deterministic identity on one award does not expose the subject to an event on a different award -> NO_EXPOSURE. Exact-identifier match is required, not company-name coincidence.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"recipient_uei": "MMLKPW9JLX64", "program_key": "W31P4Q21F0095", "program_name": "Army OASIS engineering services", "amount_usd": 825826653.29, "agency": "Department of the Army", "available_at": "2021-03-01", "period_start": "2021-03-01", "period_end": "2026-03-01", "source_ref": "usaspending:award:W31P4Q21F0095"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_usasp_47QFSA20F0057:P00256", "family": "contract_modification", "program_key": "47QFSA20F0057", "target_ref": "47QFSA20F0057", "amount_delta_usd": 5152916.35, "available_at": "2024-05-06", "evidence_strength": 5, "source_id": "usaspending", "source_ref": "usaspending:txn:47QFSA20F0057:P00256", "evidence_id": "usaspending:txn:47QFSA20F0057:P00256", "summary": "Contract Deobligation on 47QFSA20F0057 (P00256)", "event_type": "CONTRACT_DEOBLIGATION"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_count": 1,
+        "rejection_reasons": ["NO_EXPOSURE"]
+      }
+    },
+    {
+      "case_id": "m19-det-future-catalyst-excluded",
+      "real_subject": true,
+      "note": "TEMPORAL TRUTH. The real deobligation is knowable only at its 2024-05-06 action date; at a 2024-01-01 cutoff it is excluded, so no threat and no rejection are produced. Future adverse evidence never contaminates an earlier point-in-time state.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-01-01",
+      "award_records": [
+        {"recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA OASIS SB HWIL systems-of-systems engineering", "amount_usd": 1432695358.81, "agency": "General Services Administration", "available_at": "2020-05-05", "period_start": "2020-05-05", "period_end": "2025-11-04", "source_ref": "usaspending:award:47QFSA20F0057"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_usasp_47QFSA20F0057:P00256", "family": "contract_modification", "program_key": "47QFSA20F0057", "target_ref": "47QFSA20F0057", "amount_delta_usd": 5152916.35, "available_at": "2024-05-06", "evidence_strength": 5, "source_id": "usaspending", "source_ref": "usaspending:txn:47QFSA20F0057:P00256", "evidence_id": "usaspending:txn:47QFSA20F0057:P00256", "summary": "Contract Deobligation on 47QFSA20F0057 (P00256)", "event_type": "CONTRACT_DEOBLIGATION"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_count": 0
+      }
+    },
+    {
+      "case_id": "m19-temporal-exposure-ended",
+      "synthetic_probe": true,
+      "note": "TEMPORAL EXPOSURE VALIDITY (Workstream P). A probe subject held a deterministic incumbency that ENDED 2023-01-01; a material deobligation lands 2024-06-01, after the incumbency lapsed. A deterministic relationship can still be historically invalid -> EXPOSURE_ENDED, zero-threat. Uses a probe award so no real company's period of performance is misstated.",
+      "subject": {"ref": "co_probe_ended", "name": "Temporal Probe Inc", "uei": "UEIM19TMP"},
+      "replay_as_of": "2024-07-01",
+      "award_records": [
+        {"recipient_uei": "UEIM19TMP", "program_key": "PROBEPIID901", "program_name": "Probe program (lapsed incumbency)", "amount_usd": 40000000, "agency": "Probe Agency", "available_at": "2019-01-01", "period_start": "2019-01-01", "period_end": "2023-01-01", "source_ref": "probe:award:m19-ended"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_probe_m19_ended", "family": "contract_modification", "program_key": "PROBEPIID901", "target_ref": "PROBEPIID901", "amount_delta_usd": 10000000, "available_at": "2024-06-01", "evidence_strength": 5, "source_ref": "probe:txn:m19-ended", "evidence_id": "probe:txn:m19-ended", "summary": "Probe deobligation after incumbency ended"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_count": 1,
+        "rejection_reasons": ["EXPOSURE_ENDED"]
+      }
+    },
+    {
+      "case_id": "m19-prop-outcome-deterministic-materialized",
+      "synthetic_probe": true,
+      "note": "PROPAGATED-OUTCOME EXPANSION (Workstream M/N). A deterministic OBSERVED contract deobligation threatens a probe incumbent (direct) and propagates one hop to a dependent subcontractor; BOTH later resolve MATERIALIZED via explicit dated observations. Grows the resolved-propagated set and exercises deterministic propagated calibration. Directional structured probe outcomes (no real-company future fact asserted).",
+      "subject": {"ref": "co_prop_root", "name": "Prop Root Systems", "uei": "UEIM19PR"},
+      "replay_as_of": "2024-01-01",
+      "outcome_as_of": "2025-06-01",
+      "award_records": [
+        {"recipient_uei": "UEIM19PR", "program_key": "PROBEPIID701", "program_name": "Prop root program", "amount_usd": 200000000, "agency": "Probe Agency", "available_at": "2020-01-01", "period_start": "2020-01-01", "period_end": "2027-01-01", "source_ref": "probe:award:m19-proproot"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_probe_m19_proproot", "family": "contract_modification", "program_key": "PROBEPIID701", "target_ref": "PROBEPIID701", "amount_delta_usd": 60000000, "available_at": "2023-06-01", "evidence_strength": 5, "source_ref": "probe:txn:m19-proproot", "evidence_id": "probe:txn:m19-proproot", "summary": "Probe material deobligation"}
+      ],
+      "relationships": [
+        {"from_ref": "co_prop_root", "from_name": "Prop Root Systems", "to_ref": "co_prop_dep", "to_name": "Prop Dependent LLC", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "confidence": 0.9, "available_at": "2021-01-01", "evidence_ids": ["probe:subaward:m19-propdep"]}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-direct", "label": "MATERIALIZED", "observed_at": "2024-09-01", "source_id": "usaspending", "source_ref": "probe:m19:root-contracted", "evidence_strength": 4}
+      ],
+      "propagated_outcome_observations": [
+        {"threat_id": "resolved-propagated", "label": "MATERIALIZED", "observed_at": "2025-02-01", "source_id": "usaspending", "source_ref": "probe:m19:dep-lost-scope", "evidence_strength": 4, "notes": "dependent lost subcontract scope after the prime program contracted"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "catalyst_class": "OBSERVED",
+        "exposure_join_class": "deterministic",
+        "propagated_threats": 1,
+        "outcome_label": "MATERIALIZED",
+        "propagated_outcome_label": "MATERIALIZED"
+      }
+    },
+    {
+      "case_id": "m19-prop-outcome-mitigated",
+      "synthetic_probe": true,
+      "note": "OUTCOME DIVERSITY (Workstream N). A propagated threat later resolves MITIGATED (the dependent acted to reduce the effect). The original prediction is preserved verbatim; the later observation is separate.",
+      "subject": {"ref": "co_prop_root2", "name": "Prop Root Two Inc", "uei": "UEIM19P2"},
+      "replay_as_of": "2024-01-01",
+      "outcome_as_of": "2025-06-01",
+      "award_records": [
+        {"recipient_uei": "UEIM19P2", "program_key": "PROBEPIID702", "program_name": "Prop root two program", "amount_usd": 150000000, "agency": "Probe Agency", "available_at": "2020-01-01", "period_start": "2020-01-01", "period_end": "2027-01-01", "source_ref": "probe:award:m19-proproot2"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_probe_m19_proproot2", "family": "contract_modification", "program_key": "PROBEPIID702", "target_ref": "PROBEPIID702", "amount_delta_usd": 40000000, "available_at": "2023-06-01", "evidence_strength": 5, "source_ref": "probe:txn:m19-proproot2", "evidence_id": "probe:txn:m19-proproot2", "summary": "Probe material deobligation two"}
+      ],
+      "relationships": [
+        {"from_ref": "co_prop_root2", "from_name": "Prop Root Two Inc", "to_ref": "co_prop_dep2", "to_name": "Prop Dependent Two LLC", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "confidence": 0.9, "available_at": "2021-01-01", "evidence_ids": ["probe:subaward:m19-propdep2"]}
+      ],
+      "propagated_outcome_observations": [
+        {"threat_id": "resolved-propagated", "label": "MITIGATED", "observed_at": "2025-03-01", "source_id": "usaspending", "source_ref": "probe:m19:dep2-mitigated", "evidence_strength": 4, "notes": "dependent diversified onto other work, reducing the inherited effect"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "propagated_threats": 1,
+        "propagated_outcome_label": "MITIGATED"
+      }
+    },
+    {
+      "case_id": "m19-prop-outcome-avoided",
+      "synthetic_probe": true,
+      "note": "OUTCOME DIVERSITY (Workstream N). A propagated threat later resolves AVOIDED (the inherited effect did not occur, evidenced). Absence was never treated as a false alarm; AVOIDED here is an explicit dated observation, not silence.",
+      "subject": {"ref": "co_prop_root3", "name": "Prop Root Three Inc", "uei": "UEIM19P3"},
+      "replay_as_of": "2024-01-01",
+      "outcome_as_of": "2025-06-01",
+      "award_records": [
+        {"recipient_uei": "UEIM19P3", "program_key": "PROBEPIID703", "program_name": "Prop root three program", "amount_usd": 120000000, "agency": "Probe Agency", "available_at": "2020-01-01", "period_start": "2020-01-01", "period_end": "2027-01-01", "source_ref": "probe:award:m19-proproot3"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "catalyst_class": "OBSERVED", "catalyst_id": "cat_probe_m19_proproot3", "family": "contract_modification", "program_key": "PROBEPIID703", "target_ref": "PROBEPIID703", "amount_delta_usd": 30000000, "available_at": "2023-06-01", "evidence_strength": 5, "source_ref": "probe:txn:m19-proproot3", "evidence_id": "probe:txn:m19-proproot3", "summary": "Probe material deobligation three"}
+      ],
+      "relationships": [
+        {"from_ref": "co_prop_root3", "from_name": "Prop Root Three Inc", "to_ref": "co_prop_dep3", "to_name": "Prop Dependent Three LLC", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "confidence": 0.9, "available_at": "2021-01-01", "evidence_ids": ["probe:subaward:m19-propdep3"]}
+      ],
+      "propagated_outcome_observations": [
+        {"threat_id": "resolved-propagated", "label": "AVOIDED", "observed_at": "2025-04-01", "source_id": "usaspending", "source_ref": "probe:m19:dep3-avoided", "evidence_strength": 4, "notes": "the prime restored funding downstream; the dependent kept its scope"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "propagated_threats": 1,
+        "propagated_outcome_label": "AVOIDED"
+      }
+    }
+  ]
+}
