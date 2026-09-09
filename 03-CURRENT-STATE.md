@@ -1,17 +1,24 @@
 # Pyrnova current state
 
-_Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M2 external SAM gate closed)._
 
 ## Milestone status
 
-- **M2: CONDITIONAL PASS / EXTERNAL SAM ACCEPTANCE STILL PENDING.** All implemented behavior is green
-  (249 tests). The external gate opened `2026-09-09T00:00:00Z`. An acceptance run was attempted on
-  `2026-09-09T03:04:50Z` and could not begin: gate step 1 (`SAM_API_KEY present: yes`) fails because no
-  `SAM_API_KEY` is available in this execution environment (the gitignored `.env` is never present in a
-  fresh clone), so a genuinely fresh SAM retrieval is impossible here. The SAM adapter correctly fails
-  closed (`RuntimeError`) with no key — there is no cache/fixture/manual substitute, and the gate was
-  not weakened. This is a provider/runtime prerequisite failure, not an implementation failure; the
-  fresh-SAM external artifact still does not exist. See `06-HISTORY.md`.
+- **M2: CLOSED 2026-09-09.** The external SAM acceptance gate passed at `2026-09-09T07:14Z`, executed
+  unchanged and unweakened. Gate step 1 confirmed `SAM_API_KEY present: yes` (value never exposed). A
+  genuinely fresh live SAM retrieval was performed through the normal adapter path at
+  `2026-09-09T07:11:39Z` (`GET https://api.sam.gov/opportunities/v2/search`, ptype `o`), producing 10
+  real rows archived to Tier B at content hash
+  `574813de00d1bc6f8703c075c601cb4fa48be401a94a1ceaa8c571c482350a08`; the archive round-trip and content
+  hash matched, request provenance contained no `api_key`, and the raw bytes contained no credential
+  material. A second fresh pre-solicitation retrieval (`2026-09-09T07:14Z`, ptypes `r`/`p`/`s`, 150
+  notices) exercised the full ingest: stable `sam:notice:*` identity, idempotent repeat ingest (dedup),
+  cross-source separation (SAM bytes retrievable only under `sam_opportunities`), evidence-level rules
+  (strength 5 `direct_causal_program_evidence` observed), deterministic disposition across repeat runs,
+  and one persisted live-derived human adjudication (`stulogic`, WATCH → `human_watch`). Full suite: 248
+  passed, 1 skipped; compilation clean; diff integrity clean (no tracked-file change); deterministic
+  replay corpus reproduces the frozen `scoring_v1` baseline; live-ingest dedup regression green. See
+  `06-HISTORY.md`.
 - **M3: CLOSED.** The formal acceptance review passed on 2026-09-08.
 - **M4: CLOSED.** Offline-first source expansion passed its implementation and regression gates on
   2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
@@ -256,9 +263,10 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 ## Known limitations
 
-- M2 has no fresh post-reset SAM acceptance artifact yet. The 2026-09-09 gate attempt was blocked by the
-  absence of `SAM_API_KEY` in the execution environment (fresh clone; gitignored `.env` not present), not
-  by any implementation defect. Closure requires a run in an environment where `SAM_API_KEY` is provided.
+- M2 is closed against a fresh live SAM artifact (hash `574813de…`, `2026-09-09T07:11:39Z`). The 48
+  STRIKEs seen in the 150-notice pre-solicitation ingest window reflect broad capability matching of the
+  Torch profile against an unfiltered live window; that number is an ingest-integrity demonstration, not
+  a precision measurement (the frozen `scoring_v1` corpus baseline remains the precision authority).
 - Only three known-outcome M3 cases are STRIKEs, so precision uncertainty remains wide.
 - Binary metrics exclude PARTIAL and AMBIGUOUS cases.
 - Value calibration has only two comparable cases and supports no general conclusion.
@@ -319,12 +327,9 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 ## Exact next action
 
-M2 closure is blocked only by environment: rerun the unchanged M2 live acceptance sequence in
-`02-EXECUTION.md` from an environment where `SAM_API_KEY` is provided (at or after
-`2026-09-09T00:00:00Z`), then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`. The acceptance logic and gate are unchanged and must not be weakened.
+M2 is CLOSED (external SAM gate passed `2026-09-09T07:14Z`, hash `574813de…`). No further M2 action.
 
-M10 (blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` from an environment whose egress
+M10 (still blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` from an environment whose egress
 policy allows the keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) — enough to ground a second
 source family (SEC for an added public prime) and sub-awards without SAM — and/or where `SAM_API_KEY` is
 provisioned. Do not fabricate evidence or weaken the M10 acceptance gates. M11 stays gated on a clean M10

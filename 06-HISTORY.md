@@ -173,6 +173,32 @@
   is provisioned. This does not undermine M10 safety (M10 grounding leans on keyless USAspending/SEC
   and archived SAM bytes), so milestone progression to M10 continues per authority.
 
+## Milestone 2 — external SAM acceptance CLOSED 2026-09-09
+
+- The external SAM acceptance gate (opened `2026-09-09T00:00:00Z`) was executed unchanged and
+  unweakened in an environment where `SAM_API_KEY` is provisioned and `api.sam.gov` egress is available.
+- **Fresh retrieval:** one genuinely fresh live SAM pull through the normal adapter path
+  (`SamClient.search_observations` → `GET https://api.sam.gov/opportunities/v2/search`, ptype `o`) at
+  `2026-09-09T07:11:39Z`, 10 real rows. Raw bytes archived to Tier B via the real `EvidenceArchive` at
+  content hash `574813de00d1bc6f8703c075c601cb4fa48be401a94a1ceaa8c571c482350a08`. Verified: archive
+  round-trip byte-identical, stored hash == content hash, endpoint identity recorded, request provenance
+  carried **no** `api_key`, and the raw response contained no credential substring.
+- **Full ingest (fresh pre-solicitation pull, `2026-09-09T07:14Z`, ptypes `r`/`p`/`s`, 150 notices):**
+  stable `sam:notice:*` source/candidate identity; idempotent repeat ingest (duplicate candidates and
+  identical-byte observations dedup); cross-source separation (SAM bytes retrievable only under
+  `sam_opportunities`, not `usaspending`); evidence-level rules exercised (strength 5
+  `direct_causal_program_evidence`); disposition deterministic across independent repeat runs; one
+  live-derived human adjudication persisted (`stulogic`, WATCH → `human_watch`). No `api_key` in any
+  stored observation provenance.
+- **Regression:** 248 passed / 1 skipped; compilation clean (bytecode cache redirected around a sandbox
+  restriction); diff integrity clean (no tracked-file change from the acceptance run); deterministic
+  replay corpus reproduces the frozen `scoring_v1` baseline; live-ingest dedup contracts green.
+- **Note (honesty):** the 48 STRIKEs in the 150-notice window come from broad capability matching of the
+  Torch profile against an unfiltered live window; this is an ingest-integrity demonstration, not a
+  precision claim — the frozen corpus baseline remains the precision authority.
+- **Disposition:** M2 is **CLOSED**. This supersedes the 2026-09-09 environment-blocked CONDITIONAL
+  record below.
+
 ## Milestone 10 — spec authored; execution blocked on environment (2026-09-09)
 
 - Authored the full M10 architecture/semantics spec: `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`
@@ -197,6 +223,12 @@
 - **To resume:** run from a session whose egress allows the keyless data hosts (SEC + USAspending
   sub-awards → second/third source family without SAM) and/or with `SAM_API_KEY` provisioned; then
   execute the spec end to end.
+- **Environment unblocked 2026-09-09:** in the current session all three prerequisites are satisfied —
+  `SAM_API_KEY` present, `api.usaspending.gov` POST → 200, `data.sec.gov` GET → 200 (with a descriptive
+  User-Agent). The earlier 403/000 readings were method/header artifacts (usaspending needs POST; SEC
+  needs a UA), not a standing egress policy block. M10 real multi-source grounding is now executable and
+  is the active milestone; execution begins per `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` with its
+  21-point gate unweakened.
 
 ## Branch/remote reality note (2026-09-09)
 

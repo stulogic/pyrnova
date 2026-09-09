@@ -1,34 +1,30 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate (environment-blocked); M3–M9 closed; M10 spec ready but execution blocked on environment; M11 not started · updated 2026-09-09_
+_Current execution window: M2 CLOSED (external SAM gate passed 2026-09-09); M3–M9 closed; M10 active — environment now unblocked, executing per spec; M11 not started · updated 2026-09-09_
 
 ## Active work
 
-### Milestone 2 — conditional pass; external SAM acceptance pending
+### Milestone 2 — CLOSED 2026-09-09
 
-M2 functionality is complete. Formal closure requires one genuinely fresh SAM retrieval at or after
-`2026-09-09T00:00:00Z` through the normal live adapter path. No cache, fixture, saved record, manual
-payload, or fallback may count as success.
+The external SAM acceptance gate passed `2026-09-09T07:14Z`, executed unchanged and unweakened. Fresh
+live retrieval at `2026-09-09T07:11:39Z` archived to Tier B at content hash
+`574813de00d1bc6f8703c075c601cb4fa48be401a94a1ceaa8c571c482350a08`; all seven gate steps (key presence,
+fresh retrieval + archival + matching hash + endpoint identity + sanitized provenance + no credential
+material, stable identity + idempotent ingest + cross-source separation, evidence-level rules +
+deterministic disposition, one persisted live adjudication, full regression) passed. Details in
+`03-CURRENT-STATE.md` and `06-HISTORY.md`. No further M2 action.
 
-At the gate:
+### Milestone 10 — ACTIVE (environment unblocked 2026-09-09)
 
-1. Verify only `SAM_API_KEY present: yes`; never expose the value.
-2. Execute fresh retrieval and verify timestamp, adapter consumption, raw archival, matching hash,
-   endpoint identity, sanitized request provenance, and absence of credential material.
-3. Verify stable source/candidate identity, idempotent repeat ingest, and correct cross-source separation.
-4. Verify evidence-level rules and explainable deterministic disposition.
-5. Persist one live-derived human adjudication.
-6. Run full tests, compilation, diff integrity, deterministic replay, and live-ingest dedup regression.
-7. If every gate passes, mark M2 CLOSED in current state and history with timestamp and archive hash.
-
-Do not weaken the gate. If SAM quota/service remains the only failure, preserve state and record the
-exact external response.
-
-**2026-09-09 attempt:** the gate opened `2026-09-09T00:00:00Z`; a run attempted `2026-09-09T03:04:50Z`
-could not begin because `SAM_API_KEY` is not provisioned in the execution environment (fresh clone; the
-gitignored `.env` is absent). The adapter fails closed; no fresh retrieval, archive, or hash was
-produced. M2 remains CONDITIONAL — an environment/provider prerequisite, not an implementation defect.
-Rerun unchanged where `SAM_API_KEY` is available. See `06-HISTORY.md`.
+M10 (multi-source company intelligence + subcontract/teaming resolution) is specified in
+`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`. Its prior blocker (org egress denying the keyless data
+hosts, no `SAM_API_KEY`) is lifted: `SAM_API_KEY` present, `api.usaspending.gov` POST → 200,
+`data.sec.gov` GET → 200 (with a descriptive User-Agent). Execute the spec end to end with its 21-point
+acceptance gate unweakened: ≥2 real source families with material evidence beyond USAspending,
+point-in-time filtering with a hard temporal-leakage gate, `fit.py`/`scoring_v1` unchanged (M10 is
+additive grounding + data + metrics), corpus extends the frozen `corpus_m9.json`, and real-profile
+metrics reported separately from synthetic. Do not fabricate evidence; archive-once/replay-many for all
+real bytes.
 
 ### Milestone 3 — CLOSED
 
@@ -98,14 +94,14 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2 external gate remains open but environment-blocked (no `SAM_API_KEY` in this container). Rerun the
-   unchanged sequence, without weakening it, where the key is provisioned; then record timestamp + hash.
-2. M10 (spec ready, execution blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` once the
-   environment allows the keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) and/or provisions
-   `SAM_API_KEY`. All external data hosts are currently blocked by org egress policy, so real
-   multi-source grounding cannot begin; do not fabricate evidence or weaken the M10 gates to simulate it.
-3. Do not alter `scoring_v1`. Do not begin M11: it is strictly gated on a clean M10 close, which has not
-   occurred.
+1. M2 CLOSED — no further action (external gate passed 2026-09-09, hash `574813de…`).
+2. M10 (ACTIVE): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` end to end. The environment is now
+   unblocked (SAM key present; USAspending + SEC reachable). Ground ≥2 real source families with material
+   evidence beyond USAspending, keep the point-in-time / temporal-leakage gate hard, extend the frozen
+   `corpus_m9.json`, and report real metrics separately from synthetic. Do not fabricate evidence or
+   weaken the 21-point gate.
+3. Do not alter `scoring_v1` or `fit.py` semantics (M10 is additive). Do not begin M11: it is strictly
+   gated on a clean M10 close, which has not yet occurred.
 
 ## Active constraints
 
