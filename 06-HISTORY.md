@@ -154,3 +154,21 @@
 - Preserved detailed specifications, research, replay evidence, historical handovers, and superseded
   authority in clearly scoped directories.
 - Retained the existing source and test layout because structural churn was not justified.
+
+## Milestone 2 — external SAM acceptance attempt 2026-09-09 (CONDITIONAL retained)
+
+- The external SAM acceptance gate opened `2026-09-09T00:00:00Z`. An acceptance run was attempted at
+  `2026-09-09T03:04:50Z` following the unchanged sequence in `02-EXECUTION.md`.
+- Result: the gate could not begin. Step 1 (`SAM_API_KEY present: yes`) fails because no `SAM_API_KEY`
+  is available in this execution environment — the key lives only in a repository-local, gitignored
+  `.env` (mode 600) that is never present in a fresh clone/container. The environment variable is also
+  unset. Verified: `has_sam == False`, and the SAM adapter fails closed with
+  `RuntimeError("SAM_API_KEY is required for the SAM connector")` — there is no cache, fixture, saved
+  record, or manual-payload path that could substitute for a genuinely fresh retrieval.
+- Classification: **provider/runtime prerequisite failure, not an implementation failure.** No fresh
+  SAM response, raw archive, or archive hash was produced (none could be, honestly). The frozen M2
+  acceptance logic and gate were NOT modified or weakened.
+- Disposition: M2 remains **CONDITIONAL PASS**. All implemented M2 behavior remains green (249 tests
+  pass; SAM fail-closed verified). Closure is deferred to a run in an environment where `SAM_API_KEY`
+  is provisioned. This does not undermine M10 safety (M10 grounding leans on keyless USAspending/SEC
+  and archived SAM bytes), so milestone progression to M10 continues per authority.

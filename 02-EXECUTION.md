@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate; M3–M8 closed; M9 in progress · updated 2026-09-08_
+_Current execution window: M2 external closure gate (environment-blocked); M3–M9 closed; M10 active · updated 2026-09-09_
 
 ## Active work
 
@@ -23,6 +23,12 @@ At the gate:
 
 Do not weaken the gate. If SAM quota/service remains the only failure, preserve state and record the
 exact external response.
+
+**2026-09-09 attempt:** the gate opened `2026-09-09T00:00:00Z`; a run attempted `2026-09-09T03:04:50Z`
+could not begin because `SAM_API_KEY` is not provisioned in the execution environment (fresh clone; the
+gitignored `.env` is absent). The adapter fails closed; no fresh retrieval, archive, or hash was
+produced. M2 remains CONDITIONAL — an environment/provider prerequisite, not an implementation defect.
+Rerun unchanged where `SAM_API_KEY` is available. See `06-HISTORY.md`.
 
 ### Milestone 3 — CLOSED
 
@@ -70,7 +76,7 @@ M8 passed acceptance on 2026-09-08: `pyrnova/company.py` (evidence-backed compan
 PRIME/SUPPORT/TEAM/DEFEND/NO_FIT). 48-case `corpus_m8.json` extends the frozen M7 corpus; a recovered
 Operations Panel is stabilized. `scoring_v1` unchanged. See `docs/replay/M8_FIT_REPORT.md`.
 
-### Milestone 9 — in progress
+### Milestone 9 — CLOSED
 
 M9 replaces synthetic company-fit proof with real, evidence-backed company intelligence and
 point-in-time fit calibration. Implemented offline-first per `docs/specs/M9_REAL_COMPANY_GROUNDING.md`:
@@ -92,11 +98,13 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. Complete and record the unchanged M2 live acceptance gate after the reset (gate opens
-   2026-09-09T00:00:00Z; still closed at this handover).
-2. Broaden real grounding (SAM/SEC/capability statements → certifications, clearances, vehicles) and
-   grow the graded real-fit sample before generalizing fit precision.
-3. Do not alter scoring or begin a later milestone without separate authority.
+1. M2 external gate remains open but environment-blocked (no `SAM_API_KEY` in this container). Rerun the
+   unchanged sequence, without weakening it, where the key is provisioned; then record timestamp + hash.
+2. M10 (active): broaden real grounding beyond USAspending prime history — SAM/SEC/official-capability
+   evidence (certifications, clearances, vehicles), subaward/teaming evidence, real SUPPORT/TEAM
+   exercise, `corpus_m10` with synthetic/real/multi-source metrics kept separate. See
+   `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`.
+3. Do not alter `scoring_v1` or begin M11 without M10 closing cleanly and all gates passing.
 
 ## Active constraints
 

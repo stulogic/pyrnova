@@ -4,8 +4,14 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 ## Milestone status
 
-- **M2: CONDITIONAL PASS / EXTERNAL SAM ACCEPTANCE PENDING.** All implemented behavior is green; a
-  fresh post-quota-reset SAM call is the sole formal closure gate.
+- **M2: CONDITIONAL PASS / EXTERNAL SAM ACCEPTANCE STILL PENDING.** All implemented behavior is green
+  (249 tests). The external gate opened `2026-09-09T00:00:00Z`. An acceptance run was attempted on
+  `2026-09-09T03:04:50Z` and could not begin: gate step 1 (`SAM_API_KEY present: yes`) fails because no
+  `SAM_API_KEY` is available in this execution environment (the gitignored `.env` is never present in a
+  fresh clone), so a genuinely fresh SAM retrieval is impossible here. The SAM adapter correctly fails
+  closed (`RuntimeError`) with no key — there is no cache/fixture/manual substitute, and the gate was
+  not weakened. This is a provider/runtime prerequisite failure, not an implementation failure; the
+  fresh-SAM external artifact still does not exist. See `06-HISTORY.md`.
 - **M3: CLOSED.** The formal acceptance review passed on 2026-09-08.
 - **M4: CLOSED.** Offline-first source expansion passed its implementation and regression gates on
   2026-09-08; live connectivity checks remain operational freshness work, not closure evidence.
@@ -21,7 +27,7 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   matched against commercial-consequence requirements produce an explainable capture posture
   (PRIME/SUPPORT/TEAM/DEFEND/NO_FIT) with fit dimensions, structured blockers, and point-in-time truth.
   A recovered internal Operations Panel is stabilized and sandbox-safe. `scoring_v1` unchanged.
-- **M9: IN PROGRESS.** Real company grounding + production fit calibration: company profiles are built
+- **M9: CLOSED.** Real company grounding + production fit calibration: company profiles are built
   from real archived USAspending evidence (Torch Technologies, Modern Technology Solutions), filtered
   strictly point-in-time, then run through the fit engine against real historical opportunities.
   Real-profile metrics are reported separately from synthetic; temporal leakage is a hard gate.
@@ -241,7 +247,9 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 ## Known limitations
 
-- M2 has no fresh post-reset SAM acceptance artifact yet.
+- M2 has no fresh post-reset SAM acceptance artifact yet. The 2026-09-09 gate attempt was blocked by the
+  absence of `SAM_API_KEY` in the execution environment (fresh clone; gitignored `.env` not present), not
+  by any implementation defect. Closure requires a run in an environment where `SAM_API_KEY` is provided.
 - Only three known-outcome M3 cases are STRIKEs, so precision uncertainty remains wide.
 - Binary metrics exclude PARTIAL and AMBIGUOUS cases.
 - Value calibration has only two comparable cases and supports no general conclusion.
@@ -302,8 +310,12 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
 
 ## Exact next action
 
-Run the unchanged M2 live acceptance sequence in `02-EXECUTION.md` at or after
-`2026-09-09T00:00:00Z`, then record the acceptance timestamp and raw SAM archive hash here and in
-`06-HISTORY.md`. Then broaden real-profile grounding: add SAM/SEC/capability-statement evidence
-(certifications, clearances, vehicles), profile more real companies, and grow the graded real-fit
-sample before generalizing fit precision.
+M2 closure is blocked only by environment: rerun the unchanged M2 live acceptance sequence in
+`02-EXECUTION.md` from an environment where `SAM_API_KEY` is provided (at or after
+`2026-09-09T00:00:00Z`), then record the acceptance timestamp and raw SAM archive hash here and in
+`06-HISTORY.md`. The acceptance logic and gate are unchanged and must not be weakened.
+
+Active build (M10): broaden real-profile grounding beyond USAspending prime-award history — add
+SAM/SEC/official-capability evidence (certifications, clearances, vehicles), subaward/teaming evidence,
+exercise SUPPORT/TEAM on real evidence, and grow the graded real-fit sample (`corpus_m10`) with
+synthetic/real/multi-source metrics kept separate. See `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`.
