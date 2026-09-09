@@ -45,6 +45,7 @@ LIVE_FETCH = "live_fetch"          # a live call was authorized and made
 SKIPPED_PAUSED = "skipped_paused"  # operator paused this source
 SKIPPED_OFFLINE = "skipped_offline"  # OFFLINE mode, nothing cached, no fixture bytes
 SKIPPED_BUDGET = "skipped_budget"  # durable budget exhausted for this epoch
+SKIPPED_NOT_DUE = "skipped_not_due"  # poll cadence not yet elapsed; no request issued
 CIRCUIT_OPEN = "circuit_open"      # breaker is open; next poll deferred
 ERROR = "error"                    # fetcher raised; failure recorded, backoff advised
 
@@ -125,6 +126,114 @@ class SourceScheduler:
         doc["breaker"] = {"state": CircuitState.CLOSED.value, "consecutive_failures": 0,
                           "next_permitted_poll": None}
         self.state.save(source_id, doc)
+
+    # ------------------------------------------------------------------ poll cadence (M13)
+
+    def _schedule(self, source_id: str) -> dict:
+        return self.state.load(source_id).get("schedule") or {}
+
+    def set_poll_interval(self, source_id: str, seconds: float) -> None:
+        """Persist a minimum interval (seconds) between live polls for a source."""
+        if seconds < 0:
+            raise ValueError("poll interval must be non-negative")
+        doc = self.state.load(source_id)
+        sched = dict(doc.get("schedule") or {})
+        sched["interval_seconds"] = float(seconds)
+        doc["schedule"] = sched
+        self.state.save(source_id, doc)
+
+    def get_poll_interval(self, source_id: str) -> Optional[float]:
+        val = self._schedule(source_id).get("interval_seconds")
+        return float(val) if isinstance(val, (int, float)) else None
+
+    def mark_polled(self, source_id: str, *, now: Optional[float] = None) -> float:
+        """Record that a live poll was attempted for a source (advances the cadence clock)."""
+        stamp = float(now) if now is not None else _epoch_now()
+        doc = self.state.load(source_id)
+        sched = dict(doc.get("schedule") or {})
+        sched["last_polled"] = stamp
+        doc["schedule"] = sched
+        self.state.save(source_id, doc)
+        return stamp
+
+    def _breaker_next_poll(self, source_id: str) -> Optional[float]:
+        npp = (self.state.load(source_id).get("breaker") or {}).get("next_permitted_poll")
+        return float(npp) if isinstance(npp, (int, float)) else None
+
+    def next_poll_due(self, source_id: str) -> Optional[float]:
+        """Epoch seconds when this source may next be polled: the later of cadence and breaker cooldown.
+
+        ``None`` interval means 'no cadence configured' → cadence never defers (breaker may still)."""
+        sched = self._schedule(source_id)
+        interval = sched.get("interval_seconds")
+        last = sched.get("last_polled")
+        cadence_due = (float(last) + float(interval)) if (
+            isinstance(interval, (int, float)) and isinstance(last, (int, float))) else None
+        breaker_due = self._breaker_next_poll(source_id)
+        candidates = [c for c in (cadence_due, breaker_due) if c is not None]
+        return max(candidates) if candidates else None
+
+    def next_poll_at(self, source_id: str) -> Optional[str]:
+        """ISO-8601 rendering of :meth:`next_poll_due` for operator display."""
+        due = self.next_poll_due(source_id)
+        if due is None:
+            return None
+        from datetime import datetime, timezone
+
+        return datetime.fromtimestamp(due, tz=timezone.utc).isoformat()
+
+    def due(self, source_id: str, *, now: Optional[float] = None) -> bool:
+        """Is this source due for a live poll? Paused/circuit-open/cadence-not-elapsed all defer it."""
+        if self.is_paused(source_id):
+            return False
+        current = float(now) if now is not None else _epoch_now()
+        due_at = self.next_poll_due(source_id)
+        return True if due_at is None else current >= due_at
+
+    def due_sources(self, source_ids: Optional[list[str]] = None, *, now: Optional[float] = None) -> list[str]:
+        ids = source_ids if source_ids is not None else self.known_sources()
+        return [sid for sid in ids if self.due(sid, now=now)]
+
+    def poll(
+        self,
+        source_id: str,
+        *,
+        request: dict,
+        now: Optional[float] = None,
+        **run_job_kwargs: Any,
+    ) -> SourceJobResult:
+        """Cadence-aware wrapper over :meth:`run_job`.
+
+        If the source is not yet due (cadence not elapsed, circuit cooling, or paused) it returns a
+        ``SKIPPED_NOT_DUE`` / ``SKIPPED_PAUSED`` result **without** issuing any request. Otherwise it
+        runs the job and advances the cadence clock. ``run_job`` itself is unchanged, so nothing that
+        does not opt into ``poll`` sees any behaviour change."""
+        eff_mode = self.effective_mode(source_id, run_job_kwargs.get("mode"))
+        fp = request_fingerprint(
+            request.get("method", "GET"), request.get("url", ""),
+            params=request.get("params"), headers=request.get("headers"),
+            payload=request.get("payload"))
+        if self.is_paused(source_id):
+            return SourceJobResult(source_id, SKIPPED_PAUSED, eff_mode.value, fp,
+                                   reason=self._operator(source_id).get("paused_reason") or "operator paused",
+                                   checkpoint=self.state.get_checkpoint(source_id))
+        # The cadence gate only governs requests that would actually reach the network. A request already
+        # in the dedupe/cache index (served from archive, no budget) is not deferred by cadence — nor is
+        # an OFFLINE replay of supplied fixture bytes. Only a genuine live call obeys the poll window.
+        would_hit_network = not (
+            (self.state.seen_request(source_id, fp) and eff_mode != SourceMode.ACCEPTANCE)
+            or eff_mode == SourceMode.OFFLINE
+        )
+        if would_hit_network and not self.due(source_id, now=now):
+            return SourceJobResult(source_id, SKIPPED_NOT_DUE, eff_mode.value, fp,
+                                   reason=f"not due until {self.next_poll_at(source_id)}",
+                                   checkpoint=self.state.get_checkpoint(source_id))
+        result = self.run_job(source_id, request=request, now=now, **run_job_kwargs)
+        # Advance the cadence clock on any real attempt (live fetch, offline replay, or error), but not
+        # on a pure cache hit — a dedupe hit did not consume a poll window.
+        if result.action != CACHE_HIT:
+            self.mark_polled(source_id, now=now)
+        return result
 
     # ------------------------------------------------------------------ control hydration
 
@@ -226,7 +335,10 @@ class SourceScheduler:
         try:
             content = fetcher(request)
         except Exception as exc:  # noqa: BLE001 — the scheduler owns backoff, not the fetcher
-            control.record_failure("service", now=now)
+            # A fetcher may tag its exception with ``failure_category`` (e.g. "throttle" for HTTP 429)
+            # so throttle/quota metrics reflect reality; anything untagged is a generic "service" fault.
+            category = getattr(exc, "failure_category", "service") or "service"
+            control.record_failure(category, now=now)
             retry = control.retry_metadata(control.breaker.consecutive_failures, reason=str(exc))
             self._persist(source_id, control)
             return SourceJobResult(source_id, ERROR, eff_mode.value, fp, reason="fetcher raised",
@@ -290,6 +402,9 @@ class SourceScheduler:
                 "last_detected_change": snap.get("last_detected_change"),
                 "checkpoint": doc.get("checkpoint"),
                 "indexed_requests": len(doc.get("requests") or {}),
+                "poll_interval_seconds": self.get_poll_interval(sid),
+                "next_poll_at": self.next_poll_at(sid),
+                "due": self.due(sid),
             })
         return rows
 
@@ -321,6 +436,12 @@ def _iso_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _epoch_now() -> float:
+    import time
+
+    return time.time()
+
+
 def _retry_dict(retry: Any) -> dict:
     if retry is None:
         return {}
@@ -335,5 +456,5 @@ def _retry_dict(retry: Any) -> dict:
 __all__ = [
     "SourceScheduler", "SourceJobResult",
     "CACHE_HIT", "OFFLINE_REPLAY", "LIVE_FETCH", "SKIPPED_PAUSED", "SKIPPED_OFFLINE",
-    "SKIPPED_BUDGET", "CIRCUIT_OPEN", "ERROR",
+    "SKIPPED_BUDGET", "SKIPPED_NOT_DUE", "CIRCUIT_OPEN", "ERROR",
 ]
