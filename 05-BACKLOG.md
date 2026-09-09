@@ -2,6 +2,10 @@
 
 Backlog presence is not implementation authority. `02-EXECUTION.md` controls active work.
 
+This backlog holds prioritized near-term work. Longer-horizon strategic capabilities live in
+`docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`; milestone planning must consult that roadmap and
+promote, defer, supersede, or reject its items explicitly — never drop them silently.
+
 ## P0 — next authorized sequence
 
 - Execute M10 (`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`) from an environment with egress to the

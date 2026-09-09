@@ -27,6 +27,11 @@ When documents conflict, use this precedence:
 5. Relevant `docs/specs/` document — detailed implementation contract.
 6. `05-BACKLOG.md` — prioritized future work only.
 
+`docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` is **strategic roadmap authority**: the durable record
+of longer-horizon capabilities milestone planning must consult and must not silently drop. It is not
+implementation authority — it does not authorize work or override any entry above, and sits above
+`05-BACKLOG.md` only in time horizon.
+
 Do not treat `docs/research/`, `docs/archive/`, or `docs/handovers/` as implementation authority unless
 a canonical authority or specification explicitly incorporates them.
 
@@ -42,6 +47,8 @@ a canonical authority or specification explicitly incorporates them.
 - `examples/observations/` — sanitized example observations, never live credentials.
 - `db/` — canonical production schema.
 - `docs/specs/` — active product, run, review, and source-ingestion specifications.
+- `docs/strategy/` — strategic capability roadmap: durable longer-horizon capabilities, non-authoritative
+  over active work but binding on milestone-planning consultation.
 - `docs/architecture/` — current system structure and design boundaries.
 - `docs/research/` — supporting analysis and retrospective evidence; non-authoritative.
 - `docs/replay/` — M3 corpus evidence and reproducible baseline reports.

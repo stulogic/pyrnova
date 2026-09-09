@@ -49,6 +49,11 @@ The complete operating contract, modes, budgets, checkpoints, backoff, and metri
 ## Scope governance
 
 - `02-EXECUTION.md` authorizes current work. Backlog entries do not.
+- Strategically material capabilities not yet built are recorded durably in
+  `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`. Milestone planning must consult that roadmap; items
+  there may be prioritized, deferred, researched, superseded, or explicitly rejected, but must not be
+  silently dropped without owner direction or a documented decision in `04-DECISIONS.md`. The roadmap is
+  strategic authority only — it never overrides this authority, execution, or a closed milestone.
 - Prefer narrow, test-backed changes and preserve proven behavior.
 - Do not deploy, contact prospects, spend money, or begin a later milestone without explicit authority.
 - Historical research and handovers cannot override current authority. See `00-INDEX.md` for precedence.
