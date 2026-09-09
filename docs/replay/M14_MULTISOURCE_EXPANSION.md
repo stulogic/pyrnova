@@ -12,16 +12,26 @@ archive-first families: **`sbir`** (federal R&D — earliest capability/commerci
 **`sanctions_ofac`** (sanctions/trade exposure). Reliability/status per source is in `SOURCE_MANIFEST.md`.
 
 Operational (real bytes): `usaspending` (live-proven, M13), `sam_opportunities` (live-proven, M2),
-`sec_edgar` (archive-operational on real SAIC submissions). Adapter-ready offline: `federal_register`,
-`grants_gov`, `appropriations`, `acquisition_forecast`, `sbir`, `sanctions_ofac`.
+`sec_edgar` (archive-operational on real SAIC submissions), `sanctions_ofac` (archive-operational — see
+below). Adapter-ready offline: `federal_register`, `grants_gov`, `appropriations`, `acquisition_forecast`.
+Blocked: `sbir` (provider returned HTTP 403).
 
 ## Live-call discipline
 
-Zero live external calls were made in M14. Both new adapters were developed and validated entirely
-against representative fixtures and existing real archives (`examples/real_evidence/`). `sbir`
-connectivity is `unverified` (SBIR.gov API reported under maintenance, 2026-09); `sanctions_ofac` exact
-current download host is `unverified` pending a single connectivity check. The SDN.CSV fixed-field
-schema and SBIR JSON schema are stable and confirmed from official documentation.
+Exactly **two** bounded connectivity probes were made in M14 (one per new keyless source, no retries),
+with all adapter/parser/chain development done against fixtures and existing real archives:
+
+- **`sanctions_ofac` — 1 call, HTTP 200, 5.68 MB, 19,365 real designations.** A single bulk download of
+  `www.treasury.gov/ofac/downloads/sdn.csv` confirmed the host and validated `parse_ofac_csv` on real
+  production data (7,519 individuals, 1,540 vessels, 342 aircraft, remainder entities). Raw bytes were
+  archived offline (git-ignored `var/m14_archive/`, sha256 `1c878982988268de…`) — **archive-once,
+  replay-many**; no further OFAC calls were made. Records-per-call: 19,365.
+- **`sbir` — 1 call, HTTP 403 Forbidden.** `api.www.sbir.gov/public/api/awards` refused the probe
+  (consistent with the provider-maintenance notice, 2026-09). Documented blocker; the adapter is
+  validated offline and connectivity should be retried when the provider is available.
+
+The SDN.CSV fixed-field schema and SBIR JSON schema are stable and confirmed from official
+documentation.
 
 ## Cross-source chains (Workstream 5)
 
@@ -74,8 +84,9 @@ secret leakage (adapters archive sanitized provenance only; no credentials in re
 
 ## Known weaknesses / next steps
 
-- `sbir` and `sanctions_ofac` need one connectivity/acceptance call each to move from `unverified` to
-  `live_proven`/`archive_operational` (deferred pending provider availability; archive-first by design).
+- `sanctions_ofac` is now `archive_operational` on real bytes; a per-snapshot content-hash cadence run
+  would exercise change-detection over time. `sbir` remains `blocked` (HTTP 403) pending provider
+  availability — retry one connectivity call to upgrade it to `archive_operational`.
 - Chain A's SBIR award *content* is representative; the entity anchor (UEI) and the USAspending award
   are real. A live SBIR acquisition for Torch would upgrade the award content to real bytes.
 - OFAC exposure matching is deliberately name-only/weak (non-authoritative); authoritative

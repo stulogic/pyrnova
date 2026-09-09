@@ -11,8 +11,11 @@ cross-source chains; M2–M13 CLOSED)._
   (`pyrnova/sources/registry.py`) became the durable manifest (family/signals/access/cadence/budget/
   reliability/status/priority/identifiers/links per source) and now declares **nine families across
   distinct economic domains**, adding `sbir` (federal R&D precursor) and `sanctions_ofac` (sanctions/
-  trade exposure) as keyless, archive-first adapters (`pyrnova/sources/sbir.py`, `pyrnova/sources/ofac.py`;
-  OFFLINE-first, zero live calls made). `pyrnova/cross_source.py` demonstrates two real cross-source
+  trade exposure) as keyless, archive-first adapters (`pyrnova/sources/sbir.py`, `pyrnova/sources/ofac.py`).
+  Two bounded connectivity probes (one per new source): `sanctions_ofac` → HTTP 200, one 5.68MB SDN bulk
+  download → **19,365 real designations** parsed (archive-operational; bytes archived git-ignored,
+  archive-once/replay-many); `sbir` → HTTP 403 (provider maintenance — status `blocked`, adapter validated
+  offline). `pyrnova/cross_source.py` demonstrates two real cross-source
   chains reusing `chains.py`/`multisource.py`: **Chain A** SBIR→USAspending (Torch, anchored on the
   authoritative UEI `YA63J5PVEZE6` read from the recipient endpoint; 2 cross-family accepted joins,
   3 rejected weak joins, chain confidence 0.60, 2 independent sources, ~6.8-year R&D→procurement lead

@@ -279,11 +279,15 @@ REGISTRY: dict[str, SourceSpec] = {
         native_cadence="awards published as agencies report (batched)",
         recommended_poll="monthly (award_year window)",
         call_budget="tight: one connectivity/schema call + narrow firm/year window; archive-first",
-        reliability="unverified",  # api.www.sbir.gov reported under maintenance; connectivity call pending
-        status="adapter_ready",
+        reliability="unverified",  # 2026-09-09 connectivity probe returned HTTP 403 (maintenance/bot-block)
+        status="blocked",
         priority="high",
         precursor_stage="PROGRAM",
-        rights_note="Public domain US government work; keyless public API. Provider maintenance noted 2026-09.",
+        rights_note=(
+            "Public domain US government work; keyless public API. 2026-09-09: single connectivity probe "
+            "to api.www.sbir.gov/public/api/awards returned HTTP 403 (provider maintenance / bot-block); "
+            "adapter validated offline on fixtures. Retry connectivity when the provider is available."
+        ),
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",
@@ -310,13 +314,15 @@ REGISTRY: dict[str, SourceSpec] = {
         native_cadence="irregular, event-driven (designations as issued)",
         recommended_poll="daily list snapshot (content-hash gated; only re-archive on change)",
         call_budget="minimal: one bulk file per changed publication",
-        reliability="unverified",  # exact current download host to be confirmed by a connectivity call
-        status="adapter_ready",
+        reliability="archive_operational",  # 2026-09-09: 1 bulk download -> 19,365 real designations parsed
+        status="operational",
         priority="high",
         precursor_stage="",
         rights_note=(
             "Public domain US government work. Sanctions screening for compliance decisions has legal "
-            "weight; Pyrnova uses it only as intelligence evidence, not as an authoritative screening tool."
+            "weight; Pyrnova uses it only as intelligence evidence, not as an authoritative screening tool. "
+            "2026-09-09: host www.treasury.gov/ofac/downloads/sdn.csv confirmed (HTTP 200, 5.68MB, 19,365 "
+            "designations); real bytes archived offline (git-ignored var/). Develop against the archive."
         ),
     ),
 }
