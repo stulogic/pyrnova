@@ -1581,6 +1581,47 @@ def summarize_m20(results: list[dict]) -> dict:
     return base
 
 
+def summarize_m21(results: list[dict]) -> dict:
+    """M21 metrics: everything ``summarize_m20`` reports, plus explicit accounting for the first
+    **economic relationship outside the government-program graph** (``SUBSIDIARY_OF``) and the
+    **raw-archived source-native contract termination** family. Additive; never republishes a rate
+    without its denominator."""
+    base = summarize_m20(results)
+    rel = base.get("relationship_type_diversity", {})
+    real_types = rel.get("real_relationship_types", [])
+    # Government-program relations are the pre-M21 graph; SUBSIDIARY_OF/PARENT_OF/SUPPLIER_OF/CUSTOMER_OF
+    # are genuinely economic relations outside it.
+    program_graph_relations = {"SUBCONTRACTOR_OF", "COMPANY_TO_PROGRAM"}
+    economic_beyond_program = sorted(r for r in real_types if r not in program_graph_relations)
+
+    # Contract terminations are the M21 flagship adverse-event upgrade: a categorical PROGRAM_CANCELLATION
+    # from the contract_modification family (vs a magnitude-modest deobligation -> PROGRAM_CONTRACTION).
+    termination_direct = sum(
+        1 for r in results for t in r["threats"]
+        if adverse_event_family(t) == "contract_modification"
+        and t["mechanism"] == "PROGRAM_CANCELLATION_OR_DELAY")
+    termination_propagated = sum(
+        1 for r in results if r.get("propagation")
+        for t in r["propagation"]["propagated_threats"]
+        if adverse_event_family(t) == "contract_modification"
+        and t["mechanism"] == "PROGRAM_CANCELLATION_OR_DELAY")
+
+    base["m21_relationship_diversity"] = {
+        "real_relationship_types": real_types,
+        "economic_relationship_types_beyond_program_graph": economic_beyond_program,
+        "subsidiary_of_exercised": "SUBSIDIARY_OF" in real_types,
+        "unique_entity_pairs": rel.get("unique_entity_pairs"),
+    }
+    base["m21_raw_adverse_event"] = {
+        "flagship_family": "contract_modification",
+        "flagship_event_type": "CONTRACT_TERMINATION",
+        "raw_authoritative_bytes": True,  # archived raw USAspending response bytes (sha256 sidecars)
+        "termination_direct_threats": termination_direct,
+        "termination_propagated_threats": termination_propagated,
+    }
+    return base
+
+
 def c_relationships(result: dict) -> list[dict]:
     """The relationship edges a case exercised (empty-safe helper for the independence rollup)."""
     prop = result.get("propagation")

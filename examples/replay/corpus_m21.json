@@ -1,0 +1,192 @@
+{
+  "corpus_id": "corpus_m21",
+  "note": "M21 extends the frozen corpus_m20 lineage with a RAW, authoritative contract-termination flagship, a new SUBSIDIARY_OF economic relationship (native-id parent hierarchy), and selectivity negatives proving broader source/relationship coverage does not create threat explosion. Point-in-time; scoring_v1/fit.py untouched. The flagship later outcome is honestly UNRESOLVED (the termination is days old; no defensible independent later evidence within budget).",
+  "extends": "corpus_m20.json",
+  "threat_cases": [
+    {
+      "case_id": "m21-real-termination-subsidiary",
+      "real_subject": true,
+      "note": "Flagship: RAW USAspending terminate-for-convenience (PIID 36C25726N0240, VA Kerrville VAMC boiler replacement; mod P00002, -$3,908,263.25, 2026-08-31) archived as raw response bytes. Deterministic UEI incumbency -> HIGH-confidence PROGRAM_CANCELLATION_OR_DELAY -> propagates up to the parent over a native-id SUBSIDIARY_OF edge. Severity honestly LOW (frozen $ bands, ~$3.9M); confidence HIGH.",
+      "subject": {"ref": "co_dap_sub", "name": "DAP CONSTRUCTION MANAGEMENT LLC", "uei": "YR7CLZFGCM95"},
+      "replay_as_of": "2026-08-31",
+      "outcome_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "YR7CLZFGCM95", "program_key": "36C25726N0240",
+         "program_name": "VA Kerrville VAMC boiler replacement (671A4-21-160)",
+         "available_at": "2026-03-04", "period_start": "2026-03-04", "period_end": null,
+         "amount_usd": 3950539.76, "agency": "Department of Veterans Affairs",
+         "evidence_id": "usaspending:award:36C25726N0240",
+         "source_ref": "usaspending:award:36C25726N0240"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "source_ref": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_id": "usaspending:txn:36C25726N0240:P00002", "evidence_strength": 5,
+         "amount_delta_usd": 3908263.25, "recipient_uei": "YR7CLZFGCM95", "horizon": "IMMEDIATE",
+         "summary": "Terminate For Convenience on 36C25726N0240 (P00002)", "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "relationships": [
+        {"from_ref": "co_dap_sub", "from_name": "DAP CONSTRUCTION MANAGEMENT LLC",
+         "to_ref": "co_uei_KMSLVW1MZWU9", "to_name": "DAP CONSTRUCTION MANAGEMENT, LLC",
+         "relation": "SUBSIDIARY_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id",
+         "confidence": 0.9,
+         "evidence_ids": ["usaspending:recipient:80a64a2b-1d3a-6c52-af0d-1aac27b76a3a-C",
+                          "uei:YR7CLZFGCM95", "uei:KMSLVW1MZWU9"],
+         "available_at": "2026-03-04", "valid_from": "2026-03-04", "valid_to": null,
+         "source_id": "usaspending",
+         "provenance": {"child_uei": "YR7CLZFGCM95", "parent_uei": "KMSLVW1MZWU9", "role": "subsidiary"}}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+        "severity": {"PROGRAM_CANCELLATION_OR_DELAY": "LOW"},
+        "confidence": {"PROGRAM_CANCELLATION_OR_DELAY": "HIGH"},
+        "catalyst_class": "OBSERVED",
+        "exposure_join_class": "deterministic",
+        "adverse_event_family": "contract_modification",
+        "propagated_threats": 1,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m21-termination-unrelated-same-sector-no-exposure",
+      "note": "Selectivity: a different construction firm (same NAICS 236220, same broad sector/geography) with its own award on a DIFFERENT PIID is NOT exposed to DAP's terminated PIID. Shared sector/geography is not a dependency.",
+      "subject": {"ref": "co_other_construction", "name": "OTHER BUILDERS LLC", "uei": "ZZZZ9999ZZZZ"},
+      "replay_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "ZZZZ9999ZZZZ", "program_key": "36C25726N9999",
+         "program_name": "Unrelated VA construction award", "available_at": "2026-03-04",
+         "period_start": "2026-03-04", "period_end": null, "amount_usd": 2500000.0,
+         "agency": "Department of Veterans Affairs", "evidence_id": "usaspending:award:36C25726N9999"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "source_ref": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_id": "usaspending:txn:36C25726N0240:P00002", "evidence_strength": 5,
+         "amount_delta_usd": 3908263.25, "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_reasons": ["NO_EXPOSURE"]
+      }
+    },
+    {
+      "case_id": "m21-subsidiary-edge-not-yet-valid",
+      "note": "Temporal validity: the SUBSIDIARY_OF edge only becomes valid after the event, so the direct threat still fires but nothing propagates (relationship temporal termination).",
+      "subject": {"ref": "co_dap_sub", "name": "DAP CONSTRUCTION MANAGEMENT LLC", "uei": "YR7CLZFGCM95"},
+      "replay_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "YR7CLZFGCM95", "program_key": "36C25726N0240",
+         "available_at": "2026-03-04", "period_start": "2026-03-04", "period_end": null,
+         "amount_usd": 3950539.76, "evidence_id": "usaspending:award:36C25726N0240"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "evidence_id": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_strength": 5, "amount_delta_usd": 3908263.25, "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "relationships": [
+        {"from_ref": "co_dap_sub", "to_ref": "co_uei_KMSLVW1MZWU9", "to_name": "DAP parent",
+         "relation": "SUBSIDIARY_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id",
+         "confidence": 0.9, "evidence_ids": ["uei:KMSLVW1MZWU9"], "available_at": "2026-03-04",
+         "valid_from": "2026-09-15", "valid_to": null, "source_id": "usaspending"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+        "propagated_threats": 0,
+        "relationship_temporal_terminations": 1
+      }
+    },
+    {
+      "case_id": "m21-weak-subsidiary-name-only-terminates",
+      "note": "Weak/inferred relationship insufficient for propagation: a name-only (weak) purported parent edge terminates propagation rather than carrying the threat.",
+      "subject": {"ref": "co_dap_sub", "name": "DAP CONSTRUCTION MANAGEMENT LLC", "uei": "YR7CLZFGCM95"},
+      "replay_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "YR7CLZFGCM95", "program_key": "36C25726N0240",
+         "available_at": "2026-03-04", "period_start": "2026-03-04", "period_end": null,
+         "amount_usd": 3950539.76, "evidence_id": "usaspending:award:36C25726N0240"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "evidence_id": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_strength": 5, "amount_delta_usd": 3908263.25, "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "relationships": [
+        {"from_ref": "co_dap_sub", "to_ref": "co_similar_name", "to_name": "DAP CONSTRUCTION INC (unrelated)",
+         "relation": "SUBSIDIARY_OF", "link_class": "REJECTED", "join_method": "name_only_weak",
+         "confidence": 0.3, "evidence_ids": [], "available_at": "2026-03-04", "valid_from": "2026-03-04",
+         "valid_to": null, "source_id": "usaspending"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+        "propagated_threats": 0
+      }
+    },
+    {
+      "case_id": "m21-lapsed-incumbency-exposure-ended",
+      "note": "Deterministic identity is not itself a threat: a lapsed incumbency (award period ended before the termination action) is EXPOSURE_ENDED, not a threat.",
+      "subject": {"ref": "co_dap_sub", "name": "DAP CONSTRUCTION MANAGEMENT LLC", "uei": "YR7CLZFGCM95"},
+      "replay_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "YR7CLZFGCM95", "program_key": "36C25726N0240",
+         "available_at": "2026-03-04", "period_start": "2026-03-04", "period_end": "2026-06-01",
+         "amount_usd": 3950539.76, "evidence_id": "usaspending:award:36C25726N0240"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "evidence_id": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_strength": 5, "amount_delta_usd": 3908263.25, "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "expected": {
+        "threat_count": 0,
+        "rejection_reasons": ["EXPOSURE_ENDED"]
+      }
+    },
+    {
+      "case_id": "m21-duplicate-subsidiary-edge-suppressed",
+      "note": "Duplicate evidence does not create duplicate intelligence: two identical SUBSIDIARY_OF edges still yield exactly one propagated threat (duplicate collapse).",
+      "subject": {"ref": "co_dap_sub", "name": "DAP CONSTRUCTION MANAGEMENT LLC", "uei": "YR7CLZFGCM95"},
+      "replay_as_of": "2026-08-31",
+      "award_records": [
+        {"recipient_uei": "YR7CLZFGCM95", "program_key": "36C25726N0240",
+         "available_at": "2026-03-04", "period_start": "2026-03-04", "period_end": null,
+         "amount_usd": 3950539.76, "evidence_id": "usaspending:award:36C25726N0240"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "catalyst_class": "OBSERVED",
+         "catalyst_id": "cat_term_36C25726N0240:P00002", "family": "contract_modification",
+         "program_key": "36C25726N0240", "target_ref": "36C25726N0240", "available_at": "2026-08-31",
+         "source_id": "usaspending", "evidence_id": "usaspending:txn:36C25726N0240:P00002",
+         "evidence_strength": 5, "amount_delta_usd": 3908263.25, "event_type": "CONTRACT_TERMINATION"}
+      ],
+      "relationships": [
+        {"from_ref": "co_dap_sub", "to_ref": "co_uei_KMSLVW1MZWU9", "to_name": "DAP parent",
+         "relation": "SUBSIDIARY_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id",
+         "confidence": 0.9, "evidence_ids": ["uei:KMSLVW1MZWU9"], "available_at": "2026-03-04",
+         "valid_from": "2026-03-04", "valid_to": null, "source_id": "usaspending"},
+        {"from_ref": "co_dap_sub", "to_ref": "co_uei_KMSLVW1MZWU9", "to_name": "DAP parent",
+         "relation": "SUBSIDIARY_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id",
+         "confidence": 0.9, "evidence_ids": ["uei:KMSLVW1MZWU9"], "available_at": "2026-03-04",
+         "valid_from": "2026-03-04", "valid_to": null, "source_id": "usaspending"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "propagated_threats": 1,
+        "duplicate_threats_suppressed": 1
+      }
+    }
+  ]
+}
