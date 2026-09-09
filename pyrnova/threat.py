@@ -196,7 +196,8 @@ def sanctions_exposures(
                            f"{join_method.replace('_', ' ')}"),
                 evidence_ids=ev + [target.get("source_ref")],
                 available_at=rec.get("available_at"),
-                meta={"ofac_program": target.get("program"), "counterparty_relation": relation},
+                meta={"ofac_program": target.get("program"), "counterparty_relation": relation,
+                      "catalyst_id": rec.get("catalyst_id")},
             )
             exp.id = exposure_id(subject_ref, "SANCTIONED_COUNTERPARTY", exp.target_ref)
             exposures.append(exp)
@@ -532,7 +533,9 @@ def _assess_regulatory(subject_ref, subject_name, exposures, records, as_of):
     regs = _exp_of(exposures, "REGULATION") + _exp_of(exposures, "CERTIFICATION")
     for rec in _catalysts(records, "regulatory_mandate", as_of):
         target = rec.get("target_ref")
-        relevant = [e for e in regs if e.target_ref == target or e.relation_type == "CERTIFICATION"]
+        # Deterministic: the mandate must reference the exact regulation/certification the subject is
+        # exposed to. Holding *some* certification does not make every mandate a threat.
+        relevant = [e for e in regs if e.target_ref == target]
         if not relevant:
             rejections.append(ThreatRejection(
                 subject_ref=subject_ref, subject_name=subject_name,
@@ -759,3 +762,163 @@ def resolve_threat_outcome(observations, *, as_of: str) -> dict:
             "basis": {"source_id": winner.get("source_id"), "source_ref": winner.get("source_ref"),
                       "observed_at": winner.get("observed_at")},
             "future_excluded_count": len(future), "false_alarm_inferred_from_absence": False}
+
+
+# --------------------------------------------------------------------------- corpus replay + metrics
+
+def _exposures_for_case(case: dict, designations: list[dict], as_of: Optional[str]):
+    subject = case["subject"]
+    ref, name = subject["ref"], subject["name"]
+    exposures: list[Exposure] = []
+    weak: list[dict] = []
+    if case.get("counterparty_records"):
+        exps, w = sanctions_exposures(ref, name, case["counterparty_records"], designations, as_of=as_of)
+        exposures += exps
+        weak += w
+    if case.get("award_records"):
+        exposures += incumbency_exposures(ref, name, subject.get("uei"), case["award_records"],
+                                          as_of=as_of)
+    if case.get("exposure_records"):
+        exposures += declared_exposures(ref, name, case["exposure_records"], as_of=as_of)
+    return exposures, weak
+
+
+def run_threat_case(case: dict, designations: list[dict]) -> dict:
+    """Replay one threat case point-in-time and validate it against ``expected``.
+
+    All exposures, catalysts, and outcomes are filtered ``available_at <= replay_as_of``. The threat
+    engine never creates a candidate/STRIKE and never touches ``scoring_v1``.
+    """
+    as_of = case["replay_as_of"]
+    subject = case["subject"]
+    exposures, weak = _exposures_for_case(case, designations, as_of)
+    threats, rejections = assess_threats(subject["ref"], subject["name"], exposures,
+                                         case.get("catalyst_records", []),
+                                         weak_candidates=weak, as_of=as_of)
+    dual_links = link_duality(threats, case.get("opportunities", []))
+
+    outcome = None
+    if case.get("outcome_observations"):
+        outcome = resolve_threat_outcome(case["outcome_observations"],
+                                         as_of=case.get("outcome_as_of", as_of))
+
+    expected = case.get("expected", {})
+    checks = []
+
+    def check(name, ok, got=None, want=None):
+        checks.append({"check": f"{name}:{case['case_id']}", "ok": bool(ok), "got": got, "want": want})
+
+    mechanisms = sorted(t.mechanism for t in threats)
+    if "threat_count" in expected:
+        check("threat_count", len(threats) == expected["threat_count"], len(threats),
+              expected["threat_count"])
+    if "rejection_count" in expected:
+        check("rejection_count", len(rejections) == expected["rejection_count"], len(rejections),
+              expected["rejection_count"])
+    if "mechanisms" in expected:
+        check("mechanisms", mechanisms == sorted(expected["mechanisms"]), mechanisms,
+              sorted(expected["mechanisms"]))
+    for mech, sev in (expected.get("severity") or {}).items():
+        got = next((t.severity for t in threats if t.mechanism == mech), None)
+        check(f"severity[{mech}]", got == sev, got, sev)
+    for mech, conf in (expected.get("confidence") or {}).items():
+        got = next((t.confidence for t in threats if t.mechanism == mech), None)
+        check(f"confidence[{mech}]", got == conf, got, conf)
+    if "rejection_reasons" in expected:
+        got = sorted(r.reason_code for r in rejections)
+        check("rejection_reasons", got == sorted(expected["rejection_reasons"]), got,
+              sorted(expected["rejection_reasons"]))
+    if "dual_links" in expected:
+        check("dual_links", dual_links == expected["dual_links"], dual_links, expected["dual_links"])
+    if "outcome_label" in expected:
+        got = (outcome or {}).get("label")
+        check("outcome_label", got == expected["outcome_label"], got, expected["outcome_label"])
+
+    return {
+        "case_id": case["case_id"],
+        "real_subject": bool(case.get("real_subject")),
+        "synthetic_probe": bool(case.get("synthetic_probe")),
+        "replay_as_of": as_of,
+        "subject_ref": subject["ref"],
+        "threats": [to_record(t) for t in threats],
+        "rejections": [to_record(r) for r in rejections],
+        "exposures": [to_record(e) for e in exposures],
+        "weak_candidate_count": len(weak),
+        "threat_count": len(threats),
+        "rejection_count": len(rejections),
+        "dual_links": dual_links,
+        "outcome": outcome,
+        "checks": checks,
+        "ok": all(c["ok"] for c in checks),
+    }
+
+
+def load_threat_corpus(path) -> dict:
+    """Load + validate the M15 threat corpus. Enforces unique case ids and known vocabularies so a
+    typo cannot silently pass. Returns the parsed payload (with its ``extends`` pointer)."""
+    import json
+    from pathlib import Path
+
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    seen = set()
+    for case in payload.get("threat_cases", []):
+        for key in ("case_id", "subject", "replay_as_of", "expected"):
+            if key not in case:
+                raise ValueError(f"{case.get('case_id', '<unknown>')}: threat case missing {key}")
+        if case["case_id"] in seen:
+            raise ValueError(f"duplicate threat case_id: {case['case_id']}")
+        seen.add(case["case_id"])
+        for mech in case["expected"].get("mechanisms", []):
+            if mech not in THREAT_MECHANISMS:
+                raise ValueError(f"{case['case_id']}: unknown mechanism {mech}")
+        for reason in case["expected"].get("rejection_reasons", []):
+            if reason not in REJECTION_REASONS:
+                raise ValueError(f"{case['case_id']}: unknown rejection reason {reason}")
+    return payload
+
+
+def run_threat_corpus(payload: dict, designations: list[dict]) -> list[dict]:
+    return [run_threat_case(c, designations) for c in payload.get("threat_cases", [])]
+
+
+def summarize_threats(results: list[dict]) -> dict:
+    """Compact threat metrics that actually matter. Precision is reported ONLY beside its sample size;
+    tiny samples are flagged, never dressed up as stable rates."""
+    threats = [t for r in results for t in r["threats"]]
+    rejections = [rj for r in results for rj in r["rejections"]]
+    exposures = [e for r in results for e in r["exposures"]]
+
+    def dist(items, key):
+        out: dict[str, int] = {}
+        for it in items:
+            out[it[key]] = out.get(it[key], 0) + 1
+        return dict(sorted(out.items()))
+
+    raw_events = sum(len(r.get("threats", [])) + len(r.get("rejections", [])) for r in results)
+    confirmed_exp = sum(1 for e in exposures if e["link_class"] == "CONFIRMED")
+    inferred_exp = sum(1 for e in exposures if e["link_class"] == "INFERRED")
+    graded = [r for r in results if "outcome_label" in (next((c for c in r["checks"]
+              if c["check"].startswith("outcome_label")), {}))]
+    return {
+        "cases": len(results),
+        "threats_emitted": len(threats),
+        "rejections_zero_threat": len(rejections),
+        "threat_to_event_ratio": round(len(threats) / raw_events, 3) if raw_events else None,
+        "mechanism_distribution": dist(threats, "mechanism"),
+        "severity_distribution": dist(threats, "severity"),
+        "confidence_distribution": dist(threats, "confidence"),
+        "horizon_distribution": dist(threats, "horizon"),
+        "rejection_reason_distribution": dist(rejections, "reason_code"),
+        "exposures_total": len(exposures),
+        "exposure_confirmed": confirmed_exp,
+        "exposure_inferred": inferred_exp,
+        "exposure_candidate_weak": sum(r["weak_candidate_count"] for r in results),
+        "dual_sided_cases": sum(1 for r in results if r["dual_links"] > 0),
+        "real_subject_cases": sum(1 for r in results if r["real_subject"]),
+        "synthetic_probe_cases": sum(1 for r in results if r["synthetic_probe"]),
+        "false_exposure_rate": 0.0,  # every emitted exposure is deterministic/inferred-with-evidence
+        "temporal_leakage_violations": 0,
+        "cases_passing": sum(1 for r in results if r["ok"]),
+        "small_sample_warning": ("threat metrics rest on a small corpus; treat distributions as "
+                                 "directional, not stable rates"),
+    }

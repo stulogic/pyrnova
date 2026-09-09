@@ -1,0 +1,281 @@
+{
+  "corpus_id": "corpus_m15",
+  "schema_version": "threat_v1",
+  "extends": "corpus_m11.json",
+  "reviewed_at": "2026-09-09",
+  "notes": "M15 first-class threat corpus. EXTENDS (does not alter) the frozen scoring/outcome corpora — threat cases use a distinct schema and their own point-in-time replay (pyrnova.threat.run_threat_corpus) and never touch scoring_v1. Sanctions cases run REAL linkage semantics against the committed illustrative OFAC fixture (tests/fixtures/ofac_sdn_sample.csv) for deterministic CI; the same code runs on the 19,365 real archived SDN designations proven archive-operational in M14 (see tests/test_m15_real_ofac.py, guarded). Cases flagged synthetic_probe use a clearly-labelled controlled catalyst where no public evidence exposes the effect; real_subject cases are grounded in committed real award evidence (examples/real_evidence/).",
+  "designations_source": "tests/fixtures/ofac_sdn_sample.csv",
+  "threat_cases": [
+    {
+      "case_id": "m15-sanctions-confirmed-supplier",
+      "synthetic_probe": true,
+      "subject": {"ref": "co_acme_importer", "name": "Acme Importer Corp"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:acme:supplier:2023", "available_at": "2023-01-15", "relation": "SUPPLIER",
+         "counterparty_name": "Global Defense Supply LLC", "counterparty_ofac_ent_num": 10002,
+         "evidence_id": "ev:acme:gds"}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["SANCTIONS_EXPOSURE"],
+                   "severity": {"SANCTIONS_EXPOSURE": "HIGH"}, "confidence": {"SANCTIONS_EXPOSURE": "HIGH"},
+                   "rejection_reasons": []}
+    },
+    {
+      "case_id": "m15-sanctions-dual-sided",
+      "synthetic_probe": true,
+      "subject": {"ref": "co_importer_b", "name": "Importer B"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:b:supplier", "available_at": "2023-02-01", "relation": "SUPPLIER",
+         "counterparty_name": "Northstar Trading Group", "counterparty_country": "IRAN",
+         "catalyst_id": "cat_sanction_nst", "evidence_id": "ev:b:nst"}
+      ],
+      "opportunities": [
+        {"id": "cons_compliant_substitute", "catalyst_id": "cat_sanction_nst",
+         "note": "same OFAC designation opens demand for a compliant domestic substitute supplier"}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["SANCTIONS_EXPOSURE"],
+                   "dual_links": 1, "confidence": {"SANCTIONS_EXPOSURE": "HIGH"}}
+    },
+    {
+      "case_id": "m15-sanctions-weak-name-reject",
+      "subject": {"ref": "co_northstar_logistics", "name": "Northstar Logistics of Ohio"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:nlo:cust", "available_at": "2023-01-01", "relation": "CUSTOMER",
+         "counterparty_name": "Northstar Freight Partners"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["WEAK_NAME_MATCH_ONLY"]}
+    },
+    {
+      "case_id": "m15-sanctions-unknown-no-linkage",
+      "subject": {"ref": "co_ordinary", "name": "Ordinary Widgets Co"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:ow:sup", "available_at": "2023-01-01", "relation": "SUPPLIER",
+         "counterparty_name": "Reliable Midwest Fasteners"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 0}
+    },
+    {
+      "case_id": "m15-incumbent-displacement-real-torch",
+      "real_subject": true,
+      "synthetic_probe": true,
+      "note": "REAL subject + REAL incumbency exposure (Torch award W31P4Q21F0038, $623M, Army OASIS SB pool 5B HWIL, start 2021-01-15, end 2027-05-28; examples/real_evidence/usaspending_torch.json). The recompete/set-aside-change catalyst is a labelled controlled probe: no public evidence yet records an actual displacement event. Threat is evidence-backed on the exposure side.",
+      "subject": {"ref": "co_torch", "name": "Torch Technologies Inc", "uei": "YA63J5PVEZE6"},
+      "replay_as_of": "2025-01-01",
+      "award_records": [
+        {"source_ref": "usa:award:W31P4Q21F0038", "available_at": "2021-01-15",
+         "recipient_uei": "YA63J5PVEZE6", "program_key": "W31P4Q21F0038",
+         "program_name": "Army OASIS SB Pool 5B — HWIL systems", "agency": "Department of the Army",
+         "amount_usd": 623310899.16, "period_start": "2021-01-15", "period_end": "2027-05-28",
+         "evidence_id": "usa:award:W31P4Q21F0038"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "W31P4Q21F0038", "available_at": "2024-06-01",
+         "source_ref": "probe:recompete:oasis-sb", "displacement_signal": "set_aside_change",
+         "evidence_strength": 2}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["INCUMBENT_DISPLACEMENT"],
+                   "severity": {"INCUMBENT_DISPLACEMENT": "CRITICAL"},
+                   "confidence": {"INCUMBENT_DISPLACEMENT": "MEDIUM"}}
+    },
+    {
+      "case_id": "m15-recompete-not-a-threat",
+      "subject": {"ref": "co_incumbent_x", "name": "Incumbent X", "uei": "UEIINCUMBENTX"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:px", "available_at": "2020-01-01", "recipient_uei": "UEIINCUMBENTX",
+         "program_key": "prog:px", "program_name": "Program PX", "amount_usd": 12000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:px", "available_at": "2024-01-01",
+         "source_ref": "sam:recompete:px"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["RECOMPETE_NOT_A_THREAT"]}
+    },
+    {
+      "case_id": "m15-program-cancellation",
+      "subject": {"ref": "co_dep_c", "name": "Dependent C", "uei": "UEIDEPC"},
+      "replay_as_of": "2024-09-01",
+      "award_records": [
+        {"source_ref": "usa:award:pc", "available_at": "2021-01-01", "recipient_uei": "UEIDEPC",
+         "program_key": "prog:pc", "program_name": "Program PC", "amount_usd": 8000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "program_key": "prog:pc", "available_at": "2024-06-01",
+         "source_ref": "fr:cancel:pc", "amount_delta_usd": 8000000, "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0,
+                   "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+                   "severity": {"PROGRAM_CANCELLATION_OR_DELAY": "MODERATE"},
+                   "confidence": {"PROGRAM_CANCELLATION_OR_DELAY": "HIGH"}}
+    },
+    {
+      "case_id": "m15-program-contraction",
+      "subject": {"ref": "co_dep_d", "name": "Dependent D", "uei": "UEIDEPD"},
+      "replay_as_of": "2024-09-01",
+      "award_records": [
+        {"source_ref": "usa:award:pd", "available_at": "2021-01-01", "recipient_uei": "UEIDEPD",
+         "program_key": "prog:pd", "program_name": "Program PD", "amount_usd": 60000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "prog:pd", "available_at": "2024-06-01",
+         "source_ref": "approps:cut:pd", "amount_delta_usd": 40000000, "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["PROGRAM_CONTRACTION"],
+                   "severity": {"PROGRAM_CONTRACTION": "HIGH"},
+                   "confidence": {"PROGRAM_CONTRACTION": "HIGH"}}
+    },
+    {
+      "case_id": "m15-regulatory-compliance-cost",
+      "subject": {"ref": "co_reg_e", "name": "Regulated E"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "REGULATION", "target_ref": "fr:rule:emissions-2024", "target_name": "Emissions rule 2024",
+         "available_at": "2024-01-01", "deterministic": true, "source_ref": "fr:emissions"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "fr:rule:emissions-2024",
+         "available_at": "2024-03-01", "source_ref": "fr:emissions", "compliance_cost_usd": 3000000,
+         "summary": "Emissions rule 2024 imposes new compliance cost", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0,
+                   "mechanisms": ["REGULATORY_COMPLIANCE_EXPOSURE"],
+                   "severity": {"REGULATORY_COMPLIANCE_EXPOSURE": "MODERATE"},
+                   "confidence": {"REGULATORY_COMPLIANCE_EXPOSURE": "HIGH"}}
+    },
+    {
+      "case_id": "m15-eligibility-cert-dual",
+      "subject": {"ref": "co_cmmc_e", "name": "Contractor CMMC"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CERTIFICATION", "target_ref": "cert:cmmc-l2", "target_name": "CMMC Level 2",
+         "available_at": "2024-01-01", "source_ref": "sam:cert:cmmc"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "cert:cmmc-l2", "available_at": "2024-03-01",
+         "source_ref": "fr:cmmc", "eligibility_gated": true, "catalyst_id": "cat_cmmc",
+         "summary": "CMMC Level 2 becomes an award-eligibility gate", "evidence_strength": 4}
+      ],
+      "opportunities": [
+        {"id": "cons_cmmc_vendor", "catalyst_id": "cat_cmmc",
+         "note": "same mandate creates a compliance-vendor opportunity"}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0,
+                   "mechanisms": ["ELIGIBILITY_OR_CERTIFICATION_RISK"],
+                   "severity": {"ELIGIBILITY_OR_CERTIFICATION_RISK": "HIGH"}, "dual_links": 1}
+    },
+    {
+      "case_id": "m15-customer-concentration",
+      "subject": {"ref": "co_conc_f", "name": "Concentrated F"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CUSTOMER", "target_ref": "agency:single-buyer", "target_name": "Single Buyer Agency",
+         "available_at": "2023-01-01", "revenue_share": 0.55, "source_ref": "usa:hist:f"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "customer_adverse_change", "target_ref": "agency:single-buyer",
+         "available_at": "2024-03-01", "source_ref": "approps:cut:buyer", "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["CUSTOMER_CONCENTRATION"],
+                   "severity": {"CUSTOMER_CONCENTRATION": "HIGH"}}
+    },
+    {
+      "case_id": "m15-zero-threat-irrelevant-regulation",
+      "subject": {"ref": "co_unaffected_g", "name": "Unaffected G"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CERTIFICATION", "target_ref": "cert:iso-9001", "target_name": "ISO 9001",
+         "available_at": "2023-01-01", "source_ref": "sam:cert:g"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "cert:cmmc-l2", "available_at": "2024-03-01",
+         "source_ref": "fr:cmmc", "eligibility_gated": true, "summary": "CMMC mandate (unrelated cert)"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m15-future-evidence-exclusion",
+      "subject": {"ref": "co_future_h", "name": "Future H", "uei": "UEIFUTUREH"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:ph", "available_at": "2020-01-01", "recipient_uei": "UEIFUTUREH",
+         "program_key": "prog:ph", "amount_usd": 30000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:ph", "available_at": "2024-12-01",
+         "source_ref": "sam:recompete:ph", "displacement_signal": "named_competitor",
+         "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 0}
+    },
+    {
+      "case_id": "m15-severity-confidence-split",
+      "note": "High magnitude ($200M) with only an INFERRED exposure and weak catalyst: severity CRITICAL, confidence LOW — proving the two scales are orthogonal and never collapsed.",
+      "subject": {"ref": "co_split_i", "name": "Split I"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "PROGRAM", "target_ref": "prog:big", "target_name": "Big Program",
+         "available_at": "2024-01-01", "amount_usd": 200000000, "confidence": 0.6,
+         "source_ref": "infer:big", "rationale": "inferred strong-attribute dependency"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "prog:big", "available_at": "2024-03-01",
+         "source_ref": "rumor:big", "amount_delta_usd": 200000000, "evidence_strength": 1}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["PROGRAM_CONTRACTION"],
+                   "severity": {"PROGRAM_CONTRACTION": "CRITICAL"},
+                   "confidence": {"PROGRAM_CONTRACTION": "LOW"}}
+    },
+    {
+      "case_id": "m15-evolution-t1-weak-candidate",
+      "note": "Threat evolution T1: at an early cutoff only a weak name resemblance exists — no authoritative exposure, so a rejection (not a threat) is recorded.",
+      "subject": {"ref": "co_evolve", "name": "Evolve Corp"},
+      "replay_as_of": "2023-03-01",
+      "counterparty_records": [
+        {"source_ref": "reg:evolve:sup:t1", "available_at": "2023-01-01", "relation": "SUPPLIER",
+         "counterparty_name": "Northstar Components"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["WEAK_NAME_MATCH_ONLY"]}
+    },
+    {
+      "case_id": "m15-evolution-t2-confirmed-plus-outcome",
+      "note": "Threat evolution T2: later, an authoritative OFAC ent_num identifier resolves the same relationship => a CONFIRMED sanctions threat. An outcome observation (MATERIALIZED) dated AFTER the prediction cutoff is excluded at prediction time (resolves UNKNOWN), proving future outcomes never alter historical threat state; the original prediction is preserved.",
+      "subject": {"ref": "co_evolve", "name": "Evolve Corp"},
+      "replay_as_of": "2023-09-01",
+      "outcome_as_of": "2023-09-01",
+      "counterparty_records": [
+        {"source_ref": "reg:evolve:sup:t2", "available_at": "2023-08-01", "relation": "SUPPLIER",
+         "counterparty_name": "Global Defense Supply LLC", "counterparty_ofac_ent_num": 10002,
+         "evidence_id": "ev:evolve:gds"}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_evolve", "label": "MATERIALIZED", "observed_at": "2024-02-01",
+         "source_id": "news", "source_ref": "enforcement:evolve:2024", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["SANCTIONS_EXPOSURE"],
+                   "confidence": {"SANCTIONS_EXPOSURE": "HIGH"}, "outcome_label": "UNKNOWN"}
+    },
+    {
+      "case_id": "m15-outcome-materialized-resolved",
+      "note": "Outcome linkage: the same threat resolved as of a LATER cutoff, when the materialization is knowable.",
+      "subject": {"ref": "co_evolve", "name": "Evolve Corp"},
+      "replay_as_of": "2023-09-01",
+      "outcome_as_of": "2024-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:evolve:sup:t2", "available_at": "2023-08-01", "relation": "SUPPLIER",
+         "counterparty_name": "Global Defense Supply LLC", "counterparty_ofac_ent_num": 10002,
+         "evidence_id": "ev:evolve:gds"}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_evolve", "label": "MATERIALIZED", "observed_at": "2024-02-01",
+         "source_id": "news", "source_ref": "enforcement:evolve:2024", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["SANCTIONS_EXPOSURE"], "outcome_label": "MATERIALIZED"}
+    }
+  ]
+}
