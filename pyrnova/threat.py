@@ -1138,6 +1138,11 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
             check("duplicate_threats_suppressed",
                   pstats["duplicate_threats_suppressed"] == expected["duplicate_threats_suppressed"],
                   pstats["duplicate_threats_suppressed"], expected["duplicate_threats_suppressed"])
+        if "relationship_temporal_terminations" in expected:
+            got = pstats.get("relationship_temporal_terminations", 0)
+            check("relationship_temporal_terminations",
+                  got == expected["relationship_temporal_terminations"], got,
+                  expected["relationship_temporal_terminations"])
     if "propagated_outcome_label" in expected:
         got = (propagated_outcome or {}).get("label")
         check("propagated_outcome_label", got == expected["propagated_outcome_label"], got,
@@ -1348,6 +1353,7 @@ def summarize_m18(results: list[dict]) -> dict:
                 "target_ref": pt.get("subject_ref"),
                 "relation": path[-1].get("relation"),
                 "source_family": ("federal_register" if "fr" in families else
+                                  "sec_edgar" if "sec" in families else
                                   "usaspending" if any(f.startswith("usa") for f in families) else None),
                 "observed_catalyst": cclass(pt) == "OBSERVED",
             })
@@ -1513,6 +1519,65 @@ def summarize_m19(results: list[dict]) -> dict:
     }
     base["multi_family_selectivity"] = dict(sorted(families.items()))
     base["adverse_event_families_exercised"] = sorted(families.keys())
+    return base
+
+
+def summarize_m20(results: list[dict]) -> dict:
+    """M20 third-family, relationship-type, temporal, and severe-outcome metrics."""
+    base = summarize_m19(results)
+    by_type: dict[str, int] = {}
+    real_types, probe_types, entity_pairs = set(), set(), set()
+    resolved_by_type: dict[str, int] = {}
+    false_by_type: dict[str, int] = {}
+    temporal_terminations = 0
+    high = {"total": 0, "resolved": 0, "materialized": 0, "mitigated": 0,
+            "avoided": 0, "false_alert": 0, "unresolved": 0}
+
+    for result in results:
+        prop = result.get("propagation") or {}
+        temporal_terminations += (prop.get("stats") or {}).get("relationship_temporal_terminations", 0)
+        case_types = set()
+        for pt in prop.get("propagated_threats") or ():
+            for hop in (pt.get("meta") or {}).get("propagation_path") or ():
+                relation = hop.get("relation")
+                if not relation:
+                    continue
+                by_type[relation] = by_type.get(relation, 0) + 1
+                case_types.add(relation)
+                entity_pairs.add((hop.get("from_ref"), hop.get("to_ref")))
+                (probe_types if result.get("synthetic_probe") else real_types).add(relation)
+        pout = result.get("propagated_outcome") or {}
+        if pout.get("resolved"):
+            for relation in case_types:
+                resolved_by_type[relation] = resolved_by_type.get(relation, 0) + 1
+                if pout.get("label") == "FALSE_ALARM":
+                    false_by_type[relation] = false_by_type.get(relation, 0) + 1
+
+        outcome = result.get("outcome") or {}
+        for threat in result.get("threats") or ():
+            if threat.get("severity") not in ("HIGH", "CRITICAL"):
+                continue
+            high["total"] += 1
+            if outcome.get("resolved"):
+                high["resolved"] += 1
+                label = str(outcome.get("label") or "").lower()
+                key = "false_alert" if label == "false_alarm" else label
+                if key in high:
+                    high[key] += 1
+            else:
+                high["unresolved"] += 1
+
+    base["relationship_type_diversity"] = {
+        "relationship_types": sorted(by_type),
+        "propagation_chains_by_type": dict(sorted(by_type.items())),
+        "real_relationship_types": sorted(real_types),
+        "probe_relationship_types": sorted(probe_types),
+        "unique_entity_pairs": len(entity_pairs),
+        "resolved_outcomes_by_type": dict(sorted(resolved_by_type.items())),
+        "propagated_false_alerts_by_type": dict(sorted(false_by_type.items())),
+    }
+    base["high_critical_outcomes"] = high
+    base["relationship_temporal_terminations"] = temporal_terminations
     return base
 
 

@@ -336,6 +336,8 @@ class OperatorConsole:
                  "catalyst_class": e.get("catalyst_class"),
                  # Deterministic native ids present for the contract-modification family (PIID + UEI).
                  "piid": e.get("piid"), "recipient_uei": e.get("recipient_uei"),
+                 "cik": e.get("cik"), "target_ref": e.get("target_ref"),
+                 "amount_usd": e.get("amount_usd"), "summary": e.get("summary") or e.get("title"),
                  "source_url": e.get("source_url")}
                 for e in events[:25]],
             "relationship_independence": independence or {},

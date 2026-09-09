@@ -1,0 +1,93 @@
+{
+  "corpus_id": "pyrnova-threat-m20-v1",
+  "note": "M20 extends frozen M19 with a real SEC material-restructuring event, exact-CIK exposure, deterministic COMPANY_TO_PROGRAM propagation, severe selectivity, and relationship-time negatives.",
+  "extends": "corpus_m19.json",
+  "threat_cases": [
+    {
+      "case_id": "m20-real-sec-restructuring-company-program",
+      "real_subject": true,
+      "note": "Flagship: SAIC fiscal-2026 Form 10-K disclosed $35M restructuring, impairment and exit costs. Exact CIK exposure yields a HIGH/HIGH direct materialized threat and propagates to the active Army W31P4Q21F0095 program over a deterministic prime-award edge.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-16",
+      "outcome_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "OBSERVED", "catalyst_id": "cat_sec_0001571123-26-000029:MATERIAL_RESTRUCTURING", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_id": "sec_edgar", "source_ref": "sec:filing:0001571123-26-000029", "evidence_id": "sec:filing:0001571123-26-000029:material_restructuring", "evidence_strength": 5, "amount_at_risk_usd": 35000000, "materiality_floor_usd": 5000000, "horizon": "IMMEDIATE", "observed_effect": true, "event_type": "MATERIAL_RESTRUCTURING", "summary": "Fiscal 2026 restructuring and facility exits"}],
+      "relationships": [{"from_ref": "co_saic", "from_name": "Science Applications International Corporation", "to_ref": "program:W31P4Q21F0095", "to_name": "Army HWIL and modeling/simulation engineering", "relation": "COMPANY_TO_PROGRAM", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "confidence": 0.95, "available_at": "2021-03-03", "valid_from": "2021-03-03", "valid_to": "2028-09-23", "source_id": "usaspending", "evidence_ids": ["usaspending:award:W31P4Q21F0095", "usaspending:recipient:20af0683-f17d-1f8f-38ee-2f11bd124559-C"], "provenance": {"recipient_id": "20af0683-f17d-1f8f-38ee-2f11bd124559-C", "award_id": "W31P4Q21F0095", "role": "prime"}}],
+      "outcome_observations": [{"threat_id": "thr_4a3006eddb9aecc36946", "label": "MATERIALIZED", "observed_at": "2026-03-16", "source_id": "sec_edgar", "source_ref": "sec:filing:0001571123-26-000029", "evidence_strength": 5, "notes": "The adverse costs are reported realized costs, not a future inference."}],
+      "expected": {"threat_count": 1, "mechanisms": ["CORPORATE_RESTRUCTURING"], "severity": {"CORPORATE_RESTRUCTURING": "HIGH"}, "confidence": {"CORPORATE_RESTRUCTURING": "HIGH"}, "catalyst_class": "OBSERVED", "exposure_join_class": "deterministic", "adverse_event_family": "sec_corporate_adverse_event", "propagated_threats": 1, "max_depth_reached": 1, "outcome_label": "MATERIALIZED"}
+    },
+    {
+      "case_id": "m20-sec-wrong-cik-negative",
+      "real_subject": true,
+      "note": "A real filing does not threaten a different exact CIK, even with a similar sector.",
+      "subject": {"ref": "co_other", "name": "Other Government Services Company"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0000000001", "target_name": "Other filer", "deterministic": true, "available_at": "2020-01-01", "evidence_id": "sec:CIK0000000001"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "OBSERVED", "catalyst_id": "cat_sec_wrong_cik", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:filing:0001571123-26-000029", "evidence_id": "sec:filing:0001571123-26-000029:material_restructuring", "evidence_strength": 5, "amount_at_risk_usd": 35000000}],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m20-sec-immaterial-negative",
+      "synthetic_probe": true,
+      "note": "Exact CIK alone is not a threat; a sub-floor routine corporate cost is rejected.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "PROBE", "catalyst_id": "cat_sec_immaterial_probe", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:probe:immaterial", "evidence_id": "sec:probe:immaterial", "evidence_strength": 5, "amount_at_risk_usd": 1000000, "materiality_floor_usd": 5000000}],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["IMMATERIAL"]}
+    },
+    {
+      "case_id": "m20-sec-future-event-excluded",
+      "synthetic_probe": true,
+      "note": "The March 16 filing cannot contaminate a March 1 evaluation.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-01",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "OBSERVED", "catalyst_id": "cat_sec_future", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:filing:0001571123-26-000029", "evidence_id": "sec:filing:0001571123-26-000029:material_restructuring", "evidence_strength": 5, "amount_at_risk_usd": 35000000}],
+      "expected": {"threat_count": 0, "rejection_count": 0}
+    },
+    {
+      "case_id": "m20-future-relationship-evidence-excluded",
+      "synthetic_probe": true,
+      "note": "A relationship not knowable until after evaluation cannot carry the real event.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "OBSERVED", "catalyst_id": "cat_sec_rel_future", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:filing:0001571123-26-000029", "evidence_id": "sec:filing:0001571123-26-000029:material_restructuring", "evidence_strength": 5, "amount_at_risk_usd": 35000000}],
+      "relationships": [{"from_ref": "co_saic", "to_ref": "program:future", "relation": "COMPANY_TO_PROGRAM", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "available_at": "2026-04-01", "valid_from": "2026-01-01", "evidence_ids": ["usaspending:award:future"]}],
+      "expected": {"threat_count": 1, "propagated_threats": 0}
+    },
+    {
+      "case_id": "m20-relationship-not-yet-valid",
+      "synthetic_probe": true,
+      "note": "Known relationship evidence with a later valid_from cannot retroactively propagate.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "PROBE", "catalyst_id": "cat_sec_rel_not_yet_valid", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:probe:relationship-time", "evidence_id": "sec:probe:relationship-time", "evidence_strength": 5, "amount_at_risk_usd": 35000000}],
+      "relationships": [{"from_ref": "co_saic", "to_ref": "program:future", "relation": "COMPANY_TO_PROGRAM", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "available_at": "2026-01-01", "valid_from": "2026-04-01", "evidence_ids": ["usaspending:award:future"]}],
+      "expected": {"threat_count": 1, "propagated_threats": 0, "relationship_temporal_terminations": 1}
+    },
+    {
+      "case_id": "m20-name-only-relationship-rejected",
+      "synthetic_probe": true,
+      "note": "A parent/program/supplier assumption represented only by name similarity is not an allowed economic relationship and does not propagate.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0001571123", "target_name": "SAIC SEC filer", "deterministic": true, "available_at": "2017-03-30", "evidence_id": "sec:CIK0001571123"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "PROBE", "catalyst_id": "cat_sec_name_edge", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0001571123", "available_at": "2026-03-16", "source_ref": "sec:probe:name-edge", "evidence_id": "sec:probe:name-edge", "evidence_strength": 5, "amount_at_risk_usd": 35000000}],
+      "relationships": [{"from_ref": "co_saic", "to_ref": "co_similar_name", "relation": "NAME_SIMILARITY", "link_class": "CANDIDATE", "join_method": "name_only_weak", "available_at": "2020-01-01", "evidence_ids": ["name-only"]}],
+      "expected": {"threat_count": 1, "propagated_threats": 0}
+    },
+    {
+      "case_id": "m20-critical-selectivity-probe",
+      "synthetic_probe": true,
+      "note": "CRITICAL remains reserved for a quantified amount above $100M; this is a labeled probe, not a real event claim.",
+      "subject": {"ref": "co_probe", "name": "Critical Threshold Probe"},
+      "replay_as_of": "2026-03-16",
+      "exposure_records": [{"relation": "CORPORATE_ENTITY", "target_ref": "sec:CIK0000000002", "target_name": "Probe filer", "deterministic": true, "available_at": "2020-01-01", "evidence_id": "sec:probe:cik"}],
+      "catalyst_records": [{"catalyst_kind": "corporate_restructuring", "catalyst_class": "PROBE", "catalyst_id": "cat_sec_critical_probe", "family": "sec_corporate_adverse_event", "target_ref": "sec:CIK0000000002", "available_at": "2026-03-16", "source_ref": "sec:probe:critical", "evidence_id": "sec:probe:critical", "evidence_strength": 5, "amount_at_risk_usd": 150000000}],
+      "expected": {"threat_count": 1, "mechanisms": ["CORPORATE_RESTRUCTURING"], "severity": {"CORPORATE_RESTRUCTURING": "CRITICAL"}, "confidence": {"CORPORATE_RESTRUCTURING": "HIGH"}, "catalyst_class": "PROBE", "exposure_join_class": "deterministic"}
+    }
+  ]
+}
