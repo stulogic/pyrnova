@@ -308,8 +308,16 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
     leakage_violations: list[dict] = []
     for company in case.get("companies", []):
         grounded = company.get("grounded")
-        if grounded:
-            # Build the profile from REAL archived source evidence, filtered strictly point-in-time.
+        if grounded and grounded.get("sources"):
+            # M10: build from MULTIPLE real archived source families, filtered strictly point-in-time.
+            from .multisource import build_multisource_profile
+
+            name = company["name"]
+            profile = build_multisource_profile(
+                name, grounded["sources"], as_of, base_meta=grounded.get("meta_extra"))
+            profiles[profile.company_id] = profile
+        elif grounded:
+            # M9: build from a single REAL archived USAspending fixture, filtered point-in-time.
             from pathlib import Path as _Path
 
             from .company import company_id as _cid
@@ -333,6 +341,9 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
         if probe:
             present = {e.source_ref for e in profile.capabilities} | {
                 h.get("award_ref") for h in profile.contract_history}
+            # M10: sub-award ids, multi-source fact refs, and partner names are all point-in-time gated.
+            present |= {f.get("source_ref") for f in (profile.meta.get("source_facts") or [])}
+            present |= {p for p in (profile.partners or [])}
             for ref in probe:
                 if ref in present:
                     leakage_violations.append({"company_id": profile.company_id, "ref": ref})
@@ -372,6 +383,18 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
             checks.append({"check": f"blocker:{name}", "ok": exp["expected_blocker"] in codes,
                            "got": sorted(codes), "want": exp["expected_blocker"]})
 
+    profiles_meta = []
+    for p in profiles.values():
+        meta = p.meta or {}
+        profiles_meta.append({
+            "company_id": p.company_id,
+            "source_families": meta.get("source_families") or ([meta["grounding_source"]] if meta.get("grounding_source") else []),
+            "source_family_count": meta.get("source_family_count", 1 if meta.get("grounding_source") else 0),
+            "has_eligibility": bool(meta.get("eligibility")),
+            "has_subcontract": any(h.get("role") == "sub" for h in (p.contract_history or [])),
+            "authoritative_partner_count": len(p.partners or []),
+        })
+
     result = {
         "case_id": case["case_id"], "replay_as_of": as_of, "ground_truth": case.get("ground_truth"),
         "profile_source": case.get("profile_source", "synthetic"),
@@ -379,6 +402,7 @@ def run_fit_replay(case: dict, *, store: Optional[StateStore] = None) -> dict:
         "fits": fits, "expected_fit_checks": checks,
         "expected_fit_ok": all(c["ok"] for c in checks) if checks else None,
         "leakage_violations": leakage_violations,
+        "profiles_meta": profiles_meta,
     }
     if store is not None:
         from .company import to_record as company_record
@@ -453,6 +477,36 @@ def summarize_fit_results(results: list[dict], *, source: str | None = None) -> 
         "profile_source": source or "all",
         "small_sample_warning": ("fit precision rests on very few graded fits; treat as directional"
                                  if len(graded) < 20 else None),
+    }
+
+
+def summarize_multisource_results(results: list[dict]) -> dict:
+    """M10 multi-source grounding observability (no scoring impact).
+
+    Aggregates per-profile source diversity, eligibility coverage, and subcontract coverage across the
+    real multi-source cases. Reported SEPARATELY from synthetic (M8) and single-family real (M9) fit
+    metrics — never blended into one flattering number."""
+    metas = [m for r in results for m in (r.get("profiles_meta") or [])]
+    # A multi-source profile is one grounded from >= 2 real source families.
+    multi = [m for m in metas if m.get("source_family_count", 0) >= 2]
+
+    def rate(n, d):
+        return round(n / d, 4) if d else None
+
+    diversities = [m["source_family_count"] for m in metas if m.get("source_family_count")]
+    all_families = sorted({f for m in metas for f in (m.get("source_families") or [])})
+    return {
+        "profiles_evaluated": len(metas),
+        "multi_source_profiles": len(multi),
+        "distinct_source_families": all_families,
+        "profile_source_diversity_avg": round(sum(diversities) / len(diversities), 4) if diversities else None,
+        "max_source_families": max(diversities) if diversities else 0,
+        "eligibility_coverage": rate(sum(1 for m in metas if m.get("has_eligibility")), len(metas)),
+        "subcontract_coverage": rate(sum(1 for m in metas if m.get("has_subcontract")), len(metas)),
+        "profiles_with_authoritative_partner": sum(1 for m in metas if m.get("authoritative_partner_count")),
+        "temporal_leakage_violations": sum(len(r.get("leakage_violations") or []) for r in results),
+        "small_sample_warning": ("multi-source grounding rests on very few real profiles; treat as directional"
+                                 if len(multi) < 5 else None),
     }
 
 

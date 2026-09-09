@@ -12,7 +12,19 @@ Self-contained: no imports from chains/replay/catalysts/fit/company/capabilities
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Optional
+
+_NAME_SUFFIXES = {"inc", "incorporated", "llc", "corp", "corporation", "co", "company", "ltd", "limited"}
+
+
+def _canon_name(name: str) -> str:
+    """Lowercase, strip punctuation and common company suffixes (self-contained; see company.py)."""
+    text = re.sub(r"[^a-z0-9\s]+", " ", (name or "").lower())
+    tokens = [t for t in text.split() if t]
+    while tokens and tokens[-1] in _NAME_SUFFIXES:
+        tokens.pop()
+    return " ".join(tokens)
 
 
 def detect_vehicles(text: str) -> list[str]:
@@ -75,12 +87,19 @@ def parse_usaspending_awards(
     *,
     company_name: str,
     source_id: str = "usaspending",
+    dominant_recipient_only: bool = False,
 ) -> dict:
     """Parse archived USAspending ``spending_by_award`` response bytes into facts.
 
     Returns a dict with keys: company_name, source_id, recipient_names, awards,
     contract_history, capability_records, scale, vehicles, buyer_agencies,
     award_count. See module docstring / caller contract for field semantics.
+
+    When ``dominant_recipient_only`` is True, only rows whose canonicalized ``Recipient Name`` equals
+    the single most common one in the response are kept. USAspending's ``recipient_search_text`` is
+    fuzzy and can return a few near-name matches from other firms; keeping the dominant recipient grounds
+    a profile in the target company alone without the caller needing the exact registered name. The raw
+    archived bytes are unchanged — this is row selection at parse time, not archive mutation.
     """
     try:
         payload = json.loads(raw)
@@ -90,6 +109,16 @@ def parse_usaspending_awards(
     results = payload.get("results") or []
     if not isinstance(results, list):
         results = []
+
+    if dominant_recipient_only and results:
+        from collections import Counter
+        counts = Counter(_canon_name(r.get("Recipient Name") or "")
+                         for r in results if isinstance(r, dict) and r.get("Recipient Name"))
+        counts.pop("", None)
+        if counts:
+            dominant = counts.most_common(1)[0][0]
+            results = [r for r in results
+                       if isinstance(r, dict) and _canon_name(r.get("Recipient Name") or "") == dominant]
 
     recipient_names: set[str] = set()
     # dedupe by Award ID, keeping the row with the highest Award Amount
