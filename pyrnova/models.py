@@ -199,6 +199,99 @@ class CommercialConsequence:
 
 
 @dataclass
+class Exposure:
+    """WHO / WHAT is exposed to WHAT (M15 exposure graph).
+
+    An explicit, evidence-backed edge from an affected *subject* (usually a company) to an *exposure
+    target* (a sanctioned counterparty, a program, a contract, a regulation, a geography, ...). The
+    edge records HOW the join was made (``join_method``) and how strongly it is believed
+    (``link_class``/``confidence``), so a weak fuzzy-name resemblance is never silently promoted to an
+    authoritative exposure. Temporal fields answer "when could we first have known this exposure?".
+    """
+
+    subject_ref: str            # affected entity node id (co_..., entity:uei:..., agency key)
+    subject_name: str
+    relation_type: str          # one of threat.EXPOSURE_RELATIONS
+    target_ref: str             # exposed-to node id (ofac:sdn:..., program_key, agency key, ...)
+    target_name: str
+    join_method: str            # deterministic_identifier | deterministic_native_id | inferred_strong_attribute | name_only_weak
+    link_class: str             # CONFIRMED | INFERRED | CANDIDATE | REJECTED
+    confidence: float = 0.0     # numeric join confidence (join strength, NOT threat severity)
+    rationale: str = ""
+    evidence_ids: list = field(default_factory=list)
+    available_at: Optional[str] = None       # earliest time the exposure was knowable
+    valid_from: Optional[str] = None
+    valid_to: Optional[str] = None
+    status: str = "active"      # active | ended | rejected
+    reject_reason: Optional[str] = None
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class Threat:
+    """A first-class Pyrnova threat: an evidence-backed adverse economic change to a subject (M15).
+
+    A peer of :class:`CommercialConsequence`, not a negated opportunity or a generic alarm. It names
+    the affected subject, the exposure(s) that make it vulnerable, the mechanism by which harm occurs,
+    and separates two orthogonal judgments that must never be collapsed into one magic number:
+
+    * ``severity`` — how bad the economic consequence could be *if true* (ordinal).
+    * ``confidence`` — how strongly the retained evidence supports the thesis (ordinal).
+
+    ``UNKNOWN`` is a valid, honest value for severity, confidence, and horizon. Identity is
+    deterministic where inputs allow (see :func:`threat.threat_id`).
+    """
+
+    subject_ref: str
+    subject_name: str
+    mechanism: str                                    # one of threat.THREAT_MECHANISMS
+    exposure_ids: list = field(default_factory=list)
+    catalyst_id: Optional[str] = None                 # shared CapitalCatalyst (duality anchor) where present
+    affected_value_category: Optional[str] = None     # REVENUE | CONTRACT_POSITION | MARKET_ACCESS | COST_BASE | ELIGIBILITY | CONTINUITY
+    economic_effect: str = ""                         # qualitative description of the adverse effect
+    severity: str = "UNKNOWN"                         # LOW | MODERATE | HIGH | CRITICAL | UNKNOWN
+    severity_basis: str = ""
+    confidence: str = "UNKNOWN"                       # LOW | MEDIUM | HIGH | UNKNOWN (evidence strength)
+    confidence_basis: str = ""
+    horizon: str = "UNKNOWN"                          # IMMEDIATE | NEAR_TERM | MEDIUM_TERM | LONG_TERM | UNKNOWN
+    status: str = "ACTIVE"                            # WATCH | ACTIVE | MITIGATED | MATERIALIZED | AVOIDED | FALSE_ALARM | EXPIRED | UNKNOWN
+    evidence_ids: list = field(default_factory=list)
+    falsifiers: list = field(default_factory=list)    # list[ConsequenceFalsifier as dict] — what would falsify the warning
+    mitigations: list = field(default_factory=list)   # evidence-backed candidate responses only
+    dual_opportunity_ref: Optional[str] = None        # consequence/opportunity id sharing the catalyst (other side of duality)
+    first_observed_at: Optional[str] = None
+    available_at: Optional[str] = None
+    valid_from: Optional[str] = None
+    valid_to: Optional[str] = None
+    review_state: str = "unreviewed"                  # unreviewed | accepted | rejected | deferred
+    engine_version: str = "threat_v1"
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
+class ThreatRejection:
+    """A recorded decision NOT to emit a threat (M15 zero-threat discipline).
+
+    Rejections are first-class output, peers of :class:`Threat`. They keep the threat engine honest:
+    most external events must NOT become a threat for a given subject, and the reason is auditable.
+    """
+
+    subject_ref: str
+    subject_name: str
+    reason_code: str            # one of threat.REJECTION_REASONS
+    mechanism: Optional[str] = None
+    detail: str = ""
+    evidence_ids: list = field(default_factory=list)
+    exposure_ids: list = field(default_factory=list)
+    available_at: Optional[str] = None
+    engine_version: str = "threat_v1"
+    id: str = field(default_factory=_uid)
+    meta: dict = field(default_factory=dict)
+
+
+@dataclass
 class EvidenceAssessment:
     """Opportunity-specific evidence weight, separate from provenance and polarity."""
 
