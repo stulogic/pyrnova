@@ -58,5 +58,22 @@ The complete operating contract, modes, budgets, checkpoints, backoff, and metri
 - Do not deploy, contact prospects, spend money, or begin a later milestone without explicit authority.
 - Historical research and handovers cannot override current authority. See `00-INDEX.md` for precedence.
 
+## Canonical execution tree
+
+**Pyrnova's canonical local execution tree is `/Users/stu/Documents/Pyrnova` on `main`.** All local
+Claude/Codex implementation work must operate from this tree unless the owner explicitly authorizes
+another. GitHub `origin/main` is the repository authority; the canonical tree is the only local working
+copy that carries the project's local-only runtime state.
+
+- Agent-created clones or worktrees are **not** implementation authority. A separate clone exists at
+  `/Users/stu/pyrnova` (a different local branch); it lacks `.env`/credentials and `examples/real_evidence/`
+  and must not be used for milestone work or treated as authoritative.
+- Local-only secrets, archives, caches, scheduler/checkpoint state, and `.venv` live only in the
+  canonical tree and must never be assumed to exist in an alternate clone/worktree. Never migrate `.env`
+  or secrets into Git or copy secret values anywhere.
+- If a Claude session starts elsewhere (e.g. its launch directory is the separate clone), switch to the
+  canonical tree before doing any work: `cd /Users/stu/Documents/Pyrnova` (or launch the CLI from there).
+- The untracked `.codex/` directory in the canonical tree is known and intentional; leave it untouched.
+
 The superseded 30-day authority is retained at `docs/archive/EXECUTION_AUTHORITY_30D_V1.md`; its durable
 decisions have been incorporated here and in `04-DECISIONS.md`.
