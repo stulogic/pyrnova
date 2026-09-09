@@ -64,6 +64,10 @@ THREAT_MECHANISMS = {
     "REGULATORY_COMPLIANCE_EXPOSURE",
     "ELIGIBILITY_OR_CERTIFICATION_RISK",
     "CUSTOMER_CONCENTRATION",
+    # M16 exposure-family expansion.
+    "SUPPLIER_DEPENDENCY_DISRUPTION",
+    "TECHNOLOGY_SUBSTITUTION",
+    "GEOGRAPHY_FACILITY_DISRUPTION",
 }
 
 # Ordinal scales — kept deliberately separate.
@@ -89,6 +93,10 @@ REJECTION_REASONS = {
     "RECOMPETE_NOT_A_THREAT",      # a recompete without incumbency/adverse evidence is not a threat
     "AMBIGUOUS",                   # evidence points both ways; unresolved
     "UNKNOWN_INSUFFICIENT_EVIDENCE",
+    # M16 exposure-family rejections.
+    "NO_DEPENDENCY",               # a supplier/input disruption with no evidenced dependency
+    "OUTSIDE_EXPOSURE_GEOGRAPHY",  # a geography event outside the subject's facility/operating footprint
+    "VAGUE_TREND_NOT_EVIDENCE",    # a technology trend with no explicit substitution mandate/evidence
 }
 
 _GENERIC_TOKENS = {
@@ -301,7 +309,8 @@ def declared_exposures(
             evidence_ids=ev, available_at=rec.get("available_at"),
             valid_from=rec.get("valid_from"), valid_to=rec.get("valid_to"),
             meta={k: v for k, v in rec.items()
-                  if k in ("agency", "certification", "geography", "revenue_share")},
+                  if k in ("agency", "certification", "geography", "revenue_share", "sole_source",
+                           "amount_usd", "catalyst_id")},
         )
         exp.id = exposure_id(subject_ref, relation, str(rec["target_ref"]))
         exposures.append(exp)
@@ -607,8 +616,133 @@ def _assess_customer_concentration(subject_ref, subject_name, exposures, records
     return threats, rejections
 
 
+def _assess_supplier_dependency(subject_ref, subject_name, exposures, records, as_of):
+    """M16 SUPPLIER_DEPENDENCY_DISRUPTION. Requires an evidenced SUPPLIER exposure whose target is the
+    disrupted supplier; a disruption with no demonstrated dependency is NO_DEPENDENCY (zero-threat).
+    Supplier relationships are never inferred from industry adjacency (only explicit disclosed edges)."""
+    threats, rejections = [], []
+    suppliers = _exp_of(exposures, "SUPPLIER")
+    for rec in _catalysts(records, "supplier_disruption", as_of):
+        target = rec.get("target_ref")
+        dep = [e for e in suppliers if e.target_ref == target]
+        if not dep:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name,
+                mechanism="SUPPLIER_DEPENDENCY_DISRUPTION", reason_code="NO_DEPENDENCY",
+                detail=f"supplier disruption at {target} but the subject has no evidenced dependency on it",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        exp = dep[0]
+        at_risk = rec.get("amount_at_risk_usd") or exp.meta.get("amount_usd")
+        sole_source = bool(exp.meta.get("sole_source"))
+        confidence, cbasis = _confidence_from_exposures(dep, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "SUPPLIER_DEPENDENCY_DISRUPTION", str(target), dep, rec,
+            affected_value_category="CONTINUITY",
+            economic_effect=(f"disruption of supplier {exp.target_name} threatens the subject's "
+                             f"{'sole-source ' if sole_source else ''}input continuity and cost base"),
+            severity=_max_severity(severity_from_amount(at_risk), "HIGH" if sole_source else "MODERATE"),
+            severity_basis=("sole-source dependency" if sole_source else "qualified alternate suppliers exist"),
+            confidence=confidence, confidence_basis=cbasis, horizon="NEAR_TERM", status="ACTIVE",
+            falsifiers=[_falsifier("alternate_qualified",
+                                   "a qualified alternate supplier is already in place", fatal=True),
+                        _falsifier("inventory_buffer", "sufficient inventory buffers the disruption")],
+            mitigations=["qualify an alternate supplier", "build buffer inventory"],
+        ))
+    return threats, rejections
+
+
+def _assess_technology_substitution(subject_ref, subject_name, exposures, records, as_of):
+    """M16 TECHNOLOGY_SUBSTITUTION. Requires a TECHNOLOGY exposure the subject sells/depends on AND an
+    explicit substitution mandate (standard change, program modernization). A vague market trend without
+    an explicit mandate is VAGUE_TREND_NOT_EVIDENCE (zero-threat) — obsolescence is never inferred."""
+    threats, rejections = [], []
+    techs = _exp_of(exposures, "TECHNOLOGY")
+    for rec in _catalysts(records, "technology_substitution", as_of):
+        target = rec.get("target_ref")
+        exposed = [e for e in techs if e.target_ref == target]
+        if not exposed:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name, mechanism="TECHNOLOGY_SUBSTITUTION",
+                reason_code="NO_EXPOSURE",
+                detail=f"substitution of {target} but the subject has no evidenced position in it",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        if not rec.get("explicit_mandate"):
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name, mechanism="TECHNOLOGY_SUBSTITUTION",
+                reason_code="VAGUE_TREND_NOT_EVIDENCE",
+                detail=("a technology trend without an explicit substitution mandate/standard change is "
+                        "not evidence of obsolescence"),
+                exposure_ids=[e.id for e in exposed],
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        exp = exposed[0]
+        at_risk = rec.get("amount_at_risk_usd") or exp.meta.get("amount_usd")
+        confidence, cbasis = _confidence_from_exposures(exposed, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "TECHNOLOGY_SUBSTITUTION", str(target), exposed, rec,
+            affected_value_category="MARKET_ACCESS",
+            economic_effect=(f"{rec.get('summary') or target}: a mandated substitution away from "
+                             f"{exp.target_name} threatens the subject's technology market position"),
+            severity=_max_severity(severity_from_amount(at_risk), "MODERATE"),
+            severity_basis=(f"revenue in the substituted technology ${float(at_risk):,.0f}" if at_risk
+                            else "market position in the substituted technology"),
+            confidence=confidence, confidence_basis=cbasis,
+            horizon=rec.get("horizon") or "MEDIUM_TERM", status="ACTIVE",
+            dual_opportunity_ref=rec.get("dual_opportunity_ref"),
+            falsifiers=[_falsifier("subject_offers_replacement",
+                                   "the subject already offers the replacement technology", fatal=True),
+                        _falsifier("mandate_reversed", "the mandate is withdrawn/deferred")],
+            mitigations=["invest in the replacement technology", "reposition into adjacent requirements"],
+        ))
+    return threats, rejections
+
+
+def _assess_geography_facility(subject_ref, subject_name, exposures, records, as_of):
+    """M16 GEOGRAPHY_FACILITY_DISRUPTION. Requires a FACILITY/GEOGRAPHY exposure inside the event's
+    geographic scope; an event outside the subject's footprint is OUTSIDE_EXPOSURE_GEOGRAPHY
+    (zero-threat). Geography is matched on explicit fields, never on a name resemblance."""
+    threats, rejections = [], []
+    footprint = _exp_of(exposures, "FACILITY") + _exp_of(exposures, "GEOGRAPHY")
+    for rec in _catalysts(records, "geography_event", as_of):
+        scope = _norm(rec.get("geography"))
+        affected = [e for e in footprint
+                    if scope and scope in (_norm(e.meta.get("geography")), _norm(e.target_name),
+                                           _norm(e.target_ref))]
+        if not affected:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name,
+                mechanism="GEOGRAPHY_FACILITY_DISRUPTION", reason_code="OUTSIDE_EXPOSURE_GEOGRAPHY",
+                detail=f"geography event in {rec.get('geography')} is outside the subject's footprint",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at")))
+            continue
+        exp = affected[0]
+        at_risk = rec.get("amount_at_risk_usd") or exp.meta.get("amount_usd")
+        confidence, cbasis = _confidence_from_exposures(affected, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "GEOGRAPHY_FACILITY_DISRUPTION", str(exp.target_ref), affected, rec,
+            affected_value_category="CONTINUITY",
+            economic_effect=(f"{rec.get('summary') or rec.get('geography')}: the event affects the "
+                             f"subject's {exp.target_name} in {rec.get('geography')}"),
+            severity=_max_severity(severity_from_amount(at_risk), "MODERATE"),
+            severity_basis=f"operating footprint in {rec.get('geography')}",
+            confidence=confidence, confidence_basis=cbasis,
+            horizon=rec.get("horizon") or "NEAR_TERM", status="ACTIVE",
+            falsifiers=[_falsifier("facility_relocated",
+                                   "the subject relocated out of the affected geography", fatal=True)],
+            mitigations=["assess business-continuity/relocation options"],
+        ))
+    return threats, rejections
+
+
 _ASSESSORS = (_assess_incumbent_displacement, _assess_program_change, _assess_regulatory,
-              _assess_customer_concentration)
+              _assess_customer_concentration, _assess_supplier_dependency,
+              _assess_technology_substitution, _assess_geography_facility)
 
 
 def assess_threats(
