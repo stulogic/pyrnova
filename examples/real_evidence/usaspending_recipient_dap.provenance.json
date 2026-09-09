@@ -1,0 +1,10 @@
+{
+  "source_id": "usaspending",
+  "license": "US Government work, public domain",
+  "retrieved_at": "2026-09-09",
+  "request_method": "GET",
+  "request_url": "https://api.usaspending.gov/api/v2/recipient/80a64a2b-1d3a-6c52-af0d-1aac27b76a3a-C/",
+  "user_agent": "PyrnovaResearch/0.1 (contact configured, not retained)",
+  "sha256": "5b98a04aa3bb52c665bca4fc597aa3e0e4554ee659563bcdf221e754de3ecc9f",
+  "bytes": 1777
+}

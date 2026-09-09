@@ -311,6 +311,124 @@ def to_contract_contraction_catalyst(
     return cat
 
 
+_TERMINATION_ACTION_TYPES = {"E", "F"}  # FPDS reason-for-modification: E=default, F=convenience
+
+
+def parse_usaspending_award_termination(
+    raw: bytes | str, *, piid: str, recipient_uei: Optional[str] = None,
+    recipient_name: Optional[str] = None, agency: Optional[str] = None,
+    source_id: str = USASPENDING_SOURCE_ID,
+) -> dict:
+    """Parse a RAW USAspending award **transaction-history** response into OBSERVED termination events.
+
+    M21's flagship adverse-event family: a real, source-native contract **termination** (terminate for
+    convenience/default) preserved from raw authoritative response bytes — materially stronger than a
+    magnitude-modest deobligation (M19) or a curated SEC extract (M20). The raw transactions endpoint
+    row carries the FPDS action_type (``E``/``F``), the modification number, action date, the settled
+    magnitude (``federal_action_obligation``), and the source-native transaction id, but NOT the
+    award-level identity — so the exact ``piid`` and recipient (``recipient_uei``) are supplied as the
+    award context (themselves read from the archived award-detail bytes).
+
+    A termination is recognized from the authoritative action_type (``E``/``F``) or an explicit
+    ``TERMINAT`` in the source description — never inferred from a funding pull-back or from spending
+    disappearing. Accepts the bare ``{"results": [...]}`` transactions payload or the committed evidence
+    wrapper. Never raises; returns empty structures on bad input. The raw row is retained.
+    """
+    try:
+        payload = json.loads(raw) if isinstance(raw, (bytes, str, bytearray)) else raw
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    results = payload.get("results")
+    if not isinstance(results, list):
+        results = []
+    raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else (raw if isinstance(raw, (bytes, bytearray)) else b"")
+    archive_hash = hashlib.sha256(bytes(raw_bytes)).hexdigest() if raw_bytes else None
+    uei = str(recipient_uei).strip().upper() if recipient_uei else None
+
+    events: list[dict] = []
+    for row in results:
+        if not isinstance(row, dict):
+            continue
+        action_type = row.get("action_type")
+        desc = row.get("description") or ""
+        is_termination = (action_type in _TERMINATION_ACTION_TYPES) or ("TERMINAT" in desc.upper())
+        if not is_termination:
+            continue
+        mod = row.get("modification_number")
+        try:
+            fao = float(row.get("federal_action_obligation"))
+        except (TypeError, ValueError):
+            fao = 0.0
+        action_date = row.get("action_date")
+        events.append({
+            "event_id": f"{piid}:{mod}",
+            "catalyst_class": "OBSERVED",
+            "source_id": source_id,
+            "family": "contract_modification",
+            "event_type": "CONTRACT_TERMINATION",
+            "termination_kind": ("TERMINATE_FOR_DEFAULT" if action_type == "E"
+                                 else "TERMINATE_FOR_CONVENIENCE"),
+            "piid": str(piid),
+            "modification_number": str(mod),
+            "recipient_name": recipient_name,
+            "recipient_uei": uei,
+            "agency": agency,
+            "action_type": action_type,
+            "action_type_description": row.get("action_type_description"),
+            "description": desc or None,
+            "federal_action_obligation": fao,
+            # A termination puts the whole remaining contract position at risk; the deobligated magnitude
+            # (positive) is the source-native quantification of value withdrawn.
+            "amount_delta_usd": abs(fao) if fao < 0 else 0.0,
+            "action_date": action_date,
+            "available_at": action_date,
+            "source_ref": f"usaspending:txn:{piid}:{mod}",
+            "evidence_id": f"usaspending:txn:{piid}:{mod}",
+            "transaction_native_id": row.get("id"),
+            "archive_hash": archive_hash,
+            "raw": row,
+        })
+    events.sort(key=lambda e: (e.get("action_date") or "", e["event_id"]), reverse=True)
+    return {"source_id": source_id, "family": "contract_modification",
+            "archive_hash": archive_hash, "events": events}
+
+
+def to_contract_termination_catalyst(
+    event: dict, *, evidence_strength: int = 5, horizon: str = "IMMEDIATE",
+) -> dict:
+    """Turn one OBSERVED contract termination into a ``program_cancellation`` catalyst.
+
+    Unlike a deobligation (``funding_reduction`` -> PROGRAM_CONTRACTION, materiality-gated), a termination
+    is a CATEGORICAL loss of the contract position, so it maps to the existing PROGRAM_CANCELLATION_OR_DELAY
+    mechanism (``pyrnova.threat._assess_program_change``): the subject loses that program-dependent
+    revenue. ``target_ref``/``program_key`` is the exact PIID, so it links ONLY to a subject whose
+    deterministic PROGRAM exposure is that same PIID. Severity still follows the frozen dollar bands from
+    the withdrawn magnitude; the categorical nature raises confidence, not severity. It creates NO exposure.
+    """
+    piid = contract_target_ref(event)
+    return {
+        "catalyst_kind": "program_cancellation",
+        "catalyst_class": event.get("catalyst_class", "OBSERVED"),
+        "catalyst_id": f"cat_term_{event.get('event_id')}",
+        "family": "contract_modification",
+        "program_key": piid,
+        "target_ref": piid,
+        "available_at": event.get("available_at"),
+        "source_id": event.get("source_id"),
+        "source_ref": event.get("source_ref"),
+        "evidence_id": event.get("evidence_id"),
+        "evidence_strength": int(evidence_strength),
+        "amount_delta_usd": event.get("amount_delta_usd"),
+        "recipient_uei": event.get("recipient_uei"),
+        "horizon": horizon,
+        "summary": (f"{(event.get('termination_kind') or 'CONTRACT_TERMINATION').replace('_', ' ').title()} "
+                    f"on {piid} ({event.get('modification_number')})"),
+        "event_type": event.get("event_type"),
+    }
+
+
 def parse_sec_corporate_adverse(
     raw: bytes | str, *, source_id: str = SEC_EDGAR_SOURCE_ID,
 ) -> dict:

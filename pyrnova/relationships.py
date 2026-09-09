@@ -35,6 +35,7 @@ import json
 # The one relation this grounding emits. Kept in sync with pyrnova.propagation.PROPAGATION_RELATIONS.
 SUBCONTRACT_RELATION = "SUBCONTRACTOR_OF"
 COMPANY_PROGRAM_RELATION = "COMPANY_TO_PROGRAM"
+SUBSIDIARY_RELATION = "SUBSIDIARY_OF"
 
 # link_class / join_method by real evidence strength -> matches pyrnova.propagation._EDGE_STEPS.
 _STRENGTH = {
@@ -200,6 +201,61 @@ def ground_company_program_edges(
                            "role": "prime"},
         })
     return sorted(edges, key=lambda e: (e.get("valid_from") or "", e["to_ref"]))
+
+
+def ground_subsidiary_edges(
+    raw: bytes | str, *, child_ref: str, parent_ref: Optional[str] = None,
+    available_at: Optional[str] = None, valid_from: Optional[str] = None,
+    valid_to: Optional[str] = None, source_id: str = "usaspending",
+) -> list[dict]:
+    """Ground a deterministic ``SUBSIDIARY_OF`` edge from the authoritative USAspending recipient hierarchy.
+
+    M21's new economic relationship type — the first outside the government-program graph
+    (``SUBCONTRACTOR_OF``/``COMPANY_TO_PROGRAM``). ``raw`` is the raw ``/api/v2/recipient/{id}/`` response
+    body. The subsidiary (child) is joined to its parent by **exact native UEIs** (never by name
+    similarity): the edge is emitted ONLY when the response carries a ``parent_uei`` that differs from the
+    recipient's own ``uei`` (USAspending lists a self-parent row for the top of a hierarchy — that is not
+    a subsidiary relationship and is filtered out). Direction: ``from_ref`` (the exposed subsidiary) ->
+    ``to_ref`` (the parent that inherits consolidated exposure), so a threat on the subsidiary propagates
+    up to the parent.
+
+    Returns a list with at most one edge (empty when there is no distinct parent). Never raises.
+    """
+    try:
+        payload = json.loads(raw) if isinstance(raw, (bytes, str, bytearray)) else raw
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        return []
+    raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else bytes(raw or b"")
+    archive_hash = hashlib.sha256(raw_bytes).hexdigest() if raw_bytes else None
+    child_uei = (str(payload.get("uei")).strip().upper() if payload.get("uei") else None)
+    parent_uei = (str(payload.get("parent_uei")).strip().upper() if payload.get("parent_uei") else None)
+    if not parent_uei or parent_uei == child_uei:
+        return []
+    parent_name = payload.get("parent_name") or parent_uei
+    to_ref = parent_ref or f"co_uei_{parent_uei}"
+    return [{
+        "from_ref": child_ref,
+        "from_name": payload.get("name"),
+        "to_ref": to_ref,
+        "to_name": parent_name,
+        "relation": SUBSIDIARY_RELATION,
+        "link_class": "CONFIRMED",
+        "join_method": "deterministic_native_id",
+        "confidence": 0.9,
+        "evidence_ids": [f"usaspending:recipient:{payload.get('recipient_id')}",
+                         f"uei:{child_uei}", f"uei:{parent_uei}"],
+        "available_at": available_at,
+        "valid_from": valid_from,
+        "valid_to": valid_to,
+        "source_id": source_id,
+        "provenance": {"child_uei": child_uei, "parent_uei": parent_uei,
+                       "child_recipient_id": payload.get("recipient_id"),
+                       "parent_recipient_id": payload.get("parent_id"),
+                       "parent_duns": payload.get("parent_duns"),
+                       "archive_hash": archive_hash, "role": "subsidiary"},
+    }]
 
 
 def independence_metrics(edges: list[dict], chains: Optional[list[dict]] = None) -> dict:

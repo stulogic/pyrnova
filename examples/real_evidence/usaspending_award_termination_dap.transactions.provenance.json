@@ -1,0 +1,17 @@
+{
+  "source_id": "usaspending",
+  "license": "US Government work, public domain",
+  "retrieved_at": "2026-09-09",
+  "request_method": "POST",
+  "request_url": "https://api.usaspending.gov/api/v2/transactions/",
+  "user_agent": "PyrnovaResearch/0.1 (contact configured, not retained)",
+  "sha256": "e306aa81c93e631ff2f7cb1ce85322098f7fe24641adadbaae9f6251941853d1",
+  "bytes": 971,
+  "request_body": {
+    "award_id": "CONT_AWD_36C25726N0240_3600_36C25726D0043_3600",
+    "page": 1,
+    "limit": 50,
+    "sort": "action_date",
+    "order": "desc"
+  }
+}
