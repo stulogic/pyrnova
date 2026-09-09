@@ -19,7 +19,25 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
-## P1 — deferred threat intelligence (M15+M16 delivered the foundation)
+## P1 — deferred threat intelligence (M15–M18 delivered the foundation)
+
+**M18 update (2026-09-09):** the two items previously flagged here as the highest-value grounding are
+now DELIVERED: (a) a **second (and third) real company relationship** for propagation — Parsons→Torch and
+Intuitive→Torch, both independent of SAIC↔Torch, grounded 0-call from the authoritative sub-award PRIME
+fields; and (b) a **real adverse-event feed** so the catalyst is archived, not modeled — Federal Register
+BIS/Commerce export-control & Entity-List rules as first-class OBSERVED catalysts. Carried-forward,
+newly-surfaced threat work after M18:
+
+- A **deterministic** observed exposure (today's observed export-control exposures are INFERRED): a real
+  counterparty of a BIS-listed entity, or a program-specific SAM/USAspending cancellation/modification
+  (deobligation/termination) notice tied to a PIID, so an OBSERVED chain can carry HIGH confidence.
+- A **second adverse-event family** (WARN/facility closure or program-cancellation/funding), added only
+  when it materially improves exposure/outcome evidence and passes the M4 source test.
+- **Relationship-TYPE diversity** beyond `SUBCONTRACTOR_OF` (COMPANY_TO_PROGRAM / SUPPLIER_OF /
+  CUSTOMER_OF / SUBSIDIARY_OF), added only where authoritative evidence requires each one.
+- Grow the resolved **propagated**-outcome set beyond 1 (M18 began direct-vs-propagated calibration).
+
+## P1 — deferred threat intelligence (earlier foundation, pre-M18)
 
 M15 delivered first-class threat intelligence + the exposure graph; M16 added exposure-family expansion,
 real event-stream selectivity, bounded cross-company propagation, and a calibration framework; **M17**
@@ -31,15 +49,14 @@ outcomes (`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/specs/M16_THREAT_CALIBR
 - Remaining `EXPOSURE_RELATIONS` families still unexercised: commodity-input, procurement-vehicle
   (supplier/technology/geography done in M16; sanctioned-counterparty/program/incumbency/regulation/
   certification/customer-concentration in M15).
-- **A second real company relationship** for propagation. M17's two real chains both run through the
-  SAIC↔Torch pair (distinct programs, one company relationship). Archiving prime-side exposure evidence
-  for another of Torch's real primes (Parsons/KBR/NTSI have real sub-award edges but no archived
-  prime-award exposure yet), or a distinct prime↔sub pair, would give a second independent real chain.
-- **Real adverse-event feeds** so the direct-threat catalyst is archived, not modeled: BIS/export
-  controls, WARN/facility closure, regulatory enforcement, program/budget status — added only when they
-  materially improve exposure/outcome evidence and pass the M4 source test; never for source count.
-- Threat-outcome **calibration at scale** — precision now rests on 12 resolved outcomes (was 5); keep
-  growing the resolved set with real evidence before any non-directional per-mechanism claim.
+- ~~**A second real company relationship** for propagation.~~ **DELIVERED in M18** (Parsons→Torch,
+  Intuitive→Torch — prime incumbency grounded from the authoritative sub-award PRIME fields, 0 calls).
+- ~~**Real adverse-event feeds** (BIS/export controls, …).~~ **BIS/export controls DELIVERED in M18**
+  (Federal Register Entity-List rules as OBSERVED catalysts). WARN/facility, regulatory enforcement, and
+  program/budget-status families remain deferred — added only when they materially improve evidence.
+- Threat-outcome **calibration at scale** — precision now rests on 15 resolved outcomes (was 12/5); keep
+  growing the resolved set (esp. PROPAGATED outcomes, N=1) with real evidence before any non-directional
+  per-mechanism claim.
 - Run the continuous selectivity funnel under a **live per-source budget** (`live_ops`), building on
   M17's scheduler integration (M16/M17 measured it offline on archived batches).
 - A real (non-probe) sanctions-exposure counterparty linkage once counterparty-relationship evidence is

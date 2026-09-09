@@ -1,9 +1,27 @@
 # Pyrnova execution authority
 
-_Current execution window: M17 CLOSED (real relationship propagation + continuous threat operations,
-2026-09-09); M2–M16 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M18 CLOSED (independent real relationship expansion + archived OBSERVED
+adverse catalysts, 2026-09-09); M2–M17 closed; no milestone in progress — await next brief · updated
+2026-09-09_
 
 ## Active work
+
+### Milestone 18 — CLOSED 2026-09-09 (independent relationship expansion + archived adverse catalysts)
+
+Spec `docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md` (canonical); evidence
+`docs/replay/M18_INDEPENDENT_ADVERSE_EVENTS.md`. Additive only: `scoring_v1`/`fit.py`/`replay.py`/frozen
+corpora (incl. `corpus_m17`) byte-for-byte unchanged; new `adverse_events.py`; additive edits to
+`relationships.py`/`threat.py`/`propagation.py`/`threat_calibration.py`/`ops.py`. Proves a **REAL,
+archived, OBSERVED adverse event → real catalyst → real exposure → an INDEPENDENT real relationship →
+real propagated threat**: a Federal Register BIS Entity-List rule (FR 2026-17231, RIN 0694-AK49,
+2026-08-24) propagates through **two independent real pairs — Parsons→Torch (MDA `HQ085821C0015`) and
+Intuitive→Torch (Army `W31P4Q23FC001`), neither SAIC** — grounded 0-call from the authoritative sub-award
+PRIME fields (`relationships.exposed_prime_awards_from_subawards`). Durable OBSERVED-vs-MODELED catalyst
+authority on every threat; a real weak edge (NTSI) terminates; the same rule yields NO threat where there
+is no evidenced exposure. `corpus_m18` (11 cases) extends `corpus_m17` → **57 cases all pass**; 41 direct
+/ 12 propagated threats (max depth 2, no explosion), 11 independent company pairs, resolved outcomes
+**12 → 15** (precision 0.9333, median lead 337 days), 13 negative cases. **1 live Federal Register call**;
+full suite **445 passed**. No further M18 action.
 
 ### Milestone 17 — CLOSED 2026-09-09 (real relationship propagation + continuous threat operations)
 
@@ -165,7 +183,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M17 CLOSED — no milestone in progress; await the next brief.
+1. M2–M18 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`

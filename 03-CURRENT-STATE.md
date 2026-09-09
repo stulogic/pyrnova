@@ -1,9 +1,37 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M17 CLOSED — real relationship propagation +
-continuous threat operations; M2–M16 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M18 CLOSED — independent relationship expansion +
+archived OBSERVED adverse catalysts; M2–M17 CLOSED)._
 
 ## Milestone status
+
+- **M18: CLOSED 2026-09-09.** Independent relationship expansion + archived adverse catalysts. Additive
+  only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m17` byte-for-byte unchanged; new
+  `adverse_events.py`; additive edits to `relationships.py`/`threat.py`/`propagation.py`/
+  `threat_calibration.py`/`ops.py`). Proves a **REAL, archived, OBSERVED adverse event → real catalyst →
+  real exposure → an INDEPENDENT real relationship → real propagated threat**. **Observed adverse-event
+  family** (`adverse_events.parse_federal_register_adverse`): archived Federal Register BIS/Commerce
+  export-control & Entity-List rules become first-class OBSERVED catalysts (source-native FR doc id, RIN,
+  agency, publication date, archive hash, raw pointer); catalyst **authority** (OBSERVED vs MODELED/
+  SYNTHETIC/PROBE) is durable on every `Threat.meta` and never relabels an old modeled fixture. **Two
+  independent real chains** driven by the SAME real rule (FR 2026-17231, RIN 0694-AK49, 2026-08-24):
+  Parsons→Torch (MDA `HQ085821C0015`) and Intuitive→Torch (Army `W31P4Q23FC001`) — **neither SAIC** —
+  where the prime's incumbency is grounded 0-call from the authoritative sub-award PRIME fields
+  (`relationships.exposed_prime_awards_from_subawards`) and the edge is program-anchored. Prime
+  export-control exposure is INFERRED, so direct threats are MODERATE/MEDIUM and degrade to LOW/LOW one
+  hop downstream (never increase). **Negative discipline**: the same rule yields NO threat with no
+  evidenced exposure (`NO_EXPOSURE`); a real single-occurrence edge (NTSI) terminates; the 2026 rule is
+  excluded at a 2026-01-01 cutoff. **Independence metric** (`relationships.independence_metrics`) +
+  **direct-vs-propagated calibration** (`threat_calibration.propagated_outcome_calibration`). The new
+  source feeds the SAME selectivity funnel; the Operations Panel gained a thin `adverse_catalyst_view`
+  and catalyst authority in the network view. `corpus_m18` (11 cases) extends `corpus_m17` → **57 cases
+  all pass**. Merged metrics: 41 direct / **12 propagated** across 12 chains (**3 observed-catalyst
+  chains**, 11 unique company pairs, max depth 2, no explosion, confidence never increases, 1 cycle / 1
+  duplicate / 1 weak termination), **5 OBSERVED / 36 MODELED** direct threats, **13 negative cases**;
+  resolved outcomes **12 → 15**, confirmed precision **0.9333 over 15**, median lead **337 days**,
+  `false_alert_from_absence` 0. **1 live Federal Register call** (keyless, archived once); full suite
+  **445 passed**. Spec `docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md`; evidence
+  `docs/replay/M18_INDEPENDENT_ADVERSE_EVENTS.md`.
 
 - **M17: CLOSED 2026-09-09.** Real relationship propagation + continuous threat operations. Additive only
   (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m16` byte-for-byte unchanged; new
@@ -497,6 +525,20 @@ continuous threat operations; M2–M16 CLOSED)._
 - SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
 
 ## Exact next action
+
+M18 CLOSED (`docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md`,
+`docs/replay/M18_INDEPENDENT_ADVERSE_EVENTS.md`) — Pyrnova now takes a REAL, archived, OBSERVED adverse
+event (a Federal Register BIS export-control rule) and propagates it through TWO real company
+relationships INDEPENDENT of SAIC↔Torch (Parsons→Torch, Intuitive→Torch), preserving an auditable chain
+from source event to propagated threat, with observed-vs-modeled catalyst authority durable at every hop
+and no alarm explosion. No milestone in progress; await the next brief. `scoring_v1`/`fit.py` remain
+frozen absent a justified milestone. Highest-value next grounding (see M18 limitations / roadmap): a
+*deterministic* observed exposure (a real counterparty of a BIS-listed entity, or a program-specific
+cancellation/modification notice tied to a PIID), a second adverse-event family (WARN/facility or
+program-cancellation), relationship-TYPE diversity beyond `SUBCONTRACTOR_OF`, and growing the resolved
+propagated-outcome set beyond 1.
+
+### Prior next action (retained for continuity)
 
 M17 CLOSED (`docs/specs/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`,
 `docs/replay/M17_REAL_PROPAGATION_CONTINUOUS_OPS.md`) — Pyrnova now follows a REAL economic relationship

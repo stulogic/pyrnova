@@ -1,5 +1,29 @@
 # Pyrnova milestone history
 
+## Milestone 18 — CLOSED 2026-09-09
+
+- Independent relationship expansion + archived OBSERVED adverse catalysts. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m17` byte-for-byte unchanged; new
+  `adverse_events.py`; additive edits to `relationships.py`/`threat.py`/`propagation.py`/
+  `threat_calibration.py`/`ops.py`).
+- First REAL, archived, OBSERVED adverse event → real catalyst → real exposure → INDEPENDENT real
+  relationship → real propagated threat. Observed family: Federal Register BIS/Commerce export-control &
+  Entity-List rules (`parse_federal_register_adverse`), archived once at
+  `examples/real_evidence/federal_register_bis_export_controls.json` (1 live call).
+- Two independent real chains from the SAME rule (FR 2026-17231, RIN 0694-AK49, 2026-08-24):
+  Parsons→Torch (MDA `HQ085821C0015`) and Intuitive→Torch (Army `W31P4Q23FC001`) — neither SAIC — with
+  prime incumbency grounded 0-call from the authoritative sub-award PRIME fields
+  (`exposed_prime_awards_from_subawards`); INFERRED export-control exposure → MODERATE/MEDIUM direct →
+  LOW/LOW one hop (never increases).
+- Durable OBSERVED-vs-MODELED catalyst authority on every threat (no fixture relabelled). Negative
+  discipline: same rule → NO threat with no evidenced exposure (`NO_EXPOSURE`); real NTSI weak edge
+  terminates; 2026 rule excluded at a 2026-01-01 cutoff. Independence metric + direct-vs-propagated
+  calibration added; new source feeds the same selectivity funnel; thin `adverse_catalyst_view`.
+- `corpus_m18` (11 cases) extends `corpus_m17` → 57 cases all pass; 41 direct / 12 propagated (max depth
+  2, no explosion), 11 independent company pairs, 5 OBSERVED / 36 MODELED direct, 13 negative cases;
+  resolved outcomes 12 → 15, precision 0.9333, median lead 337 days. Full suite 445 passed. Spec
+  `docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md`; evidence `docs/replay/M18_INDEPENDENT_ADVERSE_EVENTS.md`.
+
 ## Milestone 17 — CLOSED 2026-09-09
 
 - Real relationship propagation + continuous threat operations. Additive only
