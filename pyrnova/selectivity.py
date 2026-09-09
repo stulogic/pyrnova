@@ -108,3 +108,40 @@ def run_selectivity(
         "note": ("a good stream shows a large drop from raw_events to threats_emitted; most events must "
                  "produce no threat for most monitored companies"),
     }
+
+
+def source_run_funnel(
+    result: dict,
+    *,
+    source_id: str,
+    run_id: str,
+    started_at: Optional[str] = None,
+    finished_at: Optional[str] = None,
+    calls_made: int = 0,
+    calls_avoided: int = 0,
+    records_received: Optional[int] = None,
+    changed_records: Optional[int] = None,
+) -> dict:
+    """M17 — decorate a :func:`run_selectivity` funnel with source-run operational context so the
+    selectivity funnel can be persisted as part of NORMAL scheduler/live_ops operation (not just a
+    harness). This is additive to the M12/M13 operational metrics: it carries the run identity, timing,
+    and call/record accounting alongside the exposure->threat funnel and its rates.
+    """
+    funnel = result["funnel"]
+    return {
+        "run_id": run_id,
+        "source_id": source_id,
+        "stream": result.get("stream"),
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "calls_made": int(calls_made),
+        "calls_avoided": int(calls_avoided),
+        "records_received": (records_received if records_received is not None
+                             else funnel["raw_events"]),
+        "changed_records": changed_records,
+        "monitored_companies": result["monitored_companies"],
+        "funnel": funnel,
+        "threat_emission_rate": result["threat_emission_rate"],
+        "exposure_acceptance_rate": result["exposure_acceptance_rate"],
+        "weak_rejection_rate": result["weak_rejection_rate"],
+    }

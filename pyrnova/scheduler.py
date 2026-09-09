@@ -469,6 +469,78 @@ class SourceScheduler:
             "sources": rows,
         }
 
+    # ------------------------------------------------------------------ continuous selectivity (M17)
+
+    def record_selectivity_run(self, source_id: str, run_record: dict, *, keep_last: int = 50) -> None:
+        """Persist one selectivity-funnel run for a source as part of normal operation (append-only,
+        bounded to the last ``keep_last`` runs). ``run_record`` is a
+        :func:`pyrnova.selectivity.source_run_funnel` dict. This extends the durable M12/M13 source-state
+        document rather than introducing a second metrics store."""
+        doc = self.state.load(source_id)
+        runs = list(doc.get("selectivity_runs") or [])
+        runs.append(dict(run_record))
+        doc["selectivity_runs"] = runs[-keep_last:]
+        self.state.save(source_id, doc)
+
+    def selectivity_runs(self, source_id: str) -> list[dict]:
+        return list(self.state.load(source_id).get("selectivity_runs") or [])
+
+    def selectivity_report(self, source_ids: Optional[list[str]] = None) -> dict:
+        """Roll up persisted selectivity runs across sources: per-source latest funnel + lifetime totals.
+
+        The headline is the drop from raw events to threats emitted — the proof the engine stays
+        SELECTIVE under continuous operation. Denominator-honest; empty-safe when no runs are recorded."""
+        ids = source_ids if source_ids is not None else self.known_sources()
+        per_source = []
+        tot_raw = tot_candidates = tot_accepted = tot_threats = tot_zero = 0
+        tot_calls_made = tot_calls_avoided = tot_runs = 0
+        for sid in ids:
+            runs = self.selectivity_runs(sid)
+            if not runs:
+                continue
+            latest = runs[-1]
+            f = latest.get("funnel", {})
+            for r in runs:
+                rf = r.get("funnel", {})
+                tot_raw += rf.get("raw_events") or 0
+                tot_candidates += rf.get("exposure_candidates") or 0
+                tot_accepted += rf.get("accepted_exposures") or 0
+                tot_threats += rf.get("threats_emitted") or 0
+                tot_zero += rf.get("zero_threat_rejections") or 0
+                tot_calls_made += r.get("calls_made") or 0
+                tot_calls_avoided += r.get("calls_avoided") or 0
+            tot_runs += len(runs)
+            per_source.append({
+                "source_id": sid, "runs": len(runs),
+                "latest_run_id": latest.get("run_id"),
+                "latest_funnel": f,
+                "latest_threat_emission_rate": latest.get("threat_emission_rate"),
+                "latest_exposure_acceptance_rate": latest.get("exposure_acceptance_rate"),
+            })
+
+        def rate(n, d):
+            return round(n / d, 6) if d else None
+
+        return {
+            "generated_at": _iso_now(),
+            "sources_with_runs": len(per_source),
+            "total_runs": tot_runs,
+            "totals": {
+                "raw_events": tot_raw,
+                "exposure_candidates": tot_candidates,
+                "accepted_exposures": tot_accepted,
+                "threats_emitted": tot_threats,
+                "zero_threat_rejections": tot_zero,
+                "calls_made": tot_calls_made,
+                "calls_avoided": tot_calls_avoided,
+            },
+            "threat_emission_rate": rate(tot_threats, tot_raw),
+            "exposure_acceptance_rate": rate(tot_accepted, tot_candidates),
+            "per_source": per_source,
+            "note": ("continuous selectivity: a healthy operation shows a large drop from raw_events to "
+                     "threats_emitted across runs; standards are measured, never lowered to reduce noise"),
+        }
+
 
 def _iso_now() -> str:
     from datetime import datetime, timezone
