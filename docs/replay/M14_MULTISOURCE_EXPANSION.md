@@ -11,21 +11,23 @@ corporate intelligence, sanctions/trade, federal R&D). M14 added two materially 
 archive-first families: **`sbir`** (federal R&D — earliest capability/commercialization precursor) and
 **`sanctions_ofac`** (sanctions/trade exposure). Reliability/status per source is in `SOURCE_MANIFEST.md`.
 
-Operational (real bytes): `usaspending` (live-proven, M13), `sam_opportunities` (live-proven, M2),
-`sec_edgar` (archive-operational on real SAIC submissions), `sanctions_ofac` (archive-operational — see
-below). Adapter-ready offline: `federal_register`, `grants_gov`, `appropriations`, `acquisition_forecast`.
-Blocked: `sbir` (provider returned HTTP 403).
+Operational on real bytes (five distinct domains): `usaspending` (live-proven, M13), `sam_opportunities`
+(live-proven, M2), `sec_edgar` (archive-operational on real SAIC submissions), `sanctions_ofac` and
+`federal_register` (archive-operational — see below). Adapter-ready offline: `grants_gov`,
+`appropriations`, `acquisition_forecast`. Blocked: `sbir` (provider returned HTTP 403).
 
 ## Live-call discipline
 
-Exactly **two** bounded connectivity probes were made in M14 (one per new keyless source, no retries),
-with all adapter/parser/chain development done against fixtures and existing real archives:
+Exactly **three** bounded connectivity probes were made in M14 (one per newly-touched source, no
+retries), with all adapter/parser/chain development done against fixtures and existing real archives:
 
 - **`sanctions_ofac` — 1 call, HTTP 200, 5.68 MB, 19,365 real designations.** A single bulk download of
   `www.treasury.gov/ofac/downloads/sdn.csv` confirmed the host and validated `parse_ofac_csv` on real
   production data (7,519 individuals, 1,540 vessels, 342 aircraft, remainder entities). Raw bytes were
   archived offline (git-ignored `var/m14_archive/`, sha256 `1c878982988268de…`) — **archive-once,
   replay-many**; no further OFAC calls were made. Records-per-call: 19,365.
+- **`federal_register` — 1 call, HTTP 200.** A filtered `documents.json` probe confirmed the adapter's
+  params/schema on real documents; bytes archived offline. Archive-operational.
 - **`sbir` — 1 call, HTTP 403 Forbidden.** `api.www.sbir.gov/public/api/awards` refused the probe
   (consistent with the provider-maintenance notice, 2026-09). Documented blocker; the adapter is
   validated offline and connectivity should be retried when the provider is available.

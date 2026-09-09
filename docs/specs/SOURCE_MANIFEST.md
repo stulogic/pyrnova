@@ -21,14 +21,17 @@ regulation, funding/assistance, corporate, sanctions/trade, and federal R&D):
 | `acquisition_forecast` | procurement_forecast | bulk_download | none | fixture_only | adapter_ready | medium | MARKET_ENGAGEMENT |
 | `sam_opportunities` | procurement_opportunities | rest_api | api_key | live_proven | operational | high | PROCUREMENT |
 | `usaspending` | procurement_spend | rest_api | none | live_proven | operational | high | AWARD |
-| `federal_register` | regulation_policy | rest_api | none | fixture_only | adapter_ready | medium | AUTHORIZATION |
+| `federal_register` | regulation_policy | rest_api | none | archive_operational | operational | medium | AUTHORIZATION |
 | `sanctions_ofac` | sanctions_trade | bulk_download | none | archive_operational | operational | high | — |
 | `sbir` | science_rd | rest_api | none | unverified | blocked | high | PROGRAM |
 
-Connectivity verified 2026-09-09 (one bounded probe each): `sanctions_ofac` → HTTP 200, 5.68 MB SDN
-bulk file, **19,365 real designations** parsed by the adapter, bytes archived offline (git-ignored
-`var/`) — one call, 19,365 useful records. `sbir` → HTTP 403 (provider maintenance / bot-block);
-adapter validated offline, retry connectivity when the provider is available.
+Connectivity verified 2026-09-09 with three bounded probes total (one per newly-touched source, no
+retries): `sanctions_ofac` → HTTP 200, 5.68 MB SDN bulk file, **19,365 real designations** parsed (one
+call, 19,365 useful records); `federal_register` → HTTP 200, real documents, adapter params/schema
+confirmed; both archived offline (git-ignored `var/`). `sbir` → HTTP 403 (provider maintenance /
+bot-block); adapter validated offline, retry connectivity when the provider is available. Five families
+are now operational on real bytes across five distinct economic domains (procurement spend, procurement
+opportunities, corporate, sanctions, regulation).
 
 ## Field meanings
 

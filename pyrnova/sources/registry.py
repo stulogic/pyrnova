@@ -133,11 +133,14 @@ REGISTRY: dict[str, SourceSpec] = {
         native_cadence="daily on Federal Register publication days",
         recommended_poll="daily (agency/topic-filtered window)",
         call_budget="loose (keyless) but windowed: one filtered page per due poll",
-        reliability="fixture_only",
-        status="adapter_ready",
+        reliability="archive_operational",  # 2026-09-09: HTTP 200 filtered probe; real documents archived
+        status="operational",
         priority="medium",
         precursor_stage="AUTHORIZATION",
-        rights_note="Public domain US government work; keyless public API.",
+        rights_note=(
+            "Public domain US government work; keyless public API. 2026-09-09: filtered connectivity "
+            "probe returned HTTP 200 with real documents; bytes archived offline (git-ignored var/)."
+        ),
     ),
     "sec_edgar": SourceSpec(
         id="sec_edgar",

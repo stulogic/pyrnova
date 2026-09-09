@@ -298,3 +298,27 @@
 - **Invariants:** control.py, source_state.py, adapters, fit.py, and scoring_v1 unchanged; frozen M4–M11
   corpora byte-for-byte unchanged; ACCEPTANCE never serves cached bytes; no live calls in the suite.
   Full suite: 298 passed, 1 skipped. See `docs/specs/M12_SOURCE_INTEGRATION.md`.
+
+## Milestone 14 — CLOSED (multi-source intelligence expansion + continuous operations, 2026-09-09)
+
+- **Strategic roadmap (Phase 0):** `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` created — 15
+  strategic capability areas recorded with a binding governance rule (nothing silently dropped), wired
+  into `00-INDEX`/`01-PROJECT-AUTHORITY`/`05-BACKLOG`. Strategic authority only, overrides nothing.
+- **Source breadth:** registry became the durable manifest (family/signals/access/cadence/budget/
+  reliability/status/priority/identifiers/links per source; `docs/specs/SOURCE_MANIFEST.md`). Nine
+  families across distinct economic domains; two new keyless, archive-first adapters added —
+  `sbir` (federal R&D precursor) and `sanctions_ofac` (sanctions/trade exposure). Workstream 2 finding:
+  the M12/M13 ingestion primitives already cover every source shape, so no redesign.
+- **Real operation:** three bounded live probes total. OFAC → one 5.68 MB SDN bulk download parsed to
+  **19,365 real designations** (archive-once/replay-many; git-ignored). Federal Register → HTTP 200 real
+  documents. SBIR → HTTP 403 (provider maintenance) — documented residual blocker, adapter validated
+  offline. Five families now operational on real bytes (USAspending, SAM, SEC EDGAR, OFAC, Federal
+  Register).
+- **Cross-source chains:** two real chains via the frozen `chains.py`/`multisource.py` (no new join
+  semantics). Chain A SBIR→USAspending anchored on Torch's real UEI (2 cross-family accepted joins, 3
+  rejected weak joins, confidence 0.60, ~6.8yr R&D→procurement lead time); Chain B SAIC SEC EDGAR +
+  USAspending deterministic entity merge (3 families). Point-in-time truth and weak-join rejection
+  verified. Evidence: `docs/replay/M14_MULTISOURCE_EXPANSION.md`.
+- **Invariants:** `scoring_v1`, `fit.py`, and frozen corpora byte-for-byte unchanged; no STRIKE
+  explosion (M14 creates no candidates/STRIKEs); no secret leakage; Operations Panel extended thinly
+  (family mesh + chain readout) with the unconfigured contract preserved. Full suite: **342 passed**.

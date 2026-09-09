@@ -1,21 +1,29 @@
 # Pyrnova execution authority
 
-_Current execution window: M14 IN PROGRESS (multi-source intelligence expansion + continuous operations);
-M2–M13 closed · updated 2026-09-09_
+_Current execution window: M14 CLOSED (multi-source intelligence expansion + continuous operations,
+2026-09-09); M2–M13 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
 
-### Milestone 14 — IN PROGRESS (multi-source intelligence expansion + continuous operations)
+### Milestone 14 — CLOSED 2026-09-09 (multi-source intelligence expansion + continuous operations)
 
-Spec: `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`; manifest: `docs/specs/SOURCE_MANIFEST.md` (machine-
-readable `pyrnova/sources/registry.py`). Additive only: `scoring_v1`/`fit.py`/frozen corpora unchanged;
-the M12/M13 ingestion primitives (`control.py`/`source_state.py`/`scheduler.py`/`live_ops.py`/`archive.py`)
-are reused without redesign (Workstream 2 finding). M14 broadens coverage to nine registered families
-across distinct economic domains — adding `sbir` (federal R&D precursor) and `sanctions_ofac`
-(sanctions/trade exposure) — proves cross-source intelligence chains (SBIR→USAspending by UEI; SEC+
-USAspending company linkage) reusing `chains.py`/`multisource.py`, and enforces conservative per-source
-live-call budgets (archive-first). Strategic roadmap: `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`.
-Acceptance gate in the M14 spec; close only on honest breadth, otherwise document blockers and leave open.
+Spec `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`; manifest `docs/specs/SOURCE_MANIFEST.md` (machine-
+readable `pyrnova/sources/registry.py`); evidence `docs/replay/M14_MULTISOURCE_EXPANSION.md`. Additive
+only: `scoring_v1`/`fit.py`/frozen corpora byte-for-byte unchanged; the M12/M13 ingestion primitives
+(`control.py`/`source_state.py`/`scheduler.py`/`live_ops.py`/`archive.py`) reused without redesign
+(Workstream 2 finding). Broadened to **nine registered families across distinct economic domains**,
+adding `sbir` (federal R&D precursor) and `sanctions_ofac` (sanctions/trade exposure). **Five families
+operational on real bytes across five domains** (USAspending, SAM, SEC EDGAR, OFAC, Federal Register).
+Two real cross-source chains proven (`chains.py`/`multisource.py`, no new join semantics): Chain A
+SBIR→USAspending anchored on the real Torch UEI (2 cross-family accepted joins, 3 rejected weak joins,
+confidence 0.60, ~6.8yr R&D→procurement lead time); Chain B SAIC SEC EDGAR + USAspending deterministic
+entity merge (3 families). Three bounded live probes total (OFAC 200 → 19,365 real designations from one
+bulk download; Federal Register 200; SBIR 403). Point-in-time truth, provenance, weak-join rejection
+verified; no STRIKE explosion; no secret leakage; full suite 342 passed; Operations Panel functional
+(thin family-mesh + chain readout). **Residual documented blocker:** `sbir` connectivity (HTTP 403,
+provider maintenance) — adapter built and validated offline; retry one connectivity call when the
+provider is available. Strategic roadmap items (broader source families, threat engine, etc.) remain in
+`docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`. No further M14 action.
 
 ### Milestone 13 — CLOSED 2026-09-09
 
@@ -112,13 +120,12 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M13 CLOSED — no further action.
-2. M14 (IN PROGRESS): execute `docs/specs/M14_MULTI_SOURCE_EXPANSION.md`. Reuse the M12/M13 ingestion
-   primitives without redesign; add the `sbir` and `sanctions_ofac` families offline-first (archive-first,
-   conservative live-call budgets); demonstrate ≥2 cross-source chains reusing `chains.py`/`multisource.py`;
-   keep point-in-time truth, provenance, and weak-join rejection intact.
-3. Do not alter `scoring_v1` or `fit.py` semantics (M14 is additive). Prefer bulk/archive over live calls;
-   never spend SAM/authenticated quota on historical development.
+1. M2–M14 CLOSED — no milestone in progress; await the next brief.
+2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
+   the provider is out of maintenance to move it from `blocked` to `archive_operational`.
+3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`
+   (e.g. first-class threat intelligence, capital-flow mapping, additional source families). Do not begin
+   any without explicit authority. `scoring_v1`/`fit.py` remain frozen absent a justified milestone.
 
 ## Active constraints
 

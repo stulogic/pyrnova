@@ -1,11 +1,14 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M14 IN PROGRESS — multi-source expansion +
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M14 CLOSED — multi-source expansion +
 cross-source chains; M2–M13 CLOSED)._
 
 ## Milestone status
 
-- **M14: IN PROGRESS 2026-09-09.** Multi-source intelligence expansion + continuous operations.
+- **M14: CLOSED 2026-09-09.** Multi-source intelligence expansion + continuous operations. Five families
+  now operational on real bytes across five distinct economic domains (USAspending, SAM, SEC EDGAR, OFAC,
+  Federal Register); `sbir` adapter built + offline-validated but connectivity `blocked` (HTTP 403,
+  provider maintenance) — the single documented residual, with a concrete retry path.
   Additive only — `scoring_v1`, `fit.py`, and frozen corpora byte-for-byte unchanged; the M12/M13
   ingestion primitives are reused without redesign (Workstream 2 finding). The source registry
   (`pyrnova/sources/registry.py`) became the durable manifest (family/signals/access/cadence/budget/
