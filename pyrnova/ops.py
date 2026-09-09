@@ -117,6 +117,70 @@ class OperatorConsole:
             return []
         return rows[-limit:][::-1]
 
+    def threat_operations(self, subject_ref: str | None = None) -> dict:
+        """M15 Operations Panel view: active threats, exposures, and zero-threat rejections (read-only).
+
+        Reads the append-only ``threats`` / ``threat_rejections`` / ``exposures`` streams and rolls them
+        up so an operator can see WHY a threat exists (mechanism, severity, confidence, horizon, affected
+        exposure, evidence, dual opportunity). Degrades to a well-formed empty report when nothing has
+        been persisted. Preserves the existing panel; nothing here changes scoring or fit."""
+        from .threat import SEVERITY_LEVELS, company_threat_surface
+        from .models import Threat
+
+        def _read(name):
+            try:
+                return list(self.store.read(name))
+            except Exception:  # noqa: BLE001 — panel degrades gracefully if the collection is absent
+                return []
+
+        threat_rows = list(_latest(_read("threats")).values())
+        rejections = _read("threat_rejections")
+        exposures = list(_latest(_read("exposures")).values())
+        if subject_ref:
+            threat_rows = [t for t in threat_rows if t.get("subject_ref") == subject_ref]
+            rejections = [r for r in rejections if r.get("subject_ref") == subject_ref]
+            exposures = [e for e in exposures if e.get("subject_ref") == subject_ref]
+
+        active = [t for t in threat_rows if t.get("status") in ("WATCH", "ACTIVE", "MITIGATED")]
+
+        def dist(items, key):
+            out: dict[str, int] = {}
+            for it in items:
+                out[it.get(key)] = out.get(it.get(key), 0) + 1
+            return dict(sorted((k, v) for k, v in out.items() if k is not None))
+
+        # Per-company threat surface, reusing the shared entity layer / threat helper.
+        surfaces = []
+        for ref in sorted({t.get("subject_ref") for t in active if t.get("subject_ref")}):
+            objs = [Threat(**{k: v for k, v in t.items()
+                             if k in Threat.__dataclass_fields__}) for t in active
+                    if t.get("subject_ref") == ref]
+            surfaces.append(company_threat_surface(ref, objs))
+
+        return {
+            "configured": bool(threat_rows or rejections or exposures),
+            "active_threat_count": len(active),
+            "zero_threat_rejections": len(rejections),
+            "by_mechanism": dist(active, "mechanism"),
+            "by_severity": dist(active, "severity"),
+            "by_confidence": dist(active, "confidence"),
+            "by_horizon": dist(active, "horizon"),
+            "rejection_reasons": dist(rejections, "reason_code"),
+            "dual_sided_count": sum(1 for t in active if t.get("dual_opportunity_ref")),
+            "exposure_count": len(exposures),
+            "exposure_confirmed": sum(1 for e in exposures if e.get("link_class") == "CONFIRMED"),
+            "company_threat_surfaces": surfaces,
+            "threats": sorted(
+                [{"id": t.get("id"), "subject": t.get("subject_name"), "mechanism": t.get("mechanism"),
+                  "severity": t.get("severity"), "confidence": t.get("confidence"),
+                  "horizon": t.get("horizon"), "affected_value_category": t.get("affected_value_category"),
+                  "economic_effect": t.get("economic_effect"), "evidence_ids": t.get("evidence_ids"),
+                  "dual_opportunity_ref": t.get("dual_opportunity_ref")} for t in active],
+                key=lambda t: (-SEVERITY_LEVELS.index(t["severity"]) if t["severity"] in SEVERITY_LEVELS
+                               else 0, t["mechanism"]),
+            ),
+        }
+
     def targets(self) -> list[dict]:
         rows = []
         if not self.profiles_dir.exists():
