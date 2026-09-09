@@ -273,6 +273,8 @@ class OperatorConsole:
                 "horizon": p.get("horizon"), "catalyst_id": p.get("catalyst_id"),
                 "root_threat_id": meta.get("root_threat_id"), "depth": meta.get("propagation_depth"),
                 "catalyst_class": meta.get("catalyst_class", "MODELED"),
+                "exposure_join_class": meta.get("exposure_join_class", "candidate"),
+                "adverse_event_family": meta.get("adverse_event_family"),
                 "relationship_path": meta.get("propagation_path"), "evidence_ids": p.get("evidence_ids"),
                 "outcome": outcome_status(p.get("id")),
             }
@@ -288,6 +290,8 @@ class OperatorConsole:
                 {"id": t.get("id"), "mechanism": t.get("mechanism"), "severity": t.get("severity"),
                  "confidence": t.get("confidence"), "horizon": t.get("horizon"),
                  "catalyst_class": (t.get("meta") or {}).get("catalyst_class", "MODELED"),
+                 "exposure_join_class": (t.get("meta") or {}).get("exposure_join_class", "candidate"),
+                 "adverse_event_family": (t.get("meta") or {}).get("adverse_event_family"),
                  "economic_effect": t.get("economic_effect"), "evidence_ids": t.get("evidence_ids"),
                  "outcome": outcome_status(t.get("id"))}
                 for t in active],
@@ -326,8 +330,13 @@ class OperatorConsole:
             "observed_catalyst_count": sum(1 for e in events if e.get("catalyst_class") == "OBSERVED"),
             "catalysts": [
                 {"event_id": e.get("event_id"), "event_type": e.get("event_type"),
-                 "agency": e.get("agency"), "published": e.get("publication_date"),
-                 "catalyst_class": e.get("catalyst_class"), "source_url": e.get("source_url")}
+                 "agency": e.get("agency"),
+                 # Federal Register carries publication_date; a contract modification carries action_date.
+                 "published": e.get("publication_date") or e.get("action_date") or e.get("available_at"),
+                 "catalyst_class": e.get("catalyst_class"),
+                 # Deterministic native ids present for the contract-modification family (PIID + UEI).
+                 "piid": e.get("piid"), "recipient_uei": e.get("recipient_uei"),
+                 "source_url": e.get("source_url")}
                 for e in events[:25]],
             "relationship_independence": independence or {},
         }

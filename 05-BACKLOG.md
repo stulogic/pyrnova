@@ -19,23 +19,32 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
-## P1 — deferred threat intelligence (M15–M18 delivered the foundation)
+## P1 — deferred threat intelligence (M15–M19 delivered the foundation)
 
-**M18 update (2026-09-09):** the two items previously flagged here as the highest-value grounding are
-now DELIVERED: (a) a **second (and third) real company relationship** for propagation — Parsons→Torch and
-Intuitive→Torch, both independent of SAIC↔Torch, grounded 0-call from the authoritative sub-award PRIME
-fields; and (b) a **real adverse-event feed** so the catalyst is archived, not modeled — Federal Register
-BIS/Commerce export-control & Entity-List rules as first-class OBSERVED catalysts. Carried-forward,
-newly-surfaced threat work after M18:
+**M19 update (2026-09-09):** two more of the items previously flagged here are now DELIVERED:
+(a) a **deterministic** observed exposure — a real archived USAspending contract **deobligation** on
+SAIC's exact PIID 47QFSA20F0057 (deterministic native-id incumbency by recipient UEI) carrying a
+**HIGH-confidence** direct threat propagated to Torch; and (b) a **second adverse-event family** —
+USAspending `contract_modification` (deobligation), materially independent of BIS/Federal Register export
+controls and staying selective. Carried-forward, newly-surfaced threat work after M19:
 
-- A **deterministic** observed exposure (today's observed export-control exposures are INFERRED): a real
-  counterparty of a BIS-listed entity, or a program-specific SAM/USAspending cancellation/modification
-  (deobligation/termination) notice tied to a PIID, so an OBSERVED chain can carry HIGH confidence.
-- A **second adverse-event family** (WARN/facility closure or program-cancellation/funding), added only
-  when it materially improves exposure/outcome evidence and passes the M4 source test.
+- A real contract **termination** (or a materially large deobligation) on a monitored incumbent — the M19
+  deterministic flagship uses a magnitude-modest deobligation (−$5.15M on a $2.9B ceiling → MODERATE
+  severity); a termination would carry HIGH severity as well as HIGH confidence.
+- A **third adverse-event family** (WARN/facility closure, regulatory enforcement, or adverse SEC
+  disclosure), added only when it materially improves exposure/outcome evidence and passes the M4 source
+  test.
 - **Relationship-TYPE diversity** beyond `SUBCONTRACTOR_OF` (COMPANY_TO_PROGRAM / SUPPLIER_OF /
   CUSTOMER_OF / SUBSIDIARY_OF), added only where authoritative evidence requires each one.
-- Grow the resolved **propagated**-outcome set beyond 1 (M18 began direct-vs-propagated calibration).
+- Grow the resolved **propagated**-outcome set with REAL later outcomes — M19 reached 4 resolved
+  propagated with outcome diversity, but the new 2024–2026 additions are directional structured probe
+  observations (no real-company future fact is knowable yet).
+
+**M18 update (2026-09-09):** the two items previously flagged as highest-value grounding were DELIVERED:
+(a) a **second/third real company relationship** for propagation — Parsons→Torch and Intuitive→Torch,
+independent of SAIC↔Torch, grounded 0-call from the authoritative sub-award PRIME fields; and (b) a **real
+adverse-event feed** (Federal Register BIS/Commerce export-control & Entity-List rules as OBSERVED
+catalysts).
 
 ## P1 — deferred threat intelligence (earlier foundation, pre-M18)
 

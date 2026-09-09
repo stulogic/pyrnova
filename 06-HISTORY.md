@@ -1,5 +1,32 @@
 # Pyrnova milestone history
 
+## Milestone 19 — CLOSED 2026-09-09
+
+- Deterministic OBSERVED exposure + multi-family adverse-event validation. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m18` byte-for-byte unchanged; additive
+  edits to `adverse_events.py`/`threat.py`/`propagation.py`/`ops.py`; new `corpus_m19.json`).
+- Second OBSERVED adverse-event family: USAspending contract **deobligations**
+  (`parse_usaspending_contract_modifications` → `contract_modification` catalysts consumed by the existing
+  `PROGRAM_CONTRACTION` engine), materially independent of BIS/Federal Register export controls; archived
+  once at `examples/real_evidence/usaspending_contract_mods_saic_47QFSA20F0057.json` (3 live USAspending
+  calls, keyless, per-response content hashes in-file).
+- Flagship deterministic chain: real deobligation mod **P00256, −$5,152,916.35, 2024-05-06** on SAIC's
+  exact PIID **47QFSA20F0057** (deterministic native-id incumbency, SAIC UEI **MMLKPW9JLX64**) →
+  **HIGH-confidence** PROGRAM_CONTRACTION (MODERATE severity) → propagated one hop to Torch on the SAME
+  PIID via the real program-anchored edge (HIGH→MEDIUM, never increasing). A second real deobligation
+  (P00330, −$3.39M) is HIGH confidence but LOW severity — determinism does not inflate severity.
+- Durable deterministic-vs-inferred authority (`threat.exposure_join_class`) on every threat and hop.
+  Deterministic identity alone is not a threat: materiality gate ($1M floor) → `IMMATERIAL`; wrong award →
+  `NO_EXPOSURE`; lapsed incumbency (`valid_to` < catalyst) → `EXPOSURE_ENDED`; future catalyst excluded at
+  an earlier cutoff. `summarize_m19` reports deterministic-vs-inferred + multi-family selectivity; resolved
+  propagated outcomes grew 1 → 4 (MATERIALIZED/MITIGATED/AVOIDED).
+- `corpus_m19` (9 cases) extends `corpus_m18` → **66 cases all pass**; 46 direct / 16 propagated (no
+  explosion), 2 families, 10 OBSERVED / 36 MODELED direct, 79/13 deterministic/inferred exposures, 2 REAL
+  observed-deterministic-HIGH direct threats, 14 unique pairs, 16 negative cases; resolved outcomes 16
+  (precision 0.9375, median lead 342.5 days), resolved propagated 4 (precision 1.0),
+  `false_alert_from_absence` 0. Full suite **457 passed**. Spec `docs/specs/M19_DETERMINISTIC_EXPOSURE.md`;
+  evidence `docs/replay/M19_DETERMINISTIC_EXPOSURE.md`.
+
 ## Milestone 18 — CLOSED 2026-09-09
 
 - Independent relationship expansion + archived OBSERVED adverse catalysts. Additive only

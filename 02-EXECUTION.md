@@ -1,10 +1,29 @@
 # Pyrnova execution authority
 
-_Current execution window: M18 CLOSED (independent real relationship expansion + archived OBSERVED
-adverse catalysts, 2026-09-09); M2–M17 closed; no milestone in progress — await next brief · updated
-2026-09-09_
+_Current execution window: M19 CLOSED (deterministic OBSERVED exposure + second adverse-event family,
+2026-09-09); M2–M18 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 19 — CLOSED 2026-09-09 (deterministic OBSERVED exposure + multi-family adverse events)
+
+Spec `docs/specs/M19_DETERMINISTIC_EXPOSURE.md` (canonical); evidence
+`docs/replay/M19_DETERMINISTIC_EXPOSURE.md`. Additive only: `scoring_v1`/`fit.py`/`replay.py`/frozen
+corpora (incl. `corpus_m18`) byte-for-byte unchanged; additive edits to `adverse_events.py`/`threat.py`/
+`propagation.py`/`ops.py`; new `corpus_m19.json`. Adds a **second OBSERVED adverse-event family** —
+USAspending contract **deobligations** (`parse_usaspending_contract_modifications` → `contract_modification`
+catalysts consumed by the existing `PROGRAM_CONTRACTION` engine), materially independent of BIS/Federal
+Register export controls — and proves a **deterministic** OBSERVED exposure chain: a real deobligation
+(mod **P00256, −$5,152,916.35, 2024-05-06**) on SAIC's exact PIID **47QFSA20F0057** (deterministic native-id
+incumbency, SAIC UEI **MMLKPW9JLX64**) → **HIGH-confidence** PROGRAM_CONTRACTION → propagated one hop to
+Torch on the SAME PIID. Deterministic authority (`exposure_join_class`) is durable on every threat and
+every hop; deterministic identity alone is never a threat (materiality gate → `IMMATERIAL`, wrong-award →
+`NO_EXPOSURE`, lapsed incumbency → `EXPOSURE_ENDED`). `summarize_m19` reports deterministic-vs-inferred +
+multi-family selectivity; resolved propagated outcomes grew **1 → 4** with diversity. `corpus_m19`
+(9 cases) extends `corpus_m18` → **66 cases all pass**; 46 direct / 16 propagated (no explosion), 2
+adverse-event families, 10 OBSERVED / 36 MODELED direct, 2 REAL observed-deterministic-HIGH direct
+threats, resolved outcomes 16 (precision 0.9333→**0.9375**, median lead 342.5 days). **3 live USAspending
+calls** (archive-once); full suite **457 passed**. No further M19 action.
 
 ### Milestone 18 — CLOSED 2026-09-09 (independent relationship expansion + archived adverse catalysts)
 
@@ -183,7 +202,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M18 CLOSED — no milestone in progress; await the next brief.
+1. M2–M19 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`

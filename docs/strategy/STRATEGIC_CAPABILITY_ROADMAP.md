@@ -102,6 +102,19 @@ pair — needs archived prime-side exposure for another real prime, or a distinc
 **company threat network view** was delivered (`ops.company_threat_network_view`) as an M17 foundation
 for area 4 below. These sit below active authority until a justified milestone.
 
+**Advanced in M18/M19** (`docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md`,
+`docs/specs/M19_DETERMINISTIC_EXPOSURE.md`): (i) **DONE** — two independent real chains (Parsons→Torch,
+Intuitive→Torch, M18). (h) **advanced** — a first real adverse-event feed (Federal Register BIS/Commerce
+export controls, M18) and now a **second family** (USAspending contract deobligations, M19), each an
+OBSERVED catalyst; WARN/facility, enforcement, and SEC-disclosure families remain open (add only when they
+materially improve evidence). **New in M19**: a **deterministic** OBSERVED exposure (exact PIID + recipient
+UEI) carrying a **HIGH-confidence** direct threat propagated to a real subcontractor, with durable
+deterministic-vs-inferred authority on every threat and a materiality/temporal-validity gate so an exact
+identifier alone is never a threat. (c) advanced — resolved outcomes 12 → 16 (direct precision 0.9375),
+resolved propagated 1 → 4; still needs real (non-probe) later outcomes at volume. Still open: a real
+contract **termination** (vs a magnitude-modest deobligation) and relationship-TYPE diversity beyond
+`SUBCONTRACTOR_OF`.
+
 ### 2. Negative-space intelligence — `RECORDED`
 
 Model expected evidence that **fails to appear**. Examples: authorization without appropriation;

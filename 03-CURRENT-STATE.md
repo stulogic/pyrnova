@@ -1,9 +1,38 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M18 CLOSED — independent relationship expansion +
-archived OBSERVED adverse catalysts; M2–M17 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M19 CLOSED — deterministic OBSERVED exposure +
+second adverse-event family; M2–M18 CLOSED)._
 
 ## Milestone status
+
+- **M19: CLOSED 2026-09-09.** Deterministic OBSERVED exposure + multi-family adverse-event validation.
+  Additive only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m18` byte-for-byte
+  unchanged; additive edits to `adverse_events.py`/`threat.py`/`propagation.py`/`ops.py`; new
+  `corpus_m19.json`). Proves a **REAL, archived, OBSERVED adverse event → DETERMINISTIC exposure →
+  HIGH-confidence direct threat → real relationship → propagated threat**, and that this survives a
+  **second adverse-event family**. **Second family** (`adverse_events.parse_usaspending_contract_modifications`):
+  archived USAspending contract **deobligations** (negative `federal_action_obligation` on a specific PIID
+  held by a specific recipient UEI) become OBSERVED `contract_modification` catalysts consumed by the
+  existing `PROGRAM_CONTRACTION` engine — materially independent of the BIS/Federal Register export-control
+  family. **Flagship deterministic chain**: a real deobligation (mod **P00256, −$5,152,916.35, 2024-05-06**)
+  on SAIC's exact prime PIID **47QFSA20F0057** (SAIC UEI **MMLKPW9JLX64** is the recipient →
+  `deterministic_native_id`/CONFIRMED incumbency) → **HIGH-confidence** PROGRAM_CONTRACTION (MODERATE
+  severity = the >$5M magnitude) → propagated one hop to Torch on the SAME PIID via the real
+  program-anchored edge (HIGH→MEDIUM, never increasing). **Deterministic authority** is durable on every
+  threat (`threat.exposure_join_class ∈ {deterministic, inferred, candidate}`, retained across hops).
+  **Deterministic identity is not a threat**: a materiality gate ($1M floor) rejects a routine −$31,616
+  deobligation `IMMATERIAL`, a material deobligation on a different award the subject does not hold is
+  `NO_EXPOSURE`, and a lapsed incumbency (`valid_to` < catalyst) is `EXPOSURE_ENDED` (temporal validity).
+  `summarize_m19` reports deterministic-vs-inferred exposure/threat/outcome counts and multi-family
+  selectivity; `propagated_outcome_calibration` grows resolved propagated **1 → 4** with outcome diversity
+  (MATERIALIZED/MITIGATED/AVOIDED). `corpus_m19` (9 cases) extends `corpus_m18` → **66 cases all pass**.
+  Merged metrics: **46 direct / 16 propagated** (no explosion, confidence never increases, max depth 2),
+  **2 adverse-event families**, 7 observed-catalyst chains, **10 OBSERVED / 36 MODELED** direct, 79/13
+  deterministic/inferred exposures, **2 REAL** observed-deterministic-HIGH direct threats, 14 unique pairs,
+  16 negative cases; resolved outcomes **16** (precision **0.9375**, median lead **342.5 days**), resolved
+  propagated **4** (precision 1.0), `false_alert_from_absence` 0. **3 live USAspending calls** (keyless,
+  archived once); full suite **457 passed**. Spec `docs/specs/M19_DETERMINISTIC_EXPOSURE.md`; evidence
+  `docs/replay/M19_DETERMINISTIC_EXPOSURE.md`.
 
 - **M18: CLOSED 2026-09-09.** Independent relationship expansion + archived adverse catalysts. Additive
   only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m17` byte-for-byte unchanged; new
@@ -525,6 +554,19 @@ archived OBSERVED adverse catalysts; M2–M17 CLOSED)._
 - SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
 
 ## Exact next action
+
+M19 CLOSED (`docs/specs/M19_DETERMINISTIC_EXPOSURE.md`, `docs/replay/M19_DETERMINISTIC_EXPOSURE.md`) —
+Pyrnova now proves a REAL, archived, OBSERVED adverse event with a **deterministic** (exact PIID + UEI)
+exposure carrying a **HIGH-confidence** direct threat, propagated through a real relationship, and shows
+the behavior survives a **second adverse-event family** (USAspending contract deobligation) that stays
+selective. Deterministic identity alone is never a threat (immaterial/wrong-award/lapsed rejections). No
+milestone in progress; await the next brief. `scoring_v1`/`fit.py` remain frozen absent a justified
+milestone. Highest-value next grounding (see M19 limitations / roadmap): a real contract **termination**
+(vs a magnitude-modest deobligation) on a monitored incumbent, a third adverse-event family
+(WARN/facility or enforcement), relationship-TYPE diversity beyond `SUBCONTRACTOR_OF`, and growing the
+resolved propagated-outcome set with real (not directional-probe) later outcomes.
+
+### Prior next action (retained for continuity)
 
 M18 CLOSED (`docs/specs/M18_INDEPENDENT_ADVERSE_EVENTS.md`,
 `docs/replay/M18_INDEPENDENT_ADVERSE_EVENTS.md`) — Pyrnova now takes a REAL, archived, OBSERVED adverse
