@@ -85,6 +85,14 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 
 ## Deferred product/infrastructure work
 
+- Operations Panel UX concepts salvaged from the superseded Operator Console v0.1 (orphan commit
+  `e9253b4`, D-040) — preserve the *workflow*, not the old code, and only build on the current
+  state-centric panel + M12–M14 governed ingestion: (a) **UI-triggered Capture Radar run** with
+  operator parameters (mode, forward window, SAM lookback, min award $, min relevance) that routes
+  through `live_ops`/`scheduler` (never the orphan's ungoverned fetch); (b) **selective Signal Brief
+  assembly** from hand-picked approved candidates (vs the current by-target export); (c) **richer human-
+  review-queue filters** (candidate type, source, review status, min relevance). Relates to roadmap
+  area 13 (customer-facing simplification). Do not create a second console.
 - Polished frontend, mobile apps, enterprise UI, self-serve dashboard.
 - Proprietary-data integrations and broad customer personalization.
 - Public API commercialization, SEO product, CRM/outbound automation, proposal generation.

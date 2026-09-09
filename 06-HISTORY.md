@@ -322,3 +322,25 @@
 - **Invariants:** `scoring_v1`, `fit.py`, and frozen corpora byte-for-byte unchanged; no STRIKE
   explosion (M14 creates no candidates/STRIKEs); no secret leakage; Operations Panel extended thinly
   (family mesh + chain readout) with the unconfigured contract preserved. Full suite: **342 passed**.
+
+## Operator Console reconciliation — orphan v0.1 resolved as superseded (2026-09-09)
+
+- The **original Operator Console v0.1** was created in the orphan clone `/Users/stu/pyrnova`
+  (commit `e9253b4`, "Add Pyrnova operator console v0.1") and **never pushed into canonical history** —
+  which is why the artifact appeared missing during later searches. It is a distinct implementation line
+  (`operator.py`, `console.py`, `console_static/`, `acquisition.py`, `test_operator.py`).
+- The canonical **Operations Panel was subsequently rebuilt/evolved independently** through M8–M14
+  (`ops.py`/`ops_server.py`/`ops_web`, D-035), and now provides the same core operator workflow —
+  target selector, human review queue, PRIME/SUPPORT/TEAM/DEFEND adjudication, evidence review, notes/
+  falsification, Signal Brief export — **plus** capabilities the orphan lacks (outcome lifecycle
+  tracking WON/LOST/…, and M10–M14 company/source-operations/cross-source-chain intelligence).
+- `e9253b4` was **reviewed feature-by-feature** during this reconciliation. Its unique elements were
+  judged either architecturally superseded/conflicting (a second HTTP server, immutable per-run
+  `RunStore`, `quality`/APPROVE·REJECT·HOLD taxonomy, ungoverned `acquisition.py` live-fetch that
+  predates the M12–M14 budget/dedupe/circuit/archive-first governance) or genuinely-useful UX
+  *concepts* (UI-triggered governed run, selective multi-candidate Signal Brief, richer queue filters).
+- **Resolution (D-040):** no orphan code ported (avoids a second console and stale architecture and
+  respects frozen scoring/ingestion doctrine); the useful workflow concepts were preserved in
+  `05-BACKLOG.md` and roadmap area 13 so nothing strategically material is silently dropped. The orphan
+  implementation line is now resolved. `/Users/stu/Documents/Pyrnova` remains the canonical execution
+  tree (01-PROJECT-AUTHORITY › Canonical execution tree).
