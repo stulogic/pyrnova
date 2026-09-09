@@ -19,7 +19,17 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
-## P1 — deferred threat intelligence (M15–M20 delivered the foundation)
+## P1 — deferred threat intelligence (M15–M21 delivered the foundation)
+
+**M21 update (2026-09-09):** DELIVERED (a) a raw-archived source-native contract **termination**
+(USAspending terminate-for-convenience, PIID `36C25726N0240`, raw bytes + sha256), upgrading M20's
+curated-only SEC extract; (b) the **`SUBSIDIARY_OF`** economic relationship type (native-id parent
+hierarchy) — the first propagation relation outside the government-program graph; and (c) SEC ingestion
+hardening (declared identity, authoritative access order, accession dedupe, safe 403). Still open:
+`CUSTOMER_OF`/`SUPPLIER_OF`/`FACILITY_OF` relationship diversity; grow real later propagated outcomes (the
+M21 termination outcome is honestly unresolved — a re-award probe of requirement 671A4-21-160 is the
+natural later-outcome path once time passes). Next expected direction is customer-facing productization
+(roadmap areas 16–18), not further threat-engine deepening.
 
 **M20 update (2026-09-09):** DELIVERED (a) a real $35M SEC corporate restructuring/exit adverse event,
 (b) the third observed adverse-event family, and (c) real `COMPANY_TO_PROGRAM` propagation on an exact

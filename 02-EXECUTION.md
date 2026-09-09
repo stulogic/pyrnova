@@ -1,25 +1,26 @@
 # Pyrnova execution authority
 
-_Current execution window: M21 IN PROGRESS (raw adverse event + economic relationship diversity +
-observable outcomes) on the M20 base; M2–M20 closed · updated 2026-09-09_
+_Current execution window: M21 CLOSED (raw adverse event + economic relationship diversity + observable
+outcomes, 2026-09-09); M2–M20 closed; no milestone in progress — STOP and await next brief · updated
+2026-09-09_
 
 ## Active work
 
-### Milestone 21 — IN PROGRESS (raw adverse event + economic relationship diversity + outcomes)
+### Milestone 21 — CLOSED 2026-09-09 (raw adverse event + economic relationship diversity + outcomes)
 
 Spec `docs/specs/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`; evidence
-`docs/replay/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`. Goal: take a REAL adverse event preserved
-from authoritative **raw** source bytes, resolve the exposed entity deterministically, propagate across a
-**genuinely economic relationship outside the government-program graph**, preserve temporal truth and
-provenance, and judge the assessment against a later observable outcome where defensibly available.
-Additive only — `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora (incl. `corpus_m20`)
-stay byte-identical. Phase 0 (authority reconciliation) landed the Product Language Authority (D-041) and
-strategic capability reconciliation + phase control (D-042). SEC ingestion is hardened around a
-configurable declared identity, authoritative access order, accession dedupe, archive-first reuse, and
-safe 403 handling. Flagship: a raw USAspending **termination for convenience** (PIID `36C25726N0240`,
-mod `P00002`, −$3,908,263.25, 2026-08-31; D-043) → deterministic UEI exposure → new `SUBSIDIARY_OF`
-economic relationship (parent-hierarchy native ids) → propagated threat. See the spec for the acceptance
-gate.
+`docs/replay/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`. Additive only — `scoring_v1`/`fit.py`/
+`replay.py`/severity bands and frozen corpora (incl. `corpus_m20`) byte-identical. Phase 0 landed the
+Product Language Authority (D-041) and strategic capability reconciliation + phase control (D-042; roadmap
+areas 16–22). SEC ingestion hardened: configurable declared identity (never fabricated), authoritative
+access order, discovery-vs-body separation, raw full-submission artifact, accession dedupe, safe 403.
+Flagship: a real raw-archived USAspending **terminate-for-convenience** (PIID `36C25726N0240`, VA;
+mod `P00002`, action_type `F`, −$3,908,263.25, 2026-08-31; D-043) → deterministic UEI `YR7CLZFGCM95`
+exposure → HIGH-confidence `PROGRAM_CANCELLATION_OR_DELAY` → new `SUBSIDIARY_OF` economic relationship
+(native-id parent hierarchy, child `YR7CLZFGCM95` → parent `KMSLVW1MZWU9`) → propagated threat
+(HIGH→MEDIUM). `corpus_m21` (6 cases) → 80/80 pass; 55 direct / 19 propagated; 3 real relationship types;
+20 negatives; 0 temporal leaks/explosions. Flagship later outcome honestly UNRESOLVED. ~16 keyless
+USAspending calls (3 archival), 0 SEC/SAM. Full suite **482 passed**. No further M21 action.
 
 ### Milestone 20 — CLOSED 2026-09-09 (material adverse event + relationship-type diversity)
 
@@ -232,12 +233,17 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M20 CLOSED — no milestone in progress; await the next brief.
-2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
+1. M2–M21 CLOSED — no milestone in progress; **STOP and await the next brief** (per the M21 work order,
+   do not automatically begin M22).
+2. Expected next direction (do not begin without explicit authority): customer-facing productization —
+   Company Intelligence Dossier + Company Opportunity/Threat Surface + universal entity search + fast
+   read-optimized delivery (roadmap areas 16–18). Source breadth, outcomes, calibration, and relationship
+   coverage continue accumulating in parallel rather than blocking productization.
+3. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
-3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`
-   (e.g. first-class threat intelligence, capital-flow mapping, additional source families). Do not begin
-   any without explicit authority. `scoring_v1`/`fit.py` remain frozen absent a justified milestone.
+4. Other next-milestone candidates are recorded in `05-BACKLOG.md` and
+   `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`. `scoring_v1`/`fit.py`/severity bands remain frozen
+   absent a justified milestone.
 
 ## Active constraints
 

@@ -9,6 +9,7 @@ from pyrnova.adverse_events import (
     parse_usaspending_award_termination,
     to_contract_termination_catalyst,
 )
+from pyrnova.ops import OperatorConsole
 from pyrnova.propagation import propagate_threats
 from pyrnova.relationships import ground_subsidiary_edges
 from pyrnova.threat import assess_threats, incumbency_exposures
@@ -141,3 +142,25 @@ def test_relationship_and_exposure_temporal_validity():
     threats, rejections = assess_threats("co_dap_sub", "DAP", exposures, [catalyst], as_of=CATALYST_DATE)
     assert not threats
     assert "EXPOSURE_ENDED" in [r.reason_code for r in rejections]
+
+
+def test_operations_panel_surfaces_raw_chain():
+    parsed = parse_usaspending_award_termination(
+        TXNS.read_bytes(), piid=PIID, recipient_uei=CHILD_UEI,
+        recipient_name="DAP CONSTRUCTION MANAGEMENT LLC", agency="Department of Veterans Affairs")
+    edges = ground_subsidiary_edges(RECIP.read_bytes(), child_ref="co_dap_sub",
+                                    available_at="2026-03-04", valid_from="2026-03-04")
+    _, threats, _ = _direct_threat()
+    seed = next(t for t in threats if t.mechanism == "PROGRAM_CANCELLATION_OR_DELAY")
+    prop = propagate_threats([seed], edges, as_of=CATALYST_DATE)
+    view = OperatorConsole.raw_adverse_event_view(
+        parsed, relationship_edges=edges, propagation_result=prop,
+        sec_status={"retrieval_path": "raw_full_submission", "declared_identity": True,
+                    "last_status": "403_terminal_no_retry"})
+    assert view["family"] == "contract_modification"
+    assert view["adverse_event"]["event_type"] == "CONTRACT_TERMINATION"
+    assert view["raw_provenance"]["raw_authoritative_bytes"] is True
+    assert view["deterministic_exposure"]["recipient_uei"] == CHILD_UEI
+    assert view["relationship_path"][0]["relation"] == "SUBSIDIARY_OF"
+    assert view["propagated_threats"] == 1
+    assert view["sec_source_status"]["declared_identity"] is True

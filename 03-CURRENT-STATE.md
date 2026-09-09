@@ -1,9 +1,33 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M20 CLOSED — material adverse-event +
-relationship-type generalization; M2–M19 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M21 CLOSED — raw adverse event + economic
+relationship diversity + observable outcomes; M2–M20 CLOSED)._
 
 ## Milestone status
+
+- **M21: CLOSED 2026-09-09.** Raw authoritative adverse event + economic relationship diversity +
+  observable outcomes. Additive only (`scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen
+  corpora incl. `corpus_m20` byte-for-byte unchanged; additive edits to `adverse_events.py`/
+  `relationships.py`/`threat.py`/`ops.py`/`config.py`/`sources/sec_edgar.py`; new `corpus_m21.json`).
+  **Phase 0** landed the Product Language Authority (D-041) and strategic capability reconciliation +
+  phase-control rule (D-042; roadmap areas 16–22). **SEC hardening**: configurable declared identity
+  (`config.sec_user_agent`, never fabricated), authoritative access order (`SEC_ACCESS_ORDER`),
+  discovery-vs-body separation, `full_submission_url` raw artifact + `fetch_full_submission`, accession
+  dedupe (amendments preserved), and safe 403 (terminal, one call, no retry loop). **Flagship**: a real
+  USAspending **terminate-for-convenience** (PIID `36C25726N0240`, VA Kerrville VAMC boiler replacement;
+  mod `P00002`, action_type `F`, −$3,908,263.25, 2026-08-31) preserved as **raw response bytes** with
+  sha256 provenance — upgrading M20's curated-only SEC extract. Deterministic exposure by recipient UEI
+  `YR7CLZFGCM95`; HIGH-confidence `PROGRAM_CANCELLATION_OR_DELAY` (severity LOW by frozen $ bands). New
+  economic relation **`SUBSIDIARY_OF`** grounded from the authoritative recipient hierarchy (child UEI
+  `YR7CLZFGCM95` → parent UEI `KMSLVW1MZWU9`, native ids; self-parent filtered) — the first propagation
+  relation outside the government-program graph — propagates the threat up to the parent (confidence
+  HIGH→MEDIUM, never increasing). `corpus_m21` (6 cases) extends `corpus_m20` → **80/80 pass**: 55 direct
+  / 19 propagated, 3 real relationship types, 16 unique pairs, 20 negatives, deterministic resolved-direct
+  precision 0.9412 (N=17), 0 temporal leaks/explosions. Flagship later outcome honestly **UNRESOLVED**
+  (event days old; no defensible later evidence within budget). ~16 keyless public-domain USAspending
+  calls (one-time acquisition, 3 archival), 0 SEC/SAM. Full suite **482 passed**. Spec/evidence:
+  `docs/specs/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`,
+  `docs/replay/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`.
 
 - **M20: CLOSED 2026-09-09.** Added a third observed family (`sec_corporate_adverse_event`) and a real
   non-subcontract propagation type (`COMPANY_TO_PROGRAM`). SAIC 10-K accession
@@ -570,6 +594,23 @@ relationship-type generalization; M2–M19 CLOSED)._
 - SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
 
 ## Exact next action
+
+M21 CLOSED (`docs/specs/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`,
+`docs/replay/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`) — Pyrnova now takes a REAL adverse event
+preserved from **raw** authoritative source bytes (a USAspending contract termination), resolves the
+exposed entity deterministically (recipient UEI), propagates across a **genuinely economic relationship
+outside the government-program graph** (`SUBSIDIARY_OF`, native-id parent hierarchy), preserves temporal
+truth/provenance, and records the later outcome honestly (UNRESOLVED — the event is days old). SEC
+ingestion is hardened (declared identity, authoritative access order, accession dedupe, safe 403).
+**No milestone in progress; STOP and await the next brief.** The expected next direction is the strategic
+pivot to customer-facing productization (Company Intelligence Dossier + Opportunity/Threat Surface +
+universal entity search + fast read-optimized delivery — roadmap areas 16–18); do not begin it without
+explicit authority. `scoring_v1`/`fit.py`/severity bands remain frozen absent a justified milestone.
+Highest-value continued accumulation (parallel, non-blocking): grow real later propagated outcomes
+(re-award probe of the terminated requirement once time passes), and add `CUSTOMER_OF`/`SUPPLIER_OF`/
+`FACILITY_OF` relationship types where authoritative evidence supports each.
+
+### Prior next action (retained for continuity)
 
 M19 CLOSED (`docs/specs/M19_DETERMINISTIC_EXPOSURE.md`, `docs/replay/M19_DETERMINISTIC_EXPOSURE.md`) —
 Pyrnova now proves a REAL, archived, OBSERVED adverse event with a **deterministic** (exact PIID + UEI)

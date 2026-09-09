@@ -343,6 +343,53 @@ class OperatorConsole:
             "relationship_independence": independence or {},
         }
 
+    @staticmethod
+    def raw_adverse_event_view(
+        parsed_events: dict, relationship_edges: list[dict] | None = None,
+        propagation_result: dict | None = None, sec_status: dict | None = None,
+    ) -> dict:
+        """M21 Operations Panel view (thin, read-only): surface a raw-archived adverse event with its
+        raw/archive provenance, deterministic exposure state, relationship path + validity, and
+        direct/propagated classification. Pure pass-through of ``adverse_events.parse_*`` +
+        ``relationships.ground_*`` + ``propagation.propagate_threats`` output; no store access,
+        empty-safe. Functional labels only (Product Language Authority)."""
+        parsed_events = parsed_events or {}
+        events = parsed_events.get("events", [])
+        flagship = events[0] if events else {}
+        propagated = (propagation_result or {}).get("propagated_threats", []) or []
+
+        def edge_row(e):
+            return {"relation": e.get("relation"), "from_ref": e.get("from_ref"),
+                    "to_ref": e.get("to_ref"), "link_class": e.get("link_class"),
+                    "join_method": e.get("join_method"),
+                    "valid_from": e.get("valid_from"), "valid_to": e.get("valid_to"),
+                    "native_ids": (e.get("provenance") or {})}
+
+        return {
+            "family": parsed_events.get("family"),
+            "adverse_event": {
+                "event_id": flagship.get("event_id"), "event_type": flagship.get("event_type"),
+                "termination_kind": flagship.get("termination_kind"),
+                "piid": flagship.get("piid"), "action_date": flagship.get("action_date"),
+                "amount_withdrawn_usd": flagship.get("amount_delta_usd"),
+                "summary": flagship.get("summary") or flagship.get("title"),
+            },
+            "raw_provenance": {
+                "archive_hash": parsed_events.get("archive_hash"),
+                "raw_authoritative_bytes": bool(parsed_events.get("archive_hash")),
+                "source_ref": flagship.get("source_ref"),
+            },
+            "deterministic_exposure": {
+                "recipient_uei": flagship.get("recipient_uei"), "piid": flagship.get("piid"),
+                "join": "deterministic_native_id" if flagship.get("recipient_uei") else None,
+            },
+            "relationship_path": [edge_row(e) for e in (relationship_edges or [])],
+            "direct_threats": max(0, 1 if flagship else 0),
+            "propagated_threats": len(propagated),
+            "outcome_state": (propagation_result or {}).get("outcome_state", "UNRESOLVED"),
+            "sec_source_status": sec_status or {},
+        }
+
     def targets(self) -> list[dict]:
         rows = []
         if not self.profiles_dir.exists():

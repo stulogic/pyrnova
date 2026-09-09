@@ -122,6 +122,14 @@ and full edge provenance survives propagation. Still open: a raw-archived source
 termination/WARN closure, customer/supplier/subsidiary relationship diversity, and real later propagated
 outcomes at scale.
 
+**Advanced in M21** (`docs/specs/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`): the raw-archived
+source-native **contract termination** is DELIVERED (a real USAspending terminate-for-convenience
+preserved as raw response bytes with sha256 provenance), and **`SUBSIDIARY_OF`** — the first economic
+relationship type outside the government-program graph — is grounded from the authoritative recipient
+hierarchy (native UEIs) and exercised in propagation. Still open: `CUSTOMER_OF`/`SUPPLIER_OF`/
+`FACILITY_OF` diversity and real later propagated outcomes at scale (the M21 flagship outcome is honestly
+unresolved — a days-old event).
+
 ### 2. Negative-space intelligence — `RECORDED`
 
 Model expected evidence that **fails to appear**. Examples: authorization without appropriation;
