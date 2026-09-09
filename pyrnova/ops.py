@@ -75,11 +75,15 @@ class OperatorConsole:
         the panel degrades gracefully rather than erroring."""
         if not self.source_state_dir:
             return {"configured": False, "source_count": 0, "sources": []}
+        from .live_ops import operating_cost_report
         from .scheduler import SourceScheduler
         from .sources.source_state import SourceStateStore
 
-        report = SourceScheduler(SourceStateStore(self.source_state_dir)).health_report()
-        report["configured"] = True
+        scheduler = SourceScheduler(SourceStateStore(self.source_state_dir))
+        report = scheduler.health_report()  # M12/M13: per-source mode, budget, cache hits, calls
+        report["configured"] = True         # avoided, circuit state, poll cadence + next_poll_at, due
+        # M13: the operating-cost / call-telemetry view — "what does source operation cost in calls?"
+        report["operating_cost"] = operating_cost_report(scheduler)
         return report
 
     def targets(self) -> list[dict]:

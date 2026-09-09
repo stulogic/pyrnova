@@ -410,6 +410,13 @@ class SourceScheduler:
             budget = doc.get("budget") or {}
             budget_limit = snap.get("budget_limit")
             budget_remaining = snap.get("budget_remaining")
+            # The durable call count is epoch-independent operator truth. A health view that does not know
+            # the active budget_epoch (e.g. the Operations Panel) would otherwise see the hydrated control
+            # reset calls_made to 0; the persisted budget/metrics hold the real count.
+            persisted_made = budget.get("calls_made")
+            if not isinstance(persisted_made, int):
+                persisted_made = (doc.get("metrics") or {}).get("calls_made")
+            calls_made = persisted_made if isinstance(persisted_made, int) else snap.get("calls_made")
             if budget_limit is None and isinstance(budget.get("max_calls"), int):
                 budget_limit = budget["max_calls"]
                 made = budget.get("calls_made") if isinstance(budget.get("calls_made"), int) else 0
@@ -428,7 +435,7 @@ class SourceScheduler:
                 "next_permitted_poll": snap.get("next_permitted_poll"),
                 "cache_hits": snap.get("cache_hits"),
                 "calls_avoided": snap.get("calls_avoided"),
-                "calls_made": snap.get("calls_made"),
+                "calls_made": calls_made,
                 "retryable_errors": snap.get("retryable_errors"),
                 "terminal_errors": snap.get("terminal_errors"),
                 "last_successful_call": snap.get("last_successful_call"),

@@ -307,3 +307,45 @@ def test_budget_exhaustion_never_invokes_the_fetcher(tmp_path):
     r = sched.run_job(SID, request=usaspending_request(_payload("b")), mode="LIVE_SAFE",
                       max_calls=1, fetcher=fetch)
     assert r.action == "skipped_budget" and calls["n"] == 1  # no call attempted once budget is gone
+
+
+# ------------------------------------------------------------------ Operations Panel (WS-G)
+
+def test_ops_panel_surfaces_m13_operating_state(tmp_path):
+    from pyrnova.ops import OperatorConsole
+    from pyrnova.state import StateStore
+
+    state_dir = tmp_path / "srcstate"
+    sched = SourceScheduler(SourceStateStore(state_dir),
+                            archive=LocalEvidenceArchive(tmp_path / "arch"), budget_epoch="e")
+    sched.set_poll_interval(SID, 3600)
+    body = json.dumps({"results": [{"Award ID": "A"}]}).encode()
+    sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                  max_calls=5, fetcher=lambda rq: body)
+    sched.run_job(SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+                  max_calls=5, fetcher=lambda rq: body)  # cache hit
+
+    console = OperatorConsole(StateStore(tmp_path / "opsstate"), tmp_path / "profiles",
+                              tmp_path / "out", source_state_dir=state_dir)
+    ops = console.source_operations()
+    assert ops["configured"] is True
+    row = next(r for r in ops["sources"] if r["source_id"] == SID)
+    # M13 operating state is visible: cadence, budget, calls made/avoided, cache hits, circuit.
+    for field in ("poll_interval_seconds", "next_poll_at", "due", "budget_limit", "budget_remaining",
+                  "calls_made", "calls_avoided", "cache_hits", "circuit_state"):
+        assert field in row
+    assert row["calls_made"] == 1 and row["calls_avoided"] == 1 and row["cache_hits"] == 1
+    # The operating-cost / call-telemetry view is attached.
+    cost = ops["operating_cost"]
+    assert cost["total_calls_made"] == 1 and cost["total_calls_avoided"] == 1
+    csrc = next(c for c in cost["sources"] if c["source_id"] == SID)
+    assert csrc["cache_hit_rate"] == pytest.approx(0.5, abs=1e-3)
+
+
+def test_ops_panel_operating_state_degrades_without_source_dir(tmp_path):
+    from pyrnova.ops import OperatorConsole
+    from pyrnova.state import StateStore
+
+    console = OperatorConsole(StateStore(tmp_path / "s"), tmp_path / "p", tmp_path / "o")
+    ops = console.source_operations()
+    assert ops["configured"] is False and ops["sources"] == []
