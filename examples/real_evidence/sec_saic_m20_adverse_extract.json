@@ -1,0 +1,39 @@
+{
+  "_note": "Curated, attributable extract of SAIC's fiscal-2026 Form 10-K adverse-event disclosure for offline M20 replay. The filing identity/date are independently present in the archived SEC submissions snapshot. The direct complete-submission retrieval attempted on 2026-09-09 returned HTTP 403, so this is explicitly not represented as a raw filing-body archive.",
+  "provenance": {
+    "source_id": "sec_edgar",
+    "family": "sec_corporate_adverse_event",
+    "license": "US Government filing, public domain",
+    "verified_at": "2026-09-09",
+    "filing_url": "https://www.sec.gov/Archives/edgar/data/1571123/000157112326000029/saic-20260130.htm",
+    "filing_index_url": "https://www.sec.gov/Archives/edgar/data/1571123/000157112326000029/0001571123-26-000029-index.htm",
+    "identity_archive": "examples/real_evidence/sec_submissions_saic.json",
+    "direct_raw_retrieval": "HTTP 403; no retry",
+    "successful_source_api_calls": 0,
+    "calls_avoided_after_block": 1,
+    "record_count": 1
+  },
+  "results": [
+    {
+      "cik": "0001571123",
+      "company_name": "Science Applications International Corporation",
+      "accession_number": "0001571123-26-000029",
+      "form": "10-K",
+      "filing_date": "2026-03-16",
+      "report_date": "2026-01-30",
+      "event_type": "MATERIAL_RESTRUCTURING",
+      "title": "Restructuring, impairment and other exit costs",
+      "summary": "Fiscal 2026 restructuring associated with business-group reorganization and optimization/consolidation of facilities included severance, facility exits, impairment and executive-transition costs.",
+      "amount_usd": 35000000,
+      "components": {
+        "restructuring_costs_usd": 12000000,
+        "asset_impairment_usd": 1000000,
+        "executive_transition_costs_usd": 22000000,
+        "severance_and_employee_costs_usd": 8000000,
+        "other_associated_costs_usd": 4000000,
+        "facility_consolidation_and_exit": true
+      },
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571123/000157112326000029/saic-20260130.htm"
+    }
+  ]
+}

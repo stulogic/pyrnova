@@ -29,9 +29,12 @@ Self-contained: no imports from scoring/fit/replay.
 from __future__ import annotations
 
 from typing import Optional
+import hashlib
+import json
 
 # The one relation this grounding emits. Kept in sync with pyrnova.propagation.PROPAGATION_RELATIONS.
 SUBCONTRACT_RELATION = "SUBCONTRACTOR_OF"
+COMPANY_PROGRAM_RELATION = "COMPANY_TO_PROGRAM"
 
 # link_class / join_method by real evidence strength -> matches pyrnova.propagation._EDGE_STEPS.
 _STRENGTH = {
@@ -158,6 +161,45 @@ def exposed_prime_awards_from_subawards(
         if len(pid) >= min_anchor_id_len:
             ids.add(pid)
     return ids
+
+
+def ground_company_program_edges(
+    raw: bytes | str, *, company_ref: str, company_name: str, recipient_id: str,
+    source_id: str = "usaspending",
+) -> list[dict]:
+    """Ground deterministic company -> program edges from authoritative prime-award rows."""
+    try:
+        payload = json.loads(raw) if isinstance(raw, (bytes, str, bytearray)) else raw
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    rows = payload.get("results") if isinstance(payload, dict) else []
+    rows = rows if isinstance(rows, list) else []
+    raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else bytes(raw or b"")
+    archive_hash = hashlib.sha256(raw_bytes).hexdigest() if raw_bytes else None
+    best = {}
+    for row in rows:
+        if not isinstance(row, dict) or row.get("recipient_id") != recipient_id or not row.get("Award ID"):
+            continue
+        key = str(row["Award ID"])
+        if key not in best or float(row.get("Award Amount") or 0) > float(best[key].get("Award Amount") or 0):
+            best[key] = row
+    edges = []
+    for award_id, row in best.items():
+        evidence_id = f"usaspending:award:{award_id}"
+        edges.append({
+            "from_ref": company_ref, "from_name": company_name,
+            "to_ref": f"program:{award_id}", "to_name": row.get("Description") or award_id,
+            "relation": COMPANY_PROGRAM_RELATION, "link_class": "CONFIRMED",
+            "join_method": "deterministic_native_id", "confidence": 0.95,
+            "evidence_ids": [evidence_id, f"usaspending:recipient:{recipient_id}"],
+            "available_at": row.get("Start Date"), "valid_from": row.get("Start Date"),
+            "valid_to": row.get("End Date"), "source_id": source_id,
+            "provenance": {"recipient_id": recipient_id, "award_id": award_id,
+                           "generated_internal_id": row.get("generated_internal_id"),
+                           "award_amount_usd": row.get("Award Amount"), "archive_hash": archive_hash,
+                           "role": "prime"},
+        })
+    return sorted(edges, key=lambda e: (e.get("valid_from") or "", e["to_ref"]))
 
 
 def independence_metrics(edges: list[dict], chains: Optional[list[dict]] = None) -> dict:

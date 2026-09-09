@@ -31,6 +31,7 @@ from .threat import CONFIDENCE_LEVELS, SEVERITY_LEVELS, threat_id
 # because it depends on / is bound to from_ref).
 PROPAGATION_RELATIONS = {
     "SUBCONTRACTOR_OF", "SUPPLIES_TO", "DEPENDS_ON", "TEAMMATE_OF", "SUBSIDIARY_OF", "CUSTOMER_OF",
+    "COMPANY_TO_PROGRAM",
 }
 # Relations that turn a threatened entity into someone else's OPPORTUNITY (the beneficiary/substitute).
 BENEFICIARY_RELATIONS = {"SUBSTITUTE_FOR", "COMPETES_WITH"}
@@ -91,6 +92,7 @@ def propagate_threats(
     cycles_prevented = 0
     terminated_weak = 0
     duplicates_suppressed = 0
+    relationship_temporal_terminations = 0
 
     for seed in seed_threats:
         root_id = seed.id
@@ -104,6 +106,11 @@ def propagate_threats(
                 to_ref = edge.get("to_ref")
                 relation = edge.get("relation")
                 if not to_ref or relation not in (PROPAGATION_RELATIONS | BENEFICIARY_RELATIONS):
+                    continue
+                event_at = seed.available_at
+                if event_at and ((edge.get("valid_from") and event_at < edge["valid_from"])
+                                 or (edge.get("valid_to") and event_at > edge["valid_to"])):
+                    relationship_temporal_terminations += 1
                     continue
                 if to_ref in path:              # deterministic cycle prevention
                     cycles_prevented += 1
@@ -119,6 +126,9 @@ def propagate_threats(
                 new_path = path + [to_ref]
                 hop = {"from_ref": ref, "to_ref": to_ref, "relation": relation,
                        "evidence_ids": edge.get("evidence_ids", []), "link_class": edge.get("link_class"),
+                       "join_method": edge.get("join_method"), "source_id": edge.get("source_id"),
+                       "available_at": edge.get("available_at"), "valid_from": edge.get("valid_from"),
+                       "valid_to": edge.get("valid_to"), "provenance": edge.get("provenance") or {},
                        "depth": depth + 1}
 
                 if relation in BENEFICIARY_RELATIONS:
@@ -184,6 +194,7 @@ def propagate_threats(
             "cycles_prevented": cycles_prevented,
             "weak_or_exhausted_terminations": terminated_weak,
             "duplicate_threats_suppressed": duplicates_suppressed,
+            "relationship_temporal_terminations": relationship_temporal_terminations,
         },
     }
 

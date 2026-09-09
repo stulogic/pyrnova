@@ -45,6 +45,7 @@ EXPOSURE_RELATIONS = {
     "SANCTIONED_COUNTERPARTY", "CUSTOMER", "SUPPLIER", "PROGRAM", "CONTRACT", "TECHNOLOGY",
     "GEOGRAPHY", "REGULATION", "CERTIFICATION", "PROCUREMENT_VEHICLE", "FACILITY",
     "COMMODITY_INPUT", "REVENUE_CONCENTRATION", "INCUMBENT_POSITION",
+    "CORPORATE_ENTITY",
 }
 
 # How strongly an exposure edge is believed. Only CONFIRMED/INFERRED can carry an ACTIVE threat;
@@ -68,6 +69,7 @@ THREAT_MECHANISMS = {
     "SUPPLIER_DEPENDENCY_DISRUPTION",
     "TECHNOLOGY_SUBSTITUTION",
     "GEOGRAPHY_FACILITY_DISRUPTION",
+    "CORPORATE_RESTRUCTURING",
 }
 
 # Ordinal scales — kept deliberately separate.
@@ -549,13 +551,14 @@ def _assess_program_change(subject_ref, subject_name, exposures, records, as_of)
             # still be historically invalid — if the incumbency lapsed before the adverse event, the
             # subject was not exposed at event time. Future exposure evidence never creates a past threat.
             cat_at = rec.get("available_at")
-            if exp.valid_to and cat_at and cat_at > exp.valid_to:
+            if cat_at and ((exp.valid_from and cat_at < exp.valid_from)
+                           or (exp.valid_to and cat_at > exp.valid_to)):
                 rejections.append(ThreatRejection(
                     subject_ref=subject_ref, subject_name=subject_name, mechanism=mechanism,
                     reason_code="EXPOSURE_ENDED",
-                    detail=(f"{kind} on {target} at {cat_at}, but the subject's incumbency ended "
-                            f"{exp.valid_to}; deterministic identity does not make a lapsed exposure a "
-                            f"threat"),
+                    detail=(f"{kind} on {target} at {cat_at}, but the subject's exposure window is "
+                            f"{exp.valid_from or 'unknown'}..{exp.valid_to or 'open'}; deterministic "
+                            f"identity does not make a temporally invalid exposure a threat"),
                     exposure_ids=[exp.id],
                     evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
                     available_at=cat_at))
@@ -605,6 +608,49 @@ def _assess_program_change(subject_ref, subject_name, exposures, records, as_of)
                 mitigations=["diversify away from the contracting program",
                              "reposition capabilities toward funded adjacent programs"],
             ))
+    return threats, rejections
+
+
+def _assess_corporate_restructuring(subject_ref, subject_name, exposures, records, as_of):
+    """M20 observed SEC restructuring/exit costs, joined only to the exact filer CIK."""
+    threats, rejections = [], []
+    entities = _exp_of(exposures, "CORPORATE_ENTITY")
+    for rec in _catalysts(records, "corporate_restructuring", as_of):
+        target = rec.get("target_ref")
+        matched = [e for e in entities if e.target_ref == target]
+        if not matched:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name, mechanism="CORPORATE_RESTRUCTURING",
+                reason_code="NO_EXPOSURE", detail=f"SEC event {target} does not match the subject's filer identity",
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at"), meta={"adverse_event_family": rec.get("family")}))
+            continue
+        amount = rec.get("amount_at_risk_usd")
+        try:
+            magnitude = float(amount)
+        except (TypeError, ValueError):
+            magnitude = None
+        floor = float(rec.get("materiality_floor_usd") or 5_000_000)
+        if magnitude is None or magnitude < floor:
+            rejections.append(ThreatRejection(
+                subject_ref=subject_ref, subject_name=subject_name, mechanism="CORPORATE_RESTRUCTURING",
+                reason_code="IMMATERIAL", detail="corporate disclosure lacks a material quantified adverse effect",
+                exposure_ids=[matched[0].id],
+                evidence_ids=[e for e in [rec.get("evidence_id"), rec.get("source_ref")] if e],
+                available_at=rec.get("available_at"), meta={"adverse_event_family": rec.get("family")}))
+            continue
+        confidence, cbasis = _confidence_from_exposures(matched, _strength(rec))
+        threats.append(_mk_threat(
+            subject_ref, subject_name, "CORPORATE_RESTRUCTURING", str(target), matched, rec,
+            affected_value_category="COST_BASE",
+            economic_effect=(f"{rec.get('summary') or 'reported restructuring'}: the filer reported "
+                             f"${magnitude:,.0f} of restructuring, impairment and exit costs"),
+            severity=severity_from_amount(magnitude), severity_basis=f"reported adverse costs ${magnitude:,.0f}",
+            confidence=confidence, confidence_basis=cbasis, horizon=rec.get("horizon") or "IMMEDIATE",
+            status=("MATERIALIZED" if rec.get("observed_effect") else "ACTIVE"),
+            falsifiers=[_falsifier("filing_amended", "the filer amends or withdraws the reported costs", fatal=True)],
+            mitigations=["verify whether restructuring effects are isolated or continuing"],
+        ))
     return threats, rejections
 
 
@@ -813,7 +859,8 @@ def _assess_geography_facility(subject_ref, subject_name, exposures, records, as
 
 _ASSESSORS = (_assess_incumbent_displacement, _assess_program_change, _assess_regulatory,
               _assess_customer_concentration, _assess_supplier_dependency,
-              _assess_technology_substitution, _assess_geography_facility)
+              _assess_technology_substitution, _assess_geography_facility,
+              _assess_corporate_restructuring)
 
 
 def assess_threats(
@@ -1327,6 +1374,7 @@ def summarize_m18(results: list[dict]) -> dict:
 _FAMILY_BY_EVIDENCE_PREFIX = (
     ("usaspending:txn:", "contract_modification"),
     ("fr:", "regulatory_adverse_event"),
+    ("sec:filing:", "sec_corporate_adverse_event"),
 )
 
 

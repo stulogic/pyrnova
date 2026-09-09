@@ -169,6 +169,7 @@ def to_regulatory_catalyst(
 
 
 USASPENDING_SOURCE_ID = "usaspending"
+SEC_EDGAR_SOURCE_ID = "sec_edgar"
 
 # Coarse, deterministic contract-modification event type from the source-native action fields.
 def _contract_event_type(action_type: Optional[str], action_desc: Optional[str], fao: float) -> str:
@@ -308,6 +309,70 @@ def to_contract_contraction_catalyst(
     if materiality_floor_usd is not None:
         cat["materiality_floor_usd"] = float(materiality_floor_usd)
     return cat
+
+
+def parse_sec_corporate_adverse(
+    raw: bytes | str, *, source_id: str = SEC_EDGAR_SOURCE_ID,
+) -> dict:
+    """Normalize a retained SEC filing extract into OBSERVED corporate adverse events.
+
+    M20 accepts only explicit records with a source-native accession, CIK, filing date,
+    recognized event type, and known dollar amount. Generic risk factors are ignored.
+    """
+    try:
+        payload = json.loads(raw) if isinstance(raw, (bytes, str, bytearray)) else raw
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    rows = payload.get("results") if isinstance(payload.get("results"), list) else []
+    raw_bytes = raw.encode("utf-8") if isinstance(raw, str) else (raw if isinstance(raw, (bytes, bytearray)) else b"")
+    archive_hash = hashlib.sha256(bytes(raw_bytes)).hexdigest() if raw_bytes else None
+    allowed = {"MATERIAL_RESTRUCTURING", "FACILITY_EXIT", "MATERIAL_IMPAIRMENT", "CUSTOMER_LOSS"}
+    events = []
+    for row in rows:
+        if not isinstance(row, dict) or row.get("event_type") not in allowed:
+            continue
+        accession, cik, filed = row.get("accession_number"), row.get("cik"), row.get("filing_date")
+        try:
+            amount = float(row.get("amount_usd"))
+        except (TypeError, ValueError):
+            continue
+        if not accession or not cik or not filed or amount <= 0:
+            continue
+        cik = str(cik).zfill(10)
+        event_id = f"{accession}:{row['event_type']}"
+        events.append({
+            "event_id": event_id, "catalyst_class": "OBSERVED", "source_id": source_id,
+            "family": "sec_corporate_adverse_event", "event_type": row["event_type"],
+            "title": row.get("title"), "summary": row.get("summary"), "cik": cik,
+            "company_name": row.get("company_name"), "accession_number": accession,
+            "filing_date": filed, "report_date": row.get("report_date"),
+            "available_at": filed, "amount_usd": amount, "components": row.get("components") or {},
+            "source_url": row.get("source_url"), "source_ref": f"sec:filing:{accession}",
+            "evidence_id": f"sec:filing:{accession}:{row['event_type'].lower()}",
+            "target_ref": f"sec:CIK{cik}", "archive_hash": archive_hash, "raw": row,
+        })
+    events.sort(key=lambda e: (e["filing_date"], e["event_id"]), reverse=True)
+    return {"source_id": source_id, "family": "sec_corporate_adverse_event",
+            "archive_hash": archive_hash, "events": events}
+
+
+def to_corporate_restructuring_catalyst(
+    event: dict, *, evidence_strength: int = 5, materiality_floor_usd: float = 5_000_000,
+) -> dict:
+    """Convert an explicit SEC restructuring/exit observation for the exact filer CIK."""
+    return {
+        "catalyst_kind": "corporate_restructuring", "catalyst_class": event.get("catalyst_class", "OBSERVED"),
+        "catalyst_id": f"cat_sec_{event.get('event_id')}", "family": event.get("family"),
+        "target_ref": event.get("target_ref"), "available_at": event.get("available_at"),
+        "source_id": event.get("source_id"), "source_ref": event.get("source_ref"),
+        "evidence_id": event.get("evidence_id"), "evidence_strength": int(evidence_strength),
+        "amount_at_risk_usd": event.get("amount_usd"),
+        "materiality_floor_usd": float(materiality_floor_usd), "horizon": "IMMEDIATE",
+        "summary": event.get("summary") or event.get("title"), "event_type": event.get("event_type"),
+        "observed_effect": True,
+    }
 
 
 def summarize_adverse_events(parsed: dict) -> dict:
