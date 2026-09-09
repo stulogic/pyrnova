@@ -212,6 +212,89 @@ class OperatorConsole:
             "beneficiary_opportunities": beneficiaries,
         }
 
+    def company_threat_network_view(self, company_ref: str) -> dict:
+        """M17 Operations Panel view (Workstream M): "For Company X, what DIRECT and INDIRECT threats
+        currently affect it, and through which relationships?"
+
+        Composes the persisted ``threats`` / ``propagated_threats`` / ``beneficiary_opportunities`` /
+        ``threat_outcomes`` streams (read-only, empty-safe) around one company ref:
+
+        * ``direct_threats`` — threats whose subject is the company (with its ``company_threat_surface``),
+        * ``inbound_propagated`` — threats that reached the company THROUGH a relationship edge (each with
+          its root catalyst, full propagation path, degraded confidence/severity, evidence, and current
+          outcome status where knowable),
+        * ``outbound_network`` — threats rooted AT this company that propagated to dependents (its network
+          footprint).
+
+        Builds on ``company_threat_surface``; it does not replace it, and it is not the full Company
+        Opportunity Surface (deliberately out of M17 scope)."""
+        from .threat import company_threat_surface, resolve_threat_outcome
+        from .models import Threat
+
+        def _read(name):
+            try:
+                return list(self.store.read(name))
+            except Exception:  # noqa: BLE001 — degrade gracefully if the collection is absent
+                return []
+
+        threats = list(_latest(_read("threats")).values())
+        propagated = list(_latest(_read("propagated_threats")).values())
+        beneficiaries = _read("beneficiary_opportunities")
+        outcome_obs = _read("threat_outcomes")
+        by_threat: dict[str, list[dict]] = {}
+        for obs in outcome_obs:
+            tid = obs.get("threat_id")
+            if tid:
+                by_threat.setdefault(tid, []).append(obs)
+        now = _now()
+
+        def outcome_status(threat_id: str) -> dict:
+            obs = by_threat.get(threat_id)
+            if not obs:
+                return {"label": "UNKNOWN", "resolved": False}
+            res = resolve_threat_outcome(obs, as_of=now)
+            return {"label": res.get("label"), "resolved": res.get("resolved")}
+
+        active = [t for t in threats
+                  if t.get("subject_ref") == company_ref and t.get("status") in ("WATCH", "ACTIVE", "MITIGATED")]
+        surface_objs = [Threat(**{k: v for k, v in t.items() if k in Threat.__dataclass_fields__})
+                        for t in active]
+        surface = company_threat_surface(company_ref, surface_objs) if surface_objs else None
+
+        inbound = [p for p in propagated if p.get("subject_ref") == company_ref]
+        my_root_ids = {t.get("id") for t in threats if t.get("subject_ref") == company_ref}
+        outbound = [p for p in propagated if (p.get("meta") or {}).get("root_threat_id") in my_root_ids]
+
+        def hop_view(p):
+            meta = p.get("meta") or {}
+            return {
+                "id": p.get("id"), "subject": p.get("subject_name"), "mechanism": p.get("mechanism"),
+                "severity": p.get("severity"), "confidence": p.get("confidence"),
+                "horizon": p.get("horizon"), "catalyst_id": p.get("catalyst_id"),
+                "root_threat_id": meta.get("root_threat_id"), "depth": meta.get("propagation_depth"),
+                "relationship_path": meta.get("propagation_path"), "evidence_ids": p.get("evidence_ids"),
+                "outcome": outcome_status(p.get("id")),
+            }
+
+        return {
+            "company_ref": company_ref,
+            "configured": bool(active or inbound or outbound),
+            "direct_threat_count": len(active),
+            "inbound_propagated_count": len(inbound),
+            "outbound_propagated_count": len(outbound),
+            "company_threat_surface": surface,
+            "direct_threats": [
+                {"id": t.get("id"), "mechanism": t.get("mechanism"), "severity": t.get("severity"),
+                 "confidence": t.get("confidence"), "horizon": t.get("horizon"),
+                 "economic_effect": t.get("economic_effect"), "evidence_ids": t.get("evidence_ids"),
+                 "outcome": outcome_status(t.get("id"))}
+                for t in active],
+            "inbound_propagated": [hop_view(p) for p in inbound],
+            "outbound_network": [hop_view(p) for p in outbound],
+            "beneficiary_opportunities": [b for b in beneficiaries
+                                          if b.get("subject_ref") == company_ref],
+        }
+
     @staticmethod
     def selectivity_view(result: dict) -> dict:
         """M16 Operations Panel view: format one selectivity-harness funnel for the operator (the funnel
