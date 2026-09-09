@@ -27,6 +27,15 @@ _Verified 2026-09-08 in `~/Documents/Pyrnova` on `main`._
   matched against commercial-consequence requirements produce an explainable capture posture
   (PRIME/SUPPORT/TEAM/DEFEND/NO_FIT) with fit dimensions, structured blockers, and point-in-time truth.
   A recovered internal Operations Panel is stabilized and sandbox-safe. `scoring_v1` unchanged.
+- **M10: SPEC READY / EXECUTION BLOCKED ON ENVIRONMENT.** Multi-source company intelligence +
+  subcontract/teaming resolution is fully specified (`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`) but
+  cannot begin real grounding here: its defining gate (≥2 source families, material evidence beyond
+  USAspending) requires new real archived evidence, and this environment blocks every external data host
+  (`data.sec.gov`, `api.usaspending.gov` → 403 org egress-policy denials) and provisions no
+  `SAM_API_KEY`. Fabrication is forbidden, so M10 is not started for real grounding and is NOT closed.
+  Architectural finding recorded in the spec: `fit.py` already reads every M10 field, so M10 is additive
+  grounding + data + metrics with `scoring_v1`/`fit.py` unchanged. Because M10 is not closed, **M11 is
+  not started** (M11 is strictly gated on a clean M10 close). See `06-HISTORY.md`.
 - **M9: CLOSED.** Real company grounding + production fit calibration: company profiles are built
   from real archived USAspending evidence (Torch Technologies, Modern Technology Solutions), filtered
   strictly point-in-time, then run through the fit engine against real historical opportunities.
@@ -315,7 +324,8 @@ M2 closure is blocked only by environment: rerun the unchanged M2 live acceptanc
 `2026-09-09T00:00:00Z`), then record the acceptance timestamp and raw SAM archive hash here and in
 `06-HISTORY.md`. The acceptance logic and gate are unchanged and must not be weakened.
 
-Active build (M10): broaden real-profile grounding beyond USAspending prime-award history — add
-SAM/SEC/official-capability evidence (certifications, clearances, vehicles), subaward/teaming evidence,
-exercise SUPPORT/TEAM on real evidence, and grow the graded real-fit sample (`corpus_m10`) with
-synthetic/real/multi-source metrics kept separate. See `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`.
+M10 (blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` from an environment whose egress
+policy allows the keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) — enough to ground a second
+source family (SEC for an added public prime) and sub-awards without SAM — and/or where `SAM_API_KEY` is
+provisioned. Do not fabricate evidence or weaken the M10 acceptance gates. M11 stays gated on a clean M10
+close and must not start before then.

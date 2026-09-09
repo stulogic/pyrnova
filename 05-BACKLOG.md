@@ -4,7 +4,13 @@ Backlog presence is not implementation authority. `02-EXECUTION.md` controls act
 
 ## P0 — next authorized sequence
 
-- Complete the post-reset M2 SAM acceptance and formal closure.
+- Execute M10 (`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`) from an environment with egress to the
+  keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) and/or a provisioned `SAM_API_KEY`. The
+  spec, TEAM/evidence/temporal semantics, and 21-point acceptance gate are ready; only real external
+  evidence acquisition is blocked here. Do not fabricate evidence or weaken the gates. M11 is gated on a
+  clean M10 close.
+- Complete the post-reset M2 SAM acceptance and formal closure (also blocked here by a missing
+  `SAM_API_KEY`; rerun the unchanged gate where the key is provisioned).
 - Confirm M3 reproducibility after M2 closes.
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.

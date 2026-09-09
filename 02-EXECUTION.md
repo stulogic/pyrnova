@@ -1,6 +1,6 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 external closure gate (environment-blocked); M3–M9 closed; M10 active · updated 2026-09-09_
+_Current execution window: M2 external closure gate (environment-blocked); M3–M9 closed; M10 spec ready but execution blocked on environment; M11 not started · updated 2026-09-09_
 
 ## Active work
 
@@ -100,11 +100,12 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 1. M2 external gate remains open but environment-blocked (no `SAM_API_KEY` in this container). Rerun the
    unchanged sequence, without weakening it, where the key is provisioned; then record timestamp + hash.
-2. M10 (active): broaden real grounding beyond USAspending prime history — SAM/SEC/official-capability
-   evidence (certifications, clearances, vehicles), subaward/teaming evidence, real SUPPORT/TEAM
-   exercise, `corpus_m10` with synthetic/real/multi-source metrics kept separate. See
-   `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`.
-3. Do not alter `scoring_v1` or begin M11 without M10 closing cleanly and all gates passing.
+2. M10 (spec ready, execution blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` once the
+   environment allows the keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) and/or provisions
+   `SAM_API_KEY`. All external data hosts are currently blocked by org egress policy, so real
+   multi-source grounding cannot begin; do not fabricate evidence or weaken the M10 gates to simulate it.
+3. Do not alter `scoring_v1`. Do not begin M11: it is strictly gated on a clean M10 close, which has not
+   occurred.
 
 ## Active constraints
 

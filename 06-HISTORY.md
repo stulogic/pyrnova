@@ -172,3 +172,36 @@
   pass; SAM fail-closed verified). Closure is deferred to a run in an environment where `SAM_API_KEY`
   is provisioned. This does not undermine M10 safety (M10 grounding leans on keyless USAspending/SEC
   and archived SAM bytes), so milestone progression to M10 continues per authority.
+
+## Milestone 10 — spec authored; execution blocked on environment (2026-09-09)
+
+- Authored the full M10 architecture/semantics spec: `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`
+  (source hierarchy, `SourceFact` evidence model, TEAM semantics, point-in-time gate, corpus/metrics
+  plan, and a 21-point acceptance gate). Key architectural finding: `pyrnova/fit.py` already reads every
+  field M10 needs (certifications, geography/facilities, partners→TEAM, sub-role history, vehicles), so
+  M10 is additive grounding + data + metrics with `fit.py` and `scoring_v1` unchanged.
+- **Blocker (environment, not implementation):** M10's defining gate requires new real multi-source
+  evidence. In this execution environment the organization egress policy blocks all external data hosts
+  — verified 403 CONNECT policy denials for `data.sec.gov` and `api.usaspending.gov` (proxy status;
+  only Anthropic APIs and package registries are allowed) — and no `SAM_API_KEY` is provisioned. The
+  one archived SAM record (`examples/observations/torch_sam_2026-09-08.json`) is a reduced opportunity
+  notice (mostly null, "not a raw API snapshot"), not company-entity evidence, so it is not a second
+  grounding source family. Archived USAspending bytes are `spending_by_award` only (no recipient
+  business categories / set-asides / UEI / location), so real eligibility grounding is not derivable
+  from disk either.
+- **Decision:** per the operating rule for a milestone that cannot safely close — do not fabricate, do
+  not weaken acceptance, do not build unvalidated multi-source scaffolding. M10 is NOT started for real
+  grounding and NOT closed. Coherent completed work (M2 record, M9 closure reconciliation, M10 spec) is
+  committed and pushed. Because M10 did not close, **M11 was not started** (M11 is strictly gated on a
+  clean M10 close per the execution order).
+- **To resume:** run from a session whose egress allows the keyless data hosts (SEC + USAspending
+  sub-awards → second/third source family without SAM) and/or with `SAM_API_KEY` provisioned; then
+  execute the spec end to end.
+
+## Branch/remote reality note (2026-09-09)
+
+- The overnight "verified state" assumed `HEAD == origin/main` with M7–M9 on `origin/main`. On the
+  actual remote, `origin/main` is at `ca47e28` (M6 closure). All M7–M9 work, the M2 acceptance record,
+  and the M10 spec live on `origin/claude/nice-johnson-yk8avd` (this session's designated branch;
+  pushing to `main` or opening a PR without explicit permission is disallowed by the session's operating
+  rules). A human should merge `claude/nice-johnson-yk8avd` into `main` via PR to reconcile `origin/main`.
