@@ -272,6 +272,7 @@ class OperatorConsole:
                 "severity": p.get("severity"), "confidence": p.get("confidence"),
                 "horizon": p.get("horizon"), "catalyst_id": p.get("catalyst_id"),
                 "root_threat_id": meta.get("root_threat_id"), "depth": meta.get("propagation_depth"),
+                "catalyst_class": meta.get("catalyst_class", "MODELED"),
                 "relationship_path": meta.get("propagation_path"), "evidence_ids": p.get("evidence_ids"),
                 "outcome": outcome_status(p.get("id")),
             }
@@ -286,6 +287,7 @@ class OperatorConsole:
             "direct_threats": [
                 {"id": t.get("id"), "mechanism": t.get("mechanism"), "severity": t.get("severity"),
                  "confidence": t.get("confidence"), "horizon": t.get("horizon"),
+                 "catalyst_class": (t.get("meta") or {}).get("catalyst_class", "MODELED"),
                  "economic_effect": t.get("economic_effect"), "evidence_ids": t.get("evidence_ids"),
                  "outcome": outcome_status(t.get("id"))}
                 for t in active],
@@ -308,6 +310,26 @@ class OperatorConsole:
             "weak_rejection_rate": result.get("weak_rejection_rate"),
             "per_company": result.get("per_company"),
             "note": result.get("note"),
+        }
+
+    @staticmethod
+    def adverse_catalyst_view(parsed_events: dict, independence: dict | None = None) -> dict:
+        """M18 Operations Panel view (Workstream Q, thin): surface archived OBSERVED adverse catalysts
+        (source-native id, type, agency, date) alongside optional relationship-independence/diversity
+        counts. Pure pass-through of ``adverse_events.parse_*`` + ``relationships.independence_metrics``
+        output; no store access, empty-safe. Does not redesign the panel or add a second console."""
+        parsed_events = parsed_events or {}
+        events = parsed_events.get("events", [])
+        return {
+            "source_id": parsed_events.get("source_id"),
+            "family": parsed_events.get("family"),
+            "observed_catalyst_count": sum(1 for e in events if e.get("catalyst_class") == "OBSERVED"),
+            "catalysts": [
+                {"event_id": e.get("event_id"), "event_type": e.get("event_type"),
+                 "agency": e.get("agency"), "published": e.get("publication_date"),
+                 "catalyst_class": e.get("catalyst_class"), "source_url": e.get("source_url")}
+                for e in events[:25]],
+            "relationship_independence": independence or {},
         }
 
     def targets(self) -> list[dict]:
