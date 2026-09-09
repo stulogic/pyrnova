@@ -936,6 +936,19 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
         outcome = resolve_threat_outcome(case["outcome_observations"],
                                          as_of=case.get("outcome_as_of", as_of))
 
+    # M16: bounded cross-company propagation over explicit relationship edges (point-in-time).
+    propagation = None
+    if case.get("relationships"):
+        from .propagation import propagate_threats
+        propagation = propagate_threats(threats, case["relationships"],
+                                        max_depth=case.get("max_depth", 2), as_of=as_of)
+
+    # M16: per-case detection quality (never false-from-absence) for calibration.
+    from .threat_calibration import classify_detection
+    detection = None
+    if threats:
+        detection = classify_detection((outcome or {}).get("label"), threats[0].confidence)
+
     expected = case.get("expected", {})
     checks = []
 
@@ -967,6 +980,21 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
     if "outcome_label" in expected:
         got = (outcome or {}).get("label")
         check("outcome_label", got == expected["outcome_label"], got, expected["outcome_label"])
+    if "detection_quality" in expected:
+        check("detection_quality", detection == expected["detection_quality"], detection,
+              expected["detection_quality"])
+    if propagation is not None:
+        pstats = propagation["stats"]
+        if "propagated_threats" in expected:
+            check("propagated_threats", pstats["propagated_threats"] == expected["propagated_threats"],
+                  pstats["propagated_threats"], expected["propagated_threats"])
+        if "beneficiary_opportunities" in expected:
+            check("beneficiary_opportunities",
+                  pstats["beneficiary_opportunities"] == expected["beneficiary_opportunities"],
+                  pstats["beneficiary_opportunities"], expected["beneficiary_opportunities"])
+        if "max_depth_reached" in expected:
+            check("max_depth_reached", pstats["max_depth_reached"] == expected["max_depth_reached"],
+                  pstats["max_depth_reached"], expected["max_depth_reached"])
 
     return {
         "case_id": case["case_id"],
@@ -982,20 +1010,39 @@ def run_threat_case(case: dict, designations: list[dict]) -> dict:
         "rejection_count": len(rejections),
         "dual_links": dual_links,
         "outcome": outcome,
+        "detection_quality": detection,
+        "propagation": ({"propagated_threats": [to_record(t) for t in propagation["propagated_threats"]],
+                         "beneficiary_opportunities": propagation["beneficiary_opportunities"],
+                         "stats": propagation["stats"]} if propagation is not None else None),
         "checks": checks,
         "ok": all(c["ok"] for c in checks),
     }
 
 
-def load_threat_corpus(path) -> dict:
-    """Load + validate the M15 threat corpus. Enforces unique case ids and known vocabularies so a
-    typo cannot silently pass. Returns the parsed payload (with its ``extends`` pointer)."""
+def load_threat_corpus(path, _seen_paths=None) -> dict:
+    """Load + validate a threat corpus, chain-merging ``threat_cases`` from any ``extends`` corpus so a
+    later milestone extends rather than alters earlier frozen cases. Enforces unique case ids and known
+    vocabularies so a typo cannot silently pass. Returns the payload with merged ``threat_cases``."""
     import json
     from pathlib import Path
 
-    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    path = Path(path).resolve()
+    seen_paths = set(_seen_paths or ())
+    if path in seen_paths:
+        raise ValueError(f"cyclic threat-corpus extension: {path}")
+    seen_paths.add(path)
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    base_cases = []
+    if payload.get("extends"):
+        base_path = (path.parent / str(payload["extends"])).resolve()
+        base = load_threat_corpus(base_path, seen_paths)
+        base_cases = base.get("threat_cases", [])
+
+    own = payload.get("threat_cases", [])
     seen = set()
-    for case in payload.get("threat_cases", []):
+    merged = base_cases + own
+    for case in merged:
         for key in ("case_id", "subject", "replay_as_of", "expected"):
             if key not in case:
                 raise ValueError(f"{case.get('case_id', '<unknown>')}: threat case missing {key}")
@@ -1008,6 +1055,7 @@ def load_threat_corpus(path) -> dict:
         for reason in case["expected"].get("rejection_reasons", []):
             if reason not in REJECTION_REASONS:
                 raise ValueError(f"{case['case_id']}: unknown rejection reason {reason}")
+    payload["threat_cases"] = merged
     return payload
 
 
@@ -1056,3 +1104,30 @@ def summarize_threats(results: list[dict]) -> dict:
         "small_sample_warning": ("threat metrics rest on a small corpus; treat distributions as "
                                  "directional, not stable rates"),
     }
+
+
+def summarize_m16(results: list[dict]) -> dict:
+    """M16 metrics: direct-threat summary + propagation rollup + outcome calibration, all with
+    denominators. Never republishes a precision without its sample size."""
+    from .threat_calibration import calibrate_threats
+
+    base = summarize_threats(results)
+    direct = [t for r in results for t in r["threats"]]
+    propagated = [t for r in results if r.get("propagation")
+                  for t in r["propagation"]["propagated_threats"]]
+    beneficiaries = [o for r in results if r.get("propagation")
+                     for o in r["propagation"]["beneficiary_opportunities"]]
+    pstats = [r["propagation"]["stats"] for r in results if r.get("propagation")]
+    max_depth = max([s["max_depth_reached"] for s in pstats] + [0])
+    base.update({
+        "direct_threats": len(direct),
+        "propagated_threats": len(propagated),
+        "beneficiary_opportunities": len(beneficiaries),
+        "propagation_cases": len(pstats),
+        "max_propagation_depth": max_depth,
+        "cycles_prevented": sum(s["cycles_prevented"] for s in pstats),
+        "duplicate_propagation_suppressed": sum(s["duplicate_threats_suppressed"] for s in pstats),
+        "weak_propagation_terminations": sum(s["weak_or_exhausted_terminations"] for s in pstats),
+        "calibration": calibrate_threats(results),
+    })
+    return base

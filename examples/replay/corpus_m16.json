@@ -1,0 +1,313 @@
+{
+  "corpus_id": "corpus_m16",
+  "schema_version": "threat_v1",
+  "extends": "corpus_m15.json",
+  "reviewed_at": "2026-09-09",
+  "notes": "M16 threat calibration + exposure expansion + propagation. EXTENDS corpus_m15 (byte-identical) via load_threat_corpus chain-merge; adds new exposure-family cases, an expanded negative/rejection corpus, bounded cross-company propagation cases, and historical threat/outcome calibration cases. Own point-in-time replay (pyrnova.threat.run_threat_corpus); scoring_v1 untouched. Sanctions cases use the committed illustrative OFAC fixture for deterministic CI (real 19,365-designation selectivity is proven in tests/test_m16_selectivity.py, guarded).",
+  "threat_cases": [
+    {
+      "case_id": "m16-supplier-dependency-disruption",
+      "subject": {"ref": "co_supdep", "name": "SupDep Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "SUPPLIER", "target_ref": "sup:acme-castings", "target_name": "Acme Castings",
+         "available_at": "2023-01-01", "deterministic": true, "source_ref": "sec:10k:supplier",
+         "sole_source": true}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "supplier_disruption", "target_ref": "sup:acme-castings",
+         "available_at": "2024-03-01", "source_ref": "warn:acme-plant-closure", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0,
+                   "mechanisms": ["SUPPLIER_DEPENDENCY_DISRUPTION"],
+                   "severity": {"SUPPLIER_DEPENDENCY_DISRUPTION": "HIGH"},
+                   "confidence": {"SUPPLIER_DEPENDENCY_DISRUPTION": "HIGH"}}
+    },
+    {
+      "case_id": "m16-supplier-no-dependency-reject",
+      "subject": {"ref": "co_nodep", "name": "NoDep Corp"},
+      "replay_as_of": "2024-06-01",
+      "catalyst_records": [
+        {"catalyst_kind": "supplier_disruption", "target_ref": "sup:unrelated",
+         "available_at": "2024-03-01", "source_ref": "warn:unrelated"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_DEPENDENCY"]}
+    },
+    {
+      "case_id": "m16-technology-substitution-mandate",
+      "subject": {"ref": "co_tech", "name": "Tech Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "TECHNOLOGY", "target_ref": "tech:legacy-waveform", "target_name": "Legacy waveform radio",
+         "available_at": "2023-01-01", "deterministic": true, "source_ref": "sec:product-line",
+         "amount_usd": 40000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "technology_substitution", "target_ref": "tech:legacy-waveform",
+         "available_at": "2024-03-01", "source_ref": "fr:waveform-standard", "explicit_mandate": true,
+         "evidence_strength": 4, "summary": "DoD mandates a new waveform standard"}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0, "mechanisms": ["TECHNOLOGY_SUBSTITUTION"],
+                   "severity": {"TECHNOLOGY_SUBSTITUTION": "HIGH"},
+                   "confidence": {"TECHNOLOGY_SUBSTITUTION": "HIGH"}}
+    },
+    {
+      "case_id": "m16-technology-vague-trend-reject",
+      "subject": {"ref": "co_tech2", "name": "Tech2 Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "TECHNOLOGY", "target_ref": "tech:legacy-waveform", "target_name": "Legacy waveform",
+         "available_at": "2023-01-01", "deterministic": true, "source_ref": "sec:pl"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "technology_substitution", "target_ref": "tech:legacy-waveform",
+         "available_at": "2024-03-01", "source_ref": "trade-press:trend"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["VAGUE_TREND_NOT_EVIDENCE"]}
+    },
+    {
+      "case_id": "m16-geography-facility-inside",
+      "subject": {"ref": "co_geo", "name": "Geo Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "FACILITY", "target_ref": "fac:huntsville", "target_name": "Huntsville AL plant",
+         "geography": "Alabama", "available_at": "2023-01-01", "deterministic": true,
+         "source_ref": "sec:facilities"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "geography_event", "geography": "Alabama", "available_at": "2024-03-01",
+         "source_ref": "fr:al-jurisdiction", "summary": "Alabama facility regulatory change",
+         "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 1, "rejection_count": 0,
+                   "mechanisms": ["GEOGRAPHY_FACILITY_DISRUPTION"],
+                   "severity": {"GEOGRAPHY_FACILITY_DISRUPTION": "MODERATE"},
+                   "confidence": {"GEOGRAPHY_FACILITY_DISRUPTION": "HIGH"}}
+    },
+    {
+      "case_id": "m16-geography-outside-footprint-reject",
+      "subject": {"ref": "co_geo2", "name": "Geo2 Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "FACILITY", "target_ref": "fac:huntsville", "target_name": "Huntsville AL plant",
+         "geography": "Alabama", "available_at": "2023-01-01", "deterministic": true, "source_ref": "sec:fac"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "geography_event", "geography": "Oregon", "available_at": "2024-03-01",
+         "source_ref": "fr:or", "summary": "Oregon jurisdiction change"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["OUTSIDE_EXPOSURE_GEOGRAPHY"]}
+    },
+    {
+      "case_id": "m16-propagation-program-cancellation",
+      "note": "Propagation case 1 + network effect: a program cancellation threatens the incumbent prime; a subcontractor that depends on the prime inherits a degraded propagated threat; a substitute competitor gains an opportunity.",
+      "subject": {"ref": "co_prime", "name": "Prime Inc", "uei": "UEIPRIME"},
+      "replay_as_of": "2024-09-01",
+      "award_records": [
+        {"source_ref": "usa:award:prime", "available_at": "2021-01-01", "recipient_uei": "UEIPRIME",
+         "program_key": "prog:big-radar", "program_name": "Big Radar", "amount_usd": 80000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "program_key": "prog:big-radar",
+         "available_at": "2024-06-01", "source_ref": "fr:cancel:radar", "amount_delta_usd": 80000000,
+         "evidence_strength": 4}
+      ],
+      "relationships": [
+        {"from_ref": "co_prime", "to_ref": "co_sub", "to_name": "Sub Systems LLC",
+         "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED",
+         "evidence_ids": ["usa:subaward:prime-sub"], "available_at": "2022-01-01"},
+        {"from_ref": "co_prime", "to_ref": "co_competitor", "to_name": "Competitor Radar Co",
+         "relation": "SUBSTITUTE_FOR", "link_class": "CONFIRMED",
+         "evidence_ids": ["usa:award:competitor-adjacent"], "available_at": "2022-01-01"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+                   "propagated_threats": 1, "beneficiary_opportunities": 1, "max_depth_reached": 1}
+    },
+    {
+      "case_id": "m16-propagation-sanctions-supply-chain",
+      "synthetic_probe": true,
+      "note": "Propagation case 2: a sanctioned supplier threatens importer A; B depends on A and C depends on B (depth 2); a substitute supplier gains an opportunity. Confidence degrades HIGH->MEDIUM->LOW across hops and terminates before depth 3.",
+      "subject": {"ref": "co_impA", "name": "Importer A"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:impA:sup", "available_at": "2023-02-01", "relation": "SUPPLIER",
+         "counterparty_name": "Global Defense Supply LLC", "counterparty_ofac_ent_num": 10002}
+      ],
+      "relationships": [
+        {"from_ref": "co_impA", "to_ref": "co_B", "to_name": "Downstream B", "relation": "DEPENDS_ON",
+         "link_class": "CONFIRMED", "evidence_ids": ["disc:A-B"], "available_at": "2022-01-01"},
+        {"from_ref": "co_B", "to_ref": "co_C", "to_name": "Downstream C", "relation": "DEPENDS_ON",
+         "link_class": "CONFIRMED", "evidence_ids": ["disc:B-C"], "available_at": "2022-01-01"},
+        {"from_ref": "co_impA", "to_ref": "co_sub", "to_name": "Compliant Substitute",
+         "relation": "SUBSTITUTE_FOR", "link_class": "CONFIRMED", "evidence_ids": ["disc:sub"],
+         "available_at": "2022-01-01"}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["SANCTIONS_EXPOSURE"],
+                   "propagated_threats": 2, "beneficiary_opportunities": 1, "max_depth_reached": 2}
+    },
+    {
+      "case_id": "m16-neg-ofac-wrong-entity",
+      "note": "Negative: same/similar name, different country, no authoritative identifier => weak reject (not the sanctioned entity).",
+      "subject": {"ref": "co_wrongent", "name": "WrongEnt Corp"},
+      "replay_as_of": "2023-06-01",
+      "counterparty_records": [
+        {"source_ref": "reg:we", "available_at": "2023-01-01", "relation": "SUPPLIER",
+         "counterparty_name": "Northstar Trading Group", "counterparty_country": "CANADA"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1,
+                   "rejection_reasons": ["WEAK_NAME_MATCH_ONLY"]}
+    },
+    {
+      "case_id": "m16-neg-irrelevant-federal-register",
+      "subject": {"ref": "co_irrel", "name": "Irrelevant Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CERTIFICATION", "target_ref": "cert:iso-9001", "target_name": "ISO 9001",
+         "available_at": "2023-01-01", "source_ref": "sam:cert"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "regulatory_mandate", "target_ref": "fr:rule:unrelated-emissions",
+         "available_at": "2024-03-01", "source_ref": "fr:unrelated", "summary": "unrelated emissions rule"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m16-neg-recompete-no-incumbent",
+      "subject": {"ref": "co_noninc", "name": "NonIncumbent Corp"},
+      "replay_as_of": "2024-06-01",
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:someone-elses",
+         "available_at": "2024-03-01", "source_ref": "sam:rc", "displacement_signal": "named_competitor"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m16-neg-budget-noise-immaterial",
+      "subject": {"ref": "co_diverse", "name": "Diversified Corp"},
+      "replay_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CUSTOMER", "target_ref": "agency:minor-buyer", "target_name": "Minor Buyer",
+         "revenue_share": 0.08, "available_at": "2023-01-01", "source_ref": "usa:hist"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "customer_adverse_change", "target_ref": "agency:minor-buyer",
+         "available_at": "2024-03-01", "source_ref": "approps:minor-cut"}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["IMMATERIAL"]}
+    },
+    {
+      "case_id": "m16-outcome-materialized",
+      "note": "Historical calibration: incumbent displacement warning that later MATERIALIZED (evidenced).",
+      "subject": {"ref": "co_hist1", "name": "Hist1", "uei": "UEIHIST1"},
+      "replay_as_of": "2023-06-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:h1", "available_at": "2019-01-01", "recipient_uei": "UEIHIST1",
+         "program_key": "prog:h1", "amount_usd": 30000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:h1", "available_at": "2023-03-01",
+         "source_ref": "sam:rc:h1", "displacement_signal": "set_aside_change", "evidence_strength": 4}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_h1", "label": "MATERIALIZED", "observed_at": "2023-12-01",
+         "source_id": "usa", "source_ref": "usa:award:h1-to-other", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["INCUMBENT_DISPLACEMENT"],
+                   "outcome_label": "MATERIALIZED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m16-outcome-avoided",
+      "note": "Historical calibration: a real threat that was AVOIDED (evidenced), not a false alert.",
+      "subject": {"ref": "co_hist2", "name": "Hist2", "uei": "UEIHIST2"},
+      "replay_as_of": "2023-06-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:h2", "available_at": "2019-01-01", "recipient_uei": "UEIHIST2",
+         "program_key": "prog:h2", "amount_usd": 30000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:h2", "available_at": "2023-03-01",
+         "source_ref": "sam:rc:h2", "displacement_signal": "protest", "evidence_strength": 4}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_h2", "label": "AVOIDED", "observed_at": "2024-01-01",
+         "source_id": "usa", "source_ref": "usa:award:h2-retained", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "AVOIDED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m16-outcome-mitigated",
+      "subject": {"ref": "co_hist3", "name": "Hist3", "uei": "UEIHIST3"},
+      "replay_as_of": "2023-06-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:h3", "available_at": "2019-01-01", "recipient_uei": "UEIHIST3",
+         "program_key": "prog:h3", "amount_usd": 12000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "prog:h3", "available_at": "2023-03-01",
+         "source_ref": "approps:h3", "amount_delta_usd": 6000000, "evidence_strength": 4}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_h3", "label": "MITIGATED", "observed_at": "2024-02-01",
+         "source_id": "news", "source_ref": "mitig:h3", "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "MITIGATED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m16-outcome-delayed",
+      "subject": {"ref": "co_hist4", "name": "Hist4", "uei": "UEIHIST4"},
+      "replay_as_of": "2023-06-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:h4", "available_at": "2019-01-01", "recipient_uei": "UEIHIST4",
+         "program_key": "prog:h4", "amount_usd": 50000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_delay", "program_key": "prog:h4", "available_at": "2023-03-01",
+         "source_ref": "fr:delay:h4", "amount_delta_usd": 50000000, "evidence_strength": 4}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_h4", "label": "DELAYED", "observed_at": "2024-03-01",
+         "source_id": "fr", "source_ref": "fr:h4-slip", "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+                   "outcome_label": "DELAYED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m16-outcome-unresolved",
+      "note": "A real threat with no resolved outcome stays UNRESOLVED — never counted as a false alert.",
+      "subject": {"ref": "co_hist5", "name": "Hist5", "uei": "UEIHIST5"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:h5", "available_at": "2019-01-01", "recipient_uei": "UEIHIST5",
+         "program_key": "prog:h5", "amount_usd": 30000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:h5", "available_at": "2024-03-01",
+         "source_ref": "sam:rc:h5", "displacement_signal": "named_competitor", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "detection_quality": "UNRESOLVED"}
+    },
+    {
+      "case_id": "m16-future-outcome-exclusion",
+      "note": "An outcome dated after the evaluation cutoff is excluded (resolves UNKNOWN); the threat stays UNRESOLVED at prediction time.",
+      "subject": {"ref": "co_hist6", "name": "Hist6"},
+      "replay_as_of": "2023-06-01",
+      "outcome_as_of": "2023-09-01",
+      "counterparty_records": [
+        {"source_ref": "reg:h6", "available_at": "2023-02-01", "relation": "SUPPLIER",
+         "counterparty_name": "Global Defense Supply LLC", "counterparty_ofac_ent_num": 10002}
+      ],
+      "outcome_observations": [
+        {"threat_id": "thr_h6", "label": "MATERIALIZED", "observed_at": "2024-02-01",
+         "source_id": "news", "source_ref": "enf:h6", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["SANCTIONS_EXPOSURE"],
+                   "outcome_label": "UNKNOWN", "detection_quality": "UNRESOLVED"}
+    }
+  ]
+}
