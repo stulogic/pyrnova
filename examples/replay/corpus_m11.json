@@ -1,0 +1,137 @@
+{
+ "corpus_id": "pyrnova-m11-outcome-learning-v1",
+ "schema_version": "outcome_case_v1",
+ "extends": "corpus_m10.json",
+ "reviewed_at": "2026-09-09",
+ "notes": "M11 extends the frozen M10 lifecycle corpus with APPEND-ONLY, POINT-IN-TIME outcome learning. Each outcome_case carries a preserved prediction snapshot (never mutated) and zero or more authoritative, dated, sourced observations. Outcomes are resolved as-of a cutoff: future-dated observations are excluded, and absence resolves to UNKNOWN, never LOST. All 12 authoritative labels (WON/LOST/PARTICIPATED/NO_BID/AWARD_TO_OTHER/CANCELLED/EXPIRED/DELAYED/PARTIAL_CAPTURE/SUBCONTRACT_CAPTURE/INCUMBENT_RETENTION/UNKNOWN) are exercised, plus an absence-guard case and a future-outcome-exclusion case. scoring_v1 stays production; challengers are evaluation-only. Earlier corpora (M4-M10) are byte-for-byte unchanged.",
+ "outcome_cases": [
+  {
+   "case_id": "m11-won-army-hwil",
+   "opportunity_id": "opp-army-hwil-2021",
+   "replay_as_of": "2022-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-hwil-2021", "opportunity_id": "opp-army-hwil-2021", "statement": "Army AMCOM HWIL engineering recompete will be captured.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2020-11-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-hwil-2021", "label": "WON", "observed_at": "2021-01-15T00:00:00+00:00", "source_id": "usaspending", "source_ref": "W31P4Q21F0038", "evidence_strength": 5, "value_usd": 623310899, "prediction_id": "pred-army-hwil-2021", "provenance": "usaspending award record"}
+   ],
+   "expected": {"label": "WON", "correctness": "CONFIRMED"}
+  },
+  {
+   "case_id": "m11-lost-explicit",
+   "opportunity_id": "opp-navy-seta-2022",
+   "replay_as_of": "2023-01-01T00:00:00+00:00",
+   "prediction": {"id": "pred-navy-seta-2022", "opportunity_id": "opp-navy-seta-2022", "statement": "Navy SETA recompete will be captured.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2022-03-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-navy-seta-2022", "label": "LOST", "observed_at": "2022-11-15T00:00:00+00:00", "source_id": "sam_opportunities", "source_ref": "NAVY-SETA-2022-AWARD-NOTICE", "evidence_strength": 4, "provenance": "explicit award notice: we bid and did not win"}
+   ],
+   "expected": {"label": "LOST", "correctness": "OVERCALLED"}
+  },
+  {
+   "case_id": "m11-award-to-other",
+   "opportunity_id": "opp-af-radar-2023",
+   "replay_as_of": "2024-01-01T00:00:00+00:00",
+   "prediction": {"id": "pred-af-radar-2023", "opportunity_id": "opp-af-radar-2023", "statement": "Air Force radar sustainment will be captured.", "precursor_class": "budget_appropriation", "predicted_capture": true, "predicted_at": "2023-02-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-af-radar-2023", "label": "AWARD_TO_OTHER", "observed_at": "2023-09-30T00:00:00+00:00", "source_id": "usaspending", "source_ref": "FA8730-23-C-0007", "evidence_strength": 5, "awarded_to": "Raytheon", "provenance": "usaspending award record names a different prime"}
+   ],
+   "expected": {"label": "AWARD_TO_OTHER", "correctness": "OVERCALLED"}
+  },
+  {
+   "case_id": "m11-no-bid",
+   "opportunity_id": "opp-gsa-oasis-2022",
+   "replay_as_of": "2022-12-01T00:00:00+00:00",
+   "prediction": {"id": "pred-gsa-oasis-2022", "opportunity_id": "opp-gsa-oasis-2022", "statement": "GSA OASIS SB task order is a candidate.", "precursor_class": "vehicle_task_order", "predicted_capture": false, "predicted_at": "2022-05-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-gsa-oasis-2022", "label": "NO_BID", "observed_at": "2022-08-01T00:00:00+00:00", "source_id": "internal_ops", "source_ref": "ops:no-bid:opp-gsa-oasis-2022", "evidence_strength": 3, "provenance": "operator no-bid decision recorded"}
+   ],
+   "expected": {"label": "NO_BID", "correctness": "INDETERMINATE"}
+  },
+  {
+   "case_id": "m11-participated-open",
+   "opportunity_id": "opp-mda-specialty-2024",
+   "replay_as_of": "2024-09-01T00:00:00+00:00",
+   "prediction": {"id": "pred-mda-specialty-2024", "opportunity_id": "opp-mda-specialty-2024", "statement": "MDA specialty engineering support will be captured.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2024-02-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-mda-specialty-2024", "label": "PARTICIPATED", "observed_at": "2024-06-15T00:00:00+00:00", "source_id": "internal_ops", "source_ref": "ops:proposal-submitted:opp-mda-specialty-2024", "evidence_strength": 3, "provenance": "proposal submitted, award pending"}
+   ],
+   "expected": {"label": "PARTICIPATED", "correctness": "INDETERMINATE"}
+  },
+  {
+   "case_id": "m11-cancelled",
+   "opportunity_id": "opp-army-c5isr-2023",
+   "replay_as_of": "2024-01-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-c5isr-2023", "opportunity_id": "opp-army-c5isr-2023", "statement": "Army C5ISR modernization will progress to a solicitation.", "precursor_class": "budget_appropriation", "predicted_capture": true, "predicted_at": "2023-04-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-c5isr-2023", "label": "CANCELLED", "observed_at": "2023-10-01T00:00:00+00:00", "source_id": "sam_opportunities", "source_ref": "ARMY-C5ISR-2023-CANCEL", "evidence_strength": 4, "provenance": "SAM cancellation notice"}
+   ],
+   "expected": {"label": "CANCELLED", "correctness": "INDETERMINATE"}
+  },
+  {
+   "case_id": "m11-expired",
+   "opportunity_id": "opp-af-test-2022",
+   "replay_as_of": "2023-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-af-test-2022", "opportunity_id": "opp-af-test-2022", "statement": "Air Force test & evaluation BPA call will be issued.", "precursor_class": "vehicle_task_order", "predicted_capture": true, "predicted_at": "2022-01-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-af-test-2022", "label": "EXPIRED", "observed_at": "2022-12-31T00:00:00+00:00", "source_id": "sam_opportunities", "source_ref": "AF-TE-2022-EXPIRED", "evidence_strength": 3, "provenance": "solicitation closed with no award posted within the response window"}
+   ],
+   "expected": {"label": "EXPIRED", "correctness": "INDETERMINATE"}
+  },
+  {
+   "case_id": "m11-delayed-still-open",
+   "opportunity_id": "opp-army-avmc-2024",
+   "replay_as_of": "2025-01-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-avmc-2024", "opportunity_id": "opp-army-avmc-2024", "statement": "Army AvMC engineering recompete will be captured in FY24.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2024-01-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-avmc-2024", "label": "DELAYED", "observed_at": "2024-11-01T00:00:00+00:00", "source_id": "sam_opportunities", "source_ref": "ARMY-AVMC-2024-AMENDMENT-3", "evidence_strength": 3, "provenance": "amendment slips the response date into FY25; still open"}
+   ],
+   "expected": {"label": "DELAYED", "correctness": "INDETERMINATE"}
+  },
+  {
+   "case_id": "m11-partial-capture",
+   "opportunity_id": "opp-army-idiq-2023",
+   "replay_as_of": "2024-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-idiq-2023", "opportunity_id": "opp-army-idiq-2023", "statement": "Multiple-award IDIQ for engineering services will be captured.", "precursor_class": "vehicle_task_order", "predicted_capture": true, "predicted_at": "2023-03-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-idiq-2023", "label": "PARTIAL_CAPTURE", "observed_at": "2023-12-01T00:00:00+00:00", "source_id": "usaspending", "source_ref": "W900KK-23-D-0012", "evidence_strength": 5, "value_usd": 45000000, "provenance": "awarded one of several IDIQ seats (partial scope)"}
+   ],
+   "expected": {"label": "PARTIAL_CAPTURE", "correctness": "CONFIRMED"}
+  },
+  {
+   "case_id": "m11-subcontract-capture",
+   "opportunity_id": "opp-mda-prime-2023",
+   "replay_as_of": "2024-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-mda-prime-2023", "opportunity_id": "opp-mda-prime-2023", "statement": "MDA integration program will be captured (prime or team).", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2023-05-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-mda-prime-2023", "label": "SUBCONTRACT_CAPTURE", "observed_at": "2024-02-15T00:00:00+00:00", "source_id": "usaspending_subawards", "source_ref": "SUB-HQ0147-24-9004", "evidence_strength": 4, "awarded_to": "prime: SAIC", "value_usd": 8000000, "provenance": "sub-award record: captured as subcontractor to the prime"}
+   ],
+   "expected": {"label": "SUBCONTRACT_CAPTURE", "correctness": "CONFIRMED"}
+  },
+  {
+   "case_id": "m11-incumbent-retention",
+   "opportunity_id": "opp-army-setas-2022",
+   "replay_as_of": "2023-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-setas-2022", "opportunity_id": "opp-army-setas-2022", "statement": "Incumbent Army SETA recompete will be retained.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2022-06-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-setas-2022", "label": "INCUMBENT_RETENTION", "observed_at": "2023-01-20T00:00:00+00:00", "source_id": "usaspending", "source_ref": "W31P4Q23F0044", "evidence_strength": 5, "value_usd": 210000000, "provenance": "follow-on award to the incumbent (retention)"}
+   ],
+   "expected": {"label": "INCUMBENT_RETENTION", "correctness": "CONFIRMED"}
+  },
+  {
+   "case_id": "m11-absence-is-unknown-not-loss",
+   "opportunity_id": "opp-navy-silent-2023",
+   "replay_as_of": "2024-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-navy-silent-2023", "opportunity_id": "opp-navy-silent-2023", "statement": "Navy engineering recompete will be captured.", "precursor_class": "recompete_expiry", "predicted_capture": true, "predicted_at": "2023-03-01T00:00:00+00:00"},
+   "observations": [],
+   "expected": {"label": "UNKNOWN", "correctness": "PENDING"}
+  },
+  {
+   "case_id": "m11-future-outcome-excluded",
+   "opportunity_id": "opp-army-future-2025",
+   "replay_as_of": "2024-06-01T00:00:00+00:00",
+   "prediction": {"id": "pred-army-future-2025", "opportunity_id": "opp-army-future-2025", "statement": "Army program will be captured.", "precursor_class": "budget_appropriation", "predicted_capture": true, "predicted_at": "2024-01-01T00:00:00+00:00"},
+   "observations": [
+    {"opportunity_id": "opp-army-future-2025", "label": "WON", "observed_at": "2025-03-01T00:00:00+00:00", "source_id": "usaspending", "source_ref": "W-FUTURE-2025-0001", "evidence_strength": 5, "value_usd": 100000000, "provenance": "award observed in 2025 — must NOT leak into a 2024-06 reconstruction"}
+   ],
+   "expected": {"label": "UNKNOWN", "correctness": "PENDING"}
+  }
+ ]
+}

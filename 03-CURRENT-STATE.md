@@ -53,6 +53,21 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external
   frozen 55-case M9 corpus (FNR 0.0, one inherited false strike, no STRIKE explosion); frozen M4–M9
   corpora byte-for-byte unchanged. Full suite: 272 passed, 1 skipped. No live calls. See
   `docs/replay/M10_MULTISOURCE_CALIBRATION.md` and `06-HISTORY.md`.
+- **M11: CLOSED 2026-09-09.** Production opportunity lifecycle + append-only outcome learning
+  (`pyrnova/outcomes.py`). Twelve authoritative point-in-time outcome labels (WON, LOST, PARTICIPATED,
+  NO_BID, AWARD_TO_OTHER, CANCELLED, EXPIRED, DELAYED, PARTIAL_CAPTURE, SUBCONTRACT_CAPTURE,
+  INCUMBENT_RETENTION, UNKNOWN). Outcomes are recorded as dated, sourced, append-only
+  `OutcomeObservation`s (idempotent); `resolve_outcome(..., as_of)` excludes future-dated observations
+  and resolves to UNKNOWN when nothing is knowable — **loss is never inferred from absence** (capture-
+  negative/terminal labels require an explicit `source_ref` and `evidence_strength >= 3`). The learning
+  ledger snapshots each prediction **verbatim** (never mutated) and grades correctness as calibration
+  only. Challenger predictors are **evaluation-only** (`promoted=False`, `production_scoring_version=
+  scoring_v1`); `ACTIVE_SCORING_VERSION` stays `scoring_v1`. `corpus_m11.json` extends frozen
+  `corpus_m10.json` with 13 outcome cases (all 12 labels + an absence-guard + a future-exclusion case):
+  resolution rate 0.8462, capture 4, win-rate-among-contested 0.6667, `loss_inferred_from_absence` 0,
+  `future_outcomes_excluded` 1; a sample challenger scores 0.75/0.75 and is not promoted. Frozen M4–M10
+  corpora unchanged. Full suite: 284 passed, 1 skipped. No live calls. See
+  `docs/specs/M11_OUTCOME_LEARNING.md`.
 - **M9: CLOSED.** Real company grounding + production fit calibration: company profiles are built
   from real archived USAspending evidence (Torch Technologies, Modern Technology Solutions), filtered
   strictly point-in-time, then run through the fit engine against real historical opportunities.
@@ -351,10 +366,11 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external
 
 ## Exact next action
 
-M2 CLOSED (`2026-09-09T07:14Z`, hash `574813de…`). M10 CLOSED (`docs/replay/M10_MULTISOURCE_CALIBRATION.md`).
+M2 CLOSED (`2026-09-09T07:14Z`, hash `574813de…`). M10 CLOSED
+(`docs/replay/M10_MULTISOURCE_CALIBRATION.md`). M11 CLOSED (`docs/specs/M11_OUTCOME_LEARNING.md`).
 
-M11 is now unblocked: production opportunity lifecycle + append-only outcome learning — authoritative
-point-in-time outcomes (WON/LOST/PARTICIPATED/NO_BID/AWARD_TO_OTHER/CANCELLED/EXPIRED/DELAYED/
-PARTIAL_CAPTURE/SUBCONTRACT_CAPTURE/INCUMBENT_RETENTION/UNKNOWN), never infer loss from absence,
-predictions preserved, `scoring_v1` production with challengers evaluation-only, strict future-outcome
-exclusion, `corpus_m11` extends M10. See `docs/specs/` (to be authored) and `06-HISTORY.md`.
+M12 (next): integrate durable `SourceState` (`pyrnova/sources/source_state.py`) with the adapters and a
+scheduler/jobs layer — budgets, dedupe, cache, archive, backoff, circuit breaker, checkpoint/resume,
+source-health, operator controls — plus a lightweight Operations Panel extension. Offline default; no
+live calls without a separately justified acceptance request. `scoring_v1`/`fit.py` unchanged; frozen
+corpora unchanged.

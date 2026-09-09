@@ -263,3 +263,21 @@
 - **Acceptance:** all 21 gate points hold (see `docs/replay/M10_MULTISOURCE_CALIBRATION.md` and the
   updated `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`). M11 (production lifecycle + append-only outcome
   learning) is now unblocked.
+
+## M11 CLOSED (2026-09-09) — production lifecycle + append-only outcome learning
+
+- **`pyrnova/outcomes.py` (additive, no scoring change).** Twelve authoritative point-in-time outcome
+  labels; `OutcomeObservation` is append-only, dated, sourced, idempotent. `resolve_outcome(as_of)`
+  enforces strict future-outcome exclusion and resolves to UNKNOWN when nothing is knowable — loss is
+  never inferred from absence (capture-negative/terminal labels require an explicit source_ref and
+  evidence_strength >= 3, enforced in `__post_init__`).
+- **Predictions preserved verbatim** in the learning ledger (`build_learning_record`); correctness is a
+  calibration read only and never feeds scoring. **Challengers are evaluation-only** (`evaluate_challenger`
+  hard-codes `promoted=False`, `production_scoring_version=scoring_v1`); `ACTIVE_SCORING_VERSION` unchanged.
+- **`corpus_m11.json` extends frozen `corpus_m10.json`** with 13 outcome cases (all 12 labels + an
+  absence-guard resolving UNKNOWN + a future-exclusion case). Metrics (directional): resolution rate
+  0.8462, capture 4, win-rate-among-contested 0.6667, loss_inferred_from_absence 0,
+  future_outcomes_excluded 1; sample challenger precision/recall 0.75/0.75, not promoted.
+- **Frozen invariants:** scoring_v1 and fit.py unchanged; M4–M10 corpora byte-for-byte unchanged; M9
+  canonical base still loads (55). Full suite: 284 passed, 1 skipped. No live calls. See
+  `docs/specs/M11_OUTCOME_LEARNING.md`. Next: M12 durable-source integration.
