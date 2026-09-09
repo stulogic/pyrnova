@@ -237,3 +237,29 @@
   and the M10 spec live on `origin/claude/nice-johnson-yk8avd` (this session's designated branch;
   pushing to `main` or opening a PR without explicit permission is disallowed by the session's operating
   rules). A human should merge `claude/nice-johnson-yk8avd` into `main` via PR to reconcile `origin/main`.
+
+## M10 CLOSED (2026-09-09) — multi-source real-company intelligence
+
+- **Closed offline from archived evidence, no live calls.** Real company profiles are grounded from
+  ≥2 authoritative source families via `pyrnova/multisource.py` (`SourceFact` + point-in-time merger
+  writing into existing `CompanyProfile` fields; higher-authority facts never overwritten by lower,
+  conflicts recorded): SAIC (added public prime) = USAspending prime + SEC EDGAR submissions +
+  USAspending recipient; Torch = USAspending prime + USAspending sub-awards + recipient. Parsers
+  `grounding_sec.py`, `grounding_subawards.py`, `grounding_recipient.py` are self-contained and additive.
+- **Corpus:** `corpus_m10.json` extends the frozen 55-case `corpus_m9.json` with 8 real multi-source
+  fit cases (PRIME, TEAM via authoritative repeat sub-award edge, SUPPORT / false-tempting-TEAM,
+  DEFEND, eligibility-blocked NO_FIT, broad-sector NO_FIT, future-evidence leakage, insufficient-evidence
+  UNKNOWN). Cases are fit-probe cases (real grounding, constructed opportunity), evaluated only by the
+  fit engine — not scoring cases.
+- **Metrics (multisource_real bucket, directional, separate from M8 synthetic and M9 single-family
+  real):** 8 graded fits, fit precision 1.0, no-fit precision 1.0, false-match rate 0.0, posture
+  precision 1.0 (per-posture 1.0), blocker accuracy 1.0, capability coverage 0.875, buyer-history
+  coverage 1.0, unknown rate 0.125, temporal_leakage_violations 0. Grounding: 8/8 multi-source, avg 2.5
+  families/profile (max 3), eligibility coverage 0.5, subcontract coverage 0.625, 5 authoritative
+  partner edges.
+- **Frozen invariants:** `fit.py` and `scoring_v1` unchanged (scoring stability proven over the frozen
+  M9 corpus: 55 cases, FNR 0.0, one inherited false strike, no STRIKE explosion). Frozen M4–M9 corpora
+  byte-for-byte unchanged. Full suite: 272 passed, 1 skipped.
+- **Acceptance:** all 21 gate points hold (see `docs/replay/M10_MULTISOURCE_CALIBRATION.md` and the
+  updated `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`). M11 (production lifecycle + append-only outcome
+  learning) is now unblocked.

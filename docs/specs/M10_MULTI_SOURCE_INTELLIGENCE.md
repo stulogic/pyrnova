@@ -1,7 +1,14 @@
 # Milestone 10 — multi-source company intelligence + subcontract/teaming resolution
 
-_Status: SPEC READY / EXECUTION BLOCKED ON ENVIRONMENT · 2026-09-09 · authority: `01-PROJECT-AUTHORITY.md`,
-activated by `02-EXECUTION.md`._
+_Status: **CLOSED 2026-09-09** · authority: `01-PROJECT-AUTHORITY.md`, activated by `02-EXECUTION.md`._
+
+> **Closed offline from archived evidence.** M10 grounds real company profiles from ≥2 authoritative
+> source families (SAIC: USAspending prime + SEC EDGAR + USAspending recipient; Torch: USAspending
+> prime + sub-awards + recipient), exercises PRIME/SUPPORT/TEAM/DEFEND/NO_FIT on real evidence, rejects
+> a false tempting TEAM, blocks on real eligibility, and holds the point-in-time gate at
+> `temporal_leakage_violations == 0`. `fit.py` and `scoring_v1` unchanged; frozen M4–M9 corpora
+> byte-for-byte unchanged. Metrics and the 21-point gate result are in
+> `docs/replay/M10_MULTISOURCE_CALIBRATION.md`. The original blocker note below is retained for history.
 
 > **Execution precondition (hard).** M10's defining requirement is real, multi-source company grounding
 > (≥2 source families, material evidence beyond USAspending prime history). That requires acquiring

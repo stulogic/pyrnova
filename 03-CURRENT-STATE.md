@@ -1,6 +1,6 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M2 external SAM gate closed)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external SAM gate closed)._
 
 ## Milestone status
 
@@ -34,15 +34,25 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M2 external SAM gate cl
   matched against commercial-consequence requirements produce an explainable capture posture
   (PRIME/SUPPORT/TEAM/DEFEND/NO_FIT) with fit dimensions, structured blockers, and point-in-time truth.
   A recovered internal Operations Panel is stabilized and sandbox-safe. `scoring_v1` unchanged.
-- **M10: SPEC READY / EXECUTION BLOCKED ON ENVIRONMENT.** Multi-source company intelligence +
-  subcontract/teaming resolution is fully specified (`docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md`) but
-  cannot begin real grounding here: its defining gate (≥2 source families, material evidence beyond
-  USAspending) requires new real archived evidence, and this environment blocks every external data host
-  (`data.sec.gov`, `api.usaspending.gov` → 403 org egress-policy denials) and provisions no
-  `SAM_API_KEY`. Fabrication is forbidden, so M10 is not started for real grounding and is NOT closed.
-  Architectural finding recorded in the spec: `fit.py` already reads every M10 field, so M10 is additive
-  grounding + data + metrics with `scoring_v1`/`fit.py` unchanged. Because M10 is not closed, **M11 is
-  not started** (M11 is strictly gated on a clean M10 close). See `06-HISTORY.md`.
+- **M10: CLOSED 2026-09-09.** Multi-source company intelligence + subcontract/teaming resolution.
+  Real profiles are grounded from ≥2 authoritative source families offline from archived evidence:
+  SAIC (added public prime) from USAspending prime + **SEC EDGAR** submissions + USAspending recipient;
+  Torch from USAspending prime + **USAspending sub-awards** + recipient. `multisource.py` defines
+  `SourceFact` + a point-in-time merger that writes into the existing `CompanyProfile` fields and never
+  overwrites a higher-authority fact with a lower one (conflicts recorded, not silently resolved).
+  `corpus_m10.json` extends frozen `corpus_m9.json` with 8 real multi-source fit cases exercising PRIME,
+  TEAM (authoritative repeat sub-award partner edge), SUPPORT/**false-tempting-TEAM** (resolves to
+  SUPPORT, never a manufactured TEAM), DEFEND, real-eligibility NO_FIT (`insufficient_certification`),
+  broad-sector NO_FIT, a future-evidence leakage case, and an insufficient-evidence UNKNOWN.
+  Multi-source-real fit metrics (separate bucket, directional): 8 graded fits, fit precision 1.0,
+  no-fit precision 1.0, false-match rate 0.0, posture precision 1.0 (per-posture 1.0), blocker accuracy
+  1.0, capability coverage 0.875, buyer-history coverage 1.0, unknown rate 0.125,
+  **temporal_leakage_violations 0**. Grounding observability: 8/8 multi-source profiles, avg 2.5
+  families/profile (max 3), eligibility coverage 0.5, subcontract coverage 0.625, 5 profiles with an
+  authoritative partner edge. `fit.py` and `scoring_v1` unchanged; scoring stability proven over the
+  frozen 55-case M9 corpus (FNR 0.0, one inherited false strike, no STRIKE explosion); frozen M4–M9
+  corpora byte-for-byte unchanged. Full suite: 272 passed, 1 skipped. No live calls. See
+  `docs/replay/M10_MULTISOURCE_CALIBRATION.md` and `06-HISTORY.md`.
 - **M9: CLOSED.** Real company grounding + production fit calibration: company profiles are built
   from real archived USAspending evidence (Torch Technologies, Modern Technology Solutions), filtered
   strictly point-in-time, then run through the fit engine against real historical opportunities.
@@ -325,12 +335,26 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M2 external SAM gate cl
   URL checks, local JSONL/filesystem state, heterogeneous forecasts, SEC full-text, tiny inferred-join
   and consequence samples, two un-exercised mechanism families) still stand.
 
+## M10 limitations (explicit)
+
+- 3 real companies (Torch, MTSI, SAIC), 8 graded multi-source fits — all metrics are directional, not
+  stable rates; the small-sample warning is surfaced, never hidden.
+- The M10 opportunity records are constructed probes attached to real, point-in-time profiles; the
+  grounding is real, the opportunity is illustrative. M10 cases are not `scoring_v1` cases (scoring
+  stability is proven over the frozen M9 corpus).
+- SAM entity certifications / vehicle eligibility were NOT ingested in this offline close; eligibility
+  is grounded from USAspending recipient business categories only. SAM set-asides/vehicle eligibility
+  remain documented-insufficient, not fabricated.
+- TEAM/sub-award evidence is USAspending sub-awards only; a single occurrence is weak, so TEAM requires
+  a repeat prime↔subrecipient relationship (or an archived official announcement, none ingested here).
+- SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
+
 ## Exact next action
 
-M2 is CLOSED (external SAM gate passed `2026-09-09T07:14Z`, hash `574813de…`). No further M2 action.
+M2 CLOSED (`2026-09-09T07:14Z`, hash `574813de…`). M10 CLOSED (`docs/replay/M10_MULTISOURCE_CALIBRATION.md`).
 
-M10 (still blocked): execute `docs/specs/M10_MULTI_SOURCE_INTELLIGENCE.md` from an environment whose egress
-policy allows the keyless data hosts (`data.sec.gov`, `api.usaspending.gov`) — enough to ground a second
-source family (SEC for an added public prime) and sub-awards without SAM — and/or where `SAM_API_KEY` is
-provisioned. Do not fabricate evidence or weaken the M10 acceptance gates. M11 stays gated on a clean M10
-close and must not start before then.
+M11 is now unblocked: production opportunity lifecycle + append-only outcome learning — authoritative
+point-in-time outcomes (WON/LOST/PARTICIPATED/NO_BID/AWARD_TO_OTHER/CANCELLED/EXPIRED/DELAYED/
+PARTIAL_CAPTURE/SUBCONTRACT_CAPTURE/INCUMBENT_RETENTION/UNKNOWN), never infer loss from absence,
+predictions preserved, `scoring_v1` production with challengers evaluation-only, strict future-outcome
+exclusion, `corpus_m11` extends M10. See `docs/specs/` (to be authored) and `06-HISTORY.md`.

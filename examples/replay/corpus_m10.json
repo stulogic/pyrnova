@@ -1,0 +1,624 @@
+{
+ "corpus_id": "pyrnova-m10-multisource-fit-v1",
+ "schema_version": "replay_case_v1",
+ "extends": "corpus_m9.json",
+ "reviewed_at": "2026-09-09",
+ "notes": "M10 extends the frozen M9 corpus with REAL MULTI-SOURCE company fit cases. Profiles are built from multiple archived real families (USAspending prime + SEC EDGAR submissions + USAspending recipient/sub-awards) via multisource.build_multisource_profile, filtered strictly point-in-time. profile_source='multisource_real'; metrics are reported separately from synthetic (M8) and single-family real (M9). Cases exercise real PRIME (3 families), TEAM (authoritative repeat sub-award partner edge), SUPPORT / false-tempting-TEAM, DEFEND, eligibility-blocked NO_FIT, broad-sector NO_FIT, a future-evidence leakage case, and an insufficient-evidence UNKNOWN. Earlier corpora are byte-for-byte unchanged.",
+ "cases": [
+  {
+   "case_id": "m10-saic-prime-hwil-missile",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2026-09-09T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-saic-prime-hwil-missile:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-saic-prime-hwil-missile",
+     "summary": "Hardware-in-the-loop simulation and missile defense systems engineering support for the Army",
+     "agency": "Department of the Army",
+     "available_at": "2026-09-09T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Science Applications International Corporation"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Hardware-in-the-loop simulation and missile defense systems engineering support for the Army",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Science Applications International Corporation"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "STRIKE",
+   "ground_truth": {
+    "label": "TRUE_POSITIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Real 3-family multisource PRIME (USAspending prime + SEC + recipient).",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Science Applications International Corporation",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_saic.json"
+       },
+       {
+        "kind": "sec_submissions",
+        "fixture": "sec_submissions_saic.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_saic.json",
+        "available_at": "2026-09-09"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Science Applications International Corporation",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "PRIME",
+     "expected_fit": true,
+     "decisive_evidence": "HWIL+missile_defense full match, SAIC Army prime history, 3-family grounded"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-torch-team-hwil-te",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2022-06-01T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-torch-team-hwil-te:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-torch-team-hwil-te",
+     "summary": "Hardware-in-the-loop simulation and test and evaluation services for Army missile systems",
+     "agency": "Department of the Army",
+     "available_at": "2022-06-01T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Torch Technologies"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Hardware-in-the-loop simulation and test and evaluation services for Army missile systems",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Torch Technologies"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "WATCH",
+   "ground_truth": {
+    "label": "TRUE_POSITIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Real TEAM: partial capability strengthened by a repeat prime<->sub partner edge.",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Torch Technologies",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_torch.json"
+       },
+       {
+        "kind": "usaspending_subawards",
+        "fixture": "usaspending_subawards_torch.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_torch.json",
+        "available_at": "2023-01-01"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Torch Technologies",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "TEAM",
+     "expected_fit": true,
+     "decisive_evidence": "Torch has HWIL (partial) + authoritative repeat sub-award partner (incl SAIC) -> TEAM"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-saic-support-false-team",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2026-09-09T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-saic-support-false-team:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-saic-support-false-team",
+     "summary": "Missile defense systems engineering and systems engineering and technical assistance",
+     "agency": "Department of the Army",
+     "available_at": "2026-09-09T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Science Applications International Corporation"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Missile defense systems engineering and systems engineering and technical assistance",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Science Applications International Corporation"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "WATCH",
+   "ground_truth": {
+    "label": "TRUE_POSITIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "False tempting TEAM: complementary capability with Torch exists, but SAIC carries no authoritative teaming edge, so it must resolve to SUPPORT, never a manufactured TEAM.",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Science Applications International Corporation",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_saic.json"
+       },
+       {
+        "kind": "sec_submissions",
+        "fixture": "sec_submissions_saic.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_saic.json",
+        "available_at": "2026-09-09"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Science Applications International Corporation",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "SUPPORT",
+     "expected_fit": true,
+     "decisive_evidence": "SAIC has missile (partial) but no authoritative partner edge -> SUPPORT not TEAM"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-torch-defend-seta",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2022-06-01T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-torch-defend-seta:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-torch-defend-seta",
+     "summary": "Systems engineering and technical assistance recompete for Army aviation and missile systems",
+     "agency": "Department of the Army",
+     "available_at": "2022-06-01T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Torch Technologies"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Systems engineering and technical assistance recompete for Army aviation and missile systems",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Torch Technologies"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "WATCH",
+   "ground_truth": {
+    "label": "TRUE_POSITIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Real incumbent SETA recompete; posture is retention, backed by prior Army SETA history.",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Torch Technologies",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_torch.json"
+       },
+       {
+        "kind": "usaspending_subawards",
+        "fixture": "usaspending_subawards_torch.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_torch.json",
+        "available_at": "2023-01-01"
+       }
+      ],
+      "meta_extra": {
+       "incumbent_of": [
+        "m10:m10-torch-defend-seta"
+       ]
+      }
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Torch Technologies",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "DEFEND",
+     "expected_fit": true,
+     "decisive_evidence": "Torch incumbent on the SETA program -> DEFEND"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-torch-nofit-setaside",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2026-09-09T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-torch-nofit-setaside:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-torch-nofit-setaside",
+     "summary": "Hardware-in-the-loop simulation support, total small business set-aside",
+     "agency": "Department of the Army",
+     "available_at": "2026-09-09T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Torch Technologies",
+     "required_certifications": [
+      "small business"
+     ]
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Hardware-in-the-loop simulation support, total small business set-aside",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Torch Technologies"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "REJECT",
+   "ground_truth": {
+    "label": "TRUE_NEGATIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Capable firm blocked purely by real eligibility (recipient business categories).",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Torch Technologies",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_torch.json"
+       },
+       {
+        "kind": "usaspending_subawards",
+        "fixture": "usaspending_subawards_torch.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_torch.json",
+        "available_at": "2023-01-01"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Torch Technologies",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "NO_FIT",
+     "expected_fit": false,
+     "decisive_evidence": "Torch is other_than_small_business -> ineligible for a small-business set-aside",
+     "expected_blocker": "insufficient_certification"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-saic-nofit-broadsector",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2026-09-09T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-saic-nofit-broadsector:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-saic-nofit-broadsector",
+     "summary": "Specialty engineering support for a niche program",
+     "agency": "Department of the Army",
+     "available_at": "2026-09-09T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Science Applications International Corporation"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Specialty engineering support for a niche program",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Science Applications International Corporation"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "REJECT",
+   "ground_truth": {
+    "label": "TRUE_NEGATIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Real firm correctly rejected: capability class not evidenced (no broad-sector match).",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Science Applications International Corporation",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_saic.json"
+       },
+       {
+        "kind": "sec_submissions",
+        "fixture": "sec_submissions_saic.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_saic.json",
+        "available_at": "2026-09-09"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Science Applications International Corporation",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "NO_FIT",
+     "expected_fit": false,
+     "decisive_evidence": "SAIC has no specialty_engineering evidence -> broad-sector rejection",
+     "expected_blocker": "no_required_capability"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-torch-leakage-2017",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2017-06-01T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-torch-leakage-2017:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-torch-leakage-2017",
+     "summary": "Hardware-in-the-loop simulation support for Army missile systems",
+     "agency": "Department of the Army",
+     "available_at": "2017-06-01T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Torch Technologies"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Hardware-in-the-loop simulation support for Army missile systems",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Torch Technologies"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "REJECT",
+   "ground_truth": {
+    "label": "TRUE_NEGATIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Point-in-time gate: HWIL and 2023/2024 sub-awards are future-dated at the 2017 cutoff.",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Torch Technologies",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_torch.json"
+       },
+       {
+        "kind": "usaspending_subawards",
+        "fixture": "usaspending_subawards_torch.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_torch.json",
+        "available_at": "2023-01-01"
+       }
+      ]
+     },
+     "leakage_probe": [
+      "P010277106",
+      "PO-0011221"
+     ]
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Torch Technologies",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "NO_FIT",
+     "expected_fit": false,
+     "decisive_evidence": "As of 2017 Torch has no HWIL evidence yet -> NO_FIT; future sub-awards must not leak",
+     "expected_blocker": "no_required_capability"
+    }
+   ]
+  },
+  {
+   "case_id": "m10-torch-unknown-2013",
+   "mechanism_family": "procurement",
+   "replay_as_of": "2013-01-01T23:59:59+00:00",
+   "profile_source": "multisource_real",
+   "records": [
+    {
+     "source_id": "sam_opportunities",
+     "source_ref": "m10:m10-torch-unknown-2013:SOL",
+     "record_kind": "solicitation",
+     "stage": "PROCUREMENT",
+     "program_key": "m10:m10-torch-unknown-2013",
+     "summary": "Hardware-in-the-loop simulation support for Army missile systems",
+     "agency": "Department of the Army",
+     "available_at": "2013-01-01T23:59:59+00:00",
+     "strength": 4,
+     "source_role": "primary",
+     "applies_to_candidate": true,
+     "procurement": true,
+     "buyer": "Department of the Army",
+     "recipient": "Torch Technologies"
+    }
+   ],
+   "candidate": {
+    "hypothesis": "Hardware-in-the-loop simulation support for Army missile systems",
+    "relevance": 0.6,
+    "predicted_buyer": "Department of the Army"
+   },
+   "expected_affected_entities": [
+    "Torch Technologies"
+   ],
+   "expected_buyer_program_owner": "Department of the Army",
+   "expected_commercial_mechanism": "direct procurement",
+   "actual_outcome": {
+    "occurred": false
+   },
+   "expected_disposition": "REJECT",
+   "ground_truth": {
+    "label": "TRUE_NEGATIVE",
+    "confidence": "MEDIUM"
+   },
+   "ambiguity_notes": "Insufficient early evidence: fit is unknown, never a manufactured match.",
+   "reviewer": "Pyrnova M10 multi-source review 2026-09-09",
+   "companies": [
+    {
+     "name": "Torch Technologies",
+     "grounded": {
+      "sources": [
+       {
+        "kind": "usaspending_prime",
+        "fixture": "usaspending_torch.json"
+       },
+       {
+        "kind": "usaspending_subawards",
+        "fixture": "usaspending_subawards_torch.json"
+       },
+       {
+        "kind": "usaspending_recipient",
+        "fixture": "usaspending_recipient_torch.json",
+        "available_at": "2023-01-01"
+       }
+      ]
+     }
+    }
+   ],
+   "expected_fits": [
+    {
+     "company": "Torch Technologies",
+     "mechanism": "DIRECT_PROCUREMENT",
+     "expected_posture": "NO_FIT",
+     "expected_fit": false,
+     "decisive_evidence": "As of 2013 Torch has insufficient capability evidence -> UNKNOWN/NO_FIT"
+    }
+   ]
+  }
+ ]
+}
