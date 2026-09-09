@@ -1,0 +1,216 @@
+{
+  "corpus_id": "corpus_m17",
+  "schema_version": 1,
+  "extends": "corpus_m16.json",
+  "reviewed_at": "2026-09-09",
+  "notes": "M17 extends corpus_m16 (byte-identical) with REAL, evidence-backed relationship propagation and an expanded resolved-outcome set. The two flagship propagation cases traverse a REAL, archived economic relationship: Torch Technologies is a repeat subcontractor to SAIC on the SAME prime awards SAIC holds (deterministic Prime-Award-ID linkage; edges grounded in examples/real_evidence/usaspending_subawards_torch.json and provable via pyrnova.relationships.ground_subaward_edges — see tests/test_m17_real_propagation.py). The direct-threat CATALYST on each SAIC program is a modeled adverse event (structured, dated, evidence_strength-tagged, as in M16); the RELATIONSHIP EDGE and the INCUMBENCY EXPOSURE are real and archived. Resolved-outcome cases grow the calibration denominator beyond M16's 5: two are grounded in real contract end dates (EXPOSURE_ENDED from archived periods of performance); the remainder are directional, clearly-labelled structured outcomes exercising the full outcome vocabulary including a FALSE_ALARM so precision is not a vacuous 1.0. No fabricated relationships; every hop is auditable; scoring_v1/fit.py untouched.",
+  "threat_cases": [
+    {
+      "case_id": "m17-real-propagation-saic-gsa",
+      "real_subject": true,
+      "note": "REAL chain A. SAIC is the incumbent prime on GSA task order 47QFSA20F0057 ($1.43B, PoP 2020-05-05..2025-11-04). A modeled funding reduction threatens SAIC (PROGRAM_CONTRACTION); the threat propagates one hop to Torch Technologies, a REAL subcontractor on that same award (sub P010277776, deterministic Prime-Award-ID match), with confidence/severity degraded and never increased.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-01-01",
+      "award_records": [
+        {"source_ref": "usa:award:47QFSA20F0057", "available_at": "2020-05-05", "recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA software life-cycle development task order (SAIC prime)", "amount_usd": 1432695358.81, "period_start": "2020-05-05", "period_end": "2025-11-04", "agency": "General Services Administration"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "47QFSA20F0057", "available_at": "2023-10-01", "source_ref": "model:funding-cut:47QFSA20F0057", "amount_delta_usd": 300000000, "evidence_strength": 4}
+      ],
+      "relationships": [
+        {"from_ref": "co_saic", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["usa:subaward:P010277776"], "available_at": "2023-11-06"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CONTRACTION"],
+        "severity": {"PROGRAM_CONTRACTION": "CRITICAL"},
+        "confidence": {"PROGRAM_CONTRACTION": "HIGH"},
+        "propagated_threats": 1,
+        "beneficiary_opportunities": 0,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m17-real-propagation-saic-army",
+      "real_subject": true,
+      "note": "REAL chain B. SAIC is the incumbent prime on Army task order W31P4Q21F0095 ($825.8M). A modeled cancellation threatens SAIC (PROGRAM_CANCELLATION_OR_DELAY); the threat propagates one hop to Torch, a REAL subcontractor on that same award (sub P010270457, deterministic Prime-Award-ID match). Distinct program, agency and sub-award from chain A.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:W31P4Q21F0095", "available_at": "2021-03-03", "recipient_uei": "MMLKPW9JLX64", "program_key": "W31P4Q21F0095", "program_name": "Army single-award task order engineering services (SAIC prime)", "amount_usd": 825826653.29, "period_start": "2021-03-03", "period_end": "2028-09-23", "agency": "Department of the Army"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_cancellation", "program_key": "W31P4Q21F0095", "available_at": "2024-03-01", "source_ref": "model:cancel:W31P4Q21F0095", "amount_delta_usd": 825826653.29, "evidence_strength": 4}
+      ],
+      "relationships": [
+        {"from_ref": "co_saic", "to_ref": "co_torch", "to_name": "Torch Technologies Inc", "relation": "SUBCONTRACTOR_OF", "link_class": "CONFIRMED", "join_method": "deterministic_native_id", "evidence_ids": ["usa:subaward:P010270457"], "available_at": "2022-12-21"}
+      ],
+      "expected": {
+        "threat_count": 1,
+        "mechanisms": ["PROGRAM_CANCELLATION_OR_DELAY"],
+        "severity": {"PROGRAM_CANCELLATION_OR_DELAY": "CRITICAL"},
+        "confidence": {"PROGRAM_CANCELLATION_OR_DELAY": "HIGH"},
+        "propagated_threats": 1,
+        "beneficiary_opportunities": 0,
+        "max_depth_reached": 1
+      }
+    },
+    {
+      "case_id": "m17-outcome-exposure-ended-real-saic",
+      "real_subject": true,
+      "note": "REAL resolved outcome. A PROGRAM_CONTRACTION threat on SAIC's NASA contract NNG17CR69C resolves EXPOSURE_ENDED at the contract's real archived period-of-performance end (2023-11-30). EXPOSURE_ENDED is a TRUE_THREAT for detection (the warning was correct; the underlying exposure lapsed), never a false alert.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2022-01-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "usa:award:NNG17CR69C", "available_at": "2017-07-01", "recipient_uei": "MMLKPW9JLX64", "program_key": "NNG17CR69C", "program_name": "NASA definitive contract (SAIC prime)", "amount_usd": 1025846137.9, "period_start": "2017-07-01", "period_end": "2023-11-30", "agency": "National Aeronautics and Space Administration"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "NNG17CR69C", "available_at": "2021-06-01", "source_ref": "model:reduce:NNG17CR69C", "amount_delta_usd": 200000000, "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "EXPOSURE_ENDED", "observed_at": "2023-11-30", "source_id": "usaspending", "source_ref": "usa:award:NNG17CR69C:period_end", "evidence_strength": 4, "notes": "contract period of performance ended (real archived End Date)"}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "EXPOSURE_ENDED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-exposure-ended-real-torch",
+      "real_subject": true,
+      "note": "REAL resolved outcome. A PROGRAM_CONTRACTION threat on Torch's own Army award '0020' ($575M) resolves EXPOSURE_ENDED at its real archived PoP end (2022-06-20).",
+      "subject": {"ref": "co_torch", "name": "Torch Technologies Inc", "uei": "YA63J5PVEZE6"},
+      "replay_as_of": "2020-01-01",
+      "outcome_as_of": "2023-01-01",
+      "award_records": [
+        {"source_ref": "usa:award:torch:0020", "available_at": "2018-01-04", "recipient_uei": "YA63J5PVEZE6", "program_key": "torch-0020", "program_name": "Army technical support requirements (Torch prime)", "amount_usd": 575268246.06, "period_start": "2018-01-04", "period_end": "2022-06-20", "agency": "Department of the Army"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "torch-0020", "available_at": "2019-06-01", "source_ref": "model:reduce:torch-0020", "amount_delta_usd": 120000000, "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "EXPOSURE_ENDED", "observed_at": "2022-06-20", "source_id": "usaspending", "source_ref": "usa:award:torch:0020:period_end", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "EXPOSURE_ENDED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-materialized-displacement",
+      "synthetic_probe": true,
+      "note": "Directional resolved outcome. An INCUMBENT_DISPLACEMENT threat (recompete with a named-competitor displacement signal) MATERIALIZED — the incumbent lost the recompete. Structured, dated observation.",
+      "subject": {"ref": "co_dir_incumbent", "name": "Directional Incumbent Inc", "uei": "UEIDIR01"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:incprog", "available_at": "2019-01-01", "recipient_uei": "UEIDIR01", "program_key": "prog:dir-recompete", "program_name": "Directional recompete program", "amount_usd": 60000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:dir-recompete", "available_at": "2022-09-01", "source_ref": "dir:fr:recompete", "displacement_signal": "named_competitor", "evidence_strength": 4}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "MATERIALIZED", "observed_at": "2023-08-15", "source_id": "usaspending", "source_ref": "dir:award-to-other", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["INCUMBENT_DISPLACEMENT"], "outcome_label": "MATERIALIZED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-avoided",
+      "synthetic_probe": true,
+      "note": "Directional resolved outcome. A PROGRAM_CANCELLATION_OR_DELAY threat was AVOIDED (appropriations restored the program) — evidenced, dated. AVOIDED stays TRUE_THREAT: the warning was correct at prediction time.",
+      "subject": {"ref": "co_dir_avoid", "name": "Directional Avoid Corp", "uei": "UEIDIR02"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:avoidprog", "available_at": "2020-01-01", "recipient_uei": "UEIDIR02", "program_key": "prog:dir-avoid", "program_name": "Directional avoid program", "amount_usd": 40000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_delay", "program_key": "prog:dir-avoid", "available_at": "2022-10-01", "source_ref": "dir:fr:delay", "amount_delta_usd": 40000000, "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "AVOIDED", "observed_at": "2023-05-01", "source_id": "appropriations", "source_ref": "dir:approps:restored", "evidence_strength": 4, "notes": "program funding restored before impact"}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "AVOIDED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-mitigated",
+      "synthetic_probe": true,
+      "note": "Directional resolved outcome. A CUSTOMER_CONCENTRATION threat was MITIGATED (subject diversified its revenue base) — evidenced, dated.",
+      "subject": {"ref": "co_dir_mit", "name": "Directional Mitigate LLC", "uei": "UEIDIR03"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "exposure_records": [
+        {"relation": "CUSTOMER", "target_ref": "cust:dir-concentrated", "target_name": "Concentrated Customer Agency", "deterministic": true, "available_at": "2021-01-01", "revenue_share": 0.5, "source_ref": "dir:sec:concentration"}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "customer_adverse_change", "target_ref": "cust:dir-concentrated", "available_at": "2022-08-01", "source_ref": "dir:fr:customer-cut", "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "MITIGATED", "observed_at": "2023-09-01", "source_id": "sec", "source_ref": "dir:sec:diversified", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["CUSTOMER_CONCENTRATION"], "outcome_label": "MITIGATED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-delayed",
+      "synthetic_probe": true,
+      "note": "Directional resolved outcome. A PROGRAM_CANCELLATION_OR_DELAY (program_delay) threat resolved DELAYED — the effect was pushed out, not eliminated. DELAYED is a TRUE_THREAT.",
+      "subject": {"ref": "co_dir_delay", "name": "Directional Delay Inc", "uei": "UEIDIR04"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:delayprog", "available_at": "2020-01-01", "recipient_uei": "UEIDIR04", "program_key": "prog:dir-delay", "program_name": "Directional delay program", "amount_usd": 30000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "program_delay", "program_key": "prog:dir-delay", "available_at": "2022-11-01", "source_ref": "dir:fr:delay2", "amount_delta_usd": 30000000, "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "DELAYED", "observed_at": "2023-10-01", "source_id": "usaspending", "source_ref": "dir:delay:observed", "evidence_strength": 3}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "DELAYED", "detection_quality": "TRUE_THREAT"}
+    },
+    {
+      "case_id": "m17-outcome-false-alarm",
+      "synthetic_probe": true,
+      "note": "Directional resolved outcome + honest FALSE_ALARM. An INCUMBENT_DISPLACEMENT threat (recompete with a set-aside-change displacement signal) turned out to be a FALSE_ALARM: the recompete was cancelled and the incumbent bridged. Only an explicit, dated FALSE_ALARM observation classifies as a false alert — never absence. This keeps confirmed-threat precision honest (below a vacuous 1.0).",
+      "subject": {"ref": "co_dir_false", "name": "Directional FalseAlarm Corp", "uei": "UEIDIR05"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2024-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:falseprog", "available_at": "2019-01-01", "recipient_uei": "UEIDIR05", "program_key": "prog:dir-false", "program_name": "Directional false-alarm program", "amount_usd": 45000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:dir-false", "available_at": "2022-07-01", "source_ref": "dir:fr:recompete-false", "displacement_signal": "set_aside_change", "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "FALSE_ALARM", "observed_at": "2023-06-01", "source_id": "usaspending", "source_ref": "dir:recompete-cancelled-incumbent-bridged", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "mechanisms": ["INCUMBENT_DISPLACEMENT"], "outcome_label": "FALSE_ALARM", "detection_quality": "FALSE_ALERT"}
+    },
+    {
+      "case_id": "m17-neg-recompete-not-incumbent",
+      "note": "Negative (real-flavoured). A recompete catalyst names a program on which the subject is NOT the incumbent (no award/UEI match) -> NO_EXPOSURE rejection, zero threat. Absence of an incumbency is never an inferred threat.",
+      "subject": {"ref": "co_saic", "name": "Science Applications International Corporation", "uei": "MMLKPW9JLX64"},
+      "replay_as_of": "2024-01-01",
+      "award_records": [
+        {"source_ref": "usa:award:47QFSA20F0057", "available_at": "2020-05-05", "recipient_uei": "MMLKPW9JLX64", "program_key": "47QFSA20F0057", "program_name": "GSA task order (SAIC prime)", "amount_usd": 1432695358.81}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "recompete", "program_key": "prog:not-held-by-saic", "available_at": "2023-10-01", "source_ref": "model:recompete:other", "displacement_signal": "named_competitor", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 0, "rejection_count": 1, "rejection_reasons": ["NO_EXPOSURE"]}
+    },
+    {
+      "case_id": "m17-future-outcome-exclusion",
+      "synthetic_probe": true,
+      "note": "Temporal truth. A PROGRAM_CONTRACTION threat has a MATERIALIZED observation dated AFTER outcome_as_of; it is excluded, so the threat stays UNRESOLVED (never retro-resolved by future evidence).",
+      "subject": {"ref": "co_dir_future", "name": "Directional Future Inc", "uei": "UEIDIR06"},
+      "replay_as_of": "2023-01-01",
+      "outcome_as_of": "2023-06-01",
+      "award_records": [
+        {"source_ref": "dir:award:futureprog", "available_at": "2020-01-01", "recipient_uei": "UEIDIR06", "program_key": "prog:dir-future", "program_name": "Directional future program", "amount_usd": 50000000}
+      ],
+      "catalyst_records": [
+        {"catalyst_kind": "funding_reduction", "program_key": "prog:dir-future", "available_at": "2022-12-01", "source_ref": "dir:fr:future", "amount_delta_usd": 50000000, "evidence_strength": 3}
+      ],
+      "outcome_observations": [
+        {"threat_id": "resolved-downstream", "label": "MATERIALIZED", "observed_at": "2024-01-01", "source_id": "usaspending", "source_ref": "dir:future:materialized", "evidence_strength": 4}
+      ],
+      "expected": {"threat_count": 1, "outcome_label": "UNKNOWN", "detection_quality": "UNRESOLVED"}
+    }
+  ]
+}
