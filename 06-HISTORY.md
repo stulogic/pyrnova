@@ -344,3 +344,8 @@
   `05-BACKLOG.md` and roadmap area 13 so nothing strategically material is silently dropped. The orphan
   implementation line is now resolved. `/Users/stu/Documents/Pyrnova` remains the canonical execution
   tree (01-PROJECT-AUTHORITY › Canonical execution tree).
+- **Permanent archive (2026-09-09):** the original console is preserved on GitHub at
+  `origin/archive/original-operator-console-v0.1` (commit `e9253b4`) as **historical reference only** —
+  not merged, not cherry-picked, and not implementation authority. The canonical Operations Panel
+  remains authoritative; the archive may be consulted for UX/workflow ideas but is not active
+  architecture.
