@@ -1,9 +1,28 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external SAM gate closed)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M13 CLOSED — controlled live operations; M2
+external SAM gate closed)._
 
 ## Milestone status
 
+- **M13: CLOSED 2026-09-09.** Controlled live operations + end-to-end production validation. M2 status
+  was verified first (CLOSED, see below). Additive only — `scoring_v1`, `fit.py`, `control.py`,
+  `source_state.py`, adapters, and frozen M4–M12 corpora all unchanged. The M12 scheduler gained poll
+  cadence (`set_poll_interval`/`due`/`poll()`, `SKIPPED_NOT_DUE`; the gate governs only requests that
+  would reach the network — a cache hit spends no poll), durable budget/`calls_made` in `health()`,
+  throttle-tagged failures, and archive-failure resilience (a storage fault counts the spent call,
+  engages backoff, never crashes/half-writes). `pyrnova/live_ops.py` adds the offline-safe live driver
+  (`http_fetcher`, `LiveRunner` efficiency ledger, `operating_cost_report` — calls, never invented
+  dollars); the Operations Panel folds in the call-cost view. **A deliberately tiny live run** against
+  USAspending (public, keyless; budget of 2 calls set before testing) proved: 2 live calls archived with
+  clean provenance and **zero credential leakage**; an identical repeat served from cache (call avoided);
+  budget enforced (`SKIPPED_BUDGET`); **genuine process restart** recovered budget/checkpoint/circuit/
+  dedupe and made **0 duplicate external calls** (new epoch resets); 50 live rows propagated
+  source→normalize→detect→candidate→review with archived evidence IDs; selectivity **0 STRIKE / 19 WATCH
+  / 11 REJECT** (no STRIKE explosion); temporal probe at a 2016 cutoff excluded 40/50 records (no
+  leakage); a real `CompanyProfile` grounded from live bytes; throttle/circuit/archive-failure/malformed/
+  budget faults covered by fault injection (no provider hammering). Full suite: 320 passed. See
+  `docs/specs/M13_LIVE_OPERATIONS.md` and `docs/replay/M13_LIVE_OPERATIONS.md`.
 - **M2: CLOSED 2026-09-09.** The external SAM acceptance gate passed at `2026-09-09T07:14Z`, executed
   unchanged and unweakened. Gate step 1 confirmed `SAM_API_KEY present: yes` (value never exposed). A
   genuinely fresh live SAM retrieval was performed through the normal adapter path at
@@ -380,10 +399,15 @@ _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M10 CLOSED; M2 external
 
 ## Exact next action
 
-M2 CLOSED (`2026-09-09T07:14Z`, hash `574813de…`). M10 CLOSED
-(`docs/replay/M10_MULTISOURCE_CALIBRATION.md`). M11 CLOSED (`docs/specs/M11_OUTCOME_LEARNING.md`).
+M13 CLOSED (`docs/specs/M13_LIVE_OPERATIONS.md`, `docs/replay/M13_LIVE_OPERATIONS.md`). M2 CLOSED
+(`2026-09-09T07:14Z`, hash `574813de…`). M10–M12 CLOSED. Controlled live USAspending operation is proven
+end-to-end: only-needed external calls, restart/failure survival, no STRIKE explosion, strict temporal
+truth, zero secret leakage, `scoring_v1` frozen.
 
-M12 CLOSED (`docs/specs/M12_SOURCE_INTEGRATION.md`). The offline-default scheduler is ready to drive real
-adapters; live ingestion (wiring a source `fetcher` under LIVE-SAFE/ACCEPTANCE) still requires a
-separately justified request and provisioned keys — do not initiate without one. No milestone is
-currently in progress; await the next brief.
+Recommended next milestone (**M14 — multi-source continuous operation + operating-cost characterization**):
+extend the M13 live proof from one source/one scenario to a small *scheduled loop* over 2–3 keyless
+sources (add SEC EDGAR, then SAM now that M2 is closed) under a real per-source daily budget, and measure
+a genuine day of operation (calls/source/day, new-records/call, calls-avoided/day) rather than a single
+representative slice. No milestone is currently in progress; await the next brief. Live ingestion beyond
+the archived M13 evidence still requires a separately justified LIVE-SAFE/ACCEPTANCE request and
+provisioned keys — do not initiate without one.

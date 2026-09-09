@@ -1,8 +1,19 @@
 # Pyrnova execution authority
 
-_Current execution window: M2 CLOSED (external SAM gate passed 2026-09-09); M3–M9 closed; M10 active — environment now unblocked, executing per spec; M11 not started · updated 2026-09-09_
+_Current execution window: M13 CLOSED (controlled live operations, 2026-09-09); M2–M12 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 13 — CLOSED 2026-09-09
+
+Controlled live operations + end-to-end production validation. M2 verified CLOSED first (not inferred).
+Additive only (`scoring_v1`/`fit.py`/`control.py`/`source_state.py`/adapters/frozen corpora unchanged):
+poll cadence + live driver (`pyrnova/live_ops.py`) + Operations Panel call-cost view. A deliberately tiny
+USAspending live run (2 calls, budget set first) proved only-needed calls, dedupe/cache avoidance, budget
+enforcement, genuine-restart resume with 0 duplicate calls, end-to-end propagation (0 STRIKE / 19 WATCH /
+11 REJECT — no explosion), strict temporal truth (40/50 excluded at a 2016 cutoff), zero credential
+leakage, and fault-injected throttle/circuit/archive-failure recovery. Full suite 320 passed. See
+`docs/specs/M13_LIVE_OPERATIONS.md` and `docs/replay/M13_LIVE_OPERATIONS.md`. No further M13 action.
 
 ### Milestone 2 — CLOSED 2026-09-09
 
