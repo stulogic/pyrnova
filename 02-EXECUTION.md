@@ -1,9 +1,22 @@
 # Pyrnova execution authority
 
-_Current execution window: M15 CLOSED (first-class threat intelligence + exposure graph, 2026-09-09);
-M2–M14 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M16 CLOSED (threat calibration + exposure expansion + live selectivity,
+2026-09-09); M2–M15 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 16 — CLOSED 2026-09-09 (threat calibration + exposure expansion + live selectivity)
+
+Spec `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md` (canonical); evidence
+`docs/replay/M16_THREAT_CALIBRATION_PROPAGATION.md`. Additive only: `scoring_v1`/`fit.py`/`replay.py`/
+frozen corpora (incl. `corpus_m15`) byte-for-byte unchanged; new `propagation.py`/`selectivity.py`/
+`threat_calibration.py`; additive edits to `threat.py`/`ops.py`. Proves Pyrnova stays SELECTIVE on a real
+19,365-event OFAC stream (0 threats for benign monitored companies), models three more exposure families
+(supplier/technology/geography), propagates exposure safely across explicit company relationships
+(bounded depth, degrading confidence, cycle-safe, duplicate-collapsing, beneficiary opportunities), and
+calibrates historical warnings (precision with denominator; an unresolved threat is never a false alert).
+`corpus_m16` (18 cases) extends `corpus_m15` → 35 cases all pass. **0 live API calls**; full suite **400
+passed**. No further M16 action.
 
 ### Milestone 15 — CLOSED 2026-09-09 (first-class threat intelligence + exposure graph)
 
@@ -135,7 +148,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M15 CLOSED — no milestone in progress; await the next brief.
+1. M2–M16 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`

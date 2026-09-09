@@ -70,17 +70,25 @@ explicit probability/severity/horizon; no unsupported alarm. Mirrors the opportu
 consequence engine (`catalysts.py`/mechanism taxonomy) rather than a parallel stack.
 
 **Delivered in M15** (`docs/specs/M15_THREAT_INTELLIGENCE.md`): first-class `Exposure`/`Threat`/
-`ThreatRejection` objects; an evidence-safe exposure graph (deterministic-identifier vs weak-candidate);
-seven threat mechanisms; severity and confidence as orthogonal ordinals (no invented probability);
-first-class zero-threat; threat/opportunity duality; a company threat surface; append-only point-in-time
-threat-outcome linkage. **Carried forward** (newly surfaced, `RECORDED`): (a) exercise the remaining
-`EXPOSURE_RELATIONS` families with real evidence — supplier-dependency, geography/facility,
-commodity-input, technology-substitution, procurement-vehicle; (b) a **live threat-feed selectivity
-measurement** (the M15 corpus is mechanism-dense by design; the explosion guardrail must be measured
-against a real event stream where most events reject); (c) threat-outcome **calibration at scale**
-(threat precision once enough outcomes resolve); (d) a real (non-probe) sanctions-exposure counterparty
-linkage once counterparty-relationship evidence is archived; (e) evidence-backed mitigation modelling
-(no autonomous action). These sit below active authority until a justified milestone.
+`ThreatRejection` objects; an evidence-safe exposure graph; seven threat mechanisms; severity/confidence
+as orthogonal ordinals; first-class zero-threat; duality; a company threat surface; threat-outcome
+linkage.
+
+**Advanced in M16** (`docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`): three more exposure families
+(supplier/technology/geography, 10 mechanisms); a **real event-stream selectivity** proof (19,365 OFAC
+designations → 0 threats for benign companies); **bounded cross-company propagation** (a small network
+effect: direct + indirect threats + beneficiary opportunities, cycle-safe and degrading); and a
+**calibration framework** (detection/exposure/outcome quality with denominators; unresolved never
+false). Carried-forward M15 items (a) partially done — supplier/technology/geography exercised;
+commodity-input & procurement-vehicle still open; (b) done at OFAC scale; (c) framework built, precision
+still on 5 resolved outcomes (needs volume); (d) still open; (e) still open.
+
+**Newly surfaced in M16** (`RECORDED`): (f) seed a **real propagation case from archived sub-award/
+teaming edges** (M10 Torch sub-awards) rather than illustrative edges; (g) **wire selectivity into the
+live scheduler/live_ops** so the funnel is measured continuously under budget; (h) **threat-relevant
+source families** (BIS/export-controls, WARN notices, facility/closure data) — deferred in M16 (none
+needed; never add a source for count) but the natural next exposure-evidence expansion. These sit below
+active authority until a justified milestone.
 
 ### 2. Negative-space intelligence — `RECORDED`
 
@@ -217,3 +225,4 @@ without a later fundamental redesign, while keeping Pyrnova's differentiated cen
 | 2026-09-09 | 1–15    | Roadmap created; all 15 areas recorded (`RECORDED`) | Phase 0   |
 | 2026-09-09 | 1       | Area 1 → `DELIVERED` (M15); 5 follow-on threat capabilities carried forward (`RECORDED`) | M15 |
 | 2026-09-09 | 4, 10   | Noted M15 foundations (`company_threat_surface`; append-only threat state + evolution) | M15 |
+| 2026-09-09 | 1       | M16 advanced area 1 (3 more families, live selectivity, propagation, calibration); 3 new follow-ons (f,g,h) recorded | M16 |

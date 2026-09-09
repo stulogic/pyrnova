@@ -19,20 +19,26 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
-## P1 — deferred threat intelligence (M15 delivered the foundation)
+## P1 — deferred threat intelligence (M15+M16 delivered the foundation)
 
-M15 delivered first-class threat intelligence + the exposure graph (roadmap area 1 → DELIVERED; see
-`docs/specs/M15_THREAT_INTELLIGENCE.md`). Carried-forward, not-yet-built threat work:
+M15 delivered first-class threat intelligence + the exposure graph; M16 added exposure-family expansion,
+real event-stream selectivity, bounded cross-company propagation, and a calibration framework
+(`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`).
+Carried-forward, not-yet-built threat work:
 
-- Exercise the remaining `EXPOSURE_RELATIONS` families with real archived evidence: supplier-dependency,
-  geography/facility, commodity-input, technology-substitution, procurement-vehicle (M15 exercised
-  sanctioned-counterparty, program/incumbency, regulation/certification, customer-concentration).
-- Measure threat selectivity against a **real event stream** (the M15 corpus is mechanism-dense by
-  design; the explosion guardrail must be proven on a live feed where most events reject).
-- Threat-outcome calibration at scale (threat precision once enough real outcomes resolve) via the
-  append-only threat-outcome ledger.
+- Remaining `EXPOSURE_RELATIONS` families still unexercised: commodity-input, procurement-vehicle
+  (supplier/technology/geography done in M16; sanctioned-counterparty/program/incumbency/regulation/
+  certification/customer-concentration in M15).
+- Seed a **real propagation case from archived sub-award/teaming edges** (M10 Torch sub-awards) in place
+  of illustrative relationship edges; the propagation semantics are proven, the real edges are the gap.
+- Wire the **selectivity funnel into the live scheduler/`live_ops`** so it is measured continuously under
+  a per-source budget (M16 measured it on the archived OFAC batch).
+- Threat-outcome **calibration at scale** — precision currently rests on 5 resolved outcomes; grow the
+  resolved set before any non-directional claim.
 - A real (non-probe) sanctions-exposure counterparty linkage once counterparty-relationship evidence is
   archived; today's confirmed positives are clearly-labelled controlled probes against real designations.
+- Threat-relevant source families (BIS/export-controls, WARN, facility/closure) — only when they
+  materially improve exposure evidence and pass the M4 source test; never for source count.
 - Evidence-backed mitigation modelling (no autonomous action on threats — a roadmap boundary).
 
 Each still honours point-in-time truth, deterministic-vs-weak linkage, and no invented probability.

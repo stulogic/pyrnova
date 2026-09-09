@@ -1,9 +1,31 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M15 CLOSED — first-class threat intelligence +
-exposure graph; M2–M14 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M16 CLOSED — threat calibration + exposure
+expansion + live selectivity; M2–M15 CLOSED)._
 
 ## Milestone status
+
+- **M16: CLOSED 2026-09-09.** Threat calibration + exposure-family expansion + real-stream selectivity +
+  cross-company propagation. Additive only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl.
+  `corpus_m15` byte-for-byte unchanged; additive edits to `threat.py`/`ops.py`; new modules
+  `propagation.py`, `selectivity.py`, `threat_calibration.py`). **Three new evidence-safe mechanisms**
+  (SUPPLIER_DEPENDENCY_DISRUPTION, TECHNOLOGY_SUBSTITUTION, GEOGRAPHY_FACILITY_DISRUPTION — 10 total),
+  each rejecting the un-exposed case (NO_DEPENDENCY / VAGUE_TREND_NOT_EVIDENCE /
+  OUTSIDE_EXPOSURE_GEOGRAPHY). **Real event-stream selectivity** (`selectivity.run_selectivity`): the
+  19,365 real archived OFAC designations × 4 monitored companies → 4 weak candidates, **0 accepted, 0
+  threats** (emission_rate 0.0; guarded test). **Bounded cross-company propagation**
+  (`propagation.propagate_threats`): explicit edges only, `max_depth` 2, confidence/severity degrade and
+  never increase, deterministic cycle prevention, duplicate collapse, per-hop provenance, beneficiary
+  (SUBSTITUTE_FOR/COMPETES_WITH) opportunities — never industry-adjacency. **Calibration**
+  (`threat_calibration`): detection/exposure/outcome quality axes, precision reported only with its
+  denominator, an unresolved threat never counted false (`false_alert_from_absence` = 0). `corpus_m16`
+  (18 new cases) extends `corpus_m15` via chain-merge → 35 cases all pass, own point-in-time replay.
+  Merged metrics: 22 direct threats, 3 propagated (2 cases, max depth 2 — no explosion), 2 beneficiary
+  opportunities; calibration precision 1.0 over **5 resolved** TRUE_THREAT (directional), unresolved-rate
+  0.77, median lead time 306 days. Operations Panel gained `threat_propagation_view()` +
+  `selectivity_view()`. No threat/propagation explosion; no temporal/secret leakage; **0 live API calls**.
+  Full suite: **400 passed**. Spec `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`; evidence
+  `docs/replay/M16_THREAT_CALIBRATION_PROPAGATION.md`.
 
 - **M15: CLOSED 2026-09-09.** First-class threat intelligence + exposure graph — threat as a durable
   PEER of commercial consequence, not a negated opportunity or a generic alarm. Additive only
@@ -449,6 +471,15 @@ exposure graph; M2–M14 CLOSED)._
 - SEC grounding applies only to public primes (SAIC); Torch and MTSI are privately held (no SEC filings).
 
 ## Exact next action
+
+M16 CLOSED (`docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`,
+`docs/replay/M16_THREAT_CALIBRATION_PROPAGATION.md`) — Pyrnova stays selective on a real 19k-event stream,
+models supplier/technology/geography exposure families, propagates exposure safely across company
+relationships, and calibrates historical warnings. No milestone in progress; await the next brief.
+`scoring_v1`/`fit.py` remain frozen absent a justified milestone. See the M16 spec's limitations for the
+directional (small-N) calibration and illustrative-edge caveats.
+
+### Prior next action (retained for continuity)
 
 M15 CLOSED (`docs/specs/M15_THREAT_INTELLIGENCE.md`, `docs/replay/M15_THREAT_INTELLIGENCE.md`) — threat
 is first-class, exposure is explicitly modelled, and both peer commercial consequence. No milestone in

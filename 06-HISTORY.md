@@ -1,5 +1,21 @@
 # Pyrnova milestone history
 
+## Milestone 16 — CLOSED 2026-09-09
+
+- Threat calibration + exposure expansion + live selectivity + cross-company propagation. Additive only
+  (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m15` byte-for-byte unchanged; new
+  `propagation.py`/`selectivity.py`/`threat_calibration.py`; additive edits to `threat.py`/`ops.py`).
+- Three new mechanisms (supplier/technology/geography — 10 total), each rejecting the un-exposed case.
+  Real event-stream selectivity: 19,365 archived OFAC designations × 4 benign companies → 0 threats
+  (guarded test). Bounded cross-company propagation: explicit edges only, max depth 2, degrading
+  confidence, cycle-safe, duplicate-collapsing, beneficiary opportunities. Calibration framework:
+  detection/exposure/outcome quality with denominators; unresolved never counted false.
+- `corpus_m16` (18 cases) extends `corpus_m15` → 35 cases all pass. 22 direct threats, 3 propagated
+  (2 cases, max depth 2), 2 beneficiary opportunities; calibration precision 1.0 over 5 resolved
+  (directional), median lead time 306 days. Operations Panel gained propagation + selectivity views.
+  0 live API calls. Full suite: 400 passed. See `docs/specs/M16_THREAT_CALIBRATION_PROPAGATION.md`,
+  `docs/replay/M16_THREAT_CALIBRATION_PROPAGATION.md`.
+
 ## Milestone 15 — CLOSED 2026-09-09
 
 - First-class threat intelligence + exposure graph (roadmap area 1 → DELIVERED). New `Exposure`/`Threat`/
