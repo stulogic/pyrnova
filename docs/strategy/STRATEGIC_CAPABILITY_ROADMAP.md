@@ -238,6 +238,86 @@ See "Long-term architecture guardrail" above. Recorded explicitly as a capabilit
 every foundational data/evidence/graph choice must preserve optionality for enterprise-class workflows
 without a later fundamental redesign, while keeping Pyrnova's differentiated center intact.
 
+### 16. Company Intelligence Dossier + Company Opportunity/Threat Surface — `RECORDED`
+
+A per-entity dossier answering, from the evidence graph: what the company **is**, what it **does**, who
+and what it **depends on**, what is **changing** around it, what **threatens** it, what **benefits** it,
+what **may happen next**, and what **action / counterparties** are relevant. Includes profile-completeness
+/ **intelligence-gap** measurement (what Pyrnova does not yet know about the entity) and rapid **on-demand
+dossier creation** for entities not already stored. This is the presentation composition of area 4 (the
+per-company surface) plus areas 1/3/5/10; it composes existing Threat/Exposure/Fit/Consequence/Relationship
+objects and must not introduce a parallel source of truth. Expected first customer-facing product after M21.
+
+### 17. Universal entity search + natural-language-assisted structured retrieval — `RECORDED`
+
+Retrieve any entity deterministically by name, alias, CIK, UEI, CAGE, DUNS (where historically useful),
+address, executive/person, program, contract/PIID, facility, geography, capability, or sector/industry.
+Natural-language search operates as an **assisted structured retrieval / query-planning layer over the
+same indexes** — never the only way to reach a deterministic entity, and never a substitute for
+identifier lookup. Discipline: NL assistance plans queries against the evidence graph and read
+projections; it does not invent entities or facts.
+
+### 18. Read-optimized search/profile projections — `RECORDED` (M21 architectural guardrail)
+
+Routine company lookup, identifier lookup, sector filtering, dossier opening, opportunity/threat lists,
+relationship lists, and material-change views must render from **indexed, structured, read-optimized
+projections** derived from the authoritative evidence graph — never from runtime graph reconstruction or
+runtime LLM reasoning. Architecture: AUTHORITATIVE EVIDENCE / GRAPH → DERIVED READ PROJECTIONS → FAST
+SEARCH / PROFILE DELIVERY. M21 builds no search layer but must not introduce structures that foreclose
+this. Depends on **ingest-time classification** (sector/industry/capability/geography/event-family/
+economic-mechanism/entity-type), computed durably at ingest, provenance- and confidence-aware,
+multi-label, and temporally versionable — not recomputed per query.
+
+### 19. Counterparty intelligence + multi-tier supply-chain reconstruction — `RECORDED`
+
+Reconstruct supplier/customer/prime/subcontractor/parent/subsidiary/facility relationships into a
+multi-tier economic dependency graph, and support supplier/customer/prime/substitution matching,
+strategic dependency mapping, and dynamic commercial substitution. Extends areas 3 and 7 and the M15–M21
+relationship families (`SUBCONTRACTOR_OF`, `COMPANY_TO_PROGRAM`, and M21's `SUBSIDIARY_OF`/`PARENT_OF`)
+downstream/upstream. Discipline: every tier is evidence-backed with directionality, native identifiers,
+confidence, and CONFIRMED/INFERRED distinction; a relationship is never inferred from name/industry
+resemblance.
+
+### 20. Economic blast-radius propagation + customer exposure fingerprints — `RECORDED` (M16–M21 foundation)
+
+Given a real external event, propagate the economic consequence across evidenced relationships to compute
+the affected set (the "blast radius") and per-customer economic-exposure fingerprints (which watched
+entities are exposed, via which mechanism, to what magnitude, with what confidence and temporal validity).
+Directly extends the bounded, degrading, cycle-safe propagation delivered in M16–M21. Discipline:
+propagation traverses only evidenced edges valid at event time; confidence never increases; severity is
+never mechanically inflated by graph distance or identity.
+
+### 21. Standing intelligence requirements + event-triggered escalation + decay/anomaly — `RECORDED`
+
+Standing per-customer intelligence requirements that watch the evidence stream, escalate on triggering
+events, and apply **opportunity/threat decay** over time; plus **market anomaly detection** over the
+observed stream. Extends the M12–M17 scheduler/selectivity/calibration operations and the append-only
+outcome history. Discipline: escalation and anomaly are evidence-triggered, not model speculation; decay
+is a documented function of time/evidence, not silent forgetting. **No autonomous action on threats** (a
+roadmap boundary; decision-support options only, evidence-grounded).
+
+### 22. Calibrated forecasting — `RECORDED`
+
+Calibrated probability/timing forecasts (buyer behavior, lead time, materialization likelihood) **only
+where empirical evidence supports them** and only after full-corpus evaluation, never altering frozen
+`scoring_v1` without a justified milestone. Depends on proprietary history (area 14) and the resolved
+outcome set reaching non-directional volume (M15–M21 grew resolved outcomes but samples remain small).
+Discipline: no invented probability; a forecast is published only beside its calibration denominator.
+
+### Combined-depth doctrine (binding on planning)
+
+Pyrnova combines broad research depth with its own economic intelligence layer. The target is not merely
+"find information about Company X" but "determine what Company X is, what it does, who and what it depends
+on, what is changing around it, what threatens it, what benefits it, what may happen next, and what action
+or counterparties may be relevant." Broad research depth serves the economic intelligence graph; it never
+replaces it, and never turns Pyrnova into a generic search or chat product.
+
+### Phase-control rule (binding on planning)
+
+New capabilities discovered during development do not expand the current phase unless required for
+correctness, safety, architectural integrity, or an existing acceptance criterion. Otherwise:
+document → roadmap → defer. See D-042.
+
 ---
 
 ## Relationship to current authority
@@ -260,3 +340,5 @@ without a later fundamental redesign, while keeping Pyrnova's differentiated cen
 | 2026-09-09 | 1       | M16 advanced area 1 (3 more families, live selectivity, propagation, calibration); 3 new follow-ons (f,g,h) recorded | M16 |
 | 2026-09-09 | 1, 4    | M17 advanced area 1 (real relationship graph + 2 real propagation chains (f DONE), scheduler selectivity (g), calibration 5→12); company threat network view (area-4 foundation); follow-ons (i,j) recorded | M17 |
 | 2026-09-09 | 1, 3    | M20 added SEC corporate adverse events, real company-to-program propagation, and catalyst-time edge validity | M20 |
+| 2026-09-09 | 16–22   | M21 Phase 0 recorded areas 16–22 (dossier/surface, universal + NL-assisted search, read projections, counterparty/multi-tier supply chain, blast-radius + exposure fingerprints, standing requirements/decay/anomaly, calibrated forecasting) + combined-depth and phase-control doctrine | D-042 |
+| 2026-09-09 | 1, 3, 19 | M21 added a raw-archived source-native contract **termination** and the `SUBSIDIARY_OF` economic relationship type (parent-hierarchy native ids); relationship-type diversity beyond `SUBCONTRACTOR_OF`/`COMPANY_TO_PROGRAM` | M21 |

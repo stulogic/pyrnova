@@ -23,6 +23,28 @@ mid-market US federal and defense contractors. The current commercial objective 
 - Human review is evidence, not unquestioned truth; retain model and reviewer outputs so both can be
   compared with eventual outcomes.
 
+## Product language authority (binding)
+
+Pyrnova uses formal, precise, operational business and intelligence language. All user-facing copy —
+dashboards, reports, briefs, notifications, search results, AI-generated analysis, company dossiers,
+exports, and the internal operator UI where applicable — must prioritize information, scope, state,
+evidence, action, and analytical meaning over personality or marketing tone.
+
+Prohibited inside the product: slogans, taglines, quirky or clever headings, inspirational or
+rhetorical language, conversational jokes, anthropomorphic AI language, faux-dramatic intelligence
+language, startup motivational copy, vague benefit claims, generic AI-generated prose, unnecessary
+adjectives, headings written mainly for personality, and generic phrases such as "unlock opportunity",
+"stay ahead", "turn insights into action", "navigate uncertainty", "make smarter decisions", or
+equivalent.
+
+Acceptable headings are literal and functional, e.g. Company Intelligence, Threat Intelligence,
+Opportunity Assessment, Company Exposure, Material Changes, Evidence, Relationship Analysis, Source
+Operations, Outcome History, Intelligence Gaps, Review Evidence, Run Assessment, Add to Watchlist,
+Export Brief.
+
+**Copy quality is part of feature acceptance.** A technically correct feature carrying prohibited
+product language is not complete. See D-041.
+
 ## Locked product boundaries
 
 - Capture Radar is the active wedge. Broader Pyrnova products remain future options, not current build

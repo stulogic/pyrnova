@@ -1,9 +1,25 @@
 # Pyrnova execution authority
 
-_Current execution window: M20 CLOSED (material adverse-event + relationship-type generalization,
-2026-09-09); M2–M19 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M21 IN PROGRESS (raw adverse event + economic relationship diversity +
+observable outcomes) on the M20 base; M2–M20 closed · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 21 — IN PROGRESS (raw adverse event + economic relationship diversity + outcomes)
+
+Spec `docs/specs/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`; evidence
+`docs/replay/M21_RAW_TERMINATION_RELATIONSHIP_DIVERSITY.md`. Goal: take a REAL adverse event preserved
+from authoritative **raw** source bytes, resolve the exposed entity deterministically, propagate across a
+**genuinely economic relationship outside the government-program graph**, preserve temporal truth and
+provenance, and judge the assessment against a later observable outcome where defensibly available.
+Additive only — `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora (incl. `corpus_m20`)
+stay byte-identical. Phase 0 (authority reconciliation) landed the Product Language Authority (D-041) and
+strategic capability reconciliation + phase control (D-042). SEC ingestion is hardened around a
+configurable declared identity, authoritative access order, accession dedupe, archive-first reuse, and
+safe 403 handling. Flagship: a raw USAspending **termination for convenience** (PIID `36C25726N0240`,
+mod `P00002`, −$3,908,263.25, 2026-08-31; D-043) → deterministic UEI exposure → new `SUBSIDIARY_OF`
+economic relationship (parent-hierarchy native ids) → propagated threat. See the spec for the acceptance
+gate.
 
 ### Milestone 20 — CLOSED 2026-09-09 (material adverse event + relationship-type diversity)
 
