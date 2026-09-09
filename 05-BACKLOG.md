@@ -19,7 +19,13 @@ promote, defer, supersede, or reject its items explicitly — never drop them si
 - Accumulate additional reviewed Grants.gov, SEC EDGAR, and agency-forecast outcomes before drawing
   general lift conclusions.
 
-## P1 — deferred threat intelligence (M15–M19 delivered the foundation)
+## P1 — deferred threat intelligence (M15–M20 delivered the foundation)
+
+**M20 update (2026-09-09):** DELIVERED (a) a real $35M SEC corporate restructuring/exit adverse event,
+(b) the third observed adverse-event family, and (c) real `COMPANY_TO_PROGRAM` propagation on an exact
+USAspending recipient/PIID edge with catalyst-time validity. Still open: archive a source-native contract
+termination/cancellation or WARN closure as raw bytes; ground real `CUSTOMER_OF`/`SUPPLIES_TO`/
+`SUBSIDIARY_OF` chains; and grow real later propagated outcomes beyond N=4.
 
 **M19 update (2026-09-09):** two more of the items previously flagged here are now DELIVERED:
 (a) a **deterministic** observed exposure — a real archived USAspending contract **deobligation** on

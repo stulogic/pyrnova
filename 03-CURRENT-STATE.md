@@ -1,9 +1,25 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M19 CLOSED — deterministic OBSERVED exposure +
-second adverse-event family; M2–M18 CLOSED)._
+_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M20 CLOSED — material adverse-event +
+relationship-type generalization; M2–M19 CLOSED)._
 
 ## Milestone status
+
+- **M20: CLOSED 2026-09-09.** Added a third observed family (`sec_corporate_adverse_event`) and a real
+  non-subcontract propagation type (`COMPANY_TO_PROGRAM`). SAIC 10-K accession
+  `0001571123-26-000029` reports $35M restructuring, impairment and exit costs → exact CIK
+  deterministic exposure → HIGH/HIGH `CORPORATE_RESTRUCTURING` (observed/materialized) → active Army
+  PIID `W31P4Q21F0095` via exact USAspending recipient-id/PIID evidence, degrading to MODERATE/MEDIUM.
+  Propagation now enforces relationship `valid_from`/`valid_to` at catalyst time and retains complete
+  source/join/validity/provenance per hop. `summarize_m20` reports relationship-type and severe-outcome
+  selectivity. `corpus_m20` adds 8 cases → 74/74 pass: 51 direct / 17 propagated, 15 unique entity pairs,
+  18 negatives, 17 resolved direct (precision 0.9412, N=17; median lead 337 days), 4 resolved propagated
+  (precision 1.0, N=4 directional), zero temporal leaks/explosions/absence-derived false alerts. SEC raw
+  filing retrieval: one attempted, HTTP 403, no retry; the retained attributable extract is identity-
+  checked against the existing raw SEC submissions archive and explicitly is not called a raw body.
+  Full suite **464 passed, 1 skipped**. Spec/evidence:
+  `docs/specs/M20_GENERALIZED_ADVERSE_RELATIONSHIPS.md`,
+  `docs/replay/M20_GENERALIZED_ADVERSE_RELATIONSHIPS.md`.
 
 - **M19: CLOSED 2026-09-09.** Deterministic OBSERVED exposure + multi-family adverse-event validation.
   Additive only (`scoring_v1`/`fit.py`/`replay.py`/frozen corpora incl. `corpus_m18` byte-for-byte

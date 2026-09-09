@@ -115,6 +115,13 @@ resolved propagated 1 → 4; still needs real (non-probe) later outcomes at volu
 contract **termination** (vs a magnitude-modest deobligation) and relationship-TYPE diversity beyond
 `SUBCONTRACTOR_OF`.
 
+**Advanced in M20** (`docs/specs/M20_GENERALIZED_ADVERSE_RELATIONSHIPS.md`): a third observed family
+(`sec_corporate_adverse_event`) and the first real non-subcontract propagation type
+(`COMPANY_TO_PROGRAM`) are exercised end to end. Relationship validity is now enforced at catalyst time
+and full edge provenance survives propagation. Still open: a raw-archived source-native contract
+termination/WARN closure, customer/supplier/subsidiary relationship diversity, and real later propagated
+outcomes at scale.
+
 ### 2. Negative-space intelligence — `RECORDED`
 
 Model expected evidence that **fails to appear**. Examples: authorization without appropriation;
@@ -252,3 +259,4 @@ without a later fundamental redesign, while keeping Pyrnova's differentiated cen
 | 2026-09-09 | 4, 10   | Noted M15 foundations (`company_threat_surface`; append-only threat state + evolution) | M15 |
 | 2026-09-09 | 1       | M16 advanced area 1 (3 more families, live selectivity, propagation, calibration); 3 new follow-ons (f,g,h) recorded | M16 |
 | 2026-09-09 | 1, 4    | M17 advanced area 1 (real relationship graph + 2 real propagation chains (f DONE), scheduler selectivity (g), calibration 5→12); company threat network view (area-4 foundation); follow-ons (i,j) recorded | M17 |
+| 2026-09-09 | 1, 3    | M20 added SEC corporate adverse events, real company-to-program propagation, and catalyst-time edge validity | M20 |

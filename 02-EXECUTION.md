@@ -1,9 +1,23 @@
 # Pyrnova execution authority
 
-_Current execution window: M19 CLOSED (deterministic OBSERVED exposure + second adverse-event family,
-2026-09-09); M2–M18 closed; no milestone in progress — await next brief · updated 2026-09-09_
+_Current execution window: M20 CLOSED (material adverse-event + relationship-type generalization,
+2026-09-09); M2–M19 closed; no milestone in progress — await next brief · updated 2026-09-09_
 
 ## Active work
+
+### Milestone 20 — CLOSED 2026-09-09 (material adverse event + relationship-type diversity)
+
+Spec `docs/specs/M20_GENERALIZED_ADVERSE_RELATIONSHIPS.md`; evidence
+`docs/replay/M20_GENERALIZED_ADVERSE_RELATIONSHIPS.md`. A real SAIC SEC disclosure (10-K accession
+`0001571123-26-000029`) reports $35M restructuring, impairment and exit costs → exact CIK deterministic
+exposure → HIGH/HIGH `CORPORATE_RESTRUCTURING` → real deterministic `COMPANY_TO_PROGRAM` propagation to
+active Army PIID `W31P4Q21F0095` (MODERATE/MEDIUM). Three adverse-event families and two real propagated
+relationship types are now exercised. Relationship validity is enforced at catalyst time and full hop
+provenance is retained. `corpus_m20` extends M19 → 74/74 pass; 51 direct / 17 propagated; 17 resolved
+direct (precision 0.9412, N=17), 4 propagated (1.0, N=4 directional), 0 temporal leaks. One SEC raw
+retrieval attempt returned 403 and was not retried; retained evidence is an attributable extract checked
+against the archived SEC submissions identity snapshot. Full suite: 464 passed, 1 skipped. No further
+M20 action.
 
 ### Milestone 19 — CLOSED 2026-09-09 (deterministic OBSERVED exposure + multi-family adverse events)
 
@@ -202,7 +216,7 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M19 CLOSED — no milestone in progress; await the next brief.
+1. M2–M20 CLOSED — no milestone in progress; await the next brief.
 2. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 3. Next-milestone candidates are recorded in `05-BACKLOG.md` and `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`

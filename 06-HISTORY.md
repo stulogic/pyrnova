@@ -1,5 +1,19 @@
 # Pyrnova milestone history
 
+## Milestone 20 — CLOSED 2026-09-09
+
+- Generalized observed threat intelligence to a third family (`sec_corporate_adverse_event`) and a real
+  relationship type beyond subcontracting (`COMPANY_TO_PROGRAM`).
+- Flagship: SAIC's 2026 10-K reported $35M restructuring, impairment and exit costs; exact CIK exposure
+  produces HIGH/HIGH `CORPORATE_RESTRUCTURING` and propagates to active Army PIID `W31P4Q21F0095` over
+  exact USAspending recipient/award evidence, degrading to MODERATE/MEDIUM.
+- Relationship availability and catalyst-time validity are enforced; full provenance survives the hop.
+  Eight new cases include CIK mismatch, immaterial cost, future event/relationship, invalid relationship
+  window, and name-only edge negatives. 74/74 cases pass; 51 direct / 17 propagated; 17 resolved direct
+  (precision 0.9412, N=17), 4 propagated (1.0, N=4 directional); full suite 464 passed, 1 skipped.
+- One budgeted SEC raw-body request returned HTTP 403 and was not retried. The committed filing extract
+  is attributable and checked against the existing SEC submissions archive, but is not labeled raw.
+
 ## Milestone 19 — CLOSED 2026-09-09
 
 - Deterministic OBSERVED exposure + multi-family adverse-event validation. Additive only
