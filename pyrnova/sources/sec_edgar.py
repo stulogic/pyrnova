@@ -69,6 +69,58 @@ def companyfacts_url(cik: str | int) -> str:
     return f"https://data.sec.gov/api/xbrl/companyfacts/CIK{normalize_cik(cik)}.json"
 
 
+# M21 SEC ingestion hardening — preferred authoritative access order (archive-once / replay-many). SEC
+# ingestion is NOT forced through one mechanism: discovery/metadata comes from the cheapest structured
+# path, and a full filing BODY is retrieved only when intelligence evaluation or archival policy requires
+# it (see ``discovery_vs_body`` below). A curated extract is only ever an explicitly-labelled fallback.
+SEC_ACCESS_ORDER = (
+    "data.sec.gov structured submissions/XBRL metadata (discovery, cheap, no body)",
+    "SEC bulk submissions / companyfacts material (batch, archived once)",
+    "raw EDGAR filing/submission archive artifact (immutable raw bytes)",
+    "filing HTML only where document structure specifically requires it",
+    "curated extract only as an explicitly labelled fallback when raw acquisition was unavailable",
+)
+
+# What each SEC tier is FOR — discovery (metadata) vs body (full filing acquisition) are separated so an
+# entity appearing in search/metadata does NOT trigger a full-body download.
+DISCOVERY_ENDPOINTS = {"submissions", "companyfacts"}
+BODY_ENDPOINTS = {"full_submission", "filing_document"}
+
+
+def full_submission_url(cik: str | int, accession_number: Optional[str]) -> Optional[str]:
+    """Raw EDGAR full-submission archive artifact URL (the immutable ``.txt`` submission body).
+
+    This is the authoritative raw-bytes tier (order item 3): the complete filing submission as SEC stores
+    it. Returned only when its source-native components exist; never guessed.
+    """
+    if not accession_number:
+        return None
+    accession = str(accession_number).replace("-", "")
+    if not accession.isdigit():
+        return None
+    dashed = f"{accession[:10]}-{accession[10:12]}-{accession[12:]}" if len(accession) == 18 else accession_number
+    return f"https://www.sec.gov/Archives/edgar/data/{int(normalize_cik(cik))}/{accession}/{dashed}.txt"
+
+
+def accession_dedupe(accession_number: str, form: Optional[str], archived: dict) -> dict:
+    """Decide whether an accession needs raw retrieval, given what is already archived (M21 hardening).
+
+    ``archived`` maps accession -> a small record ``{"content_hash", "first_observed_at", ...}``. Once an
+    accession's raw artifact is archived it is NOT retrieved again during normal operation; its content
+    hash, provenance, and first-observed time are retained. An **amendment/correction** (a distinct
+    accession, or a ``/A`` form) is a NEW artifact — history is never silently rewritten — so it is
+    retrieved even though it supersedes an earlier filing.
+
+    Returns ``{"retrieve": bool, "reason": str, "is_amendment": bool}``.
+    """
+    is_amendment = bool(form and str(form).upper().endswith("/A"))
+    if accession_number in (archived or {}):
+        return {"retrieve": False, "reason": "already_archived_accession_dedupe",
+                "is_amendment": is_amendment}
+    reason = "new_amendment_preserves_history" if is_amendment else "new_accession"
+    return {"retrieve": True, "reason": reason, "is_amendment": is_amendment}
+
+
 def filing_url(cik: str | int, accession_number: Optional[str], primary_document: Optional[str]) -> Optional[str]:
     """Official EDGAR archive URL, only when its source-native components exist."""
     if not accession_number or not primary_document:
@@ -227,6 +279,11 @@ class EdgarClient:
             raise ValueError("mode must be offline, live-safe, or acceptance")
         if min_interval_seconds < 0 or cooldown_seconds < 0:
             raise ValueError("EDGAR intervals must be non-negative")
+        # Declared identity defaults to the configured SEC contact (never fabricated); a live call fails
+        # cleanly in ``_headers`` when neither an explicit value nor configuration supplies one.
+        if user_agent is None:
+            from ..config import sec_user_agent
+            user_agent = sec_user_agent() or None
         self.user_agent = user_agent
         self.mode = mode
         self.min_interval_seconds = min_interval_seconds
@@ -249,7 +306,11 @@ class EdgarClient:
 
     def _headers(self) -> dict:
         if not self.user_agent or not _CONTACT_RE.search(self.user_agent):
-            raise RuntimeError("SEC EDGAR requires a User-Agent identifying the caller and contact email")
+            raise RuntimeError(
+                "SEC EDGAR requires a declared User-Agent with a contact email. Configure "
+                "PYRNOVA_SEC_CONTACT_EMAIL (or PYRNOVA_SEC_USER_AGENT) in the environment or the "
+                "repository-local .env; Pyrnova never fabricates a contact address."
+            )
         return {"User-Agent": self.user_agent, "Accept-Encoding": "gzip, deflate"}
 
     def _fetch(self, *, endpoint: str, cik: str, request_url: str, since_accession: Optional[str] = None) -> EdgarObservation:
@@ -288,6 +349,41 @@ class EdgarClient:
     def companyfacts(self, cik: str | int) -> EdgarObservation:
         normalized_cik = normalize_cik(cik)
         return self._fetch(endpoint="companyfacts", cik=normalized_cik, request_url=companyfacts_url(normalized_cik))
+
+    def fetch_full_submission(self, cik: str | int, accession_number: str) -> EdgarObservation:
+        """Retrieve the raw EDGAR full-submission archive artifact (the immutable filing BODY).
+
+        This is a deliberate BODY retrieval (order item 3), separate from discovery. A caller reaches it
+        only when intelligence evaluation or archival policy needs the raw filing, and only after
+        ``accession_dedupe`` says the accession is not already archived. Same 403/throttle/circuit
+        discipline as the JSON endpoints: a 403 records a terminal failure and opens the breaker; it is
+        never retried in a loop.
+        """
+        normalized_cik = normalize_cik(cik)
+        url = full_submission_url(normalized_cik, accession_number)
+        if not url:
+            raise ValueError("full-submission retrieval requires a valid accession number")
+        now = self.now()
+        if self.next_permitted_poll and now < self.next_permitted_poll:
+            raise EdgarRateLimitError(f"SEC EDGAR next permitted poll is {self.next_permitted_poll.isoformat()}")
+        headers = self._headers()
+        fingerprint = request_fingerprint("GET", url, headers=headers)
+        self.control.prepare(request_fingerprint=fingerprint, now=now)
+        status, raw = http.get_bytes(url, headers=headers)
+        if status == 429:
+            self.next_permitted_poll = now + timedelta(seconds=self.cooldown_seconds)
+            self.control.record_failure("throttle", now=now)
+            raise EdgarRateLimitError(f"SEC EDGAR throttled request; next permitted poll is {self.next_permitted_poll.isoformat()}")
+        if status != 200 or not raw:
+            self.control.record_failure("service" if status in {500, 502, 503, 504} else "terminal", now=now)
+            raise RuntimeError(f"SEC EDGAR full_submission failed: HTTP {status}")
+        self.next_permitted_poll = now + timedelta(seconds=self.min_interval_seconds)
+        self.control.record_success(now=now, changed=True)
+        return EdgarObservation(
+            raw_response=raw, endpoint="full_submission", cik=normalized_cik,
+            request_params={"cik": normalized_cik, "accession_number": accession_number},
+            fetched_at=now.isoformat(), request_url=url, records=[], request_fingerprint=fingerprint,
+        )
 
 
 def archive_observation(archive: EvidenceArchive, observation: EdgarObservation) -> Evidence:

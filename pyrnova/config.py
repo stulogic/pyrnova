@@ -39,6 +39,35 @@ def _sam_api_key() -> str:
     return _get("SAM_API_KEY") or _local_secret("SAM_API_KEY")
 
 
+# SEC EDGAR / data.sec.gov require a declared, contact-bearing User-Agent (SEC access policy). Pyrnova
+# NEVER hardcodes a contact address or invents one: the contact email is read from configuration
+# (process env or the gitignored .env), and live SEC acquisition fails cleanly with an explanation when
+# it is absent. This is a declared identity, not a credential — it is safe to send in the request header,
+# but it is still read from config so no owner address is baked into the tree.
+SEC_PRODUCT_IDENTITY = "Pyrnova/Capture-Radar"
+
+
+def _sec_contact_email() -> str:
+    return _get("PYRNOVA_SEC_CONTACT_EMAIL") or _local_secret("PYRNOVA_SEC_CONTACT_EMAIL")
+
+
+def sec_user_agent() -> str:
+    """The configured SEC ``User-Agent``, or ``""`` when no contact identity is configured.
+
+    Preference order: an explicit ``PYRNOVA_SEC_USER_AGENT`` (used verbatim), else
+    ``<product> (<configured contact email>)``. Returns ``""`` — never a fabricated address — when
+    nothing is configured, so a live SEC path can fail cleanly and explain the fix rather than send an
+    anonymous or invented identity.
+    """
+    explicit = _get("PYRNOVA_SEC_USER_AGENT")
+    if explicit:
+        return explicit
+    email = _sec_contact_email()
+    if email:
+        return f"{SEC_PRODUCT_IDENTITY} ({email})"
+    return ""
+
+
 @dataclass(frozen=True)
 class Config:
     sam_api_key: str
