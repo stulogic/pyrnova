@@ -181,6 +181,52 @@ class OperatorConsole:
             ),
         }
 
+    def threat_propagation_view(self) -> dict:
+        """M16 Operations Panel view: direct vs propagated threats, propagation paths, and beneficiary
+        opportunities (read-only, empty-safe). Reads the append-only ``propagated_threats`` and
+        ``beneficiary_opportunities`` streams the propagation engine persists."""
+        def _read(name):
+            try:
+                return list(self.store.read(name))
+            except Exception:  # noqa: BLE001 — degrade gracefully if the collection is absent
+                return []
+
+        direct = list(_latest(_read("threats")).values())
+        propagated = list(_latest(_read("propagated_threats")).values())
+        beneficiaries = list(_latest(_read("beneficiary_opportunities")).values())
+        depths = [(p.get("meta") or {}).get("propagation_depth", 0) for p in propagated]
+        return {
+            "configured": bool(propagated or beneficiaries),
+            "direct_threat_count": len(direct),
+            "propagated_threat_count": len(propagated),
+            "beneficiary_opportunity_count": len(beneficiaries),
+            "max_propagation_depth": max(depths) if depths else 0,
+            "propagated_threats": [
+                {"id": p.get("id"), "subject": p.get("subject_name"), "mechanism": p.get("mechanism"),
+                 "severity": p.get("severity"), "confidence": p.get("confidence"),
+                 "root_threat_id": (p.get("meta") or {}).get("root_threat_id"),
+                 "depth": (p.get("meta") or {}).get("propagation_depth"),
+                 "path": (p.get("meta") or {}).get("propagation_path"),
+                 "evidence_ids": p.get("evidence_ids")}
+                for p in propagated],
+            "beneficiary_opportunities": beneficiaries,
+        }
+
+    @staticmethod
+    def selectivity_view(result: dict) -> dict:
+        """M16 Operations Panel view: format one selectivity-harness funnel for the operator (the funnel
+        + rates + note). Pure pass-through of ``selectivity.run_selectivity`` output; no store access."""
+        result = result or {}
+        return {
+            "stream": result.get("stream"),
+            "monitored_companies": result.get("monitored_companies"),
+            "funnel": result.get("funnel"),
+            "threat_emission_rate": result.get("threat_emission_rate"),
+            "weak_rejection_rate": result.get("weak_rejection_rate"),
+            "per_company": result.get("per_company"),
+            "note": result.get("note"),
+        }
+
     def targets(self) -> list[dict]:
         rows = []
         if not self.profiles_dir.exists():
