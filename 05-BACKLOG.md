@@ -174,3 +174,9 @@ Every source must pass the coverage/selectivity/provenance/replay/API-efficiency
 
 The prior founder commercial-readiness hold and Torch outbound package remain documented in the dated
 handover and `docs/outbound/`. They do not authorize engineering scope.
+
+When commercial validation is authorized, follow the competitive doctrine
+(`docs/strategy/COMPETITIVE_DOCTRINE.md`, D-052): prefer design customers who already use an incumbent
+(GovWin/GovTribe/equivalent) and measure **displaced spend** — intelligence Pyrnova found first, what the
+incumbent missed, relative lead time, false positives, decisions changed, analyst time saved, and budget
+reallocated. This is validation-evidence guidance; it does not authorize outreach, deployment, or spend.

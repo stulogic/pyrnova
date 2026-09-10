@@ -121,6 +121,21 @@ prompts, agents, dashboards, graph visualization, natural-language search, compa
 citations, generic entity resolution, generic knowledge graphs. Stored data is not itself proof of a
 moat; the test is measurable predictive and commercial lift. See D-049.
 
+## Competitive doctrine (binding)
+
+Pyrnova is built to **displace incumbents**, not to reach parity. The Phase 1 commercial test is whether
+Pyrnova can repeatedly tell an existing GovWin/GovTribe/equivalent customer something materially
+important their workflow missed — early and clearly enough to change what they do. Seek positions that
+are CLEARLY BETTER, UNIQUELY CAPABLE, or STRUCTURALLY ADVANTAGED; assume visible features are copied and
+invest in imitation-surviving advantages (the candidate moats above). Attack the adjacent problem
+incumbents solve poorly — "what changed, how does it affect this organization, what consequence follows,
+how certain, what evidence, what happened after" — and do not fight Bloomberg/AlphaSense/Dataminr/Kpler/
+Altana/Exiger/PitchBook where their structural advantage is overwhelming (rent that evidence instead).
+The evidence standard is **displaced spend**. Competitive aggression never authorizes unlawful access,
+misrepresentation, IP theft, system interference, customer-data misuse, license/contract violation, or
+deceptive practice, and never overrides the finishability rule or Phase 1 non-goals. Full doctrine:
+`docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052).
+
 ## Canonical execution tree
 
 **Pyrnova's canonical local execution tree is `/Users/stu/Documents/Pyrnova` on `main`.** All local

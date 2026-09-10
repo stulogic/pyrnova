@@ -50,6 +50,16 @@ supersedes the earlier "~$20M–$250M" figure in older README copy (D-045).
 
 **"What materially changed since I last looked?"**
 
+## Phase 1 commercial test (competitive)
+
+The Phase 1 test is not "Can Pyrnova also do procurement intelligence?" It is: **can Pyrnova repeatedly
+tell an existing GovWin/GovTribe/equivalent customer something materially important their workflow missed
+— early and clearly enough to change what they do?** Prefer design customers who already use an
+incumbent; the evidence standard is **displaced spend**, and the governing question for every major
+capability is "why would a rational customer already paying the incumbent switch to Pyrnova?" A weak
+answer means the capability is not finished. Full competitive doctrine, domination standard, incumbent
+map, and displacement metrics: `docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052).
+
 ## Phase 1 product surfaces
 
 The Phase 1 product should support:

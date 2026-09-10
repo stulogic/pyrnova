@@ -13,8 +13,8 @@ session started elsewhere, switch first. The untracked `.codex/` directory is in
 
 ## Authority hierarchy (resolve conflicts in this order)
 
-1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md` and
-   `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md`,
+   `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, and `docs/strategy/COMPETITIVE_DOCTRINE.md`.
 2. **Current milestone work order** — `02-EXECUTION.md`.
 3. **Durable decisions** — `04-DECISIONS.md`.
 4. **Current state** — `03-CURRENT-STATE.md`.
@@ -60,6 +60,16 @@ than silently choosing the broader scope.
 - Newly discovered future ideas were roadmapped, not silently implemented.
 - Current-state documentation still matches the code.
 - Tests remain proportional to risk; no acceptance criterion was weakened.
+
+## Competitive governing question (apply to every major Phase 1 capability)
+
+**"Why would a rational customer already paying for the incumbent (GovWin/GovTribe/equivalent) switch
+budget, workflow, or attention to Pyrnova?"** A weak answer means the capability is not finished; do not
+ship parity. Build advantages that survive imitation (accumulated history, outcome calibration, rejection
+history, customer-specific exposure, rights-safe relationships, evidence lineage). Attack the adjacent
+problem incumbents solve poorly; do not fight them where their structural advantage is overwhelming. Full
+doctrine: `docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052). This never authorizes scope expansion (see the
+finishability rule below) or any unlawful/deceptive practice.
 
 ## Finishability rule (binding)
 

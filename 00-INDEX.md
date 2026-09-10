@@ -25,7 +25,8 @@ instructions.
 When documents conflict, use this precedence:
 
 1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md` (mission, boundaries, locked
-   doctrine) and `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current customer, product, non-goals).
+   doctrine), `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current customer, product, non-goals), and
+   `docs/strategy/COMPETITIVE_DOCTRINE.md` (competitive objective, domination standard, displacement).
 2. **Current milestone work order** — `02-EXECUTION.md` — current milestone and active constraints.
 3. **Durable decisions** — `04-DECISIONS.md` — decisions and supersession record.
 4. **Current state** — `03-CURRENT-STATE.md` — verified implementation/runtime truth.
@@ -63,6 +64,8 @@ a canonical authority or specification explicitly incorporates them.
 - `docs/specs/` — active product, run, review, and source-ingestion specifications.
 - `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — canonical current-product authority (Phase 1 customer,
   product surfaces, required loop, explicit non-goals, finishability, moat).
+- `docs/strategy/COMPETITIVE_DOCTRINE.md` — binding competitive authority (Phase 1 commercial test,
+  domination standard, incumbent map, imitation-surviving advantages, customer displacement).
 - `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon
   capabilities, non-authoritative over active work but binding on milestone-planning consultation.
 - `docs/architecture/` — current system structure and design boundaries.
