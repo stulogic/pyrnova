@@ -238,6 +238,31 @@ CREATE TABLE customer_review_action (
 CREATE INDEX customer_review_action_change_idx
     ON customer_review_action(customer_key, material_change_id, at);
 
+-- M22-F: minimal customer access credentials. Attaches a real authenticated identity to the (previously
+-- deferred, D-048/D-057) `access_check` authorization seam so a design customer can access Pyrnova
+-- remotely and touch ONLY their authorized tenant. This is customer-private security state, NOT enterprise
+-- IAM (SSO/SAML/SCIM/MFA remain deferred). Dev implementation is append-only JSONL (pyrnova.access stream
+-- `credentials`); this table is the production mirror. A CUSTOMER credential is scoped to one tenant
+-- (`customer_key`); an OPERATOR credential is Pyrnova-internal (no single-tenant scope). Only a salted
+-- one-way hash of the high-entropy secret is stored — the plaintext token is shown once at creation and is
+-- NEVER recoverable from storage. Revocation appends a closure row (`status='revoked'`), never a
+-- destructive delete, so security history stays auditable. `credential_id` is the public, non-secret id
+-- used for listing/revocation; the secret is presented as `Authorization: Bearer <credential_id>.<secret>`.
+CREATE TABLE credential (
+    credential_id   text PRIMARY KEY,                 -- public, non-secret id (cred_<hex>)
+    role            text NOT NULL CHECK (role IN ('customer','operator')),
+    customer_key    text,                             -- tenant scope for a customer credential (NULL for operator)
+    actor_label     text NOT NULL DEFAULT '',         -- optional human/actor label (actor != tenant, §48)
+    algo            text NOT NULL DEFAULT 'sha256-salted',
+    salt            text NOT NULL,                     -- per-credential salt (hex)
+    secret_hash     text NOT NULL,                     -- salted one-way hash of the secret (NEVER the secret)
+    status          text NOT NULL DEFAULT 'active' CHECK (status IN ('active','revoked')),
+    note            text NOT NULL DEFAULT '',
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    revoked_at      timestamptz                        -- set by an append-only revocation closure
+);
+CREATE INDEX credential_customer_idx ON credential(customer_key, status);
+
 -- M22-C: per-tenant persisted Material Change streams. Fan-out materializes a relevant global change into
 -- durable, customer-scoped state so ordinary reads serve that state instead of re-projecting the shared
 -- global intelligence streams. Dev implementation is append-only JSONL (pyrnova.customer_material_changes

@@ -1,10 +1,30 @@
 # Pyrnova current state
 
-_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-E CLOSED — opportunity Material Changes, the
-product is no longer threat-only; M22-D CLOSED — company/program investigation pages + deterministic entity
-search; M22-C CLOSED — per-tenant persisted Material Change streams + production read path; M22-B CLOSED —
-persisted customer intelligence + Material Change lifecycle; M22-A CLOSED — Material Changes vertical slice;
-M2–M21 CLOSED). Core engineering & infrastructure doctrine codified (D-059). Full suite **571 passed**._
+_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-F CLOSED — minimal customer access + seed-free
+onboarding: credential/authenticated-actor/server-enforced tenant isolation; M22-E CLOSED — opportunity
+Material Changes, the product is no longer threat-only; M22-D CLOSED — company/program investigation pages +
+deterministic entity search; M22-C CLOSED — per-tenant persisted Material Change streams + production read
+path; M22-B CLOSED — persisted customer intelligence + Material Change lifecycle; M22-A CLOSED — Material
+Changes vertical slice; M2–M21 CLOSED). Core engineering & infrastructure doctrine codified (D-059). Full
+suite **615 passed**._
+
+> **M22-F minimal customer access + seed-free onboarding (2026-09-10, CLOSED).** Attaches a real
+> authenticated identity to the previously-deferred (D-048/D-057/D-058) `access_check` seam — the smallest
+> serious access model that closes the design-customer access P0, without enterprise IAM. Credential =
+> `Authorization: Bearer <credential_id>.<secret>` (256-bit CSPRNG secret; only a salted one-way hash
+> persisted, plaintext shown once; constant-time compare; append-only revocation closure) →
+> `AuthContext` (actor ≠ tenant; customer-role scoped to one tenant, operator-role internal). Tenant
+> isolation is SERVER-enforced and fails closed: the customer comes from the credential, never a request
+> param/dropdown — a forged `?customer=` is a hard 403; customer enumeration is eliminated (a customer's
+> `/api/customers` returns only itself; `/api/me` shows the org). `AccessPolicy` forces auth ON for any
+> non-local bind / `PYRNOVA_REQUIRE_AUTH` / any provisioned credential; the operator surface + `/console`
+> are local-bind only (404 remotely), production edge/TLS assumed in front. Frontend: Access gate,
+> sessionStorage credential, `Pyrnova.authFetch`, the customer dropdown removed (authenticated org shown, no
+> switching). Seed-free onboarding (`pyrnova/onboarding.py` + CLI `pyrnova customer|watch|credential`)
+> reuses the M22-B customer/watchlist model + M22-D deterministic resolution + unchanged M22-C fan-out; a
+> new watch never backdates relevance. Additive only; M22-A→E compatible. Full suite **615 passed** (was
+> 571; +44). SSO/SAML/SCIM/MFA/RBAC/billing/audit-export/SOC-2 and production TLS explicitly DEFERRED
+> (D-048); not claimed enterprise-grade. See D-061; `docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`.
 
 > **M22-E opportunity Material Changes (2026-09-10, CLOSED).** The customer-facing product is no longer
 > threat-only. WIRING/MATERIALIZATION only — no new opportunity engine: the read model and the M22-C

@@ -12,8 +12,13 @@ const esc = v => String(v ?? "").replace(/[&<>'"]/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
 const dash = v => (v === null || v === undefined || v === "" || v === "UNKNOWN") ? "Unknown" : v;
 const asofParam = () => asof.value ? `&as_of=${encodeURIComponent(asof.value)}` : "";
+// The customer overlay is the AUTHENTICATED customer (fixed by the credential), never a URL parameter a
+// user could edit to view another tenant's private context. In local dev (no auth) a ?customer= override
+// is honored for convenience only; the server independently enforces the tenant boundary regardless.
 const customerParam = () => {
-  const c = new URLSearchParams(location.search).get("customer");
+  const fixed = (typeof Pyrnova !== "undefined") && Pyrnova.fixedCustomer && Pyrnova.fixedCustomer();
+  const c = fixed || ((typeof Pyrnova !== "undefined" && Pyrnova.me && Pyrnova.me.require_auth)
+    ? null : new URLSearchParams(location.search).get("customer"));
   return c ? `&customer=${encodeURIComponent(c)}` : "";
 };
 
@@ -46,7 +51,7 @@ async function route() {
 
 // ---- search results ----
 async function renderSearch(q) {
-  const res = await fetch(`/api/search?q=${encodeURIComponent(q)}${asofParam()}`);
+  const res = await Pyrnova.authFetch(`/api/search?q=${encodeURIComponent(q)}${asofParam()}`);
   const data = await res.json();
   if (!res.ok) { note(data.error || "Search failed"); return; }
   const r = (data.resolution || "UNRESOLVED").toLowerCase();
@@ -133,7 +138,7 @@ function gapsList(gaps) {
 // ---- company page ----
 async function renderCompany(ref) {
   if (!ref) { note("A company ref is required."); return; }
-  const res = await fetch(`/api/company?ref=${encodeURIComponent(ref)}${asofParam()}${customerParam()}`);
+  const res = await Pyrnova.authFetch(`/api/company?ref=${encodeURIComponent(ref)}${asofParam()}${customerParam()}`);
   const data = await res.json();
   if (!res.ok) { note(data.error || "Company not found"); view.innerHTML = `<div class="empty">${esc(data.error || "Not found")}</div>`; return; }
   const id = data.identity;
@@ -177,7 +182,7 @@ async function renderCompany(ref) {
 // ---- program page ----
 async function renderProgram(key) {
   if (!key) { note("A program key is required."); return; }
-  const res = await fetch(`/api/program?key=${encodeURIComponent(key)}${asofParam()}${customerParam()}`);
+  const res = await Pyrnova.authFetch(`/api/program?key=${encodeURIComponent(key)}${asofParam()}${customerParam()}`);
   const data = await res.json();
   if (!res.ok) { note(data.error || "Program not found"); view.innerHTML = `<div class="empty">${esc(data.error || "Not found")}</div>`; return; }
   const pi = data.program_identity;
@@ -227,4 +232,7 @@ document.addEventListener("click", e => {
   }
 });
 window.addEventListener("popstate", route);
-route();
+// Establish the access session first (so the authenticated customer overlay is known), then route.
+// Re-route after a successful sign-in from the access gate.
+document.addEventListener("pyrnova:ready", route);
+Pyrnova.init().catch(err => note(err.message));

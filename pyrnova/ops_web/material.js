@@ -3,6 +3,8 @@
 // Deterministic read model rendered from /api/material-changes. No fabrication, no client-side scoring.
 
 const customerSel = document.querySelector("#customer");
+const customerField = document.querySelector("#customer-field");
+const orgEl = document.querySelector("#org");
 const asof = document.querySelector("#asof");
 const filters = document.querySelector("#filters");
 const feed = document.querySelector("#feed");
@@ -23,19 +25,40 @@ function note(text) {
   message.textContent = text || "";
 }
 
-async function loadCustomers() {
-  const res = await fetch("/api/customers");
-  const data = await res.json();
-  customerSel.innerHTML = (data.customers || [])
-    .map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+// The active tenant. In authenticated customer mode it is fixed by the credential (Pyrnova.fixedCustomer);
+// a dev/operator selector is only present when the server offered a switchable list. The customer is
+// never taken from a user-editable field when the credential determines it.
+function currentCustomer() {
+  return Pyrnova.fixedCustomer() || (customerSel && customerSel.value) || null;
+}
+
+// Configure the masthead from the authenticated identity (§36): show the fixed organization, or a
+// dev/operator selector, plus Sign Out when a credential is in use.
+function applyIdentity(me) {
+  const fixed = Pyrnova.fixedCustomer();
+  const switchable = Pyrnova.switchable();
+  const signout = document.querySelector("#signout");
+  const consoleLink = document.querySelector("#console-link");
+  if (fixed && me.customer) {
+    orgEl.querySelector(".org-name").textContent = me.customer.name || me.customer.id;
+    orgEl.hidden = false;
+    customerField.hidden = true;
+  } else if (switchable) {
+    customerSel.innerHTML = switchable
+      .map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+    customerField.hidden = switchable.length === 0;
+    orgEl.hidden = true;
+    if (consoleLink) consoleLink.hidden = false;  // operator / local dev may reach the operator console
+  }
+  if (signout) { signout.hidden = !Pyrnova.getToken(); signout.onclick = () => Pyrnova.signOut(); }
 }
 
 async function load() {
-  const customer = customerSel.value;
+  const customer = currentCustomer();
   if (!customer) { feed.innerHTML = '<div class="empty">No customer intelligence contexts are configured.</div>'; return; }
   const params = new URLSearchParams({ customer });
   if (asof.value) params.set("as_of", asof.value);
-  const res = await fetch(`/api/material-changes?${params.toString()}`);
+  const res = await Pyrnova.authFetch(`/api/material-changes?${params.toString()}`);
   payload = await res.json();
   if (!res.ok) { note(payload.error || "Request failed"); return; }
   note("");
@@ -206,11 +229,12 @@ const REVIEW_ACTIONS = [
 ];
 
 async function recordReview(changeId, action) {
-  const customer = customerSel.value;
+  const customer = currentCustomer();
   if (!customer) return;
-  const res = await fetch(`/api/material-changes/${encodeURIComponent(changeId)}/review`, {
+  // The audit actor is the authenticated actor (set server-side); never trusted from the client.
+  const res = await Pyrnova.authFetch(`/api/material-changes/${encodeURIComponent(changeId)}/review`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ customer, action_type: action, actor: "operator" }),
+    body: JSON.stringify({ customer, action_type: action }),
   });
   const data = await res.json();
   if (!res.ok) { note(data.error || "Review action failed"); return; }
@@ -223,10 +247,10 @@ async function recordReview(changeId, action) {
 async function toggleVersions(changeId, node) {
   const box = node.querySelector(".versions");
   if (!box.hidden) { box.hidden = true; return; }
-  const customer = customerSel.value;
+  const customer = currentCustomer();
   if (!customer) return;
   const params = new URLSearchParams({ customer });
-  const res = await fetch(`/api/material-changes/${encodeURIComponent(changeId)}/versions?${params.toString()}`);
+  const res = await Pyrnova.authFetch(`/api/material-changes/${encodeURIComponent(changeId)}/versions?${params.toString()}`);
   const data = await res.json();
   if (!res.ok) { note(data.error || "Version history unavailable"); return; }
   note("");
@@ -251,6 +275,10 @@ async function toggleVersions(changeId, node) {
 customerSel.addEventListener("change", load);
 asof.addEventListener("change", load);
 
-loadCustomers()
-  .then(load)
-  .catch(err => note(err.message));
+// Driven by the access layer: once the session is established (or dev mode confirmed), configure the
+// identity and load the feed. Re-fires after a successful sign-in from the access gate.
+document.addEventListener("pyrnova:ready", ev => {
+  try { applyIdentity(ev.detail || {}); } catch (e) { /* identity is best-effort chrome */ }
+  load().catch(err => note(err.message));
+});
+Pyrnova.init().catch(err => note(err.message));

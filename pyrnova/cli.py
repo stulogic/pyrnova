@@ -509,6 +509,106 @@ def cmd_fanout(args) -> int:
     return 0
 
 
+def _state_store():
+    from .config import load_config
+    from .state import StateStore
+    return StateStore(load_config().state_dir)
+
+
+def cmd_customer_create(args) -> int:
+    """M22-F: create a persisted customer WITHOUT editing any seed script (operator-assisted onboarding)."""
+    from . import onboarding
+    store = _state_store()
+    row = onboarding.create_customer(
+        store, customer_id=args.id, name=args.name,
+        entity_refs=args.entity_ref or [], capabilities=args.capability or [],
+        agencies=args.agency or [], sectors=args.sector or [], geography=args.geography or [])
+    print(json.dumps(row, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_customer_show(args) -> int:
+    from . import onboarding
+    row = onboarding.get_customer(_state_store(), args.id, as_of=args.as_of)
+    if row is None:
+        print(json.dumps({"error": f"customer not found: {args.id}"}))
+        return 1
+    print(json.dumps(row, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_customer_list(args) -> int:
+    from . import customers as cust
+    print(json.dumps(cust.list_customers(_state_store()), indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_watch_add(args) -> int:
+    """M22-F: add a watch. With --resolve, uses M22-D deterministic resolution (never silently guesses)."""
+    from . import onboarding
+    store = _state_store()
+    if args.resolve:
+        result = onboarding.add_watch_resolved(
+            store, customer_id=args.customer, query=args.ref, object_type=args.type,
+            accept_probable=args.accept_probable, allow_unresolved=args.allow_unresolved,
+            demo_dir=args.demo_dir, label=args.label or "")
+        print(json.dumps(result, indent=2, sort_keys=True))
+        # A non-committal resolution (ambiguous / needs confirmation / unresolved) is a deliberate,
+        # honest non-error outcome the operator must act on — signalled with a non-zero code.
+        return 0 if result.get("watch") is not None else 2
+    if not args.type:
+        print(json.dumps({"error": "--type is required when not using --resolve"}))
+        return 1
+    row = onboarding.add_watch(store, customer_id=args.customer, object_type=args.type,
+                               ref=args.ref, label=args.label or "")
+    print(json.dumps(row, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_watch_list(args) -> int:
+    from . import customers as cust
+    print(json.dumps(cust.list_watches(_state_store(), args.customer, as_of=args.as_of),
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_watch_retire(args) -> int:
+    from . import onboarding
+    row = onboarding.retire_watch(_state_store(), args.customer, args.watch_id)
+    print(json.dumps(row, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_credential_create(args) -> int:
+    """M22-F: provision a credential. Prints the plaintext token ONCE — it is not recoverable afterward."""
+    from . import access
+    role = access.ROLE_OPERATOR if args.operator else access.ROLE_CUSTOMER
+    if role == access.ROLE_CUSTOMER and not args.customer:
+        print(json.dumps({"error": "--customer is required for a customer credential"}))
+        return 1
+    metadata, token = access.create_credential(
+        _state_store(), customer_id=args.customer or "", actor_label=args.actor or "",
+        role=role, note=args.note or "")
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    print("\n  CREDENTIAL SECRET (shown once — store it securely; it cannot be recovered):")
+    print(f"    {token}\n")
+    return 0
+
+
+def cmd_credential_list(args) -> int:
+    from . import access
+    print(json.dumps(access.list_credentials(_state_store(), customer_id=args.customer),
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_credential_revoke(args) -> int:
+    from . import access
+    row = access.revoke_credential(_state_store(), args.credential_id, note=args.note or "")
+    print(json.dumps(row, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_search(args) -> int:
     """M22-D: resolve a query against the Pyrnova estate deterministically (no runtime LLM).
 
@@ -560,6 +660,65 @@ def main(argv=None) -> int:
     srch.add_argument("--limit", type=int, default=25)
     srch.add_argument("--demo-dir", default="examples/material_changes_demo")
     srch.set_defaults(func=cmd_search)
+
+    # --- M22-F: seed-free customer onboarding + credential management -----------------------------
+    cust_p = sub.add_parser("customer", help="onboard / inspect persisted customers (M22-F)")
+    cust_sub = cust_p.add_subparsers(dest="subcmd", required=True)
+    cc = cust_sub.add_parser("create", help="create a customer without editing any seed script")
+    cc.add_argument("--id", required=True, help="stable customer slug")
+    cc.add_argument("--name", required=True)
+    cc.add_argument("--entity-ref", action="append", dest="entity_ref", help="canonical ref the customer IS")
+    cc.add_argument("--capability", action="append", dest="capability")
+    cc.add_argument("--agency", action="append", dest="agency")
+    cc.add_argument("--sector", action="append", dest="sector")
+    cc.add_argument("--geography", action="append", dest="geography")
+    cc.set_defaults(func=cmd_customer_create)
+    csh = cust_sub.add_parser("show", help="show a customer profile + active watchlist")
+    csh.add_argument("id")
+    csh.add_argument("--as-of", default=None, dest="as_of")
+    csh.set_defaults(func=cmd_customer_show)
+    cls_ = cust_sub.add_parser("list", help="list persisted customers")
+    cls_.set_defaults(func=cmd_customer_list)
+
+    watch_p = sub.add_parser("watch", help="configure customer watchlists (M22-F, reuses M22-B/D)")
+    watch_sub = watch_p.add_subparsers(dest="subcmd", required=True)
+    wa = watch_sub.add_parser("add", help="add a watch (optionally deterministically resolved)")
+    wa.add_argument("customer")
+    wa.add_argument("ref", help="canonical ref/id, or a free-text query when --resolve is used")
+    wa.add_argument("--type", default=None, choices=("ENTITY", "PROGRAM", "CONTRACT", "AGENCY"))
+    wa.add_argument("--label", default=None)
+    wa.add_argument("--resolve", action="store_true",
+                    help="resolve the ref via deterministic M22-D search before adding")
+    wa.add_argument("--accept-probable", action="store_true", dest="accept_probable",
+                    help="with --resolve, accept a single PROBABLE match (explicit confirmation)")
+    wa.add_argument("--allow-unresolved", action="store_true", dest="allow_unresolved",
+                    help="with --resolve, record an UNRESOLVED target literally (requires --type)")
+    wa.add_argument("--demo-dir", default="examples/material_changes_demo")
+    wa.set_defaults(func=cmd_watch_add)
+    wl = watch_sub.add_parser("list", help="list a customer's active watches")
+    wl.add_argument("customer")
+    wl.add_argument("--as-of", default=None, dest="as_of")
+    wl.set_defaults(func=cmd_watch_list)
+    wr = watch_sub.add_parser("retire", help="retire a watch (append-only closure; preserves history)")
+    wr.add_argument("customer")
+    wr.add_argument("watch_id")
+    wr.set_defaults(func=cmd_watch_retire)
+
+    cred_p = sub.add_parser("credential", help="provision / list / revoke access credentials (M22-F)")
+    cred_sub = cred_p.add_subparsers(dest="subcmd", required=True)
+    cr_c = cred_sub.add_parser("create", help="provision a credential (prints the secret token once)")
+    cr_c.add_argument("--customer", default=None, help="tenant for a customer credential")
+    cr_c.add_argument("--actor", default=None, help="optional human/actor label")
+    cr_c.add_argument("--operator", action="store_true", help="provision an internal operator credential")
+    cr_c.add_argument("--note", default=None)
+    cr_c.set_defaults(func=cmd_credential_create)
+    cr_l = cred_sub.add_parser("list", help="list credential metadata (never secrets)")
+    cr_l.add_argument("--customer", default=None)
+    cr_l.set_defaults(func=cmd_credential_list)
+    cr_r = cred_sub.add_parser("revoke", help="revoke a credential (append-only; fails auth immediately)")
+    cr_r.add_argument("credential_id")
+    cr_r.add_argument("--note", default=None)
+    cr_r.set_defaults(func=cmd_credential_revoke)
 
     seedc = sub.add_parser("seed-customers",
                            help="seed the demo customers into persisted customer state (M22-B)")

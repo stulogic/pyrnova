@@ -1,12 +1,41 @@
 # Pyrnova execution authority
 
-_Current execution window: **M22-E CLOSED 2026-09-10** (opportunity Material Changes — the product is no
-longer threat-only); M22-D closed (company/program investigation pages + deterministic entity search);
-M22-C closed (per-tenant persisted Material Change streams + production read path); M22-B closed (persisted
-customer intelligence + Material Change lifecycle); M22-A closed (Material Changes vertical slice); M2–M21
-closed. Core engineering & infrastructure doctrine codified (D-059). No milestone in progress — **STOP and
-await the next milestone-opening brief** (expected: M22-F minimal access + onboarding) before beginning the
-next slice · updated 2026-09-10_
+_Current execution window: **M22-F CLOSED 2026-09-10** (minimal customer access + seed-free onboarding —
+credential/authenticated-actor/server-enforced tenant isolation, operator-assisted onboarding without seed
+edits); M22-E closed (opportunity Material Changes — the product is no longer threat-only); M22-D closed
+(company/program investigation pages + deterministic entity search); M22-C closed (per-tenant persisted
+Material Change streams + production read path); M22-B closed (persisted customer intelligence + Material
+Change lifecycle); M22-A closed (Material Changes vertical slice); M2–M21 closed. Core engineering &
+infrastructure doctrine codified (D-059). No milestone in progress — **STOP and await the next
+milestone-opening brief** (expected: design-customer data-volume / live-operations readiness) before
+beginning the next slice · updated 2026-09-10_
+
+## Milestone 22-F — CLOSED 2026-09-10 (minimal customer access + seed-free onboarding)
+
+**Authorized** by the M22-F work order; **CLOSED** 2026-09-10. Attaches a real authenticated identity to the
+previously-deferred (D-048/D-057/D-058) `access_check` seam — the smallest serious access model that closes
+the design-customer access P0, **without enterprise IAM**. **Authentication** (`pyrnova/access.py`): a
+high-entropy bearer credential `Authorization: Bearer <credential_id>.<secret>` (256-bit CSPRNG secret;
+public `cred_<hex>` id embedded → O(1) lookup); append-only `credentials` stream (PG mirror `credential`);
+only a salted one-way hash persisted (plaintext shown once, unrecoverable); constant-time compare;
+revocation = append-only closure that fails auth immediately. **Actor ≠ tenant** (`AuthContext`;
+customer-role scoped to one tenant, operator-role internal) so a later OIDC/SSO layer replaces only
+`authenticate()`. **Server-enforced tenant isolation, fail closed** (`ops_server.py`): the customer comes
+from the credential, never a request param/dropdown — a forged `?customer=` is a hard 403; per-request
+thread-local context + route levels (PUBLIC/CUSTOMER/GLOBAL/OPERATOR) + defense-in-depth `access_check`.
+**Customer enumeration eliminated** — a customer's `/api/customers` returns only itself; the all-tenant
+listing is operator-only. **Remote binding + operator separation**: `AccessPolicy` forces auth ON for any
+non-local bind / `PYRNOVA_REQUIRE_AUTH` / any provisioned credential (local-no-credentials stays dev, never
+silently for remote); the operator surface + `/console` are local-bind only (404 remotely), production edge/
+TLS assumed in front. **Frontend**: Access gate (`ops_web/access.{js,css}`), sessionStorage credential,
+`Pyrnova.authFetch` bearer wrapper (→ gate on 401), Sign Out; the customer **dropdown is removed** — the
+authenticated org is shown, no tenant switching; overlay uses the authenticated customer; every boundary is
+server-enforced. **Seed-free onboarding** (`pyrnova/onboarding.py` + CLI `pyrnova customer|watch|credential`)
+reuses the M22-B customer/watchlist model + M22-D deterministic resolution (EXACT/PROBABLE-confirm/
+AMBIGUOUS-never/UNRESOLVED-never-fabricate) + unchanged M22-C fan-out; a new watch never backdates relevance
+(§52, tested). Additive only: `scoring_v1`/`fit.py`/`replay.py`/opportunity engine/severity bands and frozen
+corpora byte-identical; M22-A→E read/API compatible. Full suite **615 passed** (was 571; +44 M22-F). Spec:
+`docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`. See D-061. No further M22-F action.
 
 ## Milestone 22-E — CLOSED 2026-09-10 (opportunity Material Changes: product no longer threat-only)
 

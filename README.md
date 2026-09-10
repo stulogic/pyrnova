@@ -35,6 +35,10 @@ last looked?"** — with **Material Changes** as the dominant surface. The autho
 - Local internal review surface: `docs/OPERATOR_CONSOLE.md`.
 - Customer-facing product view: `python -m pyrnova.ops_server` → **Material Changes** at `/` (the
   Operator Console moves to `/console`). Spec: `docs/specs/M22A_MATERIAL_CHANGES.md`.
+- Customer access + seed-free onboarding (credentials, authenticated tenant, remote bind): `pyrnova
+  customer|watch|credential` and `python -m pyrnova.ops_server --host <addr>` (a non-local host forces
+  authentication and hides the operator console). Spec: `docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`;
+  usage in `docs/OPERATOR_CONSOLE.md`.
 
 ## The kernel pipeline
 

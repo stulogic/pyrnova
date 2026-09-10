@@ -114,6 +114,16 @@ class OperatorConsole:
                 rows.setdefault(cid, {"id": cid, "name": data.get("name", cid)})
         return [rows[k] for k in sorted(rows)]
 
+    def customer_identity(self, customer_id: str) -> dict | None:
+        """The public identity ({id, name}) of one customer, or None — for the ``/api/me`` org display.
+
+        Reads only id + name (never another customer's private state); used to show the authenticated
+        organization instead of a tenant-selection dropdown (§36)."""
+        for row in self.customers():
+            if row["id"] == customer_id:
+                return row
+        return None
+
     def _load_context(self, customer_id: str, *, as_of: str | None = None):
         """Build the customer's deterministic relevance context, point-in-time.
 

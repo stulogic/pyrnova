@@ -5,15 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Pyrnova — Material Changes</title>
   <link rel="stylesheet" href="/material.css?v=1">
+  <link rel="stylesheet" href="/access.css?v=1">
 </head>
 <body>
   <header class="masthead">
     <div class="brand"><span class="mark">PYRNOVA</span><span class="module">Material Changes</span></div>
     <div class="controls">
-      <label class="field">Customer<select id="customer"></select></label>
+      <!-- Authenticated organization identity (§36). The customer is fixed by the credential; no tenant
+           switching. The dev/operator selector below is shown only when the server exposes a choice. -->
+      <span class="org-identity" id="org" hidden><span class="org-name"></span></span>
+      <label class="field" id="customer-field" hidden>Customer<select id="customer"></select></label>
       <label class="field">As of<input id="asof" type="date"></label>
       <a class="console-link" href="/investigate">Search</a>
-      <a class="console-link" href="/console">Operations</a>
+      <a class="console-link" id="console-link" href="/console" hidden>Operations</a>
+      <button type="button" class="signout" id="signout" hidden>Sign Out</button>
     </div>
   </header>
 
@@ -74,6 +79,7 @@
     </article>
   </template>
 
+  <script src="/access.js?v=1" defer></script>
   <script src="/material.js?v=1" defer></script>
 </body>
 </html>

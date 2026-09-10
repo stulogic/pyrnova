@@ -1,0 +1,36 @@
+/* Pyrnova access gate (M22-F). Formal, restrained — consistent with the product, no marketing copy. */
+#access-gate {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: #0e1116;
+}
+#access-gate .access-card {
+  width: min(92vw, 380px);
+  background: #171b22; border: 1px solid #2a3038; border-radius: 8px;
+  padding: 32px 28px; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #dfe4ea;
+}
+#access-gate .access-brand .mark { font-weight: 700; letter-spacing: .18em; font-size: 13px; color: #8ea2c0; }
+#access-gate h1 { font-size: 20px; margin: 14px 0 6px; font-weight: 600; }
+#access-gate .access-msg { margin: 0 0 18px; color: #9aa4b2; font-size: 13px; }
+#access-gate label { display: block; font-size: 12px; color: #9aa4b2; margin-bottom: 18px; }
+#access-gate input {
+  display: block; width: 100%; margin-top: 6px; padding: 9px 10px;
+  background: #0e1116; border: 1px solid #2a3038; border-radius: 5px; color: #e8edf3;
+  font-size: 14px; box-sizing: border-box;
+}
+#access-gate input:focus { outline: none; border-color: #4a6da8; }
+#access-gate button {
+  width: 100%; padding: 9px; background: #2f5db0; color: #fff; border: 0; border-radius: 5px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+#access-gate button:hover { background: #3a6cc4; }
+
+/* Authenticated organization display + sign-out in the masthead. */
+.org-identity { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #cfd7e2; }
+.org-identity .org-name { font-weight: 600; }
+.signout {
+  background: none; border: 1px solid #3a4250; color: #9aa4b2; border-radius: 4px;
+  padding: 4px 10px; font-size: 12px; cursor: pointer;
+}
+.signout:hover { color: #dfe4ea; border-color: #55606f; }
