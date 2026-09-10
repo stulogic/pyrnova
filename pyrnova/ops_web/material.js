@@ -132,6 +132,27 @@ function renderChange(m) {
   node.querySelector(".status").innerHTML =
     `Lifecycle <b>${esc(m.lifecycle_state)}</b> · Outcome <b>${esc(dash(m.outcome_state))}</b>`;
 
+  // M22-C: per-customer first-seen provenance — three DISTINCT times, never collapsed.
+  // Absent when the server has no customer-scoped store (backward compatible: render nothing).
+  const fs = m.first_seen;
+  const firstSeen = node.querySelector(".first-seen");
+  const history = node.querySelector(".history");
+  if (fs && fs.status === "MATERIALIZED") {
+    let line =
+      `Knowable <b>${esc(dash(fs.intelligence_observed_at))}</b>` +
+      ` · Relevant to you <b>${esc(dash(fs.first_relevant_at))}</b>` +
+      ` · Delivered <b>${esc(dash(fs.delivered_at))}</b>` +
+      ` · v${esc(dash(fs.content_version))}`;
+    if (fs.content_version > 1) line += ` <span class="fs-updated">updated (${esc(dash(fs.change_kind))})</span>`;
+    firstSeen.innerHTML = line;
+    firstSeen.hidden = false;
+    history.hidden = false;
+    history.addEventListener("click", () => toggleVersions(m.id, node));
+  } else if (fs && fs.status === "PENDING_FANOUT") {
+    firstSeen.innerHTML = `<span class="fs-pending">Not yet materialized</span>`;
+    firstSeen.hidden = false;
+  }
+
   // M22-B: customer review/lifecycle state — kept visually distinct from the SYSTEM lifecycle above.
   const review = m.review || { state: "NEW" };
   const stateEl = node.querySelector(".review-state");
@@ -171,6 +192,36 @@ async function recordReview(changeId, action) {
   if (!res.ok) { note(data.error || "Review action failed"); return; }
   note("");
   await load();  // reload so the persisted state (and counts) reflect the change across refresh/restart
+}
+
+// M22-C: version history for a materialized change. Fetched on demand, hidden until clicked
+// (mirrors the .inspect/.refs reveal). Renders server-supplied rows verbatim — no client scoring.
+async function toggleVersions(changeId, node) {
+  const box = node.querySelector(".versions");
+  if (!box.hidden) { box.hidden = true; return; }
+  const customer = customerSel.value;
+  if (!customer) return;
+  const params = new URLSearchParams({ customer });
+  const res = await fetch(`/api/material-changes/${encodeURIComponent(changeId)}/versions?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) { note(data.error || "Version history unavailable"); return; }
+  note("");
+  const rows = data.versions || [];
+  if (!rows.length) {
+    box.innerHTML = `<div class="version-empty">No version history recorded.</div>`;
+  } else {
+    box.innerHTML = rows.map(v => {
+      const snap = v.assessment_snapshot || {};
+      return `<div class="version-row">` +
+        `<span class="v-num">v${esc(dash(v.content_version))}</span>` +
+        `<span class="v-kind">${esc(dash(v.change_kind))}</span>` +
+        `<span class="v-assess">Materiality ${esc(dash(snap.materiality))} · Confidence ${esc(dash(snap.confidence))}</span>` +
+        `<span class="v-outcome">Outcome ${esc(dash(v.outcome_state))}</span>` +
+        `<span class="v-time mono">${esc(dash(v.delivered_at))}${v.last_updated_at ? ` · updated ${esc(v.last_updated_at)}` : ""}</span>` +
+        `</div>`;
+    }).join("");
+  }
+  box.hidden = false;
 }
 
 customerSel.addEventListener("change", load);

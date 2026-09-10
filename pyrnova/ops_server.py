@@ -88,6 +88,8 @@ def make_handler(console: OperatorConsole):
                         customer,
                         as_of=query.get("as_of", [None])[0],
                         disposition=query.get("disposition", [None])[0]))
+                except PermissionError as exc:
+                    return self._json(403, {"error": str(exc)})
                 except ValueError as exc:
                     return self._json(404, {"error": str(exc)})
             # M22-B: per-customer review history for one Material Change.
@@ -102,6 +104,18 @@ def make_handler(console: OperatorConsole):
                         customer, change_id, as_of=query.get("as_of", [None])[0]))
                 except ValueError as exc:
                     return self._json(404, {"error": str(exc)})
+            # M22-C: stored version history for one customer Material Change (original assessment → outcome).
+            if parsed.path.startswith("/api/material-changes/") and parsed.path.endswith("/versions"):
+                change_id = unquote(parsed.path.split("/")[3])
+                query = parse_qs(parsed.query)
+                customer = query.get("customer", [None])[0]
+                if not customer:
+                    return self._json(400, {"error": "customer is required"})
+                try:
+                    return self._json(200, console.customer_material_change_versions(customer, change_id))
+                except (ValueError, PermissionError) as exc:
+                    return self._json(403 if isinstance(exc, PermissionError) else 404,
+                                      {"error": str(exc)})
             # M22-A: the customer-facing Material Changes product is the front door ("/"); the internal
             # Operator Console moves to "/console". Both are served from the same asset directory.
             assets = {
@@ -131,6 +145,11 @@ def make_handler(console: OperatorConsole):
                     return self._json(200, console.record_outcome(opportunity_id, **payload))
                 if parsed.path == "/api/briefs":
                     return self._json(200, console.export_signal_brief(payload.get("target", "")))
+                # M22-C: run the customer Material Change fan-out (continuous-operations path). Optional
+                # ``customers`` (subset) and ``as_of``; returns the structured observability report.
+                if parsed.path == "/api/fanout":
+                    return self._json(200, console.fan_out(
+                        customer_ids=payload.get("customers"), as_of=payload.get("as_of")))
                 # M22-B: create a persisted customer.
                 if parsed.path == "/api/customers":
                     return self._json(200, console.create_customer(**payload))
@@ -151,6 +170,8 @@ def make_handler(console: OperatorConsole):
                         return self._json(400, {"error": "customer is required"})
                     return self._json(200, console.record_customer_review(customer, change_id, **payload))
                 self._json(404, {"error": "not found"})
+            except PermissionError as exc:
+                self._json(403, {"error": str(exc)})
             except (ValueError, TypeError, json.JSONDecodeError) as exc:
                 self._json(400, {"error": str(exc)})
 
@@ -181,9 +202,19 @@ def main(argv=None) -> int:
     from . import customers as _cust
     if not _cust.list_customers(state_store) and (demo_dir / "seed_customers.py").exists():
         _seed_demo_customers(demo_dir, state_store)
+    # M22-C: the running product operates against the customer-scoped persisted Material Change store.
+    # Fan-out is the ordinary continuous-operations path — NOT a demo script — so we materialize current
+    # customer-scoped state at startup (idempotent, content-hash deduped) and the read path serves it.
+    cmc_store = state_store
     console = OperatorConsole(
         state_store, Path("examples/profiles"), cfg.out_dir,
-        mc_store=mc_store, contexts_dir=demo_dir, customer_store=state_store)
+        mc_store=mc_store, contexts_dir=demo_dir, customer_store=state_store, cmc_store=cmc_store)
+    try:
+        report = console.fan_out()
+        print(f"Material Change fan-out: {report['inserted']} inserted, {report['updated']} updated, "
+              f"{report['duplicates_suppressed']} unchanged across {report['customers']} customer(s)")
+    except ValueError:
+        pass
     server = ThreadingHTTPServer((args.host, args.port), make_handler(console))
     print(f"Pyrnova Operator Console: http://{args.host}:{args.port}")
     try:

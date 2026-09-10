@@ -491,6 +491,24 @@ def cmd_seed_customers(args) -> int:
     return 0
 
 
+def cmd_fanout(args) -> int:
+    """M22-C: fan relevant global intelligence into customer-scoped Material Change state.
+
+    The ordinary continuous-operations path (not a demo script): reads the configured global intelligence
+    streams and the persisted customer state, then materializes/updates customer-scoped Material Changes.
+    Deterministic, idempotent (content-hash deduped), point-in-time via ``--as-of``. Prints the report."""
+    from .config import load_config
+    from .customer_material_changes import fan_out
+    from .state import StateStore
+
+    store = StateStore(load_config().state_dir)
+    customer_ids = [c.strip() for c in (args.customers or "").split(",") if c.strip()] or None
+    report = fan_out(mc_store=store, customer_store=store, cmc_store=store,
+                     customer_ids=customer_ids, as_of=args.as_of)
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -499,6 +517,12 @@ def main(argv=None) -> int:
                            help="seed the demo customers into persisted customer state (M22-B)")
     seedc.add_argument("--demo-dir", default="examples/material_changes_demo")
     seedc.set_defaults(func=cmd_seed_customers)
+
+    fo = sub.add_parser("fanout",
+                        help="materialize customer-scoped Material Changes from global intelligence (M22-C)")
+    fo.add_argument("--customers", default=None, help="comma-separated customer ids (default: all persisted)")
+    fo.add_argument("--as-of", default=None, help="ISO timestamp for point-in-time fan-out (default now)")
+    fo.set_defaults(func=cmd_fanout)
 
     cr = sub.add_parser("capture-radar", help="run the Capture Radar pipeline")
     cr.add_argument("--profile", required=True, help="path to a capability profile JSON")

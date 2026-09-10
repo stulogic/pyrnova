@@ -1,8 +1,35 @@
 # Pyrnova current state
 
-_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-B CLOSED — persisted customer intelligence +
-Material Change lifecycle; M22-A CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite
-**510 passed**._
+_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-C CLOSED — per-tenant persisted Material
+Change streams + production read path; M22-B CLOSED — persisted customer intelligence + Material Change
+lifecycle; M22-A CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite **532 passed**._
+
+> **M22-C per-tenant persisted Material Change streams + production read path (2026-09-10, CLOSED).** Closes
+> the M22-A/B storage seam: a relevant global change is now MATERIALIZED into durable, customer-scoped state
+> and ordinary reads serve that state instead of re-projecting the shared global streams. New
+> `pyrnova/customer_material_changes.py` (`CustomerMaterialChange` append-only VERSION;
+> `fan_out`/`rebuild_customer`/`version_history`/`_latest_versions`; content-hash dedupe; customer-scoped
+> JSONL streams `customer_material_changes`/`fanout_runs`; production mirror
+> `customer_material_change`/`fanout_run` in `db/schema.sql`). Global truth stays global — fan-out writes
+> ONLY the customer-scoped streams and never mutates the intelligence graph (the global `threats` stream is
+> byte-identical after a run); a customer record stores REFERENCES (`source_refs`) + a compact
+> `assessment_snapshot` + relevance basis + first-seen times, never authoritative prose. Identity is
+> `(customer_id, material_change_id)` where `material_change_id` IS the source intelligence id (the M22-B
+> review-action linkage unchanged); three distinct first-seen times
+> (`intelligence_observed_at`/`first_relevant_at`/`delivered_at`) are never collapsed and immutable across
+> versions. Fan-out is deterministic, idempotent, replayable, and point-in-time via the SAME
+> `build_material_changes` read model (persisted set never diverges from the on-the-fly relevant set); an
+> assessment change appends a new version and a later outcome appends an `outcome`-kind version preserving
+> prior snapshots; rebuild is idempotent and never erases the separate customer review lifecycle;
+> per-customer/per-item failure isolation with a structured report appended to `fanout_runs`. `OperatorConsole`
+> gained an OPTIONAL `cmc_store` (first-seen overlay + `materialized` count; `None` ⇒ exactly M22-A/B, fully
+> backward compatible) and an OPTIONAL `access_check` seam (HTTP 403; authentication deferred, D-048). The
+> running product operates the persisted path: the server runs `fan_out()` at startup and `pyrnova fanout`
+> is the continuous-operations CLI; API adds `POST /api/fanout` and
+> `GET /api/material-changes/{id}/versions?customer=<id>`. **Additive only** —
+> `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora byte-identical; M22-A/B read/API
+> compatible. Full suite **532 passed** (was 512; +20 in `tests/test_m22c_customer_material_changes.py`).
+> Spec: `docs/specs/M22C_CUSTOMER_MATERIAL_CHANGE_STREAMS.md`. See D-057.
 
 > **M22-B persisted customer intelligence + Material Change lifecycle (2026-09-10, CLOSED).** Removes the
 > M22-A demo seam: customer configuration is PERSISTED (`pyrnova/customers.py` — `CustomerProfile`,

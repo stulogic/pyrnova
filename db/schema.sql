@@ -238,6 +238,67 @@ CREATE TABLE customer_review_action (
 CREATE INDEX customer_review_action_change_idx
     ON customer_review_action(customer_key, material_change_id, at);
 
+-- M22-C: per-tenant persisted Material Change streams. Fan-out materializes a relevant global change into
+-- durable, customer-scoped state so ordinary reads serve that state instead of re-projecting the shared
+-- global intelligence streams. Dev implementation is append-only JSONL (pyrnova.customer_material_changes
+-- streams `customer_material_changes`, `fanout_runs`); these tables are the production mirror.
+--
+-- This is CUSTOMER-PRIVATE derived state, NEVER global intelligence: a row stores REFERENCES into global
+-- truth (`source_refs`) plus the customer-specific facts global truth does not carry (relevance basis,
+-- first-seen times, a compact assessment snapshot, delivered outcome state). It never duplicates the
+-- authoritative threat/exposure/opportunity records as customer-owned truth and NEVER mutates the
+-- intelligence graph. `material_change_id` IS the source intelligence id — the stable linkage global truth
+-- and the M22-B `customer_review_action` rows share. Rows are append-only VERSIONS: the underlying global
+-- intelligence evolving appends a new `content_version` (never an in-place rewrite of a prior assessment),
+-- so the original assessment and a later outcome both remain observable. `record_id` is this version's
+-- storage identity (`cmc_<hash(customer_key, material_change_id, content_version)>`).
+CREATE TABLE customer_material_change (
+    record_id       text PRIMARY KEY,                 -- cmc_<hash(customer_key, material_change_id, content_version)>
+    customer_key    text NOT NULL,
+    material_change_id text NOT NULL,                 -- the source intelligence id (stable linkage to global truth)
+    source_kind     text CHECK (source_kind IN ('threat','propagated_threat','opportunity')),
+    content_version int NOT NULL,                     -- 1-based append-only version
+    content_hash    text NOT NULL,                    -- dedupe hash (assessment snapshot + relevance basis + outcome)
+    disposition     text,
+    relevance_basis text,                             -- why relevant to THIS customer (DIRECT_SUBJECT/WATCHED_*/...)
+    relevance_reasons jsonb,
+    assessment_snapshot jsonb,                         -- {disposition, materiality, confidence, mechanism, lifecycle_state}
+    outcome_state   text,                             -- delivered outcome state (may lag current global truth)
+    outcome_ref     text,
+    intelligence_observed_at timestamptz,             -- global knowability (§8)
+    first_relevant_at timestamptz,                    -- became relevant to this customer; never before observed (§8)
+    delivered_at    timestamptz,                      -- when fan-out first materialized it (§8)
+    last_updated_at timestamptz,
+    source_refs     jsonb,                            -- references, never copies: subject_ref/program/catalyst_id/root_change_id/evidence_ids/source_ref/archive_hash
+    change_kind     text,                             -- 'initial' | 'assessment' | 'outcome'
+    valid_from      timestamptz NOT NULL,             -- point-in-time validity of this version
+    ingest_run_id   text,                             -- the fan-out run that wrote this version
+    schema_version  text,
+    created_at      timestamptz DEFAULT now(),
+    UNIQUE (customer_key, material_change_id, content_version)
+);
+CREATE INDEX customer_material_change_key_idx
+    ON customer_material_change(customer_key, material_change_id, content_version);
+
+-- One structured record per fan-out run (observability, §17). Also customer-private operational state; it
+-- never enters the global intelligence graph. The full report (per-customer breakdown + failures) is
+-- retained in `report` for operational visibility and replay.
+CREATE TABLE fanout_run (
+    run_id          text PRIMARY KEY,
+    at              timestamptz,
+    as_of           timestamptz,                      -- point-in-time cutoff (NULL = now)
+    global_items_evaluated int,
+    customers       int,
+    inserted        int,
+    updated         int,
+    duplicates_suppressed int,
+    relevant        int,
+    suppressed_irrelevant int,
+    failure_count   int,
+    report          jsonb,                            -- full structured report (per_customer[], failures[])
+    created_at      timestamptz DEFAULT now()
+);
+
 -- ---------------------------------------------------------------------------
 -- OPPORTUNITY + STRIKE  (STRIKE is the qualified/actionable STATE of an Opportunity,
 -- implemented as lifecycle over one table rather than duplicated storage.)

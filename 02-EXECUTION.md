@@ -1,9 +1,39 @@
 # Pyrnova execution authority
 
-_Current execution window: **M22-B CLOSED 2026-09-10** (persisted customer intelligence + Material Change
-lifecycle); M22-A closed (Material Changes vertical slice); M2–M21 closed. No milestone in progress —
-**STOP and await the next milestone-opening brief** before beginning the next M22 slice · updated
-2026-09-10_
+_Current execution window: **M22-C CLOSED 2026-09-10** (per-tenant persisted Material Change streams +
+production read path); M22-B closed (persisted customer intelligence + Material Change lifecycle); M22-A
+closed (Material Changes vertical slice); M2–M21 closed. No milestone in progress — **STOP and await the
+next milestone-opening brief** before beginning the next M22 slice · updated 2026-09-10_
+
+## Milestone 22-C — CLOSED 2026-09-10 (per-tenant persisted Material Change streams + production read path)
+
+**Authorized** by the M22-C work order; **CLOSED** 2026-09-10. Closes the M22-A/B storage seam: a relevant
+global change is now MATERIALIZED into durable, per-customer state, and ordinary reads serve that state
+instead of re-projecting the shared global streams. New `pyrnova/customer_material_changes.py`
+(`CustomerMaterialChange` append-only VERSION; `fan_out`/`rebuild_customer`/`version_history`/
+`_latest_versions`; content-hash dedupe; customer-scoped JSONL streams `customer_material_changes` and
+`fanout_runs`; production mirror `customer_material_change`/`fanout_run` in `db/schema.sql`).
+`SOURCE_KINDS = threat|propagated_threat|opportunity`; version `change_kind = initial|assessment|outcome`.
+Truth-model (D-057): global truth stays global and is never duplicated as customer-owned truth nor mutated
+by a customer (fan-out writes ONLY the customer-scoped streams; the global `threats` stream is byte-identical
+after a run); a customer record stores REFERENCES (`source_refs`) + a compact `assessment_snapshot` +
+relevance basis + first-seen times, never authoritative prose or copied evidence; identity is
+`(customer_id, material_change_id)` where `material_change_id` IS the source intelligence id (the M22-B
+review-action linkage unchanged), storage id `cmc_<hash(customer, change, version)>`; three distinct
+first-seen times (`intelligence_observed_at` / `first_relevant_at` = max(observed, matching-config
+effective_from) / `delivered_at`), never collapsed, immutable across versions; deterministic, idempotent,
+replayable, point-in-time fan-out via the SAME `build_material_changes` read model (persisted set never
+diverges from the on-the-fly relevant set); an assessment change appends a new version, a later outcome
+appends an `outcome`-kind version preserving prior assessment snapshots; rebuild is idempotent and never
+erases the separate customer review lifecycle; per-customer/per-item failure isolation with a structured
+observability report appended to `fanout_runs`. Read path: `OperatorConsole` gained an OPTIONAL `cmc_store`
+(first-seen overlay + `materialized` count; `None` ⇒ exactly M22-A/B, fully backward compatible) and an
+OPTIONAL `access_check` seam (§15) surfacing `PermissionError` as HTTP 403 (authentication itself deferred,
+D-048). The running product no longer needs the demo: the server runs `fan_out()` at startup and `pyrnova
+fanout` is the continuous-operations CLI. API: `POST /api/fanout`, `GET /api/material-changes/{id}/versions
+?customer=<id>`. Additive only — `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora
+byte-identical; M22-A/B read/API behavior compatible. Full suite **532 passed** (was 512; +20 M22-C). Spec:
+`docs/specs/M22C_CUSTOMER_MATERIAL_CHANGE_STREAMS.md`. See D-057. No further M22-C action.
 
 ## Milestone 22-B — CLOSED 2026-09-10 (persisted customer intelligence + Material Change lifecycle)
 
@@ -274,15 +304,15 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M21, M22-A, and **M22-B CLOSED** — no milestone in progress; **STOP and await the next brief**
-   (per the M22-B work order, do not automatically begin the next M22 slice).
-2. **M22 productization in progress across bounded slices:** M22-A (Material Changes read model) and
-   M22-B (persisted customer intelligence + Material Change lifecycle) are closed. Candidate next slices
-   (each needs a milestone-opening brief before build): per-tenant persisted live Material Change streams;
-   customer-contributed private context (documents/notes) on the ready private/global boundary;
-   authentication attached to the existing `actor`/`customer_id` boundary; first-class evidence-lineage
-   independence. Explicit Phase 1 non-goals (D-048) stay deferred/customer-gated. Source breadth,
-   outcomes, calibration, and relationship coverage keep accumulating in parallel.
+1. M2–M21, M22-A, M22-B, and **M22-C CLOSED** — no milestone in progress; **STOP and await the next brief**
+   (per the M22-C work order, do not automatically begin the next M22 slice).
+2. **M22 productization in progress across bounded slices:** M22-A (Material Changes read model), M22-B
+   (persisted customer intelligence + Material Change lifecycle), and M22-C (per-tenant persisted Material
+   Change streams + production read path) are closed. Candidate next slices (each needs a milestone-opening
+   brief before build): customer-contributed private context (documents/notes) on the ready private/global
+   boundary; authentication attached to the existing `access_check`/`actor`/`customer_id` seam; first-class
+   evidence-lineage independence. Explicit Phase 1 non-goals (D-048) stay deferred/customer-gated. Source
+   breadth, outcomes, calibration, and relationship coverage keep accumulating in parallel.
 3. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 4. Other next-milestone candidates are recorded in `05-BACKLOG.md` and

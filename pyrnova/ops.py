@@ -64,7 +64,9 @@ class OperatorConsole:
                  source_state_dir: Path | None = None,
                  mc_store: StateStore | None = None,
                  contexts_dir: Path | None = None,
-                 customer_store: StateStore | None = None):
+                 customer_store: StateStore | None = None,
+                 cmc_store: StateStore | None = None,
+                 access_check=None):
         self.store = store
         self.profiles_dir = Path(profiles_dir)
         self.out_dir = Path(out_dir)
@@ -78,6 +80,20 @@ class OperatorConsole:
         # Defaults to the main store. When a customer is persisted here it drives the read path; the
         # demo ``contexts_dir`` JSON remains a fallback so a fresh checkout stays populated (D-056).
         self.customer_store = customer_store or store
+        # M22-C: optional customer-scoped persisted Material Change store. When set AND populated for a
+        # customer, the read path serves that customer-scoped state (the production-shaped path). Left as
+        # None, the read path recomputes on the fly exactly as M22-A/B did (fully backward compatible).
+        self.cmc_store = cmc_store
+        # M22-C: the authorization seam (§15). A callable ``access_check(customer_id) -> bool`` decides
+        # whether the current actor may read/act on a customer. Authentication is deferred (D-048); this
+        # is the single chokepoint a later AUTHENTICATED ACTOR -> AUTHORIZED CUSTOMER layer attaches to,
+        # so no intelligence-model rewrite is needed to add auth. ``None`` means permissive (dev default).
+        self.access_check = access_check
+
+    def _require_access(self, customer_id: str) -> None:
+        """Enforce the customer-authorization boundary (§6/§15). Rejects a mismatched/unauthorized id."""
+        if self.access_check is not None and not self.access_check(customer_id):
+            raise PermissionError(f"actor is not authorized for customer: {customer_id}")
 
     # --- M22-A: Material Changes (customer-facing "what materially changed?") ---------------------
 
@@ -128,6 +144,7 @@ class OperatorConsole:
         from . import customers as cust
         from .material_changes import build_material_changes
 
+        self._require_access(customer_id)
         context = self._load_context(customer_id, as_of=as_of)
 
         def _read(store, name):
@@ -148,13 +165,41 @@ class OperatorConsole:
         # M22-B: overlay the customer's persisted review/lifecycle state. This is CUSTOMER state, kept
         # separate from the SYSTEM assessment/lifecycle already on each change (never flattened together).
         overlay = cust.review_overlay(self.customer_store, customer_id, as_of=as_of)
+        # M22-C: overlay the customer-scoped PERSISTED Material Change state (first-seen semantics, delivered
+        # outcome, content version). This state is storage-isolated per customer; the global intelligence
+        # projection above is reconstructed from shared global truth and is never duplicated per customer.
+        versions = {}
+        if self.cmc_store is not None:
+            from .customer_material_changes import _latest_versions
+            versions = _latest_versions(self.cmc_store, customer_id, as_of=as_of)
         by_disposition: dict[str, int] = {}
         by_review_state: dict[str, int] = {}
+        materialized = 0
         for change in changes:
             state = overlay.get(change["id"], {}).get("state", cust.STATE_NEW)
             change["review"] = overlay.get(change["id"], {"state": state, "action_count": 0,
                                                           "last_action": None})
             change["review"]["state"] = state
+            v = versions.get(change["id"])
+            if v is not None:
+                materialized += 1
+                change["first_seen"] = {
+                    # §8: three distinct times, never collapsed into one created_at. "Reviewed" is the
+                    # separate M22-B lifecycle carried in ``review`` above.
+                    "intelligence_observed_at": v.get("intelligence_observed_at"),
+                    "first_relevant_at": v.get("first_relevant_at"),
+                    "delivered_at": v.get("delivered_at"),
+                    "content_version": v.get("content_version"),
+                    "last_updated_at": v.get("last_updated_at"),
+                    "change_kind": v.get("change_kind"),
+                    # The outcome state Pyrnova had DELIVERED to the customer at the last fan-out (may lag
+                    # current global truth; the top-level ``outcome_state`` reflects current global truth).
+                    "delivered_outcome_state": v.get("outcome_state"),
+                    "status": "MATERIALIZED",
+                }
+            elif self.cmc_store is not None:
+                # Relevant now, but fan-out has not yet materialized it into the customer-scoped feed.
+                change["first_seen"] = {"status": "PENDING_FANOUT", "delivered_at": None}
             by_disposition[change["disposition"]] = by_disposition.get(change["disposition"], 0) + 1
             by_review_state[state] = by_review_state.get(state, 0) + 1
         return {
@@ -165,6 +210,7 @@ class OperatorConsole:
             "count": len(changes),
             "by_disposition": dict(sorted(by_disposition.items())),
             "by_review_state": dict(sorted(by_review_state.items())),
+            "materialized": materialized if self.cmc_store is not None else None,
             "material_changes": changes,
         }
 
@@ -217,6 +263,7 @@ class OperatorConsole:
         Rejects cross-customer access: the change must be relevant/visible to this customer. Appends an
         audit record; never mutates the authoritative system assessment."""
         from . import customers as cust
+        self._require_access(customer_id)
         # Compute the customer's currently visible change ids and enforce the tenancy boundary.
         visible = {c["id"] for c in self.material_changes(customer_id)["material_changes"]}
         return cust.record_review_action(
@@ -235,6 +282,37 @@ class OperatorConsole:
                                                        material_change_id, as_of=as_of),
             "history": history,
         }
+
+    # --- M22-C: customer-scoped Material Change fan-out / rebuild / version history ----------------
+
+    def fan_out(self, *, customer_ids=None, as_of: str | None = None) -> dict:
+        """Materialize relevant global intelligence into customer-scoped Material Change state (§5/§9).
+
+        This is the ordinary continuous-operations path: no demo script is required. Requires a
+        ``cmc_store``. Returns the structured fan-out observability report (§17)."""
+        if self.cmc_store is None:
+            raise ValueError("fan-out requires a customer-scoped Material Change store (cmc_store)")
+        from .customer_material_changes import fan_out as _fan_out
+        return _fan_out(mc_store=self.mc_store, customer_store=self.customer_store,
+                        cmc_store=self.cmc_store, customer_ids=customer_ids, as_of=as_of)
+
+    def rebuild_customer_material_changes(self, customer_id: str, *, as_of: str | None = None) -> dict:
+        """Rebuild one customer's derived Material Change state (§10); customer actions survive untouched."""
+        if self.cmc_store is None:
+            raise ValueError("rebuild requires a customer-scoped Material Change store (cmc_store)")
+        self._require_access(customer_id)
+        from .customer_material_changes import rebuild_customer
+        return rebuild_customer(mc_store=self.mc_store, customer_store=self.customer_store,
+                                cmc_store=self.cmc_store, customer_id=customer_id, as_of=as_of)
+
+    def customer_material_change_versions(self, customer_id: str, material_change_id: str) -> dict:
+        """Full stored version history for one customer Material Change (original assessment → outcome, §12)."""
+        self._require_access(customer_id)
+        if self.cmc_store is None:
+            return {"customer_id": customer_id, "material_change_id": material_change_id, "versions": []}
+        from .customer_material_changes import version_history
+        return {"customer_id": customer_id, "material_change_id": material_change_id,
+                "versions": version_history(self.cmc_store, customer_id, material_change_id)}
 
     def source_operations(self) -> dict:
         """M12 Operations Panel view: durable per-source health + operator controls (read-only).

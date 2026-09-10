@@ -149,6 +149,29 @@ main { max-width: 1040px; margin: 0 auto; padding: 30px 28px 80px; }
   border-radius: 3px; padding: 5px 10px; font-size: 11px; letter-spacing: 0.04em; cursor: pointer; }
 .review-actions button:hover { color: var(--ink); border-color: var(--ink-faint); }
 
+/* M22-C: per-customer first-seen provenance + on-demand version history. */
+.foot-actions { display: flex; gap: 6px; }
+.history { background: none; border: 1px solid var(--line-2); color: var(--ink-dim); border-radius: 3px;
+  padding: 5px 11px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+.history:hover { color: var(--ink); }
+
+.first-seen { margin-top: 10px; font-size: 12px; color: var(--ink-dim); letter-spacing: 0.04em; }
+.first-seen b { color: var(--ink); font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 500; }
+.first-seen .fs-updated { color: var(--monitoring); margin-left: 4px; }
+.first-seen .fs-pending { color: var(--ink-faint); }
+
+.versions { margin-top: 12px; border: 1px solid var(--line); border-radius: 4px; background: #0d1116;
+  padding: 6px 12px; font-size: 12px; color: var(--ink-dim); }
+.version-row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 6px 0;
+  border-bottom: 1px solid var(--line); }
+.version-row:last-child { border-bottom: none; }
+.version-row .v-num { color: var(--ink); font-weight: 650; }
+.version-row .v-kind { color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; }
+.version-row .v-time { color: var(--ink-faint); font-size: 11px; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.version-empty { color: var(--ink-faint); padding: 4px 0; }
+
 @media (max-width: 720px) {
   .split { grid-template-columns: 1fr; }
   .controls { flex-wrap: wrap; gap: 12px; }
