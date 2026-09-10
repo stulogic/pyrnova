@@ -1,9 +1,27 @@
 # Pyrnova current state
 
-_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-D CLOSED — company/program investigation
-pages + deterministic entity search; M22-C CLOSED — per-tenant persisted Material Change streams +
-production read path; M22-B CLOSED — persisted customer intelligence + Material Change lifecycle; M22-A
-CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite **557 passed**._
+_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-E CLOSED — opportunity Material Changes, the
+product is no longer threat-only; M22-D CLOSED — company/program investigation pages + deterministic entity
+search; M22-C CLOSED — per-tenant persisted Material Change streams + production read path; M22-B CLOSED —
+persisted customer intelligence + Material Change lifecycle; M22-A CLOSED — Material Changes vertical slice;
+M2–M21 CLOSED). Core engineering & infrastructure doctrine codified (D-059). Full suite **571 passed**._
+
+> **M22-E opportunity Material Changes (2026-09-10, CLOSED).** The customer-facing product is no longer
+> threat-only. WIRING/MATERIALIZATION only — no new opportunity engine: the read model and the M22-C
+> fan-out already consumed an `opportunities` stream, but the demo seed produced only threats. M22-E
+> materializes REAL opportunities through the SAME path as threats — the existing `detect_recompetes`
+> engine (`pyrnova/engines/recompete.py`) over Torch's archived USAspending awards → 6 deterministic
+> `recompete_expiry` opportunities (DIRECT_SUBJECT; $100M floor, 540-day window, pinned 2026-09-01 scan;
+> byte-reproducible). Deterministic identity `opp_<hash(award_id, kind, subject_ref)>`. Fixed two defects:
+> `_opportunity_change` now carries the canonical `subject_ref`/`subject_name` distinct from the tenant
+> `customer_id` (so DIRECT_SUBJECT relevance + investigation links resolve), and opportunities are read
+> from `mc_store` consistently with threats/fan-out. Observed vs assessed kept separate (known contract
+> value OBSERVED, materiality UNKNOWN); temporal truth holds (hidden before scan date; expired → no active
+> candidate); M22-B lifecycle + M22-C storage + M22-D investigation links reused unchanged; UNRESOLVED
+> outcome first-class. DAP has no active recompete and honestly stays threat-only (proving isolation).
+> Frontend added only value/deadline distinctions beside THREAT. §56 copy fix names the affected entity.
+> Additive only; frozen components byte-identical. `tests/test_m22e_opportunity.py` (+14). See D-060,
+> `docs/specs/M22E_OPPORTUNITY_MATERIAL_CHANGES.md`.
 
 > **M22-D company/program investigation + deterministic entity search (2026-09-10, CLOSED).** Completes the
 > first investigation path beneath a Material Change: MATERIAL CHANGE → AFFECTED COMPANY/PROGRAM →

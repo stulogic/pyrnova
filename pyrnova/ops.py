@@ -155,7 +155,11 @@ class OperatorConsole:
 
         threats = _read(self.mc_store, "threats")
         propagated = _read(self.mc_store, "propagated_threats")
-        opportunities = [o for o in _read(self.store, "opportunities")
+        # All global intelligence streams are read from the SAME store (one canonical pattern — engineering
+        # doctrine §2/§3, and consistent with the M22-C fan-out, which reads opportunities from mc_store).
+        # ``mc_store`` is the demo fixture store on a fresh checkout and the persisted store in production
+        # (where it equals ``self.store``), so this is a no-op in production and correct in the demo.
+        opportunities = [o for o in _read(self.mc_store, "opportunities")
                          if o.get("customer_id") == customer_id]
 
         changes = build_material_changes(
@@ -250,7 +254,8 @@ class OperatorConsole:
         return build_estate(
             threats=_read(self.mc_store, "threats"),
             propagated_threats=_read(self.mc_store, "propagated_threats"),
-            opportunities=_read(self.store, "opportunities"),
+            # Opportunities from the SAME store as threats (one canonical pattern; see the feed read path).
+            opportunities=_read(self.mc_store, "opportunities"),
             relationships=_read(self.store, "relationships"),
             as_of=as_of,
         )

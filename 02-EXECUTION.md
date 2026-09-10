@@ -1,10 +1,37 @@
 # Pyrnova execution authority
 
-_Current execution window: **M22-D CLOSED 2026-09-10** (company/program investigation pages + deterministic
-entity search); M22-C closed (per-tenant persisted Material Change streams + production read path); M22-B
-closed (persisted customer intelligence + Material Change lifecycle); M22-A closed (Material Changes
-vertical slice); M2–M21 closed. No milestone in progress — **STOP and await the next milestone-opening
-brief** before beginning the next M22 slice · updated 2026-09-10_
+_Current execution window: **M22-E CLOSED 2026-09-10** (opportunity Material Changes — the product is no
+longer threat-only); M22-D closed (company/program investigation pages + deterministic entity search);
+M22-C closed (per-tenant persisted Material Change streams + production read path); M22-B closed (persisted
+customer intelligence + Material Change lifecycle); M22-A closed (Material Changes vertical slice); M2–M21
+closed. Core engineering & infrastructure doctrine codified (D-059). No milestone in progress — **STOP and
+await the next milestone-opening brief** (expected: M22-F minimal access + onboarding) before beginning the
+next slice · updated 2026-09-10_
+
+## Milestone 22-E — CLOSED 2026-09-10 (opportunity Material Changes: product no longer threat-only)
+
+**Authorized** by the M22-E work order (which first codified the binding engineering & infrastructure
+doctrine, D-059); **CLOSED** 2026-09-10. A WIRING/MATERIALIZATION milestone — **not** a new opportunity
+engine. Closes the design-customer readiness P0 that the customer-facing product was threat-only. Root
+cause: the read model (`build_material_changes`) and the M22-C fan-out both already consumed an
+`opportunities` stream, but the demo seed produced only threats — there was never any opportunity data to
+show. M22-E materializes REAL, evidence-backed opportunities through the SAME deterministic, customer-
+scoped, point-in-time, isolated path as threats. Authoritative source: the existing `detect_recompetes`
+engine (`pyrnova/engines/recompete.py`) → existing `Opportunity` model → existing global `opportunities`
+stream. Real evidence: Torch's own archived USAspending awards → 6 deterministic `recompete_expiry`
+opportunities (DIRECT_SUBJECT; $100M floor, 540-day window, pinned 2026-09-01 scan). Deterministic
+identity `opp_<hash(award_id, kind, subject_ref)>`. Two genuine defects fixed: `_opportunity_change` now
+carries the canonical `subject_ref`/`subject_name` distinct from the tenant `customer_id` (DIRECT_SUBJECT
+relevance + investigation links resolve), and opportunities are read from `mc_store` consistently with
+threats/fan-out (one canonical pattern). Observed vs assessed kept separate (known contract value is
+OBSERVED, materiality UNKNOWN); temporal truth holds (hidden before the scan date; expired → no active
+candidate); M22-B lifecycle + M22-C storage reused unchanged; UNRESOLVED outcome first-class; investigation
+links reach `co_torch` + the real PIID. Frontend added only value/deadline distinctions (already rendered
+OPPORTUNITY). §56 copy fix names the affected entity. **Correction of a prior stale implication:**
+opportunity/threat symmetry was NOT shipped to customers before M22-E — the machinery existed and the read
+model supported it, but no opportunity was materialized into the product until now. Additive only; frozen
+components byte-identical; threat/monitoring behavior unchanged. Full suite **571 passed** (was 557; +14).
+See D-060, `docs/specs/M22E_OPPORTUNITY_MATERIAL_CHANGES.md`.
 
 ## Milestone 22-D — CLOSED 2026-09-10 (company/program investigation + deterministic entity search)
 

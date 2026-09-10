@@ -15,6 +15,8 @@ let payload = null;
 
 const esc = v => String(v ?? "").replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
 const dash = v => (v === null || v === undefined || v === "" || v === "UNKNOWN") ? "Unknown" : v;
+// Whole-dollar formatting for a known contract value; undefined (not a fact) is skipped by facts().
+const money = v => (v === null || v === undefined) ? undefined : `$${Math.round(v).toLocaleString("en-US")}`;
 
 function note(text) {
   message.hidden = !text;
@@ -92,7 +94,12 @@ function renderChange(m) {
     ["Affected", o.affected_entity],
     ["Program", o.affected_program, true],
     ["Agency", o.agency],
-    ["Event time", o.event_time, true],
+    // Opportunity-only distinctions (known contract value + expected-action deadline); undefined on
+    // threats/monitoring, so facts() omits the rows there rather than showing "Unknown".
+    ["Contract value", o.value_usd == null ? undefined : money(o.value_usd)],
+    ["Expected action", o.expected_action_at == null ? undefined : o.expected_action_at, true],
+    // For an opportunity the "event" is the future expected action shown above — don't repeat it here.
+    ["Event time", o.expected_action_at == null ? o.event_time : undefined, true],
     ["Knowable at", o.observed_at, true],
     ["Origin", o.catalyst_class],
   ]);

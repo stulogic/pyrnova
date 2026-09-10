@@ -1,18 +1,23 @@
-"""Deterministic Material Changes demo seed (M22-A).
+"""Deterministic Material Changes demo seed (M22-A; opportunities added M22-E).
 
 Runs the REAL Pyrnova engine paths over REAL archived evidence (no live calls, no fabrication) to produce
-the threat / propagated-threat records the Material Changes read model consumes, and writes them as
-tracked, replay-safe JSONL under ``examples/material_changes_demo/state/``. Re-running reproduces the
-same fixture byte-for-byte.
+the threat / propagated-threat / **opportunity** records the Material Changes read model consumes, and
+writes them as tracked, replay-safe JSONL under ``examples/material_changes_demo/state/``. Re-running
+reproduces the same fixture byte-for-byte (all engine-assigned ids are pinned deterministically here).
 
 Two customers, proving customer isolation with real data:
 
 * Torch Technologies — a real archived USAspending contract **deobligation** on SAIC's exact PIID
   47QFSA20F0057 (M19) yields a HIGH-confidence PROGRAM_CONTRACTION for SAIC that propagates one hop to
-  Torch over the real program-anchored SAIC→Torch sub-award edge.
+  Torch over the real program-anchored SAIC→Torch sub-award edge (THREAT). M22-E additionally materializes
+  Torch's own **recompete opportunities**: the real ``detect_recompetes`` engine over Torch's archived
+  USAspending awards surfaces Torch's large incumbent contracts entering their recompete window as
+  OPPORTUNITY Material Changes (DIRECT_SUBJECT — Torch is the incumbent).
 * DAP Construction Management LLC — a real raw-archived USAspending **terminate-for-convenience** (M21,
   PIID 36C25726N0240) yields a HIGH-confidence PROGRAM_CANCELLATION_OR_DELAY that propagates up to the
-  parent over the deterministic SUBSIDIARY_OF native-id edge.
+  parent over the deterministic SUBSIDIARY_OF native-id edge (THREAT). DAP has no active recompete in the
+  archived estate, so it honestly stays threat-only — which also proves the opportunity is isolated to
+  Torch.
 
 SAIC's own direct threat is included in the stream but belongs to neither customer — it must not surface
 for Torch or DAP, which is exactly the customer-boundary property the read model enforces.
@@ -20,7 +25,9 @@ for Torch or DAP, which is exactly the customer-boundary property the read model
 
 from __future__ import annotations
 
+import hashlib
 import json
+from datetime import date
 from pathlib import Path
 
 from pyrnova.adverse_events import (
@@ -29,8 +36,10 @@ from pyrnova.adverse_events import (
     to_contract_contraction_catalyst,
     to_contract_termination_catalyst,
 )
+from pyrnova.engines.recompete import detect_recompetes
 from pyrnova.grounding_subawards import parse_subawards
-from pyrnova.models import to_record
+from pyrnova.models import Evidence, to_record
+from pyrnova.normalize import normalize_award
 from pyrnova.propagation import propagate_threats
 from pyrnova.relationships import (
     exposed_prime_awards_from_subawards,
@@ -48,6 +57,18 @@ SAIC_PIID = "47QFSA20F0057"
 DAP_PIID = "36C25726N0240"
 DAP_UEI = "YR7CLZFGCM95"
 PARENT_UEI = "KMSLVW1MZWU9"
+
+# --- M22-E opportunity materialization parameters -------------------------------------------------
+# Torch is the tenant ``torch``; its canonical entity is ``co_torch`` (the DIRECT_SUBJECT relevance ref).
+TORCH_TENANT = "torch"
+TORCH_REF = "co_torch"
+TORCH_NAME = "Torch Technologies Inc"
+# Pinned recompete scan date so the fixture is deterministic regardless of wall-clock (the engine takes
+# ``as_of`` as a parameter). A $100M materiality floor keeps only substantial recompetes for a mid-market
+# prime; the 540-day forward window is the engine default.
+OPP_AS_OF = date(2026, 9, 1)
+OPP_WINDOW_DAYS = 540
+OPP_MIN_AMOUNT = 100_000_000.0
 
 
 def _enrich(threat, *, event, agency, program, source_ref, archive_hash=None):
@@ -131,15 +152,67 @@ def _dap_parent_chain():
     return [direct], prop_recs
 
 
+def _stable_id(prefix: str, payload: dict) -> str:
+    """Deterministic id from source-linked fields (engineering doctrine §20; not prose-based)."""
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return f"{prefix}_" + hashlib.sha256(blob).hexdigest()[:20]
+
+
+def _torch_recompete_opportunities() -> list[dict]:
+    """Torch's own recompete opportunities via the REAL ``detect_recompetes`` engine (M22-E).
+
+    Uses Torch's archived USAspending awards — no new engine, no live call, no fabrication. Each engine
+    field is deterministic; the only engine-assigned ids that default to random uids (opportunity,
+    catalyst, evidence) are pinned here from source-linked content so the fixture is byte-reproducible.
+    The opportunity carries the CANONICAL subject (``co_torch`` / name) distinct from the tenant
+    ``customer_id`` so DIRECT_SUBJECT relevance and investigation links resolve to the real entity.
+    """
+    raw = (RE / "usaspending_torch.json").read_bytes()
+    archive_hash = hashlib.sha256(raw).hexdigest()  # the real archived response the awards came from
+    awards = [normalize_award(r) for r in json.loads(raw)["results"]]
+    opps = detect_recompetes(awards, as_of=OPP_AS_OF, window_days=OPP_WINDOW_DAYS,
+                             min_amount=OPP_MIN_AMOUNT)
+    records: list[dict] = []
+    for opp in opps:
+        award_id = opp.meta.get("award_id")
+        opp.id = _stable_id("opp", {"award": award_id, "kind": opp.catalyst.kind, "subject": TORCH_REF})
+        opp.catalyst.id = _stable_id("cat", {"award": award_id, "kind": opp.catalyst.kind})
+        opp.customer_id = TORCH_TENANT
+        opp.state = "candidate"
+        opp.evidence = [Evidence(
+            source_id="usaspending",
+            content_sha256=archive_hash,
+            archive_uri="examples/real_evidence/usaspending_torch.json",
+            retention_tier="hot",
+            source_ref=f"usaspending:award:{award_id}",
+            source_url=opp.meta.get("url"),
+            id=f"ev_usasp_award_{award_id}",
+        )]
+        opp.meta.update({
+            "subject_ref": TORCH_REF,
+            "subject_name": TORCH_NAME,
+            "program_key": award_id,
+            "source_ref": f"usaspending:award:{award_id}",
+            "source_as_of": OPP_AS_OF.isoformat(),  # when Pyrnova could know it entered the recompete window
+            "archive_hash": archive_hash,
+            "evidence_sources": ["usaspending"],
+        })
+        records.append(to_record(opp))
+    return records
+
+
 def build() -> dict:
     saic_direct, saic_prop = _saic_torch_chain()
     dap_direct, dap_prop = _dap_parent_chain()
     threats = saic_direct + dap_direct
     propagated = saic_prop + dap_prop
+    opportunities = _torch_recompete_opportunities()
     OUT.mkdir(parents=True, exist_ok=True)
     _write(OUT / "threats.jsonl", threats)
     _write(OUT / "propagated_threats.jsonl", propagated)
-    return {"threats": len(threats), "propagated_threats": len(propagated)}
+    _write(OUT / "opportunities.jsonl", opportunities)
+    return {"threats": len(threats), "propagated_threats": len(propagated),
+            "opportunities": len(opportunities)}
 
 
 def _write(path: Path, records: list[dict]) -> None:

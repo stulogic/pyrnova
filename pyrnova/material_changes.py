@@ -176,6 +176,10 @@ def project_material_change(change: dict, relevance: dict) -> dict:
         "event_time": change.get("event_time") or "UNKNOWN",
         "observed_at": change.get("observed_at") or "UNKNOWN",  # when Pyrnova could first know it
         "catalyst_class": change.get("catalyst_class"),         # OBSERVED (real event) vs MODELED
+        # Opportunity-only distinctions (§55): the known contract value and the expected-action deadline.
+        # Absent (None) on threats/monitoring, so the client renders them only where they are real.
+        "value_usd": change.get("value_usd"),
+        "expected_action_at": change.get("event_time") if disposition == DISPOSITION_OPPORTUNITY else None,
     }
     assessment = {
         "disposition": disposition,
@@ -278,13 +282,23 @@ def _threat_change(rec: dict, kind: str) -> dict:
 def _opportunity_change(rec: dict) -> dict:
     meta = rec.get("meta") or {}
     evidence = rec.get("evidence") or []
+    # The affected entity is the canonical entity this opportunity concerns (e.g. the incumbent the
+    # customer IS, or a watched entity) — NOT the tenant ``customer_id``. Conflating them broke
+    # DIRECT_SUBJECT relevance and investigation links, since the customer's ``entity_refs`` hold the
+    # canonical ``co_*`` ref, not the tenant id. Prefer an explicit canonical subject; fall back to
+    # ``customer_id`` only for legacy pipeline opportunities that carry no canonical subject (§10 of the
+    # engineering doctrine: no silent identity guess — we use what is asserted, else the tenant id).
+    subject_ref = meta.get("subject_ref") or rec.get("subject_ref") or rec.get("customer_id")
+    subject_name = meta.get("subject_name") or rec.get("subject_name") or rec.get("customer_id")
+    program = meta.get("program_key") or meta.get("award_id")
+    value_usd = rec.get("value_usd")
     return {
         "_kind": "opportunity",
         "_state": rec.get("state"),
         "id": rec.get("id"),
-        "subject_ref": rec.get("customer_id"),
-        "affected_entity": rec.get("customer_id"),
-        "affected_program": meta.get("program_key"),
+        "subject_ref": subject_ref,
+        "affected_entity": subject_name,
+        "affected_program": program,
         "agency": rec.get("agency"),
         "event_type": (rec.get("catalyst") or {}).get("kind"),
         "event_summary": rec.get("title"),
@@ -293,10 +307,15 @@ def _opportunity_change(rec: dict) -> dict:
         "consequence": rec.get("recommended_action"),
         "severity": "UNKNOWN",
         "confidence": _score_to_ordinal(rec.get("confidence")),
+        # Known dollar value of the incumbent contract at recompete — an OBSERVED fact, not an estimate.
+        "value_usd": value_usd,
+        "affected_value_category": "REVENUE" if value_usd else None,
         "capability_classes": rec.get("relevance_reasons") or [],
         "event_time": rec.get("expected_action_at"),
         "observed_at": meta.get("source_as_of") or rec.get("_ts"),
         "catalyst_class": "MODELED",
+        "source_ref": meta.get("source_ref") or (evidence[0].get("source_ref") if evidence else None),
+        "archive_hash": meta.get("archive_hash"),
         "evidence_ids": [ev.get("id") for ev in evidence if ev.get("id")],
         "evidence_sources": [ev.get("source_id") for ev in evidence if ev.get("source_id")],
         "lifecycle_state": rec.get("state", "candidate"),

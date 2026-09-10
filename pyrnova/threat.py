@@ -596,7 +596,9 @@ def _assess_program_change(subject_ref, subject_name, exposures, records, as_of)
             threats.append(_mk_threat(
                 subject_ref, subject_name, mechanism, target, dep, rec,
                 affected_value_category=("CONTINUITY" if kind == "program_cancellation" else "REVENUE"),
-                economic_effect=(f"{exp.target_name}: {effect} the subject's program-dependent revenue"),
+                # Name the affected entity explicitly. On a propagated card the subject differs from the
+                # customer, so "the subject's revenue" is ambiguous (whose?) — always name the entity.
+                economic_effect=(f"{effect} {subject_name}'s program-dependent revenue on {exp.target_name}"),
                 severity=severity_from_amount(at_risk),
                 severity_basis=(f"program revenue at risk ${float(at_risk):,.0f}" if at_risk
                                 else "program revenue at risk unknown"),
