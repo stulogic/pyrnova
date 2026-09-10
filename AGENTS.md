@@ -85,6 +85,15 @@ dossier / benchmark / vendor-displacement *product* is **roadmap-deferred** (D-0
 not current implementation authority. Full doctrine:
 `docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md`.
 
+## Disclosure & voice (binding)
+
+Any customer-facing or external-facing artifact follows the Product Language Authority (D-041) and the
+customer face of the corporate posture doctrine (`docs/strategy/CORPORATE_POSTURE_AND_BRAND.md`, D-054):
+discretion + intelligence + competence + control, never menace toward customers. External disclosure
+defaults to **need-to-know** — do not publish roadmap, datasets, methods, competitive dossiers, pricing,
+or strategic weaknesses externally without a commercial reason. This does **not** weaken *internal*
+record-keeping: keep the repository's authority/decisions/state full, honest, and current.
+
 ## Finishability rule (binding)
 
 A missing capability may block a phase **only** for correctness, safety, architectural integrity,

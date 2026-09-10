@@ -63,7 +63,9 @@ Operations, Outcome History, Intelligence Gaps, Review Evidence, Run Assessment,
 Export Brief.
 
 **Copy quality is part of feature acceptance.** A technically correct feature carrying prohibited
-product language is not complete. See D-041.
+product language is not complete. See D-041. The customer-facing voice is the customer face of the
+corporate posture doctrine (`docs/strategy/CORPORATE_POSTURE_AND_BRAND.md`, D-054): discretion +
+intelligence + competence + control, never menace toward customers.
 
 ## Locked product boundaries
 
