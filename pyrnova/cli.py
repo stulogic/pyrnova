@@ -471,9 +471,34 @@ def cmd_source_contribution(args) -> int:
     return 0
 
 
+def cmd_seed_customers(args) -> int:
+    """M22-B: deterministically seed the demo customers into PERSISTED customer state.
+
+    Loads the example seeder by file path (demo identities live in examples/, never in the runtime
+    package) and writes profiles + watchlists into the configured state dir. Idempotent."""
+    import importlib.util
+
+    from .config import load_config
+    from .state import StateStore
+
+    demo_dir = Path(args.demo_dir)
+    spec = importlib.util.spec_from_file_location("pyrnova_demo_seed_customers",
+                                                  demo_dir / "seed_customers.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    store = StateStore(load_config().state_dir)
+    print(json.dumps(module.seed(store), indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    seedc = sub.add_parser("seed-customers",
+                           help="seed the demo customers into persisted customer state (M22-B)")
+    seedc.add_argument("--demo-dir", default="examples/material_changes_demo")
+    seedc.set_defaults(func=cmd_seed_customers)
 
     cr = sub.add_parser("capture-radar", help="run the Capture Radar pipeline")
     cr.add_argument("--profile", required=True, help="path to a capability profile JSON")

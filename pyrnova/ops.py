@@ -63,7 +63,8 @@ class OperatorConsole:
     def __init__(self, store: StateStore, profiles_dir: Path, out_dir: Path,
                  source_state_dir: Path | None = None,
                  mc_store: StateStore | None = None,
-                 contexts_dir: Path | None = None):
+                 contexts_dir: Path | None = None,
+                 customer_store: StateStore | None = None):
         self.store = store
         self.profiles_dir = Path(profiles_dir)
         self.out_dir = Path(out_dir)
@@ -73,45 +74,61 @@ class OperatorConsole:
         # and the directory of customer intelligence contexts. Defaults keep the existing panel intact.
         self.mc_store = mc_store or store
         self.contexts_dir = Path(contexts_dir) if contexts_dir else None
+        # M22-B: persisted customer intelligence + watchlists + Material Change review/lifecycle state.
+        # Defaults to the main store. When a customer is persisted here it drives the read path; the
+        # demo ``contexts_dir`` JSON remains a fallback so a fresh checkout stays populated (D-056).
+        self.customer_store = customer_store or store
 
     # --- M22-A: Material Changes (customer-facing "what materially changed?") ---------------------
 
     def customers(self) -> list[dict]:
-        """List available customer intelligence contexts (id + name), empty-safe."""
-        rows: list[dict] = []
-        if not self.contexts_dir or not self.contexts_dir.exists():
-            return rows
-        for path in sorted(self.contexts_dir.glob("*.json")):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            cid = data.get("customer_id") or path.stem
-            rows.append({"id": cid, "name": data.get("name", cid)})
-        return rows
+        """List available customers (id + name), empty-safe.
 
-    def _load_context(self, customer_id: str):
+        M22-B: persisted customers drive the product. Any demo ``contexts_dir`` customer not yet
+        persisted is still listed (M22-A compatibility) so a fresh checkout is populated."""
+        from . import customers as cust
+        rows = {r["id"]: r for r in cust.list_customers(self.customer_store)}
+        if self.contexts_dir and self.contexts_dir.exists():
+            for path in sorted(self.contexts_dir.glob("*.json")):
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                cid = data.get("customer_id") or path.stem
+                rows.setdefault(cid, {"id": cid, "name": data.get("name", cid)})
+        return [rows[k] for k in sorted(rows)]
+
+    def _load_context(self, customer_id: str, *, as_of: str | None = None):
+        """Build the customer's deterministic relevance context, point-in-time.
+
+        Prefers PERSISTED customer state (profile + temporally-valid watchlists); falls back to the demo
+        ``contexts_dir`` JSON only when the customer is not persisted (M22-A compatibility)."""
+        from . import customers as cust
         from .material_changes import CustomerContext
-        if not self.contexts_dir:
-            raise ValueError("no customer contexts directory configured")
-        for path in sorted(self.contexts_dir.glob("*.json")):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if (data.get("customer_id") or path.stem) == customer_id:
-                return CustomerContext.from_dict(data)
+
+        if cust.get_customer(self.customer_store, customer_id) is not None:
+            return cust.build_context(self.customer_store, customer_id, as_of=as_of)
+        if self.contexts_dir:
+            for path in sorted(self.contexts_dir.glob("*.json")):
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if (data.get("customer_id") or path.stem) == customer_id:
+                    return CustomerContext.from_dict(data)
         raise ValueError(f"customer not found: {customer_id}")
 
     def material_changes(self, customer_id: str, *, as_of: str | None = None,
                          disposition: str | None = None) -> dict:
-        """M22-A Material Changes read view for one customer (deterministic, point-in-time, isolated).
+        """Material Changes read view for one customer (deterministic, point-in-time, isolated).
 
         Projects existing ``threats`` / ``propagated_threats`` / ``opportunities`` into customer-relevant
-        Material Change records. Reads only; changes no dispositions and runs no LLM reasoning."""
+        Material Change records and overlays the customer's persisted review/lifecycle state (M22-B).
+        Reads only; changes no dispositions, mutates no system assessment, runs no LLM reasoning."""
+        from . import customers as cust
         from .material_changes import build_material_changes
 
-        context = self._load_context(customer_id)
+        context = self._load_context(customer_id, as_of=as_of)
 
         def _read(store, name):
             try:
@@ -128,9 +145,18 @@ class OperatorConsole:
             threats=threats, propagated_threats=propagated, opportunities=opportunities,
             context=context, as_of=as_of, disposition=disposition)
 
+        # M22-B: overlay the customer's persisted review/lifecycle state. This is CUSTOMER state, kept
+        # separate from the SYSTEM assessment/lifecycle already on each change (never flattened together).
+        overlay = cust.review_overlay(self.customer_store, customer_id, as_of=as_of)
         by_disposition: dict[str, int] = {}
+        by_review_state: dict[str, int] = {}
         for change in changes:
+            state = overlay.get(change["id"], {}).get("state", cust.STATE_NEW)
+            change["review"] = overlay.get(change["id"], {"state": state, "action_count": 0,
+                                                          "last_action": None})
+            change["review"]["state"] = state
             by_disposition[change["disposition"]] = by_disposition.get(change["disposition"], 0) + 1
+            by_review_state[state] = by_review_state.get(state, 0) + 1
         return {
             "customer": {"id": context.customer_id, "name": context.name},
             "as_of": as_of,
@@ -138,7 +164,76 @@ class OperatorConsole:
             "generated_at": _now(),
             "count": len(changes),
             "by_disposition": dict(sorted(by_disposition.items())),
+            "by_review_state": dict(sorted(by_review_state.items())),
             "material_changes": changes,
+        }
+
+    # --- M22-B: persisted customer CRUD + Material Change review/lifecycle -------------------------
+
+    def create_customer(self, *, customer_id: str, name: str, entity_refs=None, capabilities=None,
+                        agencies=None, sectors=None, geography=None, provenance: str = "operator",
+                        effective_from: str | None = None) -> dict:
+        """Create/replace a persisted customer profile version (append-only, auditable)."""
+        from . import customers as cust
+        profile = cust.CustomerProfile(
+            customer_id=customer_id, name=name, entity_refs=list(entity_refs or []),
+            capabilities=list(capabilities or []), agencies=list(agencies or []),
+            sectors=list(sectors or []), geography=list(geography or []),
+            provenance=provenance, effective_from=effective_from)
+        return cust.upsert_customer(self.customer_store, profile)
+
+    def get_customer_profile(self, customer_id: str, *, as_of: str | None = None) -> dict:
+        from . import customers as cust
+        profile = cust.get_customer(self.customer_store, customer_id, as_of=as_of)
+        if profile is None:
+            raise ValueError(f"customer not found: {customer_id}")
+        out = profile.to_record()
+        out["watchlist"] = cust.list_watches(self.customer_store, customer_id, as_of=as_of)
+        return out
+
+    def add_customer_watch(self, customer_id: str, *, object_type: str, ref: str, label: str = "",
+                           valid_from: str | None = None, provenance: str = "operator") -> dict:
+        """Add a persisted watchlist entry for a customer (validates the object type + ref)."""
+        from . import customers as cust
+        if cust.get_customer(self.customer_store, customer_id) is None:
+            raise ValueError(f"customer not found: {customer_id}")
+        entry = cust.WatchlistEntry(customer_id=customer_id, object_type=object_type, ref=ref,
+                                    label=label, valid_from=valid_from, provenance=provenance)
+        return cust.add_watch(self.customer_store, entry)
+
+    def retire_customer_watch(self, customer_id: str, watch_id: str) -> dict:
+        from . import customers as cust
+        return cust.retire_watch(self.customer_store, customer_id, watch_id)
+
+    def list_customer_watches(self, customer_id: str, *, as_of: str | None = None) -> list[dict]:
+        from . import customers as cust
+        return cust.list_watches(self.customer_store, customer_id, as_of=as_of)
+
+    def record_customer_review(self, customer_id: str, material_change_id: str, *, action_type: str,
+                               actor: str = "operator", reason: str = "", note: str = "",
+                               outcome_ref: str | None = None) -> dict:
+        """Record a customer review/lifecycle action on one Material Change (tenancy-checked).
+
+        Rejects cross-customer access: the change must be relevant/visible to this customer. Appends an
+        audit record; never mutates the authoritative system assessment."""
+        from . import customers as cust
+        # Compute the customer's currently visible change ids and enforce the tenancy boundary.
+        visible = {c["id"] for c in self.material_changes(customer_id)["material_changes"]}
+        return cust.record_review_action(
+            self.customer_store, customer_id=customer_id, material_change_id=material_change_id,
+            action_type=action_type, actor=actor, reason=reason, note=note, outcome_ref=outcome_ref,
+            visible_change_ids=visible)
+
+    def customer_review_history(self, customer_id: str, material_change_id: str, *,
+                               as_of: str | None = None) -> dict:
+        from . import customers as cust
+        history = cust.review_history(self.customer_store, customer_id, material_change_id, as_of=as_of)
+        return {
+            "customer_id": customer_id,
+            "material_change_id": material_change_id,
+            "current_state": cust.current_review_state(self.customer_store, customer_id,
+                                                       material_change_id, as_of=as_of),
+            "history": history,
         }
 
     def source_operations(self) -> dict:

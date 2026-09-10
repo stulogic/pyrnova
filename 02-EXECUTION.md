@@ -1,10 +1,30 @@
 # Pyrnova execution authority
 
-_Current execution window: M21 CLOSED (raw adverse event + economic relationship diversity + observable
-outcomes, 2026-09-09); M2–M20 closed; **M22 direction set** (customer-facing Phase 1 productization) but
-implementation **not yet authorized** — STOP and await the milestone-opening brief · updated 2026-09-09_
+_Current execution window: **M22-B CLOSED 2026-09-10** (persisted customer intelligence + Material Change
+lifecycle); M22-A closed (Material Changes vertical slice); M2–M21 closed. No milestone in progress —
+**STOP and await the next milestone-opening brief** before beginning the next M22 slice · updated
+2026-09-10_
 
-## Milestone 22-A — IN PROGRESS 2026-09-09 (Material Changes vertical slice)
+## Milestone 22-B — CLOSED 2026-09-10 (persisted customer intelligence + Material Change lifecycle)
+
+**Authorized** by the M22-B work order; **CLOSED** 2026-09-10. Removes the M22-A demo seam: customer
+configuration is now PERSISTED and drives the read path. New `pyrnova/customers.py` (`CustomerProfile`,
+`WatchlistEntry`, `ReviewAction`; append-only JSONL streams `customers`/`customer_watchlist`/
+`customer_review_actions`; production mirror in `db/schema.sql`). Truth-model boundaries (D-056): global
+vs customer-private (customer config/watchlists/relevance/review state never enter the global intelligence
+graph); system assessment ≠ customer review state (append-only per-`(customer, change)` lifecycle
+NEW/REVIEWED/MONITORING/INVESTIGATING/DISMISSED/RESOLVED never mutates the authoritative threat);
+`customer_id`-keyed tenancy with cross-customer rejection; temporal config (`effective_from`/`valid_from`/
+`valid_to`) with no retrospective watchlist leakage; outcome lineage via optional `outcome_ref`
+(UNRESOLVED first-class); free-text refs preserved unresolved. Read path (`OperatorConsole`), API
+(`/api/customers…`, `/api/material-changes/{id}/review[-history]`), and minimal frontend lifecycle actions
+added behind the unchanged M22-A view. Demo (Torch, DAP) seeded into persisted structures by a
+deterministic, idempotent seed in `examples/` (`pyrnova seed-customers`) — never hard-coded into runtime.
+Additive only — `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora byte-identical; M22-A
+read/API behavior compatible. Full suite **510 passed** (was 492; +18 M22-B). Spec:
+`docs/specs/M22B_PERSISTED_CUSTOMER_LIFECYCLE.md`. See D-056. No further M22-B action.
+
+## Milestone 22-A — CLOSED 2026-09-09 (Material Changes vertical slice)
 
 **Authorized** by the M22-A work order. First customer-facing productization slice: existing Pyrnova
 intelligence → customer relevance → Material Change read projection → read API → Material Changes
@@ -254,13 +274,15 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 
 ## Immediate sequence
 
-1. M2–M21 CLOSED — no milestone in progress; **STOP and await the next brief** (per the M21 work order,
-   do not automatically begin M22 implementation).
-2. **M22 direction set (not authorized):** customer-facing Phase 1 productization organized around the
-   Material-Changes loop for the federal-contractor wedge (`PHASE_1_PRODUCT_AUTHORITY.md`; roadmap areas
-   16–18 supply the composable capabilities). Explicit Phase 1 non-goals (D-048) stay deferred/customer-
-   gated. Source breadth, outcomes, calibration, and relationship coverage keep accumulating in parallel
-   rather than blocking productization. Open the milestone with acceptance criteria before building.
+1. M2–M21, M22-A, and **M22-B CLOSED** — no milestone in progress; **STOP and await the next brief**
+   (per the M22-B work order, do not automatically begin the next M22 slice).
+2. **M22 productization in progress across bounded slices:** M22-A (Material Changes read model) and
+   M22-B (persisted customer intelligence + Material Change lifecycle) are closed. Candidate next slices
+   (each needs a milestone-opening brief before build): per-tenant persisted live Material Change streams;
+   customer-contributed private context (documents/notes) on the ready private/global boundary;
+   authentication attached to the existing `actor`/`customer_id` boundary; first-class evidence-lineage
+   independence. Explicit Phase 1 non-goals (D-048) stay deferred/customer-gated. Source breadth,
+   outcomes, calibration, and relationship coverage keep accumulating in parallel.
 3. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 4. Other next-milestone candidates are recorded in `05-BACKLOG.md` and

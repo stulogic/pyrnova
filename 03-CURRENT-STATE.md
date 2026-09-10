@@ -1,7 +1,25 @@
 # Pyrnova current state
 
-_Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M21 CLOSED — raw adverse event + economic
-relationship diversity + observable outcomes; M2–M20 CLOSED)._
+_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-B CLOSED — persisted customer intelligence +
+Material Change lifecycle; M22-A CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite
+**510 passed**._
+
+> **M22-B persisted customer intelligence + Material Change lifecycle (2026-09-10, CLOSED).** Removes the
+> M22-A demo seam: customer configuration is PERSISTED (`pyrnova/customers.py` — `CustomerProfile`,
+> `WatchlistEntry`, `ReviewAction`; append-only JSONL streams `customers`/`customer_watchlist`/
+> `customer_review_actions`; production mirror in `db/schema.sql`) and drives the read path. Customer
+> config/watchlists/relevance/review state are **customer-private** and never enter the global
+> intelligence graph; the customer lifecycle (NEW/REVIEWED/MONITORING/INVESTIGATING/DISMISSED/RESOLVED) is
+> an append-only per-`(customer, change)` overlay that never mutates the authoritative system assessment;
+> tenancy is `customer_id`-keyed with cross-customer rejection; profile/watch temporal semantics
+> (`effective_from`/`valid_from`/`valid_to`) prevent retrospective watchlist leakage; a resolution may
+> link an existing outcome (`outcome_ref`, UNRESOLVED first-class); free-text watch refs are preserved
+> unresolved. `OperatorConsole` reads persisted context + overlays review state; API + minimal frontend
+> lifecycle actions added behind the unchanged M22-A view. Demo (Torch, DAP) seeded into persisted
+> structures by a deterministic idempotent seed in `examples/` (`pyrnova seed-customers`), not runtime
+> hard-coding. **Additive only** — `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora
+> byte-identical; M22-A read/API compatible. Full suite **510 passed** (was 492; +18 in
+> `tests/test_m22b_customers.py`). Spec: `docs/specs/M22B_PERSISTED_CUSTOMER_LIFECYCLE.md`. See D-056.
 
 > **Post-M21 authority synchronization (2026-09-09, documentation only).** A repository-governance sync
 > recorded the post-M21 strategic direction: the Phase 1 federal-contractor wedge and Material-Changes

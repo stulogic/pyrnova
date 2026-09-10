@@ -78,7 +78,12 @@ stream exists.
   evidence-lineage/origin model (multiple genuinely independent confirmations) is an M22 follow-up.
 - Opportunity/MONITORING dispositions are supported by the read model but the demo shows only truthful
   THREAT items (no real customer opportunity fixture yet) — grow with real opportunity/consequence data.
-- Persisted (non-demo) Material Changes: wire the live engine's `threats`/`propagated_threats` streams
-  into `mc_store` once continuous operations persist them.
-- Customer boundary hardening: the read path already filters per customer; a real tenancy/authz boundary
-  is a later M22 slice (do not assume all customers may see all changes).
+- **DONE (M22-B, D-056): persisted customer intelligence + customer boundary.** Customer configuration is
+  now persisted (`pyrnova/customers.py`) and drives the read path; customer isolation is a durable
+  `customer_id`-keyed tenancy boundary with cross-customer rejection and a global/customer-private
+  separation. Per-tenant persistence of the live engine's `threats`/`propagated_threats` streams into a
+  per-customer `mc_store` remains the next slice (the boundary is enforced at relevance/overlay today, not
+  yet at storage partition). Authentication attaches to the existing `actor`/`customer_id` boundary.
+- **DONE (M22-B, D-056): Material Change lifecycle.** Customer review/lifecycle state
+  (NEW/REVIEWED/MONITORING/INVESTIGATING/DISMISSED/RESOLVED) persists per `(customer, change)` without
+  altering the system assessment; see `docs/specs/M22B_PERSISTED_CUSTOMER_LIFECYCLE.md`.

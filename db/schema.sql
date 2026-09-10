@@ -180,6 +180,64 @@ CREATE TABLE capability_profile (
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 
+-- M22-B: durable, customer-private intelligence configuration that makes Pyrnova intelligence
+-- customer-specific. Dev implementation is append-only JSONL (pyrnova.state / pyrnova.customers streams
+-- `customers`, `customer_watchlist`, `customer_review_actions`); these tables are the production mirror.
+-- This is a customer-private boundary, NOT global intelligence: nothing here is ever promoted into the
+-- entity/relationship/threat graph. `customer.customer_key` is the stable slug the dev JSONL keys on.
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS customer_key text UNIQUE;
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS entity_refs jsonb NOT NULL DEFAULT '[]'::jsonb; -- canonical refs the customer IS
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS capabilities jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS agencies jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS sectors jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS geography jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS provenance text NOT NULL DEFAULT 'operator';
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS effective_from timestamptz NOT NULL DEFAULT now(); -- point-in-time config validity
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+-- One watched object per customer (entity / program / contract / agency). `resolved` records honestly
+-- whether `ref` matched a canonical Pyrnova identifier (a free-text ref is preserved unresolved, never
+-- silently canonicalized). `valid_from`/`valid_to` give temporal semantics so historical replay never
+-- leaks a watch backward before the customer actually held it.
+CREATE TABLE customer_watchlist (
+    id              text PRIMARY KEY,                 -- stable hash(customer, type, ref, valid_from)
+    customer_key    text NOT NULL,
+    object_type     text NOT NULL CHECK (object_type IN ('ENTITY','PROGRAM','CONTRACT','AGENCY')),
+    ref             text NOT NULL,
+    label           text NOT NULL DEFAULT '',
+    resolved        boolean NOT NULL DEFAULT false,
+    resolution_note text NOT NULL DEFAULT '',
+    valid_from      timestamptz NOT NULL,
+    valid_to        timestamptz,                      -- NULL = open; a retirement closure sets this
+    provenance      text NOT NULL DEFAULT 'operator',
+    added_at        timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX customer_watchlist_customer_idx ON customer_watchlist(customer_key, object_type);
+
+-- Customer Material Change review/lifecycle actions (append-only audit). This is CUSTOMER review state,
+-- STRICTLY separate from Pyrnova's system assessment: a customer dismissing/resolving a change records a
+-- transition here and NEVER rewrites the authoritative threat/exposure records. `outcome_ref` optionally
+-- links a resolution to an existing Pyrnova outcome, preserving intelligence -> saw -> reviewed -> acted
+-- -> outcome lineage. UNRESOLVED (no outcome_ref) is a first-class valid state.
+CREATE TABLE customer_review_action (
+    id              text PRIMARY KEY,                 -- stable hash(customer, change, action, at, actor)
+    customer_key    text NOT NULL,
+    material_change_id text NOT NULL,                 -- the projected Material Change id (a threat/prop-threat id)
+    action_type     text NOT NULL CHECK (action_type IN
+                        ('MARK_REVIEWED','MONITOR','RECORD_INVESTIGATION','RECORD_ACTION',
+                         'DISMISS','REJECT','RESOLVE','REOPEN')),
+    from_state      text NOT NULL,
+    to_state        text NOT NULL CHECK (to_state IN
+                        ('NEW','REVIEWED','MONITORING','INVESTIGATING','DISMISSED','RESOLVED')),
+    actor           text NOT NULL DEFAULT 'operator', -- placeholder id, compatible with later auth
+    reason          text NOT NULL DEFAULT '',
+    note            text NOT NULL DEFAULT '',
+    outcome_ref     text,                             -- optional link to an existing outcome (UNRESOLVED valid)
+    at              timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX customer_review_action_change_idx
+    ON customer_review_action(customer_key, material_change_id, at);
+
 -- ---------------------------------------------------------------------------
 -- OPPORTUNITY + STRIKE  (STRIKE is the qualified/actionable STATE of an Opportunity,
 -- implemented as lifecycle over one table rather than duplicated storage.)

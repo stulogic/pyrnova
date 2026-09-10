@@ -132,11 +132,45 @@ function renderChange(m) {
   node.querySelector(".status").innerHTML =
     `Lifecycle <b>${esc(m.lifecycle_state)}</b> · Outcome <b>${esc(dash(m.outcome_state))}</b>`;
 
+  // M22-B: customer review/lifecycle state — kept visually distinct from the SYSTEM lifecycle above.
+  const review = m.review || { state: "NEW" };
+  const stateEl = node.querySelector(".review-state");
+  stateEl.textContent = review.state;
+  stateEl.className = "review-state " + review.state.toLowerCase();
+  const actionsEl = node.querySelector(".review-actions");
+  actionsEl.innerHTML = REVIEW_ACTIONS.map(([label, action]) =>
+    `<button type="button" data-action="${action}" data-id="${esc(m.id)}">${label}</button>`).join("");
+  actionsEl.querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => recordReview(b.dataset.id, b.dataset.action)));
+
   const refs = node.querySelector(".refs");
   refs.textContent = JSON.stringify({ id: m.id, refs: m.refs, provenance: m.provenance }, null, 2);
   node.querySelector(".inspect").addEventListener("click", () => { refs.hidden = !refs.hidden; });
 
   feed.append(node);
+}
+
+// Minimal lifecycle actions behind the M22-A view (function before polish). Persist server-side.
+const REVIEW_ACTIONS = [
+  ["Mark reviewed", "MARK_REVIEWED"],
+  ["Monitor", "MONITOR"],
+  ["Record investigation", "RECORD_INVESTIGATION"],
+  ["Dismiss", "DISMISS"],
+  ["Resolve", "RESOLVE"],
+  ["Reopen", "REOPEN"],
+];
+
+async function recordReview(changeId, action) {
+  const customer = customerSel.value;
+  if (!customer) return;
+  const res = await fetch(`/api/material-changes/${encodeURIComponent(changeId)}/review`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customer, action_type: action, actor: "operator" }),
+  });
+  const data = await res.json();
+  if (!res.ok) { note(data.error || "Review action failed"); return; }
+  note("");
+  await load();  // reload so the persisted state (and counts) reflect the change across refresh/restart
 }
 
 customerSel.addEventListener("change", load);
