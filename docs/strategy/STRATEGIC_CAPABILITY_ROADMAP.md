@@ -364,7 +364,7 @@ authorizes implementation (D-042, D-047).
 | 10 | Intelligence memory / thesis evolution | **NEXT** foundation (historical intelligence; candidate moat, D-049) |
 | 11 | Portfolio-level intelligence | DEFERRED (advanced portfolio modelling) |
 | 12 | Broad source expansion | CUSTOMER-GATED — global event detection, commodities, maritime, aviation, broad social-media, state/local procurement, broad premium feeds are **DEFERRED** Phase 1 non-goals (D-048); pull sources by demonstrated value only |
-| 13 | Customer-facing simplification | **NEXT** — Material Changes as dominant UX (D-046) |
+| 13 | Customer-facing simplification | **IN-PROGRESS** — Material Changes vertical slice delivered (M22-A, D-055) |
 | 14 | Proprietary history accumulation | ONGOING (top candidate moat, D-049) |
 | 15 | AlphaSense-class architecture guardrail | ONGOING (preserve optionality; do not build breadth) |
 | 16 | Company Intelligence Dossier + surface | **NEXT** — dossier is a *supporting* surface; graph mostly hidden (D-046) |
@@ -406,3 +406,4 @@ action, unnecessary graph-database migration, premature streaming infrastructure
 | 2026-09-09 | 1, 3, 19 | M21 added a raw-archived source-native contract **termination** and the `SUBSIDIARY_OF` economic relationship type (parent-hierarchy native ids); relationship-type diversity beyond `SUBCONTRACTOR_OF`/`COMPANY_TO_PROGRAM` | M21 |
 | 2026-09-09 | 1–22 | Post-M21 authority sync: added **Phase 1 disposition** labels (NEXT/LATER/CUSTOMER-GATED/DEFERRED/ONGOING) so roadmap items cannot be mistaken for current scope; marked broad event/supply-chain/commodities/maritime/aviation/private-company/premium/autonomous items DEFERRED (D-048) | D-048, red team review |
 | 2026-09-09 | 23 | Added area 23 (competitor-as-entity intelligence + strategic data autonomy); product build DEFERRED, operating-discipline parts binding now | D-053 |
+| 2026-09-09 | 13, 16–18 | M22-A Material Changes vertical slice delivered (read model + relevance + read API + customer-facing view); area 13 → IN-PROGRESS | D-055 |

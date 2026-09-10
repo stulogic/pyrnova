@@ -61,12 +61,85 @@ def opportunity_from_record(record: dict) -> Opportunity:
 
 class OperatorConsole:
     def __init__(self, store: StateStore, profiles_dir: Path, out_dir: Path,
-                 source_state_dir: Path | None = None):
+                 source_state_dir: Path | None = None,
+                 mc_store: StateStore | None = None,
+                 contexts_dir: Path | None = None):
         self.store = store
         self.profiles_dir = Path(profiles_dir)
         self.out_dir = Path(out_dir)
         # M12: optional durable source-state directory for the Operations Panel source view.
         self.source_state_dir = Path(source_state_dir) if source_state_dir else None
+        # M22-A: optional separate store for Material Changes intelligence (threats/propagated threats)
+        # and the directory of customer intelligence contexts. Defaults keep the existing panel intact.
+        self.mc_store = mc_store or store
+        self.contexts_dir = Path(contexts_dir) if contexts_dir else None
+
+    # --- M22-A: Material Changes (customer-facing "what materially changed?") ---------------------
+
+    def customers(self) -> list[dict]:
+        """List available customer intelligence contexts (id + name), empty-safe."""
+        rows: list[dict] = []
+        if not self.contexts_dir or not self.contexts_dir.exists():
+            return rows
+        for path in sorted(self.contexts_dir.glob("*.json")):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            cid = data.get("customer_id") or path.stem
+            rows.append({"id": cid, "name": data.get("name", cid)})
+        return rows
+
+    def _load_context(self, customer_id: str):
+        from .material_changes import CustomerContext
+        if not self.contexts_dir:
+            raise ValueError("no customer contexts directory configured")
+        for path in sorted(self.contexts_dir.glob("*.json")):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if (data.get("customer_id") or path.stem) == customer_id:
+                return CustomerContext.from_dict(data)
+        raise ValueError(f"customer not found: {customer_id}")
+
+    def material_changes(self, customer_id: str, *, as_of: str | None = None,
+                         disposition: str | None = None) -> dict:
+        """M22-A Material Changes read view for one customer (deterministic, point-in-time, isolated).
+
+        Projects existing ``threats`` / ``propagated_threats`` / ``opportunities`` into customer-relevant
+        Material Change records. Reads only; changes no dispositions and runs no LLM reasoning."""
+        from .material_changes import build_material_changes
+
+        context = self._load_context(customer_id)
+
+        def _read(store, name):
+            try:
+                return list(_latest(store.read(name)).values())
+            except Exception:  # noqa: BLE001 — degrade gracefully if a collection is absent
+                return []
+
+        threats = _read(self.mc_store, "threats")
+        propagated = _read(self.mc_store, "propagated_threats")
+        opportunities = [o for o in _read(self.store, "opportunities")
+                         if o.get("customer_id") == customer_id]
+
+        changes = build_material_changes(
+            threats=threats, propagated_threats=propagated, opportunities=opportunities,
+            context=context, as_of=as_of, disposition=disposition)
+
+        by_disposition: dict[str, int] = {}
+        for change in changes:
+            by_disposition[change["disposition"]] = by_disposition.get(change["disposition"], 0) + 1
+        return {
+            "customer": {"id": context.customer_id, "name": context.name},
+            "as_of": as_of,
+            "disposition_filter": (disposition or "").strip().upper() or None,
+            "generated_at": _now(),
+            "count": len(changes),
+            "by_disposition": dict(sorted(by_disposition.items())),
+            "material_changes": changes,
+        }
 
     def source_operations(self) -> dict:
         """M12 Operations Panel view: durable per-source health + operator controls (read-only).

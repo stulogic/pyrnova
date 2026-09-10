@@ -11,6 +11,17 @@ relationship diversity + observable outcomes; M2–M20 CLOSED)._
 > **No product code, tests, scoring, corpora, or runtime state changed;** the 482-test M21 state stands.
 > M22 direction is set but implementation is not yet authorized (see `02-EXECUTION.md`).
 
+> **M22-A Material Changes vertical slice (2026-09-09, IN PROGRESS — first product slice).** New
+> customer-facing read path: `pyrnova/material_changes.py` (Material Changes read model + deterministic
+> customer relevance + `CustomerContext`); `OperatorConsole.material_changes`/`.customers`;
+> `/api/material-changes` + `/api/customers`; a customer-facing Material Changes frontend served at `/`
+> (`pyrnova/ops_web/material.{html,css,js}`; Operator Console moved to `/console`). Demo fixture
+> `examples/material_changes_demo/` (two isolated customers, generated from real archived M19/M21
+> evidence). OBSERVED vs ASSESSED kept separate; point-in-time enforced; evidence referenced not
+> duplicated; customer-isolated. **Additive only** — `scoring_v1`/`fit.py`/`replay.py`/severity bands and
+> frozen corpora byte-identical. Full suite **492 passed** (was 482; +10 in `tests/test_material_changes.py`).
+> Spec: `docs/specs/M22A_MATERIAL_CHANGES.md`. See D-055.
+
 ## Milestone status
 
 - **M21: CLOSED 2026-09-09.** Raw authoritative adverse event + economic relationship diversity +

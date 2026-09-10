@@ -1,0 +1,13 @@
+{
+  "customer_id": "torch",
+  "name": "Torch Technologies",
+  "entity_refs": ["co_torch"],
+  "watched_entity_refs": ["co_saic"],
+  "watched_programs": ["47QFSA20F0057"],
+  "agencies": ["Army", "Missile Defense Agency", "Air Force", "Space Force", "Department of Defense",
+               "General Services Administration"],
+  "capabilities": ["modeling and simulation", "systems engineering", "test and evaluation",
+                   "missile defense", "software", "cybersecurity"],
+  "sectors": ["defense", "technology", "engineering"],
+  "_note": "First-pass demo customer context (M22-A). entity_refs = the customer itself; watched_* = what it monitors. SAIC is a prime Torch subcontracts under (real archived sub-award edge on PIID 47QFSA20F0057)."
+}

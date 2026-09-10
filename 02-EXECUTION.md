@@ -4,6 +4,17 @@ _Current execution window: M21 CLOSED (raw adverse event + economic relationship
 outcomes, 2026-09-09); M2–M20 closed; **M22 direction set** (customer-facing Phase 1 productization) but
 implementation **not yet authorized** — STOP and await the milestone-opening brief · updated 2026-09-09_
 
+## Milestone 22-A — IN PROGRESS 2026-09-09 (Material Changes vertical slice)
+
+**Authorized** by the M22-A work order. First customer-facing productization slice: existing Pyrnova
+intelligence → customer relevance → Material Change read projection → read API → Material Changes
+frontend view. Bounded to one vertical slice; **not** all of M22. Additive only — `scoring_v1`/`fit.py`/
+`replay.py`/severity bands and frozen corpora unchanged; no engine dispositions altered. Spec:
+`docs/specs/M22A_MATERIAL_CHANGES.md`. Governed by `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` and D-041.
+Deterministic relevance only (no LLM relevance agent); observed-vs-assessed preserved end to end;
+point-in-time truth (`available_at <= as_of`) enforced in the read path; demo uses real archived evidence
+(M21 termination, M19 SAIC→Torch), no fabrication, no unnecessary live calls. See D-055.
+
 ## M22 direction (Phase 1 productization) — direction set, NOT yet authorized
 
 The next phase is **customer-facing Phase 1 productization** for the federal-contractor wedge, governed

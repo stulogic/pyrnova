@@ -33,6 +33,8 @@ last looked?"** — with **Material Changes** as the dominant surface. The autho
 - Review discipline: `docs/specs/REVIEW_TEMPLATE.md`. Supporting precursor research:
   `docs/research/PRECURSOR_CASEBOOK.md`.
 - Local internal review surface: `docs/OPERATOR_CONSOLE.md`.
+- Customer-facing product view: `python -m pyrnova.ops_server` → **Material Changes** at `/` (the
+  Operator Console moves to `/console`). Spec: `docs/specs/M22A_MATERIAL_CHANGES.md`.
 
 ## The kernel pipeline
 

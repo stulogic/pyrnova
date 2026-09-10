@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pyrnova — Material Changes</title>
+  <link rel="stylesheet" href="/material.css?v=1">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><span class="mark">PYRNOVA</span><span class="module">Material Changes</span></div>
+    <div class="controls">
+      <label class="field">Customer<select id="customer"></select></label>
+      <label class="field">As of<input id="asof" type="date"></label>
+      <a class="console-link" href="/console">Operations</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="lede">
+      <h1>Material Changes</h1>
+      <p class="question">What materially changed since you last looked, and why does it matter to this organization?</p>
+      <div id="filters" class="filters"></div>
+    </section>
+
+    <div id="message" role="status" class="message" hidden></div>
+    <section id="feed" class="feed"></section>
+  </main>
+
+  <template id="change">
+    <article class="change">
+      <div class="change-top">
+        <span class="disposition"></span>
+        <div class="badges">
+          <span class="badge materiality" title="How severe the economic consequence could be, if the assessment holds"></span>
+          <span class="badge confidence" title="How strongly retained evidence supports the assessment"></span>
+        </div>
+      </div>
+      <h2 class="headline"></h2>
+      <div class="why">
+        <span class="why-label">Why it matters</span>
+        <span class="why-detail"></span>
+        <span class="relevance-basis"></span>
+      </div>
+      <div class="split">
+        <div class="pane observed">
+          <span class="pane-label">Observed fact</span>
+          <dl class="facts"></dl>
+        </div>
+        <div class="pane assessed">
+          <span class="pane-label">Pyrnova assessment</span>
+          <dl class="facts"></dl>
+        </div>
+      </div>
+      <div class="propagation" hidden></div>
+      <div class="evidence"></div>
+      <div class="uncertainty" hidden></div>
+      <div class="change-foot">
+        <span class="status"></span>
+        <button type="button" class="inspect">Evidence references</button>
+      </div>
+      <pre class="refs" hidden></pre>
+    </article>
+  </template>
+
+  <script src="/material.js?v=1" defer></script>
+</body>
+</html>

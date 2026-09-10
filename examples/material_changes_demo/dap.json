@@ -1,0 +1,11 @@
+{
+  "customer_id": "dap",
+  "name": "DAP Construction Management LLC",
+  "entity_refs": ["co_dap_sub"],
+  "watched_entity_refs": ["co_uei_KMSLVW1MZWU9"],
+  "watched_programs": ["36C25726N0240"],
+  "agencies": ["Department of Veterans Affairs"],
+  "capabilities": ["construction management", "facilities"],
+  "sectors": ["industrial", "infrastructure"],
+  "_note": "First-pass demo customer context (M22-A). entity_refs = the customer itself (the terminated award's recipient); watched parent (co_uei_KMSLVW1MZWU9) is the deterministic SUBSIDIARY_OF native-id parent."
+}

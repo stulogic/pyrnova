@@ -47,12 +47,35 @@ def make_handler(console: OperatorConsole):
             if parsed.path == "/api/snapshot":
                 target = parse_qs(parsed.query).get("target", [None])[0]
                 return self._json(200, console.snapshot(target))
-            if parsed.path in {"/", "/index.html"}:
-                return self._asset("index.html", "text/html; charset=utf-8")
-            if parsed.path == "/app.js":
-                return self._asset("app.js", "text/javascript; charset=utf-8")
-            if parsed.path == "/styles.css":
-                return self._asset("styles.css", "text/css; charset=utf-8")
+            if parsed.path == "/api/customers":
+                return self._json(200, {"customers": console.customers()})
+            if parsed.path == "/api/material-changes":
+                query = parse_qs(parsed.query)
+                customer = query.get("customer", [None])[0]
+                if not customer:
+                    return self._json(400, {"error": "customer is required"})
+                try:
+                    return self._json(200, console.material_changes(
+                        customer,
+                        as_of=query.get("as_of", [None])[0],
+                        disposition=query.get("disposition", [None])[0]))
+                except ValueError as exc:
+                    return self._json(404, {"error": str(exc)})
+            # M22-A: the customer-facing Material Changes product is the front door ("/"); the internal
+            # Operator Console moves to "/console". Both are served from the same asset directory.
+            assets = {
+                "/": ("material.html", "text/html; charset=utf-8"),
+                "/material.html": ("material.html", "text/html; charset=utf-8"),
+                "/material.js": ("material.js", "text/javascript; charset=utf-8"),
+                "/material.css": ("material.css", "text/css; charset=utf-8"),
+                "/console": ("index.html", "text/html; charset=utf-8"),
+                "/index.html": ("index.html", "text/html; charset=utf-8"),
+                "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+                "/styles.css": ("styles.css", "text/css; charset=utf-8"),
+            }
+            if parsed.path in assets:
+                name, content_type = assets[parsed.path]
+                return self._asset(name, content_type)
             self._json(404, {"error": "not found"})
 
         def do_POST(self):
@@ -85,7 +108,16 @@ def main(argv=None) -> int:
     if args.host not in {"127.0.0.1", "localhost"}:
         parser.error("the operator console is local-only; host must be 127.0.0.1 or localhost")
     cfg = load_config()
-    console = OperatorConsole(StateStore(cfg.state_dir), Path("examples/profiles"), cfg.out_dir)
+    # M22-A: serve Material Changes from persisted threat streams when present; otherwise fall back to
+    # the tracked, replay-safe demonstration fixture so the product view is populated on a fresh checkout.
+    demo_dir = Path("examples/material_changes_demo")
+    state_store = StateStore(cfg.state_dir)
+    mc_store = state_store
+    if not (Path(cfg.state_dir) / "threats.jsonl").exists() and (demo_dir / "state" / "threats.jsonl").exists():
+        mc_store = StateStore(demo_dir / "state")
+    console = OperatorConsole(
+        state_store, Path("examples/profiles"), cfg.out_dir,
+        mc_store=mc_store, contexts_dir=demo_dir)
     server = ThreadingHTTPServer((args.host, args.port), make_handler(console))
     print(f"Pyrnova Operator Console: http://{args.host}:{args.port}")
     try:
