@@ -71,6 +71,20 @@ problem incumbents solve poorly; do not fight them where their structural advant
 doctrine: `docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052). This never authorizes scope expansion (see the
 finishability rule below) or any unlawful/deceptive practice.
 
+## Lawful competitive intelligence (binding)
+
+Study competitors and challenge rented data by **lawful means only**: public/open data, FOIA, lawfully
+purchased products, ordinary authorized access, independent research, reverse engineering where legally
+permitted, and independent derivation. **Never** use unauthorized access, credential misuse, malware,
+bribery, misrepresentation to obtain protected information, inducement to breach confidentiality, or
+trade-secret / leaked-code / stolen-database material. Any collection technique with uncertain
+terms-of-service, copyright, automated-collection, access-control, database-rights, or contractual
+implications is **YELLOW → legal review before operationalization** (not before study). Keep clean-room
+OBSERVATION separate from IMPLEMENTATION; keep rented-data provenance separable. Building the competitor-
+dossier / benchmark / vendor-displacement *product* is **roadmap-deferred** (D-053, roadmap area 23) —
+not current implementation authority. Full doctrine:
+`docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md`.
+
 ## Finishability rule (binding)
 
 A missing capability may block a phase **only** for correctness, safety, architectural integrity,

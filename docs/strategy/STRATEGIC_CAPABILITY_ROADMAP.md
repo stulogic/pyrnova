@@ -312,6 +312,19 @@ where empirical evidence supports them** and only after full-corpus evaluation, 
 outcome set reaching non-directional volume (M15–M21 grew resolved outcomes but samples remain small).
 Discipline: no invented probability; a forecast is published only beside its calibration denominator.
 
+### 23. Competitor-as-entity intelligence + strategic data autonomy — `RECORDED`
+
+Apply Pyrnova's own intelligence architecture to its competitive environment: living, lawful competitor
+dossiers with intelligence history and material-change detection (B1), product acquisition/teardown with
+reproducible competitive benchmarks (B2), and a vendor-displacement program that recreates commodity data
+value internally while licensing only genuinely exclusive information (B3). Governed by
+`docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md` (D-053). Discipline: **lawful means only**
+(proper-means rule + YELLOW legal review), clean-room OBSERVATION/IMPLEMENTATION separation, rights-safe
+separable provenance, and evidence-independence. Extends area 5 (competitor intent inference) and area 14
+(proprietary history). The *operating-discipline* parts of D-053 (proper-means, YELLOW, rights
+contamination, data-autonomy assessment) are binding now; the *product build* here is deferred and gated
+by `02-EXECUTION.md`.
+
 ### Combined-depth doctrine (binding on planning)
 
 Pyrnova combines broad research depth with its own economic intelligence layer. The target is not merely
@@ -362,6 +375,8 @@ authorizes implementation (D-042, D-047).
 | 21 | Standing requirements + escalation + decay/anomaly | LATER; **no autonomous action** (DEFERRED non-goal) |
 | 22 | Calibrated forecasting | LATER / CUSTOMER-GATED (only with calibration denominators; never invented probability) |
 
+| 23 | Competitor-as-entity intelligence + data autonomy | LATER (product build DEFERRED); operating-discipline parts (proper-means, YELLOW, rights contamination, data-autonomy assessment) **binding now** (D-053) |
+
 Additional durable Phase 1 non-goals not mapped to a single area (DEFERRED, D-048): comprehensive
 private-company universe, complete beneficial ownership, global facilities completeness, complete
 financial terminal, deep person intelligence, unrestricted autonomous agents, autonomous commercial
@@ -390,3 +405,4 @@ action, unnecessary graph-database migration, premature streaming infrastructure
 | 2026-09-09 | 16–22   | M21 Phase 0 recorded areas 16–22 (dossier/surface, universal + NL-assisted search, read projections, counterparty/multi-tier supply chain, blast-radius + exposure fingerprints, standing requirements/decay/anomaly, calibrated forecasting) + combined-depth and phase-control doctrine | D-042 |
 | 2026-09-09 | 1, 3, 19 | M21 added a raw-archived source-native contract **termination** and the `SUBSIDIARY_OF` economic relationship type (parent-hierarchy native ids); relationship-type diversity beyond `SUBCONTRACTOR_OF`/`COMPANY_TO_PROGRAM` | M21 |
 | 2026-09-09 | 1–22 | Post-M21 authority sync: added **Phase 1 disposition** labels (NEXT/LATER/CUSTOMER-GATED/DEFERRED/ONGOING) so roadmap items cannot be mistaken for current scope; marked broad event/supply-chain/commodities/maritime/aviation/private-company/premium/autonomous items DEFERRED (D-048) | D-048, red team review |
+| 2026-09-09 | 23 | Added area 23 (competitor-as-entity intelligence + strategic data autonomy); product build DEFERRED, operating-discipline parts binding now | D-053 |

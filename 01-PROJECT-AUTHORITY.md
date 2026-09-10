@@ -136,6 +136,16 @@ misrepresentation, IP theft, system interference, customer-data misuse, license/
 deceptive practice, and never overrides the finishability rule or Phase 1 non-goals. Full doctrine:
 `docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052).
 
+Competitive intelligence is a first-class capability studied by **lawful means only** (public/open data,
+FOIA, lawfully purchased products, independent research, reverse engineering where permitted, independent
+derivation), never by unauthorized access, credential misuse, malware, bribery, misrepresentation,
+inducing breach of confidentiality, or trade-secret/leaked-code/stolen-database use. Uncertain collection
+techniques are **YELLOW** — legal review before operationalization. Rented data is a challenged
+dependency held under rights-safe, technically separable provenance so Pyrnova can always answer "if we
+terminate this supplier tomorrow, what do we lose?" Full doctrine:
+`docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md` (D-053; operating discipline binding now,
+product build deferred).
+
 ## Canonical execution tree
 
 **Pyrnova's canonical local execution tree is `/Users/stu/Documents/Pyrnova` on `main`.** All local
