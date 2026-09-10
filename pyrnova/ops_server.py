@@ -78,6 +78,39 @@ def make_handler(console: OperatorConsole):
                 except ValueError as exc:
                     return self._json(404, {"error": str(exc)})
                 return self._json(404, {"error": "not found"})
+            # M22-D: deterministic search over the Pyrnova estate (no runtime LLM).
+            if parsed.path == "/api/search":
+                query = parse_qs(parsed.query)
+                return self._json(200, console.search(
+                    query.get("q", [""])[0], as_of=query.get("as_of", [None])[0]))
+            # M22-D: company investigation page (global; optional authorized customer overlay).
+            if parsed.path == "/api/company":
+                query = parse_qs(parsed.query)
+                ref = query.get("ref", [None])[0]
+                if not ref:
+                    return self._json(400, {"error": "ref is required"})
+                try:
+                    return self._json(200, console.company_intelligence(
+                        ref, as_of=query.get("as_of", [None])[0],
+                        customer=query.get("customer", [None])[0]))
+                except PermissionError as exc:
+                    return self._json(403, {"error": str(exc)})
+                except ValueError as exc:
+                    return self._json(404, {"error": str(exc)})
+            # M22-D: program investigation page (global; optional authorized customer overlay).
+            if parsed.path == "/api/program":
+                query = parse_qs(parsed.query)
+                key = query.get("key", [None])[0]
+                if not key:
+                    return self._json(400, {"error": "key is required"})
+                try:
+                    return self._json(200, console.program_intelligence(
+                        key, as_of=query.get("as_of", [None])[0],
+                        customer=query.get("customer", [None])[0]))
+                except PermissionError as exc:
+                    return self._json(403, {"error": str(exc)})
+                except ValueError as exc:
+                    return self._json(404, {"error": str(exc)})
             if parsed.path == "/api/material-changes":
                 query = parse_qs(parsed.query)
                 customer = query.get("customer", [None])[0]
@@ -123,6 +156,14 @@ def make_handler(console: OperatorConsole):
                 "/material.html": ("material.html", "text/html; charset=utf-8"),
                 "/material.js": ("material.js", "text/javascript; charset=utf-8"),
                 "/material.css": ("material.css", "text/css; charset=utf-8"),
+                # M22-D: investigation surfaces (search + company/program). One asset trio routed by JS.
+                "/investigate": ("investigation.html", "text/html; charset=utf-8"),
+                "/search": ("investigation.html", "text/html; charset=utf-8"),
+                "/company": ("investigation.html", "text/html; charset=utf-8"),
+                "/program": ("investigation.html", "text/html; charset=utf-8"),
+                "/investigation.html": ("investigation.html", "text/html; charset=utf-8"),
+                "/investigation.js": ("investigation.js", "text/javascript; charset=utf-8"),
+                "/investigation.css": ("investigation.css", "text/css; charset=utf-8"),
                 "/console": ("index.html", "text/html; charset=utf-8"),
                 "/index.html": ("index.html", "text/html; charset=utf-8"),
                 "/app.js": ("app.js", "text/javascript; charset=utf-8"),

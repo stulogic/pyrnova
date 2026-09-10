@@ -180,6 +180,23 @@ class OperatorConsole:
             change["review"] = overlay.get(change["id"], {"state": state, "action_count": 0,
                                                           "last_action": None})
             change["review"]["state"] = state
+            # M22-D §5: investigation navigation. A Material Change links to the affected company, the
+            # affected program, and any related entities on its propagation path — the user need never
+            # copy an identifier into search. Built from refs already on the projection (canonical objects).
+            refs = change.get("refs") or {}
+            subject_ref = refs.get("subject_ref")
+            related: list[dict] = []
+            for hop in ((change.get("propagation") or {}).get("path") or []):
+                for r in (hop.get("from_ref"), hop.get("to_ref")):
+                    if r and r != subject_ref and r not in [x["ref"] for x in related]:
+                        related.append({"ref": r})
+            change["investigation"] = {
+                "company": {"ref": subject_ref,
+                            "name": (change.get("observed") or {}).get("affected_entity")}
+                            if subject_ref else None,
+                "program": {"key": refs.get("program")} if refs.get("program") else None,
+                "related_entities": related,
+            }
             v = versions.get(change["id"])
             if v is not None:
                 materialized += 1
@@ -213,6 +230,100 @@ class OperatorConsole:
             "materialized": materialized if self.cmc_store is not None else None,
             "material_changes": changes,
         }
+
+    # --- M22-D: deterministic search + company/program investigation pages ------------------------
+
+    def _build_estate(self, *, as_of: str | None = None):
+        """Build the point-in-time investigation estate from the GLOBAL intelligence streams (§10/§13).
+
+        Reuses the same threat/opportunity streams the Material Changes read model consumes, so search and
+        the investigation pages reference exactly the canonical objects the feed does — never a second,
+        divergent entity model."""
+        from .investigation import build_estate
+
+        def _read(store, name):
+            try:
+                return list(_latest(store.read(name)).values())
+            except Exception:  # noqa: BLE001 — degrade gracefully if a collection is absent
+                return []
+
+        return build_estate(
+            threats=_read(self.mc_store, "threats"),
+            propagated_threats=_read(self.mc_store, "propagated_threats"),
+            opportunities=_read(self.store, "opportunities"),
+            relationships=_read(self.store, "relationships"),
+            as_of=as_of,
+        )
+
+    def search(self, query: str, *, as_of: str | None = None, limit: int = 25) -> dict:
+        """Resolve a query against the Pyrnova estate (deterministic; no runtime LLM — §6/§9)."""
+        from .investigation import search as _search
+        estate = self._build_estate(as_of=as_of)
+        result = _search(estate, query or "", limit=limit)
+        result["as_of"] = as_of
+        result["generated_at"] = _now()
+        return result
+
+    def _entity_customer_context(self, estate, *, entity_ref: str | None = None,
+                                 program_key: str | None = None, customer_id: str | None = None) -> dict | None:
+        """Customer-specific overlay for an investigation page (§12), kept strictly separate from global truth.
+
+        Authorization is enforced first. Returns whether the customer watches/owns the object and which of
+        THAT customer's Material Changes touch it — never another customer's private state, never folded
+        into the global page."""
+        if not customer_id:
+            return None
+        self._require_access(customer_id)
+        from . import customers as cust
+        context = self._load_context(customer_id, as_of=None)
+        norm = context._norm
+        watched = False
+        relation = None
+        if entity_ref:
+            if norm(context.entity_refs) and entity_ref.strip().lower() in norm(context.entity_refs):
+                watched, relation = True, "DIRECT_SUBJECT"
+            elif entity_ref.strip().lower() in norm(context.watched_entity_refs):
+                watched, relation = True, "WATCHED_ENTITY"
+        if program_key and program_key.strip().lower() in norm(context.watched_programs):
+            watched, relation = True, "WATCHED_PROGRAM"
+        # Which of this customer's own Material Changes reference the object (customer-isolated read).
+        feed = self.material_changes(customer_id)["material_changes"]
+        related = []
+        for c in feed:
+            refs = c.get("refs") or {}
+            if (entity_ref and refs.get("subject_ref") == entity_ref) or \
+               (program_key and refs.get("program") == program_key):
+                related.append({"id": c["id"], "disposition": c.get("disposition"),
+                                "review_state": (c.get("review") or {}).get("state")})
+        return {"customer_id": customer_id, "watched": watched, "relation": relation,
+                "related_material_change_ids": [r["id"] for r in related],
+                "related_material_changes": related}
+
+    def company_intelligence(self, ref: str, *, as_of: str | None = None,
+                             customer: str | None = None) -> dict:
+        """Company investigation page (global). Optional isolated customer overlay when authorized (§3/§12)."""
+        from .investigation import company_intelligence as _company
+        estate = self._build_estate(as_of=as_of)
+        overlay = self._entity_customer_context(estate, entity_ref=ref, customer_id=customer)
+        try:
+            page = _company(estate, ref, as_of=as_of, customer_context=overlay)
+        except KeyError:
+            raise ValueError(f"entity not found in the Pyrnova estate: {ref}")
+        page["generated_at"] = _now()
+        return page
+
+    def program_intelligence(self, program_key: str, *, as_of: str | None = None,
+                             customer: str | None = None) -> dict:
+        """Program investigation page (global). Optional isolated customer overlay when authorized (§4/§12)."""
+        from .investigation import program_intelligence as _program
+        estate = self._build_estate(as_of=as_of)
+        overlay = self._entity_customer_context(estate, program_key=program_key, customer_id=customer)
+        try:
+            page = _program(estate, program_key, as_of=as_of, customer_context=overlay)
+        except KeyError:
+            raise ValueError(f"program not found in the Pyrnova estate: {program_key}")
+        page["generated_at"] = _now()
+        return page
 
     # --- M22-B: persisted customer CRUD + Material Change review/lifecycle -------------------------
 

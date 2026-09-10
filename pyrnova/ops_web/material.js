@@ -106,6 +106,23 @@ function renderChange(m) {
     ["Engine", a.assessment_engine],
   ]);
 
+  // M22-D §5: investigation navigation — reach the affected company/program without copying an id.
+  const investigate = node.querySelector(".investigate");
+  if (investigate && m.investigation) {
+    const links = [];
+    const co = m.investigation.company;
+    if (co && co.ref) links.push(`<a href="/company?ref=${encodeURIComponent(co.ref)}">Investigate ${esc(co.name || co.ref)}</a>`);
+    const pr = m.investigation.program;
+    if (pr && pr.key) links.push(`<a href="/program?key=${encodeURIComponent(pr.key)}">Program ${esc(pr.key)}</a>`);
+    (m.investigation.related_entities || []).forEach(r => {
+      if (r.ref && (!co || r.ref !== co.ref)) links.push(`<a href="/company?ref=${encodeURIComponent(r.ref)}">${esc(r.ref)}</a>`);
+    });
+    if (links.length) {
+      investigate.innerHTML = `<span class="why-label">Investigate</span>` + links.join("");
+      investigate.hidden = false;
+    }
+  }
+
   const prop = node.querySelector(".propagation");
   if (m.propagation && m.propagation.is_propagated && (m.propagation.path || []).length) {
     const hops = m.propagation.path.map(h => `${esc(h.from_ref)} —${esc(h.relation || "REL")}→ ${esc(h.to_ref)}`).join("  ·  ");

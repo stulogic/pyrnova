@@ -509,9 +509,57 @@ def cmd_fanout(args) -> int:
     return 0
 
 
+def cmd_search(args) -> int:
+    """M22-D: resolve a query against the Pyrnova estate deterministically (no runtime LLM).
+
+    Builds the point-in-time investigation estate from the configured global intelligence streams
+    (falling back to the tracked demo state on a fresh checkout, mirroring the server) and prints the
+    resolution (EXACT / PROBABLE / AMBIGUOUS / UNRESOLVED) with the resolved canonical objects."""
+    from .config import load_config
+    from .investigation import build_estate, search
+    from .state import StateStore
+
+    cfg = load_config()
+    store = StateStore(cfg.state_dir)
+    demo_state = Path(args.demo_dir) / "state"
+    mc_store = store
+    if not (Path(cfg.state_dir) / "threats.jsonl").exists() and (demo_state / "threats.jsonl").exists():
+        mc_store = StateStore(demo_state)
+
+    def _read(s, name):
+        try:
+            return list(s.read(name))
+        except Exception:  # noqa: BLE001
+            return []
+
+    latest = {}
+    for name, s in (("threats", mc_store), ("propagated_threats", mc_store),
+                    ("opportunities", store), ("relationships", store)):
+        rows = {}
+        for r in _read(s, name):
+            rid = r.get("id")
+            if rid:
+                rows[str(rid)] = r
+        latest[name] = list(rows.values()) if name != "relationships" else _read(s, name)
+
+    estate = build_estate(threats=latest["threats"], propagated_threats=latest["propagated_threats"],
+                          opportunities=latest["opportunities"], relationships=latest["relationships"],
+                          as_of=args.as_of)
+    print(json.dumps(search(estate, args.query, limit=args.limit), indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    srch = sub.add_parser("search",
+                          help="deterministically resolve a query against the Pyrnova estate (M22-D)")
+    srch.add_argument("query")
+    srch.add_argument("--as-of", default=None, dest="as_of")
+    srch.add_argument("--limit", type=int, default=25)
+    srch.add_argument("--demo-dir", default="examples/material_changes_demo")
+    srch.set_defaults(func=cmd_search)
 
     seedc = sub.add_parser("seed-customers",
                            help="seed the demo customers into persisted customer state (M22-B)")

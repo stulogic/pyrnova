@@ -96,6 +96,11 @@ main { max-width: 1040px; margin: 0 auto; padding: 30px 28px 80px; }
 .why-detail { color: var(--ink); }
 .relevance-basis { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.06em; }
 
+.investigate { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; margin: -6px 0 14px; }
+.investigate .why-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.investigate a { color: var(--observed); text-decoration: none; font-size: 12px; border-bottom: 1px solid transparent; }
+.investigate a:hover { border-color: var(--observed); }
+
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .pane { border: 1px solid var(--line); border-radius: 4px; padding: 11px 13px; background: #10141a; }
 .pane-label { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;

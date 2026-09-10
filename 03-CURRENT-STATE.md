@@ -1,8 +1,38 @@
 # Pyrnova current state
 
-_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-C CLOSED — per-tenant persisted Material
-Change streams + production read path; M22-B CLOSED — persisted customer intelligence + Material Change
-lifecycle; M22-A CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite **532 passed**._
+_Verified 2026-09-10 in `~/Documents/Pyrnova` on `main` (M22-D CLOSED — company/program investigation
+pages + deterministic entity search; M22-C CLOSED — per-tenant persisted Material Change streams +
+production read path; M22-B CLOSED — persisted customer intelligence + Material Change lifecycle; M22-A
+CLOSED — Material Changes vertical slice; M2–M21 CLOSED). Full suite **557 passed**._
+
+> **M22-D company/program investigation + deterministic entity search (2026-09-10, CLOSED).** Completes the
+> first investigation path beneath a Material Change: MATERIAL CHANGE → AFFECTED COMPANY/PROGRAM →
+> INVESTIGATION PAGE and DETERMINISTIC SEARCH → ENTITY/PROGRAM RESOLUTION → PAGE. New
+> `pyrnova/investigation.py`: an `IntelligenceEstate` computed read projection (same pattern as
+> `build_material_changes` — not a second persisted truth system) built deterministically, point-in-time,
+> from the existing global streams and reusing the shared `material_changes` normalizers so the
+> investigation view never diverges from the feed; `search()` resolving in fixed order (exact identifier →
+> exact name/alias → scored partial) to EXACT/PROBABLE/AMBIGUOUS/UNRESOLVED — exact identifiers by dictionary
+> lookup, **never an LLM** (poison-tested); `company_intelligence()`/`program_intelligence()` page
+> projections. Canonical identity reused, not re-invented: identifiers read from STRUCTURED provenance only
+> (`co_uei_` ref shape; `SUBSIDIARY_OF` hop provenance; `uei:`/`cik:`/`cage:`/`lei:` tokens on a *direct*
+> single-subject threat); missing identifiers stay missing; two same-named entities are surfaced as two
+> (AMBIGUOUS), never merged; search reads/classifies and never writes a merge (reversible resolution).
+> Pages are GLOBAL and carry no customer context by default; an authorized `customer` adds a
+> separately-keyed `customer_context` overlay via the M22-C `access_check` seam (unauthorized → HTTP 403),
+> never folding private relevance into global truth nor leaking across customers. Temporal truth: estate +
+> sections reconstructed at `as_of`; relationship `valid_from`/`valid_to` respected; no future/outcome
+> leakage. Sparse intelligence stated honestly (no UEI/CAGE/CIK, ownership unresolved); evidence referenced,
+> never copied. `OperatorConsole` gained `search`/`company_intelligence`/`program_intelligence` + an
+> `investigation` link block on every Material Change (affected company/program/related — no id copying).
+> API adds `GET /api/search`, `GET /api/company?ref=`, `GET /api/program?key=`; restrained
+> `investigation.{html,js,css}` (search + company + program, one asset trio routed by path) linked from the
+> Material Changes masthead + per-card; CLI `pyrnova search`. **Additive only** —
+> `scoring_v1`/`fit.py`/`replay.py`/severity bands and frozen corpora byte-identical; M22-A/B/C read/API
+> compatible. Real-evidence demo (no live calls): `co_saic`/UEI `KMSLVW1MZWU9`/UEI `YR7CLZFGCM95`/PIID
+> `47QFSA20F0057` resolve EXACT; `DAP Construction Management` resolves AMBIGUOUS across the real child and
+> its native-id parent. Full suite **557 passed** (was 532; +25 in `tests/test_m22d_investigation.py`).
+> Spec: `docs/specs/M22D_INVESTIGATION_SEARCH.md`. See D-058.
 
 > **M22-C per-tenant persisted Material Change streams + production read path (2026-09-10, CLOSED).** Closes
 > the M22-A/B storage seam: a relevant global change is now MATERIALIZED into durable, customer-scoped state

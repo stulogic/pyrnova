@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pyrnova — Investigation</title>
+  <link rel="stylesheet" href="/investigation.css?v=1">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><a class="mark" href="/investigate">PYRNOVA</a><span class="module">Investigation</span></div>
+    <form id="searchform" class="searchbar" role="search">
+      <input id="q" name="q" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Search the Pyrnova estate — company, program, UEI, CAGE, CIK, contract ID">
+      <button type="submit">Resolve</button>
+    </form>
+    <div class="controls">
+      <label class="field">As of<input id="asof" type="date"></label>
+      <a class="console-link" href="/">Material Changes</a>
+    </div>
+  </header>
+
+  <main>
+    <div id="message" role="status" class="message" hidden></div>
+    <section id="view"></section>
+  </main>
+
+  <script src="/investigation.js?v=1" defer></script>
+</body>
+</html>
