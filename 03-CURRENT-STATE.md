@@ -3,6 +3,14 @@
 _Verified 2026-09-09 in `~/Documents/Pyrnova` on `main` (M21 CLOSED — raw adverse event + economic
 relationship diversity + observable outcomes; M2–M20 CLOSED)._
 
+> **Post-M21 authority synchronization (2026-09-09, documentation only).** A repository-governance sync
+> recorded the post-M21 strategic direction: the Phase 1 federal-contractor wedge and Material-Changes
+> product loop (`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`), explicit non-goals and finishability/moat
+> authority (D-044…D-051), the 2026-09-09 red team review and strategic data research
+> (`docs/research/`), roadmap Phase-1 disposition labels, and agent anti-drift rules (`AGENTS.md`).
+> **No product code, tests, scoring, corpora, or runtime state changed;** the 482-test M21 state stands.
+> M22 direction is set but implementation is not yet authorized (see `02-EXECUTION.md`).
+
 ## Milestone status
 
 - **M21: CLOSED 2026-09-09.** Raw authoritative adverse event + economic relationship diversity +

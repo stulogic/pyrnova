@@ -11,6 +11,26 @@ The first product is **Capture Radar**: human-supervised pre-RFP and recompete i
 mid-market US federal and defense contractors. The current commercial objective remains the first
 **$100,000 collected**; infrastructure and product scope must earn their place against that objective.
 
+## Long-term thesis vs. Phase 1 (binding)
+
+**Long-term direction (not Phase 1 scope):** Pyrnova aims to become a continuously updated, historically
+auditable model of what external change means economically to a specific organization. This preserves
+optionality; it does not authorize building breadth now.
+
+**Current differentiated thesis (Phase 1):** the loop **external change → customer-specific consequence
+→ opportunity / threat / monitoring → evidence → review / action → outcome → learning.** Pyrnova is
+*not* differentiated by broad data aggregation, generic company research, generic AI search, a knowledge
+graph by itself, dashboards, or alerts by themselves.
+
+**Phase 1 wedge:** US federal contractors (defense, industrial, technology, engineering, infrastructure),
+working ideal customer ≈ **$50M–$300M revenue** with lean BD/capture capacity. The dominant customer
+question is **"What materially changed since I last looked?"**, with **Material Changes** as the dominant
+surface and dossier/search/graph as supporting surfaces.
+
+The full current-product authority — customer, product surfaces, required loop, explicit non-goals,
+finishability, and moat — is **`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`** (canonical; informed by the
+2026-09-09 red team review and strategic data research in `docs/research/`). See D-044…D-050.
+
 ## Core doctrine
 
 - Show what is known, where it came from, when it was knowable, and what remains unknown.
@@ -79,6 +99,27 @@ The complete operating contract, modes, budgets, checkpoints, backoff, and metri
 - Prefer narrow, test-backed changes and preserve proven behavior.
 - Do not deploy, contact prospects, spend money, or begin a later milestone without explicit authority.
 - Historical research and handovers cannot override current authority. See `00-INDEX.md` for precedence.
+
+## Finishability rule (binding)
+
+A missing capability may block the current phase **only if**: correctness requires it; safety requires
+it; architectural integrity requires it; existing acceptance criteria require it; or a real Phase 1
+customer cannot receive the promised Phase 1 decision value without it. Research curiosity, architectural
+elegance, theoretical future usefulness, competitor feature parity, "while we are here", an interesting
+dataset, or an agent noticing another useful relationship/event/source do **not** qualify. Default
+handling: **DOCUMENT → ROADMAP → DEFER.** Expansion is pulled by demonstrated user value, not pushed by
+architectural possibility. Finishability is the greatest founder-controlled risk (2026-09-09 red team
+review). See D-047; this hardens the phase-control rule D-042.
+
+## Defensibility / moat (binding)
+
+Candidate durable moats, in priority order: historical "what could have been known then?" state;
+customer-specific exposure/outcome history; longitudinal outcome calibration; rights-safe relationship
+history; rejected-intelligence history; customer-contributed context; accumulated event/consequence
+performance; evidence and decision lineage. The following are **not** durable moats by themselves: AI,
+prompts, agents, dashboards, graph visualization, natural-language search, company dossiers, alerts, RAG,
+citations, generic entity resolution, generic knowledge graphs. Stored data is not itself proof of a
+moat; the test is measurable predictive and commercial lift. See D-049.
 
 ## Canonical execution tree
 

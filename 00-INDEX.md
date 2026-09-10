@@ -2,15 +2,19 @@
 
 This file is the canonical navigation map for humans and agents.
 
+**Agents:** read `AGENTS.md` first — it carries the anti-drift rules, conflict-resolution procedure, and
+the start-of-work / end-of-work checks.
+
 ## Mandatory reading order
 
 For implementation work, read only what the task requires, in this order:
 
 1. `00-INDEX.md`
 2. `01-PROJECT-AUTHORITY.md`
-3. `03-CURRENT-STATE.md`
-4. `02-EXECUTION.md`
-5. the relevant document under `docs/specs/`
+3. `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current-product authority: customer, product, non-goals)
+4. `03-CURRENT-STATE.md`
+5. `02-EXECUTION.md`
+6. the relevant document under `docs/specs/`
 
 Then consult `04-DECISIONS.md` when a prior choice affects the task and `05-BACKLOG.md` only for
 future-scope questions. `06-HISTORY.md` and `docs/handovers/` are continuity records, not current
@@ -20,12 +24,21 @@ instructions.
 
 When documents conflict, use this precedence:
 
-1. `01-PROJECT-AUTHORITY.md` — mission, boundaries, and locked doctrine.
-2. `02-EXECUTION.md` — current milestone and active constraints.
-3. `03-CURRENT-STATE.md` — verified implementation/runtime truth.
-4. `04-DECISIONS.md` — durable decisions and supersession record.
-5. Relevant `docs/specs/` document — detailed implementation contract.
-6. `05-BACKLOG.md` — prioritized future work only.
+1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md` (mission, boundaries, locked
+   doctrine) and `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current customer, product, non-goals).
+2. **Current milestone work order** — `02-EXECUTION.md` — current milestone and active constraints.
+3. **Durable decisions** — `04-DECISIONS.md` — decisions and supersession record.
+4. **Current state** — `03-CURRENT-STATE.md` — verified implementation/runtime truth.
+5. **Architectural authority** — relevant `docs/specs/` document, `docs/architecture/`, `db/`.
+6. **Roadmap** — `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`, then `05-BACKLOG.md` (future work only).
+7. **Research** — `docs/research/` — informs authority; never authorizes implementation.
+8. **Historical / superseded** — `06-HISTORY.md`, `docs/handovers/`, `docs/archive/` — never override
+   current authority.
+
+Research can inform authority but does not independently authorize implementation. Roadmap entries do
+not belong to the current milestone unless `02-EXECUTION.md` explicitly authorizes them. Historical
+documents never override current authority. If a conflict is genuinely unresolved, record it (in
+`04-DECISIONS.md` or the current work order) rather than silently choosing the broader scope.
 
 `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` is **strategic roadmap authority**: the durable record
 of longer-horizon capabilities milestone planning must consult and must not silently drop. It is not
@@ -46,11 +59,15 @@ a canonical authority or specification explicitly incorporates them.
 - `examples/replay/` — canonical historical challenge corpus.
 - `examples/observations/` — sanitized example observations, never live credentials.
 - `db/` — canonical production schema.
+- `AGENTS.md` — agent operating rules: canonical tree, authority hierarchy, anti-drift, start/end checks.
 - `docs/specs/` — active product, run, review, and source-ingestion specifications.
-- `docs/strategy/` — strategic capability roadmap: durable longer-horizon capabilities, non-authoritative
-  over active work but binding on milestone-planning consultation.
+- `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — canonical current-product authority (Phase 1 customer,
+  product surfaces, required loop, explicit non-goals, finishability, moat).
+- `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon
+  capabilities, non-authoritative over active work but binding on milestone-planning consultation.
 - `docs/architecture/` — current system structure and design boundaries.
-- `docs/research/` — supporting analysis and retrospective evidence; non-authoritative.
+- `docs/research/` — supporting analysis and retrospective evidence; non-authoritative. Start at
+  `docs/research/00-RESEARCH-INDEX.md` (research→decision traceability).
 - `docs/replay/` — M3 corpus evidence and reproducible baseline reports.
 - `docs/handovers/` — dated continuity records; superseded by current state.
 - `docs/archive/` — superseded authorities retained for history.

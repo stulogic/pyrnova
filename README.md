@@ -3,18 +3,27 @@
 Economic and commercial intelligence. **Initial commercial phase: Business Opportunity Pipeline only.**
 
 The first product is **Pyrnova Capture Radar** — human-supervised intelligence, backed by software, for
-Growth / BD / Capture leaders at ~$20m–$250m US federal & defense contractors. It surfaces recompetes,
-contract expirations, and pre-solicitation demand (Sources Sought, RFIs, Presolicitation, Special
-Notices) *before* the obvious RFP stage, matched to a customer's actual capabilities, with evidence,
+Growth / BD / Capture leaders at **US federal & defense contractors (≈$50M–$300M revenue;
+defense/industrial/technology/engineering/infrastructure)**. It surfaces recompetes, contract
+expirations, and pre-solicitation demand (Sources Sought, RFIs, Presolicitation, Special Notices)
+*before* the obvious RFP stage, matched to a customer's actual capabilities, with evidence,
 falsification, and a recommended action.
+
+Phase 1 productization organizes this around one customer question — **"What materially changed since I
+last looked?"** — with **Material Changes** as the dominant surface. The authoritative scope is
+`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
 
 ## Start here
 
+- **`AGENTS.md`** — agents read this first: canonical tree, authority hierarchy, anti-drift, start/end
+  checks.
 - **`00-INDEX.md`** — canonical navigation, reading order, and authority precedence.
 - `01-PROJECT-AUTHORITY.md` — mission, product boundaries, and locked doctrine.
+- `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — current customer, product surfaces, explicit non-goals.
 - `03-CURRENT-STATE.md` — verified implementation and milestone truth.
 - `02-EXECUTION.md` — current work and active constraints.
 - `docs/specs/CAPTURE_RADAR_V1.md` — detailed kernel specification.
+- `docs/research/00-RESEARCH-INDEX.md` — strategic research and research→decision traceability.
 
 ## Going live (founder)
 

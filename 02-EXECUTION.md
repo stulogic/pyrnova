@@ -1,8 +1,18 @@
 # Pyrnova execution authority
 
 _Current execution window: M21 CLOSED (raw adverse event + economic relationship diversity + observable
-outcomes, 2026-09-09); M2–M20 closed; no milestone in progress — STOP and await next brief · updated
-2026-09-09_
+outcomes, 2026-09-09); M2–M20 closed; **M22 direction set** (customer-facing Phase 1 productization) but
+implementation **not yet authorized** — STOP and await the milestone-opening brief · updated 2026-09-09_
+
+## M22 direction (Phase 1 productization) — direction set, NOT yet authorized
+
+The next phase is **customer-facing Phase 1 productization** for the federal-contractor wedge, governed
+by `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (customer ≈ $50M–$300M defense/industrial/technology/
+engineering/infrastructure; dominant question "What materially changed since I last looked?"; Material
+Changes as dominant UX; dossier/search supporting; graph mostly hidden; explicit non-goals durable;
+finishability rule binding). Direction is authoritative (D-046, D-051); **this does not authorize
+implementation.** Do not begin M22 build until this document opens the milestone with acceptance
+criteria. Before any M22 work, complete the `AGENTS.md` start-of-work check.
 
 ## Active work
 
@@ -234,11 +244,12 @@ inferred); `scoring_v1` unchanged; frozen corpora byte-for-byte unchanged.
 ## Immediate sequence
 
 1. M2–M21 CLOSED — no milestone in progress; **STOP and await the next brief** (per the M21 work order,
-   do not automatically begin M22).
-2. Expected next direction (do not begin without explicit authority): customer-facing productization —
-   Company Intelligence Dossier + Company Opportunity/Threat Surface + universal entity search + fast
-   read-optimized delivery (roadmap areas 16–18). Source breadth, outcomes, calibration, and relationship
-   coverage continue accumulating in parallel rather than blocking productization.
+   do not automatically begin M22 implementation).
+2. **M22 direction set (not authorized):** customer-facing Phase 1 productization organized around the
+   Material-Changes loop for the federal-contractor wedge (`PHASE_1_PRODUCT_AUTHORITY.md`; roadmap areas
+   16–18 supply the composable capabilities). Explicit Phase 1 non-goals (D-048) stay deferred/customer-
+   gated. Source breadth, outcomes, calibration, and relationship coverage keep accumulating in parallel
+   rather than blocking productization. Open the milestone with acceptance criteria before building.
 3. Documented residual (not a blocker to any closed milestone): retry one `sbir` connectivity call when
    the provider is out of maintenance to move it from `blocked` to `archive_operational`.
 4. Other next-milestone candidates are recorded in `05-BACKLOG.md` and
