@@ -11,10 +11,13 @@ For implementation work, read only what the task requires, in this order:
 
 1. `00-INDEX.md`
 2. `01-PROJECT-AUTHORITY.md`
-3. `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current-product authority: customer, product, non-goals)
-4. `03-CURRENT-STATE.md`
-5. `02-EXECUTION.md`
-6. the relevant document under `docs/specs/`
+3. `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (overarching product + commercial authority: product,
+   ICP, pricing/commercial model, trust gates, validation, expansion discipline) — **read this before
+   using research or roadmap material to make any product/commercial decision**
+4. `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current-product authority: customer, product, non-goals)
+5. `03-CURRENT-STATE.md`
+6. `02-EXECUTION.md`
+7. the relevant document under `docs/specs/`
 
 Then consult `04-DECISIONS.md` when a prior choice affects the task and `05-BACKLOG.md` only for
 future-scope questions. `06-HISTORY.md` and `docs/handovers/` are continuity records, not current
@@ -24,8 +27,10 @@ instructions.
 
 When documents conflict, use this precedence:
 
-1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md` (mission, boundaries, locked
-   doctrine), `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current customer, product, non-goals),
+1. **Current product / strategic authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (overarching
+   product + commercial authority: product, ICP, commercial/pricing model, trust/validation/expansion
+   gates; governs on any direct conflict with the companions below), `01-PROJECT-AUTHORITY.md` (mission,
+   boundaries, locked doctrine), `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (current customer, product, non-goals),
    `docs/strategy/COMPETITIVE_DOCTRINE.md` (competitive objective, domination standard, displacement),
    `docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md` (lawful competitive intelligence,
    proper-means, strategic data autonomy — operating discipline binding now, product build deferred),
@@ -65,6 +70,12 @@ a canonical authority or specification explicitly incorporates them.
 - `db/` — canonical production schema.
 - `AGENTS.md` — agent operating rules: canonical tree, authority hierarchy, anti-drift, start/end checks.
 - `docs/specs/` — active product, run, review, and source-ingestion specifications.
+- `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` — **overarching current product + commercial authority**
+  (owner-approved): product identity, ICP, customer job, Material Changes semantics, live-operations and
+  source/data doctrine, competitive/displacement strategy, commercial + pricing model, validation and
+  trust gates, UX/AI authority, expansion gates, do-not-build/compete. Top of tier 1; the Phase 1 product
+  and competitive doctrines are consistent companions and defer to it on any direct conflict. Read before
+  using research or roadmap to make a product/commercial decision.
 - `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — canonical current-product authority (Phase 1 customer,
   product surfaces, required loop, explicit non-goals, finishability, moat).
 - `docs/strategy/COMPETITIVE_DOCTRINE.md` — binding competitive authority (Phase 1 commercial test,

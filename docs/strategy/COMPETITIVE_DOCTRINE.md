@@ -7,7 +7,10 @@ review and strategic data research (`docs/research/`)_
 > `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` as current strategic authority (`00-INDEX.md` hierarchy,
 > level 1). It governs *why* and *against whom* Pyrnova builds; it does **not** authorize implementation
 > (`02-EXECUTION.md` alone does) and never overrides the finishability rule (D-047) or Phase 1 non-goals
-> (D-048). See D-052.
+> (D-048). See D-052. It is a consistent companion to the overarching
+> `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (owner-approved) and defers to it on any direct conflict;
+> the canonical AUGMENT → ATTENTION → WORKFLOW → BUDGET → SYSTEM-OF-INTELLIGENCE displacement sequence and
+> the commercial model are stated there.
 
 Pyrnova is not being built to participate politely in an established intelligence-software category. It
 is being built to take customers, budget, attention, and strategic relevance from incumbent products.

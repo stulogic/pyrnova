@@ -7,7 +7,9 @@ team review and strategic data research (`docs/research/`)_
 > productization phase. In the authority hierarchy (`00-INDEX.md`) it sits with `01-PROJECT-AUTHORITY.md`
 > as current strategic authority, above the milestone work order. It does not override
 > `01-PROJECT-AUTHORITY.md`'s locked doctrine; it specializes it for Phase 1. It does **not** authorize
-> implementation — `02-EXECUTION.md` alone authorizes active work.
+> implementation — `02-EXECUTION.md` alone authorizes active work. It is a consistent companion to the
+> overarching `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (owner-approved) and defers to it on any
+> direct conflict; the commercial/pricing model lives there.
 
 ## Long-term thesis (architectural direction, NOT Phase 1 scope)
 

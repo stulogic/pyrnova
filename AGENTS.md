@@ -13,8 +13,10 @@ session started elsewhere, switch first. The untracked `.codex/` directory is in
 
 ## Authority hierarchy (resolve conflicts in this order)
 
-1. **Current product / strategic authority** — `01-PROJECT-AUTHORITY.md`,
-   `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, and `docs/strategy/COMPETITIVE_DOCTRINE.md`.
+1. **Current product / strategic authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (overarching
+   product + commercial authority; governs on any direct conflict with the companions below),
+   `01-PROJECT-AUTHORITY.md`, `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, and
+   `docs/strategy/COMPETITIVE_DOCTRINE.md`.
 2. **Current milestone work order** — `02-EXECUTION.md`.
 3. **Durable decisions** — `04-DECISIONS.md`.
 4. **Current state** — `03-CURRENT-STATE.md`.
@@ -32,9 +34,11 @@ Rules:
 
 ## Reading order (read only what the task needs)
 
-`00-INDEX.md` → `01-PROJECT-AUTHORITY.md` → `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` →
-`03-CURRENT-STATE.md` → `02-EXECUTION.md` → the relevant `docs/specs/` document. Consult `04-DECISIONS.md`
-when a prior choice affects the task; consult roadmap/research only for future-scope questions.
+`00-INDEX.md` → `01-PROJECT-AUTHORITY.md` → `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` →
+`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` → `03-CURRENT-STATE.md` → `02-EXECUTION.md` → the relevant
+`docs/specs/` document. Consult `04-DECISIONS.md` when a prior choice affects the task; consult
+roadmap/research only for future-scope questions. Read `PRODUCT_COMMERCIAL_AUTHORITY.md` before using
+research or roadmap material to make any product/commercial decision.
 
 ## Do NOT treat as higher authority than current repository authority
 
