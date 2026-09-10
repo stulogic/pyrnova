@@ -18,7 +18,9 @@ session started elsewhere, switch first. The untracked `.codex/` directory is in
 2. **Current milestone work order** — `02-EXECUTION.md`.
 3. **Durable decisions** — `04-DECISIONS.md`.
 4. **Current state** — `03-CURRENT-STATE.md`.
-5. **Architectural authority** — `docs/architecture/`, `db/`, relevant `docs/specs/`.
+5. **Architectural authority** — `docs/architecture/` (including the binding engineering doctrine
+   `ENGINEERING_DOCTRINE.md` and infrastructure & capital doctrine `INFRASTRUCTURE_DOCTRINE.md`, D-059),
+   `db/`, relevant `docs/specs/`.
 6. **Roadmap** — `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`, then `05-BACKLOG.md`.
 7. **Research** — `docs/research/` (informs authority; never authorizes implementation).
 8. **Historical / superseded** — `06-HISTORY.md`, `docs/handovers/`, `docs/archive/`.
@@ -93,6 +95,18 @@ discretion + intelligence + competence + control, never menace toward customers.
 defaults to **need-to-know** — do not publish roadmap, datasets, methods, competitive dossiers, pricing,
 or strategic weaknesses externally without a commercial reason. This does **not** weaken *internal*
 record-keeping: keep the repository's authority/decisions/state full, honest, and current.
+
+## Engineering & infrastructure doctrine (binding)
+
+*How* you build is governed, not just what. Before substantive implementation or infrastructure work,
+read `docs/architecture/ENGINEERING_DOCTRINE.md` (decision order; one concept, one canonical pattern;
+simplicity over premature abstraction; explicit state ownership; **no silent fallback that changes
+semantics**; risk-proportional testing; the completion standard) and
+`docs/architecture/INFRASTRUCTURE_DOCTRINE.md` (capacity follows utilization; reliability follows
+consequence; permanent-vs-replaceable; migration invariants). **Start cheap, architect expensive; prefer
+boring, explicit, testable engineering; infrastructure may change but intelligence semantics must not.**
+Reuse the existing canonical pattern rather than inventing a competing one; a deviation must be recorded
+(D-059).
 
 ## Finishability rule (binding)
 

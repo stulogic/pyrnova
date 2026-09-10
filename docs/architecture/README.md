@@ -29,3 +29,17 @@ Detailed behavior lives in `docs/specs/CAPTURE_RADAR_V1.md`; source-call constra
 
 Split modules into deeper `src/` or test subtrees only when file count, ownership, or independent
 release/testing boundaries make the move pay for itself. Do not move working code for visual symmetry.
+
+## Engineering & infrastructure doctrine (binding)
+
+How Pyrnova is built — not just what — is governed by two binding doctrine documents at this
+(architectural-authority) level. Read them before substantive implementation or infrastructure work:
+
+- **`ENGINEERING_DOCTRINE.md`** — software-engineering doctrine: decision order, one-concept-one-pattern,
+  simplicity over premature abstraction, explicit state ownership, no silent semantic fallback, testing,
+  refactoring, and the completion standard. **Start cheap. Architect expensive.**
+- **`INFRASTRUCTURE_DOCTRINE.md`** — capital & infrastructure doctrine: capacity follows utilization,
+  reliability follows consequence, permanent-vs-replaceable, staged evolution, migration invariants.
+  **Infrastructure may change; intelligence semantics must not.**
+
+Both were adopted as D-059.

@@ -76,7 +76,10 @@ a canonical authority or specification explicitly incorporates them.
   external secrecy default (NEED TO KNOW), visual/brand character, competitive reputation.
 - `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon
   capabilities, non-authoritative over active work but binding on milestone-planning consultation.
-- `docs/architecture/` — current system structure and design boundaries.
+- `docs/architecture/` — current system structure and design boundaries. Includes the binding
+  **engineering doctrine** (`ENGINEERING_DOCTRINE.md`) and **infrastructure & capital doctrine**
+  (`INFRASTRUCTURE_DOCTRINE.md`) — how Pyrnova is built and scaled (D-059); read before substantive
+  implementation or infrastructure work.
 - `docs/research/` — supporting analysis and retrospective evidence; non-authoritative. Start at
   `docs/research/00-RESEARCH-INDEX.md` (research→decision traceability).
 - `docs/replay/` — M3 corpus evidence and reproducible baseline reports.
