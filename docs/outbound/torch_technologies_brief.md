@@ -1,8 +1,16 @@
-# Pyrnova → Torch Technologies — outbound package (human-reviewed DRAFT)
+# Pyrnova → Torch Technologies — outbound package (SUPERSEDED HISTORICAL DRAFT)
 
-**Status:** DRAFT for founder verification before sending. Human-reviewed by Pyrnova execution lead.
+> **SUPERSEDED 2026-09-11. DO NOT SEND.**
+>
+> Retained only as historical M2-era outbound provenance. The **$2,500 Intelligence Sprint**, monthly
+> **Capture Radar**, and Torch-first commercial posture below are not current Pyrnova commercial or target
+> authority. Current Phase 1 offer, customer order, category, and sales scope are governed exclusively by
+> `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`. Current Customer #1 is **IronMountain Solutions**.
+> Do not reuse the superseded terms below without new explicit owner authority.
+
+**Original status (2026-09-08):** DRAFT for founder verification before sending. Human-reviewed by Pyrnova execution lead.
 **Source:** live SAM.gov Contract Opportunities, pulled 2026-09-08 (evidence links are real notices).
-**Do not send until the "Verify before send" checklist at the bottom is cleared.**
+**Do not send. This document is historical only.**
 
 ---
 
@@ -63,7 +71,7 @@ before acting._
 
 ---
 
-## Draft outreach email (to Torch VP of Business Development / Capture / Growth)
+## Draft outreach email (SUPERSEDED — DO NOT SEND)
 
 > **Subject:** 3 pre-RFP signals in your space-sensing / MDA lane
 >
@@ -82,14 +90,16 @@ before acting._
 >
 > [signature]
 
-## The ask — $2,500 Pyrnova Intelligence Sprint
+## Superseded ask — $2,500 Pyrnova Intelligence Sprint
 A focused paid diagnostic on Torch's target agencies (SSC/SNK, SDA, MDA): a ranked, evidence-linked set
 of pre-RFP signals + recompetes, each with role posture (prime vs. support vs. team), timing, and a
 falsifier. Delivered in a few days. Converts to a monthly **Capture Radar** if it earns its place.
 
+**The preceding ask is historical and superseded. Do not offer it.**
+
 ---
 
-## Verify before send (internal — do NOT skip)
+## Historical verify-before-send checklist
 - [ ] Open each SAM link; confirm the notice is live and the response date is current.
 - [ ] Confirm Torch's real role posture per program (prime vs. sub vs. SE&I) — do not overclaim.
 - [ ] Identify the current named **VP BD / Capture / Growth** at Torch (leadership page / LinkedIn).

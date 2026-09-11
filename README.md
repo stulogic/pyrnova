@@ -1,89 +1,138 @@
 # Pyrnova
 
-Economic and commercial intelligence. **Initial commercial phase: Business Opportunity Pipeline only.**
+**Decision-grade external intelligence for government contractors.**
 
-The first product is **Pyrnova Capture Radar** — human-supervised intelligence, backed by software, for
-Growth / BD / Capture leaders at **US federal & defense contractors (≈$50M–$300M revenue;
-defense/industrial/technology/engineering/infrastructure)**. It surfaces recompetes, contract
-expirations, and pre-solicitation demand (Sources Sought, RFIs, Presolicitation, Special Notices)
-*before* the obvious RFP stage, matched to a customer's actual capabilities, with evidence,
-falsification, and a recommended action.
+Pyrnova helps federal contractors identify which external developments matter, understand why they matter, verify the evidence, and decide what to investigate or do next.
 
-Phase 1 productization organizes this around one customer question — **"What materially changed since I
-last looked?"** — with **Material Changes** as the dominant surface. The authoritative scope is
-`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+Phase 1 is organized around **Material Changes**. It is not CRM, generic procurement search, GovWin with AI, generic company research, generic AI chat/research, or a dashboard-builder product.
+
+The canonical Phase 1 product and commercial authority is `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+
+## Current Phase 1 state
+
+- Phase One Constitution: **locked**.
+- M21 and M22: **closed**.
+- Opportunity, Access, and Onboarding design-customer P0s: **closed**.
+- Sole primary remaining design-customer P0: **Live Operations / Data Volume Readiness**.
+- Current Customer #1 target: **IronMountain Solutions**.
+- Immediate workstream: **PHASE1-LIVE-OPS-CLOSURE** in `02-EXECUTION.md`.
+- Next decision after Live Ops closure: **Customer #1 GO / NO-GO**.
+
+Broad Phase 1 research and broad product expansion are not currently authorized.
 
 ## Start here
 
-- **`AGENTS.md`** — agents read this first: canonical tree, authority hierarchy, anti-drift, start/end
-  checks.
-- **`00-INDEX.md`** — canonical navigation, reading order, and authority precedence.
-- `01-PROJECT-AUTHORITY.md` — mission, product boundaries, and locked doctrine.
-- `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — current customer, product surfaces, explicit non-goals.
-- `03-CURRENT-STATE.md` — verified implementation and milestone truth.
-- `02-EXECUTION.md` — current work and active constraints.
-- `docs/specs/CAPTURE_RADAR_V1.md` — detailed kernel specification.
-- `docs/research/00-RESEARCH-INDEX.md` — strategic research and research→decision traceability.
+- **`AGENTS.md`**: anti-drift rules, canonical tree, authority hierarchy, start/end checks.
+- **`00-INDEX.md`**: canonical navigation and authority precedence.
+- `01-PROJECT-AUTHORITY.md`: mission, boundaries, and locked doctrine.
+- `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`: canonical Phase 1 product and commercial authority.
+- `03-CURRENT-STATE.md`: current implementation and readiness state.
+- `02-EXECUTION.md`: the single authorized workstream and acceptance gates.
+- `docs/architecture/`: engineering and infrastructure doctrine.
+- `docs/specs/`: detailed implementation and acceptance specifications.
+- `docs/research/00-RESEARCH-INDEX.md`: non-authoritative research provenance and research-to-decision traceability.
 
-## Going live (founder)
+## Phase 1 intelligence lineage
 
-- **`docs/specs/LIVE_RUN.md`** — fresh checkout → live intelligence in ~5 minutes.
-- First real target: `examples/profiles/torch_technologies.json` (rationale + provenance in
-  `docs/targets/torch_technologies.md`).
-- Review discipline: `docs/specs/REVIEW_TEMPLATE.md`. Supporting precursor research:
-  `docs/research/PRECURSOR_CASEBOOK.md`.
-- Local internal review surface: `docs/OPERATOR_CONSOLE.md`.
-- Customer-facing product view: `python -m pyrnova.ops_server` → **Material Changes** at `/` (the
-  Operator Console moves to `/console`). Spec: `docs/specs/M22A_MATERIAL_CHANGES.md`.
-- Customer access + seed-free onboarding (credentials, authenticated tenant, remote bind): `pyrnova
-  customer|watch|credential` and `python -m pyrnova.ops_server --host <addr>` (a non-local host forces
-  authentication and hides the operator console). Spec: `docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`;
-  usage in `docs/OPERATOR_CONSOLE.md`.
-
-## The kernel pipeline
-
-```
-OBSERVE → ARCHIVE → NORMALIZE → RESOLVE → DETECT → MATCH → REVIEW → STRIKE → OUTCOME
+```text
+SOURCE
+-> EVIDENCE ARTIFACT
+-> ASSERTION
+-> ASSESSMENT
+-> CUSTOMER CONSEQUENCE
+-> MATERIAL CHANGE
+-> INVESTIGATION / REVIEW
+-> ACTION
+-> OUTCOME
 ```
 
-Active sources: **USAspending** (keyless), **SAM.gov** (needs `SAM_API_KEY`), bounded Federal
-Register context, **Grants.gov**, focused **SEC EDGAR**, and explicitly configured official agency
-procurement forecasts. M4 sources default to offline archived responses/fixtures and enrich or create
-WATCH evidence conservatively; they do not independently manufacture STRIKEs.
+Canonical intelligence truth remains separate from presentation. Raw evidence retains provenance. Unknown, unresolved, stale, degraded, and conflicting states remain explicit rather than being converted into false certainty.
 
-## Quickstart (local, no cloud)
+## Customer-facing product
+
+Run the current customer-facing application locally with:
+
+```bash
+python -m pyrnova.ops_server
+```
+
+Material Changes is served at `/`. The local internal Operator Console is at `/console` where allowed by the access policy.
+
+Customer access and seed-free onboarding are implemented through the current customer/watch/credential tooling. See:
+
+- `docs/specs/M22A_MATERIAL_CHANGES.md`
+- `docs/specs/M22B_PERSISTED_CUSTOMER_LIFECYCLE.md`
+- `docs/specs/M22C_CUSTOMER_MATERIAL_CHANGE_STREAMS.md`
+- `docs/specs/M22D_INVESTIGATION_SEARCH.md`
+- `docs/specs/M22E_OPPORTUNITY_MATERIAL_CHANGES.md`
+- `docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`
+- `docs/OPERATOR_CONSOLE.md`
+
+## Live Operations
+
+The immediate engineering focus is not new product breadth. It is proving that Pyrnova can run continuously on enough real external intelligence to produce repeated customer-specific decision value.
+
+Operating doctrine:
+
+```text
+BULK FIRST
+-> DELTA SECOND
+-> TARGETED LIVE LAST
+
+ARCHIVE ONCE
+-> REPLAY MANY
+```
+
+Live Ops closure has two separate gates:
+
+1. **ENGINEERING ACCEPTANCE**
+2. **OPERATIONAL SOAK ACCEPTANCE**
+
+The second gate requires **7 calendar days / 5 business days of unattended live operation**. Passing tests alone does not satisfy it.
+
+## Existing kernel and evidence lineage
+
+The original Capture Radar and Business Opportunity Pipeline work remains part of Pyrnova's implementation lineage. Existing deterministic engines, archived evidence, replay corpora, source controls, fit logic, opportunity/threat models, and earlier live-operation primitives remain valid where compatible with current authority.
+
+Historical kernel flow:
+
+```text
+OBSERVE -> ARCHIVE -> NORMALIZE -> RESOLVE -> DETECT -> MATCH -> REVIEW -> STRIKE -> OUTCOME
+```
+
+Do not mistake that historical implementation flow for the current Phase 1 category or customer-facing product definition.
+
+Current source work includes USAspending, SAM.gov, Federal Register, Grants.gov, SEC EDGAR, OFAC, selected official procurement forecasts, and other bounded adapters documented in the source manifest. Source inclusion does not itself authorize new product scope.
+
+## Quickstart
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt        # runtime = just `requests`; `pip install -e ".[dev]"` also works on a modern pip
+pip install -r requirements.txt
 
-# Deterministic recompete intelligence from LIVE USAspending (no API key needed):
+# Existing deterministic Capture Radar path using live USAspending
 python -m pyrnova.cli capture-radar --profile examples/profiles/acme_c4isr.json --live
 
-# Fully offline demo (bundled fixtures, deterministic, used by tests):
+# Fully offline deterministic fixture path
 python -m pyrnova.cli capture-radar --profile examples/profiles/acme_c4isr.json --fixtures
 
 pytest -q
 ```
 
-Output: a **Pyrnova Signal Brief** (Markdown) under `out/`, plus an append-only prediction log and
-scoreboard events — the proprietary history that must start accumulating on Day 1.
+The Capture Radar CLI remains useful engineering lineage and testable functionality. It is not a competing current product authority.
 
-## Design rules (from the authority)
+## Design rules
 
-- Deterministic core is authoritative (IDs, timestamps, evidence, calculations, state). AI is a bounded
-  reasoning layer producing **claims**, never authoritative facts, always routed through human review.
-- Point-in-time evidence archive is content-addressed and immutable; retention is **tiered** per source.
-- No self-serve dashboard, no premium data, no dormant-pipeline engineering before the first $100k.
-- Every customer-facing item is human-reviewed; every review is recorded as labeled intelligence work.
+- Preserve deterministic identity, provenance, point-in-time truth, and replay.
+- Keep observed evidence, assertions, assessments, customer consequences, review state, and outcomes distinct.
+- Keep customer-specific relevance/private context separate from global intelligence truth.
+- AI is bounded and attributable. Model output is not authoritative fact merely because a model produced it.
+- No silent source failure or semantic fallback.
+- No broad Phase 1 expansion while Live Operations and Customer #1 readiness remain open.
+- New ideas default to **DOCUMENT -> ROADMAP -> DEFER** unless required for correctness, safety, architectural integrity, current acceptance, or valid Customer #1 measurement.
 
-## Configuration
+## Repository authority
 
-Copy `.env.example` → `.env`. Cloud storage is optional; without it the evidence archive uses a local
-filesystem adapter, so all work continues offline. See **EXTERNAL ACTIONS** in the spec for the exact
-credentials needed to move to production storage.
+The canonical local working tree is `/Users/stu/Documents/Pyrnova` on `main`; GitHub `origin/main` is repository authority. `/Users/stu/pyrnova` is not the authorized local tree.
 
-Historical evaluation commands and the current empirical baseline are documented in
-`docs/replay/M3_BASELINE.md`. The canonical challenge corpus is `examples/replay/corpus_v1.json`.
-M4 source-expansion evaluation extends that frozen baseline in `examples/replay/corpus_m4.json`; run
-`python -m pyrnova.cli source-contribution --source grants_gov` for source ablation metrics.
+Historical execution authorities, old offers, old targets, and prior "next action" sections remain provenance only when stored under lower-authority historical locations. They do not override the current authority hierarchy.
