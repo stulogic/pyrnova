@@ -53,7 +53,11 @@ Missing provider quota information must remain `unknown`; do not infer remaining
 ## Current implementation boundary
 
 SAM raw archival, sanitized request provenance, immutable hashing, and offline fixtures remain intact.
-M4 adds small adapter-neutral controls for explicit modes, sanitized request fingerprints, budgets,
+M4 provides adapter-neutral controls for explicit modes, sanitized request fingerprints, budgets,
 call/cache/error accounting, retry metadata, and breaker state. Grants.gov, SEC EDGAR, and official
-agency forecast adapters use those controls while retaining source-specific transport/cadence logic;
-there is no generic orchestration platform.
+agency forecast adapters use those controls while retaining source-specific transport/cadence logic.
+M12/M13 add a bounded `SourceScheduler` and `LiveRunner` with durable source state, cadence, budgets,
+circuit breakers, checkpoints, and cache-aware replay. This is a library and thin driver, not a
+general daemon or production orchestration platform. The original `capture-radar --live` command is
+a separate, manual direct-live path; it does not silently inherit the M12/M13 scheduler contract.
+See `docs/development/SOURCE_ADAPTER_GUIDE.md` and `docs/operations/OPERATIONS_RUNBOOK.md`.

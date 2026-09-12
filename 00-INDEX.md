@@ -2,6 +2,9 @@
 
 This file is the canonical navigation map for humans and agents.
 
+For role-based descriptive documentation, start at `docs/README.md`. It separates system, developer,
+operations, ADR, diligence, and historical material without changing the authority order below.
+
 **Agents:** read `AGENTS.md` first — it carries the anti-drift rules, conflict-resolution procedure, and
 the start-of-work / end-of-work checks.
 
@@ -91,6 +94,19 @@ a canonical authority or specification explicitly incorporates them.
   **engineering doctrine** (`ENGINEERING_DOCTRINE.md`) and **infrastructure & capital doctrine**
   (`INFRASTRUCTURE_DOCTRINE.md`) — how Pyrnova is built and scaled (D-059); read before substantive
   implementation or infrastructure work.
+- `docs/system/` — descriptive cross-cutting system documentation: architecture, domain semantics,
+  provenance, replay/temporal truth, scoring, and security/tenancy. These documents explain implemented
+  behavior and do not create product authority.
+- `docs/development/` — engineer setup, safe change workflows, testing/acceptance, source-adapter
+  development, and the code-documentation standard.
+- `docs/operations/` — current local/live-safe operating and recovery procedures, with planned production
+  operations labelled explicitly.
+- `docs/adr/` — architecture decision records derived from existing authority and implemented contracts;
+  ADRs do not override the authority hierarchy.
+- `docs/TECHNICAL_DILIGENCE.md` — evidence index, limitations, AI-assisted-development posture, and
+  repository/corporate data-room boundary.
+- `docs/ENGINEERING_HANDOVER.md` — bounded onboarding path for a senior engineer.
+- `docs/audit/` — dated documentation audits and gap maps; evidence, not current authority.
 - `docs/research/` — supporting analysis and retrospective evidence; non-authoritative. Start at
   `docs/research/00-RESEARCH-INDEX.md` (research→decision traceability).
 - `docs/replay/` — M3 corpus evidence and reproducible baseline reports.
