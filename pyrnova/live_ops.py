@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
+from urllib.parse import urlsplit, urlunsplit
 
 from . import scheduler as sched
 from .sources import http
@@ -72,21 +73,31 @@ def http_fetcher(request: dict) -> bytes:
     url = request.get("url")
     if not url:
         raise LiveFetchError("request has no url", failure_category="terminal")
+    from requests.exceptions import RequestException
+
+    parsed_url = urlsplit(str(url))
+    safe_url = urlunsplit((parsed_url.scheme, parsed_url.netloc.rsplit("@", 1)[-1], parsed_url.path, "", ""))
     headers = request.get("headers") or {}
-    if method == "POST":
-        status, raw, _, response_headers = http.post_json_response(
-            url, request.get("payload") or {}, headers=headers
-        )
-    else:
-        status, raw, response_headers = http.get_bytes_response(
-            url, request.get("params"), headers=headers
-        )
+    try:
+        if method == "POST":
+            status, raw, _, response_headers = http.post_json_response(
+                url, request.get("payload") or {}, headers=headers
+            )
+        else:
+            status, raw, response_headers = http.get_bytes_response(
+                url, request.get("params"), headers=headers
+            )
+    except RequestException as exc:
+        # Requests exception text may include the prepared URL with query-string credentials. Keep the
+        # transport type and source endpoint, never the provider's credential-bearing exception string.
+        raise LiveFetchError(f"{type(exc).__name__} retrieving {safe_url}",
+                             failure_category="service") from None
     if status == 429:
-        raise LiveFetchError(f"HTTP 429 throttled by provider for {url}", status=429,
+        raise LiveFetchError(f"HTTP 429 throttled by provider for {safe_url}", status=429,
                              failure_category="throttle",
                              retry_after_seconds=_retry_after_seconds(response_headers.get("Retry-After")))
     if not 200 <= status < 300:
-        raise LiveFetchError(f"HTTP {status} from {url}", status=status, failure_category="service")
+        raise LiveFetchError(f"HTTP {status} from {safe_url}", status=status, failure_category="service")
     return raw
 
 

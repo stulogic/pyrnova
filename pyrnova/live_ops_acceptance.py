@@ -36,6 +36,8 @@ MISS_CLASSES = frozenset({
 })
 SUPPORTED_SOURCE_PARSERS = frozenset({"usaspending", "sam_opportunities", "federal_register"})
 REQUIRED_OPERATIONAL_SOURCES = frozenset({"usaspending", "sam_opportunities"})
+SOAK_DESIGNATION = "SOAK TEST LENS — NON-CUSTOMER / NON-COMMERCIAL"
+SOAK_LEGAL_NAME = "IRONMOUNTAIN SOLUTIONS, LLC"
 
 
 def _now() -> str:
@@ -146,6 +148,13 @@ def _repo_commit(repo: Path) -> str:
     ).stdout.strip()
 
 
+def _repo_tracked_changes(repo: Path) -> str:
+    return subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo,
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
+
+
 def preflight(plan: SoakPlan, *, repo: Path) -> dict:
     """Validate immutable acceptance inputs without starting or mutating the soak."""
     errors: list[str] = []
@@ -156,6 +165,7 @@ def preflight(plan: SoakPlan, *, repo: Path) -> dict:
         "required_business_days", "evidence_dir", "state_dir", "source_state_dir",
         "archive_dir", "customers", "sources", "health_thresholds",
         "allowed_observation", "allowed_intervention", "invalidating_intervention",
+        "soak_test_lens", "designation",
     )
     for field in required:
         if field not in raw:
@@ -169,6 +179,8 @@ def preflight(plan: SoakPlan, *, repo: Path) -> dict:
     current_commit = _repo_commit(repo)
     if raw.get("canonical_commit") != current_commit:
         errors.append(f"canonical_commit does not match current HEAD ({current_commit})")
+    if _repo_tracked_changes(repo):
+        errors.append("canonical repository has uncommitted tracked changes")
 
     state_dir = (plan.path.parent / str(raw.get("state_dir", ""))).resolve()
     customer_store = StateStore(state_dir) if state_dir.is_dir() else None
@@ -182,12 +194,23 @@ def preflight(plan: SoakPlan, *, repo: Path) -> dict:
         cid = str((customer or {}).get("customer_id") or "")
         profile_value = str((customer or {}).get("profile") or "")
         profile_path = (plan.path.parent / profile_value).resolve()
-        if not cid or customer_store is None or get_customer(customer_store, cid) is None:
+        persisted_profile = get_customer(customer_store, cid) if customer_store is not None and cid else None
+        if persisted_profile is None:
             errors.append(f"persisted customer Lens not found: {cid or '<missing>'}")
         elif len(list_watches(customer_store, cid)) < int((customer or {}).get("monitored_objects") or 0):
             errors.append(f"declared monitored_objects exceed active persisted watches for {cid}")
+        if persisted_profile is not None and SOAK_DESIGNATION not in persisted_profile.provenance:
+            errors.append(f"persisted Lens lacks explicit non-commercial soak designation: {cid}")
         if not profile_value or not profile_path.is_file():
             errors.append(f"capability profile not found for customer {cid or '<missing>'}")
+        else:
+            try:
+                profile_raw = json.loads(profile_path.read_text(encoding="utf-8"))
+                if profile_raw.get("designation") != SOAK_DESIGNATION:
+                    errors.append(f"capability profile lacks explicit non-commercial soak designation: {cid}")
+                CapabilityProfile.from_dict(profile_raw)
+            except (ValueError, TypeError, AttributeError) as exc:
+                errors.append(f"invalid capability profile for {cid}: {exc}")
         monitored += int((customer or {}).get("monitored_objects") or 0)
     if monitored < 1:
         errors.append("monitored_objects must be declared and non-zero")
@@ -199,7 +222,7 @@ def preflight(plan: SoakPlan, *, repo: Path) -> dict:
     source_ids = {str((source or {}).get("source_id") or "") for source in sources}
     missing_sources = sorted(REQUIRED_OPERATIONAL_SOURCES - source_ids)
     if missing_sources:
-        errors.append("customer-critical source set missing: " + ", ".join(missing_sources))
+        errors.append("soak-critical source set missing: " + ", ".join(missing_sources))
     for source in sources:
         sid = str((source or {}).get("source_id") or "")
         if sid not in SUPPORTED_SOURCE_PARSERS:
@@ -220,8 +243,12 @@ def preflight(plan: SoakPlan, *, repo: Path) -> dict:
         if not isinstance(request, dict) or not request.get("url"):
             errors.append(f"explicit request required for {sid}")
 
-    if raw.get("customer_1") != "IronMountain Solutions":
-        errors.append("customer_1 must remain IronMountain Solutions")
+    if raw.get("soak_test_lens") != SOAK_LEGAL_NAME:
+        errors.append(f"soak_test_lens must remain {SOAK_LEGAL_NAME}")
+    if raw.get("designation") != SOAK_DESIGNATION:
+        errors.append("plan must explicitly designate a non-customer, non-commercial soak test Lens")
+    if "customer_1" in raw:
+        errors.append("customer_1 must not label this non-commercial soak test Lens")
     if not raw.get("restart_rule"):
         errors.append("restart_rule is required")
     if not raw.get("failure_thresholds"):
@@ -316,14 +343,21 @@ class SoakHarness:
         return manifest
 
     def run_cycle(self, *, fetcher: Callable[[dict], bytes] = http_fetcher,
-                  now: Optional[datetime] = None) -> dict:
+                  now: Optional[datetime] = None, pre_soak: bool = False) -> dict:
         manifest_path = self.evidence_dir / "manifest.json"
-        if not manifest_path.exists():
+        if pre_soak:
+            report = preflight(self.plan, repo=self.repo)
+            if not report["ok"]:
+                raise RuntimeError("foreground preflight failed: " + "; ".join(report["errors"]))
+            if manifest_path.exists():
+                raise RuntimeError("official soak already started; foreground validation cannot move its clock")
+        elif not manifest_path.exists():
             raise RuntimeError("soak has not been started")
         self._ensure_runtime()
         assert self.state is not None and self.source_state is not None and self.archive is not None
         at = now or datetime.now(timezone.utc)
-        cycle_id = _stable_id("cycle", {"plan": self.plan.manifest_hash, "at": at.isoformat()})
+        phase = "PRE_SOAK_FOREGROUND" if pre_soak else "SOAK"
+        cycle_id = _stable_id("cycle", {"plan": self.plan.manifest_hash, "at": at.isoformat(), "phase": phase})
         scheduler = SourceScheduler(
             self.source_state, archive=self.archive, default_mode="OFFLINE",
             budget_epoch=at.date().isoformat(),
@@ -425,7 +459,7 @@ class SoakHarness:
                 source_doc.pop("pending_processing", None)
                 self.source_state.save(sid, source_doc)
         cycle = {
-            "id": cycle_id, "at": at.isoformat(), "commit": _repo_commit(self.repo),
+            "id": cycle_id, "at": at.isoformat(), "phase": phase, "commit": _repo_commit(self.repo),
             "plan_hash": self.plan.manifest_hash, "sources": source_results,
             "pipelines": pipeline_results, "fanout": fanout,
             "source_health": scheduler.health_report(),
@@ -434,9 +468,37 @@ class SoakHarness:
             "ok": clean_pipeline and clean_sources and fanout.get("failure_count", 0) == 0
                   and not any(r.get("action") == ERROR for r in source_results),
         }
-        _append_jsonl(self.evidence_dir / "cycles.jsonl", cycle)
-        _atomic_json(self.evidence_dir / "status.json", cycle)
+        prefix = "foreground_" if pre_soak else ""
+        _append_jsonl(self.evidence_dir / f"{prefix}cycles.jsonl", cycle)
+        _atomic_json(self.evidence_dir / f"{prefix}status.json", cycle)
         return cycle
+
+    def run_foreground(self, *, fetcher: Callable[[dict], bytes] = http_fetcher,
+                       now: Optional[datetime] = None) -> dict:
+        """Prove a real cycle and unchanged fan-out without starting the acceptance clock."""
+        cycle = self.run_cycle(fetcher=fetcher, now=now, pre_soak=True)
+        assert self.state is not None
+        real_acquisitions = bool(cycle["sources"]) and all(
+            source.get("action") == LIVE_FETCH for source in cycle["sources"]
+        )
+        if cycle["ok"] and real_acquisitions:
+            repeat = fan_out(
+                mc_store=self.state, customer_store=self.state, cmc_store=self.state,
+                customer_ids=[str(c["customer_id"]) for c in self.plan.raw["customers"]],
+                run_id=cycle["id"] + "_idempotency", now=_now(),
+            )
+        else:
+            # A verification retry must not silently repair the outputs of a failed first cycle.
+            repeat = {"skipped": True, "reason": "foreground cycle failed or lacked real acquisitions"}
+        result = {
+            "at": _now(), "phase": "PRE_SOAK_FOREGROUND", "cycle": cycle,
+            "idempotency": repeat,
+            "real_acquisitions": real_acquisitions,
+            "ok": cycle["ok"] and real_acquisitions and repeat.get("failure_count", 0) == 0
+                  and repeat.get("inserted", 0) == 0 and repeat.get("updated", 0) == 0,
+        }
+        _atomic_json(self.evidence_dir / "foreground_validation.json", result)
+        return result
 
     def record_intervention(self, *, kind: str, actor: str, reason: str,
                             invalidates_soak: bool) -> dict:
@@ -470,7 +532,7 @@ class SoakHarness:
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pyrnova.live_ops_acceptance")
     parser.add_argument(
-        "action", choices=("preflight", "start", "run-once", "serve", "record-miss", "list-misses")
+        "action", choices=("preflight", "foreground", "start", "run-once", "serve", "record-miss", "list-misses")
     )
     parser.add_argument("--plan")
     parser.add_argument("--repo", default=".")
@@ -516,6 +578,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0 if report["ok"] else 2
     harness = SoakHarness(plan, repo=repo)
+    if args.action == "foreground":
+        result = harness.run_foreground()
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["ok"] else 2
     if args.action == "start":
         print(json.dumps(harness.start(), indent=2, sort_keys=True))
     elif args.action == "run-once":

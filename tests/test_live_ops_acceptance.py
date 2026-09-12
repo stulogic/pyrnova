@@ -10,6 +10,7 @@ from pyrnova.live_ops_acceptance import (
     main,
     preflight,
     record_important_miss,
+    SOAK_DESIGNATION,
 )
 from pyrnova.scheduler import ERROR, LIVE_FETCH, SourceScheduler
 from pyrnova.sources.source_state import SourceStateStore
@@ -21,6 +22,11 @@ REQ = {
     "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
     "payload": {"query": "ironmountain"},
 }
+
+
+@pytest.fixture(autouse=True)
+def clean_test_repository(monkeypatch):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_tracked_changes", lambda _repo: "")
 
 
 def test_poll_error_persists_retry_and_explicit_health(tmp_path):
@@ -93,11 +99,13 @@ def _plan(tmp_path, commit):
     profile = tmp_path / "ironmountain.json"
     profile.write_text(json.dumps({
         "name": "IronMountain Solutions", "recipient_names": ["IronMountain Solutions"],
+        "designation": SOAK_DESIGNATION,
         "agencies": ["Army"], "naics": ["541330"], "capabilities": ["engineering"],
     }))
     state = StateStore(tmp_path / "state")
     upsert_customer(state, CustomerProfile(
         customer_id="ironmountain", name="IronMountain Solutions",
+        provenance=SOAK_DESIGNATION,
         effective_from="2026-09-12T00:00:00+00:00",
     ))
     add_watch(state, WatchlistEntry(
@@ -105,7 +113,8 @@ def _plan(tmp_path, commit):
         valid_from="2026-09-12T00:00:00+00:00",
     ))
     raw = {
-        "soak_id": "phase1-test", "customer_1": "IronMountain Solutions",
+        "soak_id": "phase1-test", "soak_test_lens": "IRONMOUNTAIN SOLUTIONS, LLC",
+        "designation": SOAK_DESIGNATION,
         "canonical_commit": commit, "environment": "test", "duration_calendar_days": 7,
         "required_business_days": 5, "evidence_dir": "evidence", "state_dir": "state",
         "source_state_dir": "source-state", "archive_dir": "archive",
@@ -141,6 +150,68 @@ def test_preflight_fails_closed_when_customer_lens_is_absent(tmp_path, monkeypat
     result = preflight(load_plan(path), repo=tmp_path)
     assert result["ok"] is False
     assert any("persisted customer Lens not found" in error for error in result["errors"])
+
+
+def test_preflight_rejects_dirty_tracked_tree_and_commercial_label(tmp_path, monkeypatch):
+    path = _plan(tmp_path, "expected")
+    raw = json.loads(path.read_text())
+    raw["customer_1"] = "IronMountain Solutions"
+    path.write_text(json.dumps(raw))
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_tracked_changes", lambda _repo: " M file.py")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type("C", (), {"has_sam": True})())
+    result = preflight(load_plan(path), repo=tmp_path)
+    assert result["ok"] is False
+    assert any("uncommitted tracked changes" in error for error in result["errors"])
+    assert any("customer_1 must not label" in error for error in result["errors"])
+
+
+def test_foreground_cycle_proves_idempotency_without_starting_soak(tmp_path, monkeypatch):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    path = _plan(tmp_path, "expected")
+    profile = tmp_path / "ironmountain.json"
+    raw = json.loads(profile.read_text())
+    raw.pop("naics")  # unsupported NAICS is optional, not an invented runtime requirement
+    profile.write_text(json.dumps(raw))
+    harness = SoakHarness(load_plan(path), repo=tmp_path)
+    result = harness.run_foreground(fetcher=lambda request: (
+        b'{"results":[]}' if "usaspending" in request["url"]
+        else b'{"opportunitiesData":[],"totalRecords":0}'
+    ))
+    assert result["ok"] is True
+    assert result["idempotency"]["inserted"] == result["idempotency"]["updated"] == 0
+    assert not (tmp_path / "evidence" / "manifest.json").exists()
+    assert (tmp_path / "evidence" / "foreground_validation.json").is_file()
+
+
+def test_copied_example_plan_paths_resolve_from_documented_destination(tmp_path):
+    from pathlib import Path
+
+    raw = json.loads((Path(__file__).parents[1] / "ops" / "phase1_soak_plan.example.json").read_text())
+    destination = tmp_path / "var" / "phase1_soak" / "plan.json"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(json.dumps(raw))
+    plan = load_plan(destination)
+    assert plan.evidence_dir == destination.parent / "evidence"
+    assert (destination.parent / raw["state_dir"]).resolve() == tmp_path / "var" / "state"
+
+
+def test_failed_foreground_does_not_run_repairing_idempotency_fanout(tmp_path, monkeypatch):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    harness = SoakHarness(load_plan(_plan(tmp_path, "expected")), repo=tmp_path)
+    result = harness.run_foreground(fetcher=lambda request: (
+        b"malformed" if "usaspending" in request["url"]
+        else b'{"opportunitiesData":[],"totalRecords":0}'
+    ))
+    assert result["ok"] is False
+    assert result["idempotency"]["skipped"] is True
+    assert not (tmp_path / "evidence" / "manifest.json").exists()
 
 
 def test_harness_runs_acquisition_pipeline_fanout_and_writes_evidence(tmp_path, monkeypatch):

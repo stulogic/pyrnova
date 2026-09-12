@@ -218,6 +218,22 @@ def test_http_fetcher_preserves_provider_retry_after(monkeypatch):
     assert caught.value.retry_after_seconds == 90
 
 
+def test_http_fetcher_transport_error_never_retains_query_credential(monkeypatch):
+    from requests.exceptions import ConnectionError
+
+    def fail(*args, **kwargs):
+        raise ConnectionError("failed /search?api_key=private-test-key")
+
+    monkeypatch.setattr("pyrnova.live_ops.http.get_bytes_response", fail)
+    with pytest.raises(LiveFetchError) as caught:
+        __import__("pyrnova.live_ops", fromlist=["http_fetcher"]).http_fetcher(
+            {"url": "https://api.sam.gov/search?api_key=private-test-key"}
+        )
+    assert "ConnectionError" in str(caught.value)
+    assert "private-test-key" not in str(caught.value)
+    assert "api_key" not in str(caught.value)
+
+
 def test_scheduler_retry_uses_provider_retry_after(tmp_path):
     sched = _sched(tmp_path)
 

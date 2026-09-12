@@ -1,18 +1,19 @@
 {
   "soak_id": "phase1-live-ops-SET_START_DATE",
-  "customer_1": "IronMountain Solutions",
+  "soak_test_lens": "IRONMOUNTAIN SOLUTIONS, LLC",
+  "designation": "SOAK TEST LENS — NON-CUSTOMER / NON-COMMERCIAL",
   "canonical_commit": "SET_VERIFIED_MAIN_COMMIT",
   "environment": "founder-mac-local-jsonl",
   "duration_calendar_days": 7,
   "required_business_days": 5,
-  "evidence_dir": "../var/phase1_soak/evidence",
-  "state_dir": "../var/state",
-  "source_state_dir": "../var/phase1_soak/source_state",
-  "archive_dir": "../var/phase1_soak/archive",
+  "evidence_dir": "evidence",
+  "state_dir": "../state",
+  "source_state_dir": "source_state",
+  "archive_dir": "archive",
   "customers": [
     {
-      "customer_id": "ironmountain",
-      "profile": "../var/phase1_soak/ironmountain_profile.json",
+      "customer_id": "soak-ironmountain-solutions",
+      "profile": "ironmountain_profile.json",
       "monitored_objects": 1
     }
   ],
@@ -21,7 +22,7 @@
       "source_id": "usaspending",
       "interval_seconds": 604800,
       "max_calls_per_epoch": 2,
-      "customer_ids": ["ironmountain"],
+      "customer_ids": ["soak-ironmountain-solutions"],
       "request": {
         "method": "POST",
         "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
@@ -47,7 +48,7 @@
       "source_id": "sam_opportunities",
       "interval_seconds": 86400,
       "max_calls_per_epoch": 1,
-      "customer_ids": ["ironmountain"],
+      "customer_ids": ["soak-ironmountain-solutions"],
       "request": {
         "method": "GET",
         "url": "https://api.sam.gov/opportunities/v2/search",
@@ -55,7 +56,6 @@
           "api_key": "${SAM_API_KEY}",
           "postedFrom": "{{date_minus_30_mmddyyyy}}",
           "postedTo": "{{today_mmddyyyy}}",
-          "ncode": "SET_APPROVED_PRIMARY_NAICS",
           "limit": 100,
           "offset": 0
         }
