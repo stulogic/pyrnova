@@ -114,7 +114,8 @@ def test_live_runner_records_efficiency_ledger(tmp_path):
     assert e2.action == CACHE_HIT and e2.call_avoided == 1 and e2.requests_sent == 0
     s = runner.summary()
     assert s["requests_sent"] == 1 and s["calls_avoided"] == 1 and s["cache_hits"] == 1
-    assert s["records_returned"] == 2 and s["new_records"] == 2
+    assert s["records_returned"] == 4 and s["new_records"] == 2
+    assert e2.records_returned == 2 and s["unchanged_records"] == 2
 
 
 def test_live_runner_marks_unchanged_content_on_identical_bytes(tmp_path):
@@ -257,7 +258,8 @@ def test_usaspending_request_targets_the_public_search_endpoint():
 
 
 def test_usaspending_record_count_is_robust_to_garbage():
-    assert usaspending_record_count(b"not json") == 0
+    with pytest.raises(ValueError):
+        usaspending_record_count(b"not json")
     assert usaspending_record_count(json.dumps({"results": [1, 2, 3]}).encode()) == 3
 
 
@@ -331,7 +333,8 @@ def test_malformed_live_bytes_are_archived_without_corrupting_downstream(tmp_pat
                         record_counter=usaspending_record_count)
     e = runner.run(usaspending_request(_payload("a")))
     assert e.action == LIVE_FETCH           # archived exact bytes even though unparseable
-    assert e.records_returned == 0          # record counter degrades to 0, never raises
+    assert e.records_returned is None      # unavailable is distinct from a genuine empty response
+    assert e.counting_error and runner.summary()["records_returned"] is None
     # Repeat is a clean cache hit — the malformed payload did not corrupt the dedupe index.
     again = runner.run(usaspending_request(_payload("a")))
     assert again.action == CACHE_HIT

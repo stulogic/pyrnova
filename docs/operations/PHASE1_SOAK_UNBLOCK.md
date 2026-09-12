@@ -136,3 +136,43 @@ regression is required before a new verified start gate, respecting retained evi
 **SOAK BLOCKED.** `launchctl print gui/501/com.pyrnova.live-ops` confirmed no such service. No plist was
 installed/activated and `manifest.json` does not exist. The deployment-checklist pre-deploy evidence gate
 held activation. Operational acceptance is blocked before start; no official soak timestamp exists.
+
+
+## Source-counter correction and retained start gate (2026-09-12)
+
+`PHASE1-LIVE-OPS-SOURCE-COUNTER-FIX` replaces the silent default zero with an unavailable count
+(`records_returned=null`, explicit `counting_error`); aggregates also remain unknown for an uncounted
+response. The harness supplies the source-specific counter. Ingestion and counting share the same
+response-page parser: USAspending `results`, SAM `opportunitiesData`. Only a real empty array counts
+as zero; malformed/missing arrays fail. Archive hash and parsed/recorded count agreement are mandatory
+before downstream checkpoint advancement. Cached and resumed artifacts receive actual page counts;
+provider total-hit fields are not archived-page counts. No source cadence, budget, retry, acquisition
+freshness, scoring, fan-out, Lens, or commercial configuration changes.
+
+Original failed evidence under `var/phase1_soak/evidence/` remains unchanged. A separate corrected
+runner proof is recorded in `var/phase1_soak/source_counter_fix/retained_counter_manifest.json` and
+`retained_counter_ledger.json`: retained USAspending/SAM hashes above verify, and their parsed and newly
+recorded counts are 14/100. Original recorded counts remain zero, documenting the defect.
+
+A clean pinned gate can use those current acquisitions while neither source is due:
+
+```bash
+.venv/bin/python -m pyrnova.live_ops_acceptance foreground --plan var/phase1_soak/plan.json --repo . \
+  --retained-foreground var/phase1_soak/evidence/foreground_validation.json
+```
+
+This requires a distinct evidence directory, the same current indexed downstream checkpoint, no pending
+processing, unchanged cadence, HEALTHY/CURRENT source state, exact hashes and counts, completed prior
+pipeline/Lens coverage and unchanged fan-out, and no invalidating recorded intervention. It creates a
+new verification snapshot without provider calls, ingestion, fan-out, checkpoint repair, or rewriting
+historical results. If either source is due, this retained gate refuses to substitute for its scheduled
+acquisition. `serve` refuses missing/failed gates or a different runtime commit/plan.
+
+The corrected runtime evidence directory is `var/phase1_soak/evidence_source_counter_fix_2026-09-12/`.
+Its gate, official manifest, cycle/status files, and service logs are authoritative for actual gate/start
+outcomes. Engineering verification alone does not start the soak or establish operational acceptance.
+
+Corrected focused verification: **85 passed, zero failed/skipped**. Full canonical verification:
+**657 passed, zero failed/skipped**. The existing Python 3.9/LibreSSL compatibility warning remains
+visible. Both retained real pages are frozen as exact-byte, hash-checked offline regression fixtures
+under `tests/fixtures/live_source_counts/`; all verification used retained bytes or injected fetchers.

@@ -20,6 +20,7 @@ effective mode is OFFLINE).
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -104,16 +105,26 @@ def http_fetcher(request: dict) -> bytes:
 # ---------------------------------------------------------------------------- record counters
 
 
+def source_response_rows(source_id: str, content: bytes) -> list[dict]:
+    """Read the archived response page; missing/malformed rows are not an empty response."""
+    keys = {"usaspending": "results", "sam_opportunities": "opportunitiesData",
+            "federal_register": "results"}
+    if source_id not in keys:
+        raise ValueError(f"unsupported source parser: {source_id}")
+    parsed = json.loads(content)
+    key = keys[source_id]
+    if not isinstance(parsed, dict) or not isinstance(parsed.get(key), list):
+        raise ValueError(f"{source_id} response must contain a {key} array")
+    return parsed[key]
+
+
+def source_record_count(source_id: str, content: bytes) -> int:
+    """Count retained page rows using the ingestion parser, never the provider's total-hit field."""
+    return len(source_response_rows(source_id, content))
+
+
 def usaspending_record_count(content: bytes) -> int:
-    """Count award rows in a USAspending spending_by_award response (0 on anything unparseable)."""
-    try:
-        return len((json.loads(content) or {}).get("results") or [])
-    except (ValueError, AttributeError, TypeError):
-        return 0
-
-
-def _null_counter(content: bytes) -> int:
-    return 0
+    return source_record_count("usaspending", content)
 
 
 # ---------------------------------------------------------------------------- request builders
@@ -146,6 +157,7 @@ class LiveRunEntry:
     is_new_content: Optional[bool]   # True if this sha was not already indexed for this source
     reason: str
     error: Optional[str] = None
+    counting_error: Optional[str] = None
 
     def as_dict(self) -> dict:
         return {k: v for k, v in self.__dict__.items()}
@@ -163,7 +175,7 @@ class LiveRunner:
     source_id: str
     mode: str = "LIVE_SAFE"
     fetcher: Fetcher = http_fetcher
-    record_counter: RecordCounter = _null_counter
+    record_counter: Optional[RecordCounter] = None
     max_calls: Optional[int] = None
     entries: list[LiveRunEntry] = field(default_factory=list)
 
@@ -184,10 +196,14 @@ class LiveRunner:
         avoided = 1 if result.action in (sched.CACHE_HIT, sched.OFFLINE_REPLAY) else 0
         records: Optional[int] = None
         is_new: Optional[bool] = None
+        counting_error: Optional[str] = None
         if result.content_sha256 is not None:
             is_new = result.content_sha256 not in known_before
-            if result.action in (sched.LIVE_FETCH, sched.OFFLINE_REPLAY) and self.archive_bytes_available(result):
-                records = self._count_records(result)
+            if result.action in (sched.LIVE_FETCH, sched.OFFLINE_REPLAY, sched.CACHE_HIT):
+                try:
+                    records = self._count_records(result)
+                except Exception as exc:  # telemetry failure must preserve the scheduler's acquisition
+                    counting_error = f"source record count unavailable ({type(exc).__name__})"
         entry = LiveRunEntry(
             source_id=self.source_id, action=result.action, mode=result.mode,
             request_fingerprint=result.request_fingerprint, content_sha256=result.content_sha256,
@@ -195,7 +211,7 @@ class LiveRunner:
             requests_attempted=1 if result.action not in (sched.SKIPPED_NOT_DUE, sched.SKIPPED_PAUSED) else 0,
             requests_sent=sent, cache_hit=cache_hit, call_avoided=avoided,
             records_returned=records, is_new_content=is_new, reason=result.reason,
-            error=result.error,
+            error=result.error, counting_error=counting_error,
         )
         self.entries.append(entry)
         return entry
@@ -203,12 +219,16 @@ class LiveRunner:
     def archive_bytes_available(self, result) -> bool:
         return self.scheduler.archive is not None and result.content_sha256 is not None
 
-    def _count_records(self, result) -> Optional[int]:
-        try:
-            content = self.scheduler.archive.get(result.content_sha256, self.source_id)
-        except Exception:  # noqa: BLE001 — record counting is best-effort telemetry, never fatal
-            return None
-        return self.record_counter(content)
+    def _count_records(self, result) -> int:
+        if self.record_counter is None:
+            raise ValueError("source record counter is not configured")
+        content = self.scheduler.archive.get(result.content_sha256, self.source_id)
+        if hashlib.sha256(content).hexdigest() != result.content_sha256:
+            raise ValueError("source artifact hash mismatch")
+        count = self.record_counter(content)
+        if type(count) is not int or count < 0:
+            raise ValueError("source record counter must return a non-negative integer")
+        return count
 
     def summary(self) -> dict:
         """Aggregate the recorded ledger for this run (the WS-A / WS-D efficiency figures)."""
@@ -218,8 +238,12 @@ class LiveRunner:
         sent = sum(e.requests_sent for e in self.entries)
         avoided = sum(e.call_avoided for e in self.entries)
         cache_hits = sum(e.cache_hit for e in self.entries)
-        records = sum(e.records_returned or 0 for e in self.entries)
-        new_records = sum((e.records_returned or 0) for e in self.entries if e.is_new_content)
+        unknown = sum(e.records_returned is None for e in self.entries
+                      if e.action in (sched.LIVE_FETCH, sched.OFFLINE_REPLAY, sched.CACHE_HIT))
+        records = None if unknown else sum(e.records_returned or 0 for e in self.entries)
+        new_records = None if unknown else sum(
+            (e.records_returned or 0) for e in self.entries if e.is_new_content
+        )
         return {
             "source_id": self.source_id,
             "requests": len(self.entries),
@@ -228,7 +252,8 @@ class LiveRunner:
             "cache_hits": cache_hits,
             "records_returned": records,
             "new_records": new_records,
-            "unchanged_records": records - new_records,
+            "unchanged_records": None if unknown else records - new_records,
+            "unknown_record_counts": unknown,
             "actions": dict(actions),
         }
 
@@ -289,6 +314,6 @@ def operating_cost_report(scheduler: Any, *, source_ids: Optional[list[str]] = N
 
 __all__ = [
     "Fetcher", "RecordCounter", "LiveFetchError", "http_fetcher",
-    "usaspending_record_count", "usaspending_request",
+    "source_response_rows", "source_record_count", "usaspending_record_count", "usaspending_request",
     "LiveRunEntry", "LiveRunner", "operating_cost_report",
 ]

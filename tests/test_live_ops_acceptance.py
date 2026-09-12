@@ -288,3 +288,193 @@ def test_pipeline_customer_id_is_persisted_for_fanout(tmp_path, profile, award_r
         archive=LocalEvidenceArchive(tmp_path / "archive"), store=store, as_of=as_of,
     )
     assert all(row["customer_id"] == "tenant-1" for row in store.read("opportunities"))
+
+
+@pytest.mark.parametrize("source_id,expected,sha", [
+    ("usaspending", 14, "df603dca8d27bbae28bf83d33117c6a43d74ea2614c80321ff366ac7834010de"),
+    ("sam_opportunities", 100, "c84b27447a621078093ae0675ec6fd517955b16764d91d0b201322bac8636ce6"),
+])
+def test_retained_real_page_counter_ledger_and_parser_agree(tmp_path, source_id, expected, sha):
+    from functools import partial
+    from pathlib import Path
+    from pyrnova.archive import LocalEvidenceArchive, sha256_hex
+    from pyrnova.live_ops import LiveRunner, source_record_count
+    from pyrnova.live_ops_acceptance import _parse_source
+
+    raw = (Path(__file__).parent / "fixtures/live_source_counts" / (source_id + ".json")).read_bytes()
+    assert sha256_hex(raw) == sha
+    scheduler = SourceScheduler(SourceStateStore(tmp_path / "source-state"),
+                                archive=LocalEvidenceArchive(tmp_path / "archive"))
+    request = {"method": "GET", "url": "https://example.test/retained"}
+    scheduler.run_job(source_id, request=request, mode="OFFLINE", offline_bytes=raw)
+    runner = LiveRunner(scheduler, source_id, mode="OFFLINE",
+                        record_counter=partial(source_record_count, source_id))
+    entry = runner.run(request)
+    assert entry.requests_sent == 0
+    assert entry.records_returned == expected
+    assert entry.counting_error is None
+    assert sum(map(len, _parse_source(source_id, raw))) == expected
+    assert runner.summary()["records_returned"] == expected
+
+
+def test_unwired_counter_is_unknown_in_entry_and_summary(tmp_path):
+    from pyrnova.archive import LocalEvidenceArchive
+    from pyrnova.live_ops import LiveRunner
+
+    scheduler = SourceScheduler(SourceStateStore(tmp_path / "source-state"),
+                                archive=LocalEvidenceArchive(tmp_path / "archive"))
+    runner = LiveRunner(scheduler, "usaspending", fetcher=lambda _r: b'{"results":[{}]}')
+    entry = runner.run(REQ)
+    assert entry.action == LIVE_FETCH
+    assert entry.records_returned is None and entry.counting_error
+    summary = runner.summary()
+    assert summary["records_returned"] is None
+    assert summary["new_records"] is None and summary["unchanged_records"] is None
+    assert summary["unknown_record_counts"] == 1
+
+
+@pytest.mark.parametrize("source_id,key", [("usaspending", "results"),
+                                            ("sam_opportunities", "opportunitiesData")])
+@pytest.mark.parametrize("value", [None, {}, "rows"])
+def test_malformed_source_rows_are_not_zero(source_id, key, value):
+    from pyrnova.live_ops import source_record_count
+
+    with pytest.raises(ValueError):
+        source_record_count(source_id, json.dumps({key: value}).encode())
+    with pytest.raises(ValueError):
+        source_record_count(source_id, b"{}")
+
+
+def test_false_zero_counter_fails_cycle_and_preserves_pending(tmp_path, monkeypatch):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.source_record_count", lambda _sid, _raw: 0)
+    harness = SoakHarness(load_plan(_plan(tmp_path, "expected")), repo=tmp_path)
+    result = harness.run_foreground(fetcher=lambda request: (
+        b'{"results":[{}]}' if "usaspending" in request["url"]
+        else b'{"opportunitiesData":[{}],"totalRecords":100}'
+    ))
+    assert result["ok"] is False and result["cycle"]["fanout"]["skipped"]
+    assert all("processing_error" in source for source in result["cycle"]["sources"])
+    for sid in ("usaspending", "sam_opportunities"):
+        assert harness.source_state.get_checkpoint(sid) is None
+        assert harness.source_state.load(sid)["pending_processing"]
+
+
+def test_cycle_counts_match_archives_and_written_ledgers(tmp_path, monkeypatch):
+    from pyrnova.live_ops import source_record_count
+
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    harness = SoakHarness(load_plan(_plan(tmp_path, "expected")), repo=tmp_path)
+    result = harness.run_foreground(fetcher=lambda request: (
+        b'{"results":[]}' if "usaspending" in request["url"]
+        else b'{"opportunitiesData":[],"totalRecords":999}'
+    ))
+    assert result["ok"]
+    cycle = result["cycle"]
+    saved = json.loads((harness.evidence_dir / "foreground_cycles.jsonl").read_text())
+    validation = json.loads((harness.evidence_dir / "foreground_validation.json").read_text())
+    assert saved == cycle == validation["cycle"]
+    for source in cycle["sources"]:
+        raw = harness.archive.get(source["content_sha256"], source["source_id"])
+        assert source_record_count(source["source_id"], raw) == source["records_returned"] == 0
+    assert all(row["freshness_state"] == "CURRENT" for row in cycle["source_health"]["sources"]
+               if row["source_id"] in {"usaspending", "sam_opportunities"})
+
+
+@pytest.mark.parametrize("defect", [None, "counter", "hash", "checkpoint", "pending", "due", "intervention"])
+def test_retained_gate_is_read_only_current_and_fails_closed(tmp_path, monkeypatch, defect):
+    from pathlib import Path
+    from pyrnova.live_ops import source_record_count
+
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    original_plan = load_plan(_plan(tmp_path, "expected"))
+    original_harness = SoakHarness(original_plan, repo=tmp_path)
+    result = original_harness.run_foreground(fetcher=lambda request: (
+        b'{"results":[]}' if "usaspending" in request["url"]
+        else b'{"opportunitiesData":[],"totalRecords":0}'
+    ))
+    assert result["ok"]
+    original_path = original_harness.evidence_dir / "foreground_validation.json"
+    # Reproduce historical false-zero telemetry using the retained real pages, with a correctly
+    # checkpointed completed acquisition. Production evidence is never modified by this test.
+    historical = json.loads(original_path.read_text())
+    for source in historical["cycle"]["sources"]:
+        sid = source["source_id"]
+        raw = (Path(__file__).parent / "fixtures/live_source_counts" / (sid + ".json")).read_bytes()
+        ev = original_harness.archive.put(raw, source_id=sid, retention_tier="B")
+        source["content_sha256"] = ev.content_sha256
+        original_harness.source_state.record_request(
+            sid, source["request_fingerprint"], content_sha256=ev.content_sha256,
+            source_url="https://example.test/retained", fetched_at=historical["cycle"]["at"],
+        )
+    original_path.write_text(json.dumps(historical))
+    raw_plan = dict(original_plan.raw, evidence_dir="corrected-evidence")
+    corrected_path = tmp_path / "corrected-plan.json"
+    corrected_path.write_text(json.dumps(raw_plan))
+    harness = SoakHarness(load_plan(corrected_path), repo=tmp_path)
+    if defect == "counter":
+        monkeypatch.setattr("pyrnova.live_ops_acceptance.source_record_count", lambda _sid, _raw: 0)
+    if defect in {"checkpoint", "pending", "due"}:
+        doc = original_harness.source_state.load("usaspending")
+        if defect == "checkpoint":
+            doc["checkpoint"] = "different-cycle"
+        elif defect == "pending":
+            doc["pending_processing"] = {"content_sha256": "pending"}
+        else:
+            doc["schedule"]["last_polled"] = 0
+        original_harness.source_state.save("usaspending", doc)
+    if defect == "hash":
+        row = historical["cycle"]["sources"][0]
+        original_harness.archive._path(row["source_id"], row["content_sha256"]).write_bytes(b"corrupted")
+    if defect == "intervention":
+        (original_path.parent / "events.jsonl").write_text(json.dumps({"invalidates_soak": True}) + "\n")
+    originals = {p: p.read_bytes() for directory in (
+        original_harness.evidence_dir, original_harness.source_state_dir, original_harness.archive_dir,
+        original_harness.state_dir,
+    ) for p in directory.rglob("*") if p.is_file()}
+    verified = harness.verify_retained_foreground(original_path)
+    assert verified["ok"] == (defect is None)
+    assert verified["additional_provider_calls"] == verified["manual_repairs"] == 0
+    assert all(p.read_bytes() == before for p, before in originals.items())
+    assert not (harness.evidence_dir / "manifest.json").exists()
+    if defect is None:
+        assert [r["records_returned"] for r in verified["cycle"]["sources"]] == [14, 100]
+        assert all(r["prior_records_returned"] == 0 for r in verified["cycle"]["sources"])
+        saved = json.loads((harness.evidence_dir / "foreground_cycles.jsonl").read_text())
+        assert saved == verified["cycle"]
+        for artifact, ledger in zip(verified["artifact_verification"], saved["sources"]):
+            assert artifact["actual_count"] == artifact["recorded_count"] == ledger["records_returned"]
+    else:
+        assert verified["errors"]
+
+
+def test_retained_gate_refuses_to_overwrite_original_evidence(tmp_path, monkeypatch):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    monkeypatch.setattr("pyrnova.live_ops_acceptance.load_config", lambda: type(
+        "C", (), {"has_sam": True, "sam_api_key": "configured"}
+    )())
+    harness = SoakHarness(load_plan(_plan(tmp_path, "expected")), repo=tmp_path)
+    with pytest.raises(RuntimeError, match="new evidence directory"):
+        harness.verify_retained_foreground(harness.evidence_dir / "foreground_validation.json")
+
+
+@pytest.mark.parametrize("gate", [None, {"ok": False},
+                                  {"ok": True, "cycle": {"commit": "wrong", "plan_hash": "wrong"}}])
+def test_service_refuses_missing_failed_or_unpinned_start_gate(tmp_path, monkeypatch, gate):
+    monkeypatch.setattr("pyrnova.live_ops_acceptance._repo_commit", lambda _repo: "expected")
+    harness = SoakHarness(load_plan(_plan(tmp_path, "expected")), repo=tmp_path)
+    if gate is not None:
+        harness.evidence_dir.mkdir()
+        (harness.evidence_dir / "foreground_validation.json").write_text(json.dumps(gate))
+    with pytest.raises(RuntimeError, match="gate"):
+        harness.serve()
+    assert not (harness.evidence_dir / "manifest.json").exists()

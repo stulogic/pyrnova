@@ -179,16 +179,23 @@ The owner-unblock instruction now approves a non-commercial IronMountain test Le
 award-description capability keywords, and no unsupported NAICS/PSC or commercial preferences.
 Foreground validation is separate from the official clock; supervision may start acceptance only after
 preflight, real processing, and unchanged fan-out pass. Configuration/criteria are recorded in
-`docs/operations/PHASE1_SOAK_UNBLOCK.md`; actual runtime start/status are authoritative in gitignored
-`var/phase1_soak/evidence/manifest.json` and `status.json`.
+`docs/operations/PHASE1_SOAK_UNBLOCK.md`; actual runtime start/status are authoritative in the gitignored
+corrected evidence directory specified below.
 
-The real foreground cycle acquired 14 USAspending records and 100 SAM records, processed/fanned out
-idempotently, but the source ledger incorrectly reported zero returned rows because the harness omitted
-its source record counter. Independent evidence verification therefore blocks launchd activation and
-official soak start. The original ledger is preserved; no official manifest/service exists. Details and
-the minimum counter-wiring correction are recorded in `docs/operations/PHASE1_SOAK_UNBLOCK.md`.
+The original foreground cycle acquired 14 USAspending records and 100 SAM records, but its historical
+ledger incorrectly recorded zero. That failed evidence under `var/phase1_soak/evidence/` is preserved.
+The narrowly scoped source-counter correction now wires the shared authoritative response parser,
+represents unavailable counts explicitly, and rejects count/hash disagreement before checkpointing.
+Separate retained-runner evidence verifies parsed/newly recorded counts of 14/100 without provider
+calls or repairs. A retained start gate verifies current indexed/checkpointed HEALTHY/CURRENT evidence
+while respecting cadence; supervised execution requires a passed gate matching the pinned commit/plan.
+Actual corrected gate, service activation, official start, and elapsed-soak outcomes are authoritative
+in `var/phase1_soak/evidence_source_counter_fix_2026-09-12/`. Neither automated tests nor a generated
+plist constitutes unattended activation or operational acceptance. Details are recorded in
+`docs/operations/PHASE1_SOAK_UNBLOCK.md`.
 
-Operational acceptance remains blocked before start and requires the literal seven-calendar-day/five-business-day evidence window.
+Operational acceptance requires the literal seven-calendar-day/five-business-day unattended evidence window;
+the corrected runtime manifest/status determines whether that window has actually started.
 No Customer #1 GO / NO-GO or commercial-readiness conclusion is established by this test Lens.
 
 ## Next decision

@@ -15,6 +15,7 @@ import signal
 import subprocess
 import time
 from dataclasses import dataclass
+from functools import partial
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -23,7 +24,7 @@ from .archive import LocalEvidenceArchive
 from .config import load_config
 from .customer_material_changes import fan_out
 from .customers import get_customer, list_watches
-from .live_ops import LiveRunner, http_fetcher
+from .live_ops import LiveRunner, http_fetcher, source_record_count, source_response_rows
 from .match import CapabilityProfile
 from .pipeline import run as run_pipeline
 from .scheduler import CACHE_HIT, ERROR, LIVE_FETCH, SourceScheduler
@@ -278,13 +279,13 @@ def _expand(value: Any, *, cfg, today: date) -> Any:
 
 
 def _parse_source(source_id: str, raw: bytes) -> tuple[list[dict], list[dict], list[dict]]:
-    parsed = json.loads(raw)
+    rows = source_response_rows(source_id, raw)
     if source_id == "usaspending":
-        return list(parsed.get("results") or []), [], []
+        return rows, [], []
     if source_id == "sam_opportunities":
-        return [], list(parsed.get("opportunitiesData") or []), []
+        return [], rows, []
     if source_id == "federal_register":
-        return [], [], list(parsed.get("results") or [])
+        return [], [], rows
     raise ValueError(f"unsupported source parser: {source_id}")
 
 
@@ -395,6 +396,7 @@ class SoakHarness:
                 runner = LiveRunner(
                     scheduler, sid, mode="LIVE_SAFE", fetcher=fetcher,
                     max_calls=int(source["max_calls_per_epoch"]),
+                    record_counter=partial(source_record_count, sid),
                 )
                 entry = runner.run(request, checkpoint=None, now=at.timestamp())
                 source_results.append(entry.as_dict())
@@ -411,7 +413,15 @@ class SoakHarness:
                 self.source_state.save(sid, source_doc)
             try:
                 raw = self.archive.get(content_sha256, sid)
+                if hashlib.sha256(raw).hexdigest() != content_sha256:
+                    raise ValueError("source artifact hash mismatch")
                 awards, notices, precursors = _parse_source(sid, raw)
+                parsed_count = len(awards) + len(notices) + len(precursors)
+                result_row = source_results[-1]
+                if result_row.get("action") == "resume_pending":
+                    result_row["records_returned"] = parsed_count
+                if result_row.get("counting_error") or result_row.get("records_returned") != parsed_count:
+                    raise ValueError("source record telemetry unavailable or disagrees with parsed artifact")
                 targets = source.get("customer_ids") or list(rows_by_customer)
                 for cid in targets:
                     if cid in rows_by_customer:
@@ -500,6 +510,118 @@ class SoakHarness:
         _atomic_json(self.evidence_dir / "foreground_validation.json", result)
         return result
 
+    def verify_retained_foreground(self, foreground_path: Path) -> dict:
+        """Re-verify checkpointed real evidence without ingestion, repair, or provider calls.
+
+        The original failed telemetry remains historical truth. This creates a distinct gate snapshot
+        using corrected counters only while the same acquisitions are current and not due for polling.
+        """
+        report = preflight(self.plan, repo=self.repo)
+        if not report["ok"]:
+            raise RuntimeError("retained preflight failed: " + "; ".join(report["errors"]))
+        foreground_path = foreground_path.resolve()
+        if foreground_path.parent == self.evidence_dir:
+            raise RuntimeError("retained gate requires a new evidence directory; preserve original evidence")
+        if (self.evidence_dir / "manifest.json").exists():
+            raise RuntimeError("official soak already started")
+        original_bytes = foreground_path.read_bytes()
+        original = json.loads(original_bytes)
+        prior = original["cycle"]
+        self._ensure_runtime()
+        scheduler = SourceScheduler(self.source_state, archive=self.archive, default_mode="OFFLINE")
+        at = datetime.now(timezone.utc)
+        errors = []
+        if not prior.get("ok") or not original.get("real_acquisitions"):
+            errors.append("retained foreground did not complete real acquisition and downstream processing")
+        repeat = original.get("idempotency") or {}
+        if (repeat.get("skipped") or repeat.get("failure_count", 0)
+                or repeat.get("inserted", 0) or repeat.get("updated", 0)):
+            errors.append("retained unchanged fan-out verification failed")
+        if prior.get("operator_intervention") or prior.get("fanout", {}).get("failure_count", 0):
+            errors.append("retained cycle has intervention or fan-out failure")
+        expected_customers = {c["customer_id"] for c in self.plan.raw["customers"]}
+        pipelines = prior.get("pipelines", [])
+        if ({pipeline.get("customer_id") for pipeline in pipelines} != expected_customers
+                or any("error" in pipeline for pipeline in pipelines)):
+            errors.append("retained pipeline failed or Lens coverage differs")
+        if any(row.get("processing_error") or row.get("error") for row in prior.get("sources", [])):
+            errors.append("retained acquisition or processing failed")
+        if datetime.fromisoformat(prior["at"]) > at:
+            errors.append("retained cycle timestamp is in the future")
+        for events_path in (foreground_path.parent / "events.jsonl", self.evidence_dir / "events.jsonl"):
+            if events_path.exists():
+                for line in events_path.read_text().splitlines():
+                    event = json.loads(line)
+                    if event.get("invalidates_soak"):
+                        errors.append("invalidating intervention recorded in evidence")
+        ledger = []
+        verification = []
+        for source in self.plan.raw["sources"]:
+            sid = source["source_id"]
+            doc = self.source_state.load(sid)
+            prior_rows = [row for row in prior["sources"] if row["source_id"] == sid]
+            try:
+                if len(prior_rows) != 1 or prior_rows[0].get("action") != LIVE_FETCH:
+                    raise ValueError("retained source must have exactly one real acquisition")
+                row = prior_rows[0]
+                sha = row["content_sha256"]
+                indexed = (doc.get("requests") or {}).get(row["request_fingerprint"]) or {}
+                if indexed.get("content_sha256") != sha or doc.get("checkpoint") != prior["id"]:
+                    raise ValueError("retained acquisition is not the current indexed downstream checkpoint")
+                if doc.get("pending_processing"):
+                    raise ValueError("unprocessed acquisition is pending")
+                operation = doc.get("operation") or {}
+                if datetime.fromisoformat(operation["last_successful_acquisition_at"]) > at:
+                    raise ValueError("source acquisition timestamp is in the future")
+                if scheduler.due(sid, now=at.timestamp()):
+                    raise ValueError("source is due; retained gate cannot substitute for scheduled acquisition")
+                if float((doc.get("schedule") or {}).get("interval_seconds") or 0) != float(source["interval_seconds"]):
+                    raise ValueError("retained cadence differs from pinned plan")
+                health = scheduler.health([sid])[0]
+                if health["operational_state"] != "HEALTHY" or health["freshness_state"] != "CURRENT":
+                    raise ValueError("retained source is not HEALTHY/CURRENT")
+                raw = self.archive.get(sha, sid)
+                actual_sha = hashlib.sha256(raw).hexdigest()
+                if actual_sha != sha:
+                    raise ValueError("retained artifact hash mismatch")
+                actual_count = sum(map(len, _parse_source(sid, raw)))
+                recorded_count = source_record_count(sid, raw)
+                if recorded_count != actual_count:
+                    raise ValueError("retained parser/counter disagreement")
+                ledger.append({
+                    "source_id": sid, "action": "retained_verification", "mode": "OFFLINE",
+                    "content_sha256": sha, "from_archive": True, "requests_sent": 0,
+                    "records_returned": recorded_count, "prior_cycle_id": prior["id"],
+                    "prior_records_returned": row.get("records_returned"),
+                })
+                verification.append({
+                    "source_id": sid, "artifact": str(self.archive._path(sid, sha)),
+                    "content_sha256": sha, "hash_verified": True, "actual_count": actual_count,
+                    "recorded_count": recorded_count, "agreement": "PASS",
+                })
+            except (ValueError, KeyError, OSError, TypeError) as exc:
+                errors.append(f"{sid}: {exc}")
+        cycle = {
+            "id": _stable_id("cycle", {"plan": self.plan.manifest_hash, "at": at.isoformat(),
+                                       "phase": "RETAINED_START_GATE"}),
+            "at": at.isoformat(), "phase": "RETAINED_START_GATE", "commit": report["current_commit"],
+            "plan_hash": self.plan.manifest_hash, "sources": ledger,
+            "source_health": scheduler.health_report(), "operator_intervention": False,
+            "ok": not errors,
+        }
+        result = {
+            "at": at.isoformat(), "phase": "RETAINED_START_GATE", "cycle": cycle,
+            "retained_foreground_path": str(foreground_path),
+            "retained_foreground_sha256": hashlib.sha256(original_bytes).hexdigest(),
+            "artifact_verification": verification, "errors": errors,
+            "real_acquisitions": False, "current_retained_evidence": not errors,
+            "additional_provider_calls": 0, "manual_repairs": 0, "ok": not errors,
+        }
+        _append_jsonl(self.evidence_dir / "foreground_cycles.jsonl", cycle)
+        _atomic_json(self.evidence_dir / "foreground_status.json", cycle)
+        _atomic_json(self.evidence_dir / "foreground_validation.json", result)
+        return result
+
     def record_intervention(self, *, kind: str, actor: str, reason: str,
                             invalidates_soak: bool) -> dict:
         event = {
@@ -513,6 +635,13 @@ class SoakHarness:
     def serve(self, *, check_interval_seconds: float = 60.0) -> None:
         if check_interval_seconds <= 0 or check_interval_seconds > 60:
             raise ValueError("check_interval_seconds must be within 1..60")
+        gate_path = self.evidence_dir / "foreground_validation.json"
+        if not gate_path.is_file():
+            raise RuntimeError("service requires a passed foreground/start gate")
+        gate = json.loads(gate_path.read_text())
+        if (not gate.get("ok") or gate.get("cycle", {}).get("commit") != _repo_commit(self.repo)
+                or gate.get("cycle", {}).get("plan_hash") != self.plan.manifest_hash):
+            raise RuntimeError("service start gate failed or differs from pinned runtime/plan")
         self.start()
         stopping = False
 
@@ -536,6 +665,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--plan")
     parser.add_argument("--repo", default=".")
+    parser.add_argument("--retained-foreground", help="Original checkpointed foreground evidence, preserved read-only")
     parser.add_argument("--check-interval-seconds", type=float, default=60.0)
     parser.add_argument("--state-dir", default="var/state")
     parser.add_argument("--miss-class", choices=sorted(MISS_CLASSES))
@@ -579,7 +709,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 0 if report["ok"] else 2
     harness = SoakHarness(plan, repo=repo)
     if args.action == "foreground":
-        result = harness.run_foreground()
+        result = (harness.verify_retained_foreground(Path(args.retained_foreground))
+                  if args.retained_foreground else harness.run_foreground())
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0 if result["ok"] else 2
     if args.action == "start":
