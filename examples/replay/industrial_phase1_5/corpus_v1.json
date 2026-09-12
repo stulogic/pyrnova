@@ -1,0 +1,324 @@
+{
+  "schema_version": "industrial_replay_corpus_v1",
+  "corpus_id": "phase1_5_industrial_replay_v1",
+  "created_on": "2026-09-12",
+  "purpose": "Evaluation-only historical replay corpus; not a production ingestion, scoring, or customer relationship dataset.",
+  "source_inventory": "source_inventory_v1.json",
+  "benchmark_seller": {
+    "profile": "Synthetic U.S. B2B industrial supplier selling industrial automation, process control, electrical and power infrastructure, and monitoring or instrumentation technology into semiconductor manufacturing facilities.",
+    "revenue_equivalent_usd": "$250M-$2B",
+    "constraints": [
+      "No company identity is invented.",
+      "No customer, supplier, contract, revenue, or award relationship is assumed.",
+      "Project headline value is not treated as seller-addressable value."
+    ]
+  },
+  "vocabularies": {
+    "direction": ["POSITIVE", "NEGATIVE", "MIXED", "UNCERTAIN"],
+    "magnitude_band": ["UNKNOWN", "LIMITED", "MATERIAL", "MAJOR", "TRANSFORMATIVE"],
+    "time_horizon": ["IMMEDIATE", "NEAR", "MEDIUM", "LONG", "UNKNOWN"],
+    "relationship": ["SUPPLIES_TO", "OWNS", "OPERATES", "PRODUCES", "HAS_CAPABILITY", "COMPETES_WITH"]
+  },
+  "adjudication_rules": [
+    "A cutoff may use only evidence whose available_at is no later than the cutoff.",
+    "Each prospective assessment is immutable; later evidence is stored as a separate outcome or later assessment.",
+    "Evidence strength describes source support; analytical confidence describes the inference from that evidence.",
+    "Direction is the change in commercial consequence at the cutoff, not a permanent sentiment about the company.",
+    "Magnitude is categorical and never a synthetic share of a project headline value.",
+    "SUPPLIES_TO is supplier to customer and requires direct evidence; potential addressability is not a relationship.",
+    "Facility identities are grounded in sites and native project facts, not ownership or brand alone.",
+    "Duplicate and amendment records update one event lineage rather than creating additive investment events."
+  ],
+  "cases": [
+    {
+      "case_id": "intel_ohio",
+      "tier": "PRIMARY",
+      "sector": "SEMICONDUCTOR_ELECTRONICS_MANUFACTURING",
+      "status": "REPLAY_READY",
+      "identity": {
+        "company_id": "company:intel-cik-0000050863",
+        "company_name": "Intel Corporation",
+        "facility_id": "facility:us-oh-licking-new-albany-ohio-one-campus",
+        "facility_basis": "Ohio One campus near New Albany in Licking County, Ohio; approximately 1,000-acre site in the dated Intel announcement.",
+        "relationships": [
+          {"subject": "company:intel-cik-0000050863", "predicate": "OWNS", "object": "facility:us-oh-licking-new-albany-ohio-one-campus", "state": "ANNOUNCED", "source_ids": ["intel_2022_ohio_announcement"]},
+          {"subject": "facility:us-oh-licking-new-albany-ohio-one-campus", "predicate": "HAS_CAPABILITY", "object": "capability:leading-edge-semiconductor-fabrication", "state": "PLANNED", "source_ids": ["intel_2022_ohio_announcement"]}
+        ]
+      },
+      "cutoff_assessments": [
+        {
+          "assessment_id": "intel_2022_01_21_v1",
+          "as_of": "2022-01-21T23:59:59Z",
+          "visible_source_ids": ["intel_2022_ohio_announcement"],
+          "excluded_future_source_ids": ["commerce_2024_intel_final_award", "intel_2024_form_10k_delay", "intel_2025_ohio_timeline_update"],
+          "event_state": "Two fabs announced; construction planned to start in 2022 and production was expected in 2025, with a broader supplier ecosystem contemplated.",
+          "prospective_call": {
+            "direction": "POSITIVE",
+            "magnitude_band": "MAJOR",
+            "time_horizon": "LONG",
+            "evidence_strength": "HIGH",
+            "analytical_confidence": "MEDIUM",
+            "seller_relevance": "Plausible future demand for fab power, controls, process monitoring, and automation, but no supplier relationship or near-term share is established.",
+            "mechanism": "A greenfield fab build can create specification, construction, commissioning, and later operating demand.",
+            "reasonable_action": "Open account and site research; map disclosed ecosystem participants; seek qualification windows without forecasting an award.",
+            "uncertainties": ["Actual construction sequencing", "Seller qualification", "Budget allocation by fab", "Whether the 2025 target will hold"],
+            "falsifiers": ["Construction pause", "Material schedule slip", "No fit between seller capabilities and owner or contractor specifications"]
+          }
+        },
+        {
+          "assessment_id": "intel_2024_11_26_v1",
+          "as_of": "2024-11-26T23:59:59Z",
+          "visible_source_ids": ["intel_2022_ohio_announcement", "commerce_2024_intel_final_award"],
+          "excluded_future_source_ids": ["intel_2024_form_10k_delay", "intel_2025_ohio_timeline_update"],
+          "event_state": "The federal award was final but covered four states and remained milestone-conditioned; the public evidence in this pack still lacked an exact revised Ohio operations date.",
+          "prospective_call": {
+            "direction": "MIXED",
+            "magnitude_band": "MAJOR",
+            "time_horizon": "LONG",
+            "evidence_strength": "HIGH",
+            "analytical_confidence": "MEDIUM",
+            "seller_relevance": "The build remained potentially material, while the multi-state award could not be attributed entirely to Ohio or treated as current seller spend.",
+            "mechanism": "Milestone-conditioned public support reduced one funding uncertainty without proving project timing or seller access.",
+            "reasonable_action": "Keep the account active but require a current construction and commissioning schedule before escalating coverage.",
+            "uncertainties": ["Ohio-specific award allocation", "Revised operations date", "Milestone achievement"],
+            "falsifiers": ["Funding allocation away from Ohio", "Construction slowdown", "Project cancellation"]
+          }
+        },
+        {
+          "assessment_id": "intel_2025_02_28_v1",
+          "as_of": "2025-02-28T23:59:59Z",
+          "visible_source_ids": ["intel_2022_ohio_announcement", "commerce_2024_intel_final_award", "intel_2024_form_10k_delay", "intel_2025_ohio_timeline_update"],
+          "excluded_future_source_ids": [],
+          "event_state": "Intel disclosed financial and demand constraints, then moved Mod 1 operations to 2030-2031 and Mod 2 to 2032 while continuing at a slower pace.",
+          "prospective_call": {
+            "direction": "NEGATIVE",
+            "magnitude_band": "MAJOR",
+            "time_horizon": "LONG",
+            "evidence_strength": "HIGH",
+            "analytical_confidence": "HIGH",
+            "seller_relevance": "The addressable thesis survived, but the reasonable commercial window moved years later and immediate prioritization should fall.",
+            "mechanism": "A multi-year schedule slip defers specification, commissioning, and operating demand and raises further execution risk.",
+            "reasonable_action": "Rephase pipeline timing, lower near-term priority, retain monitored nurture, and validate contractor packages before resource commitment.",
+            "uncertainties": ["Future demand-dependent schedule changes", "Which packages remain active during slower construction"],
+            "falsifiers": ["A binding accelerated schedule", "Verified current package demand within seller scope"]
+          }
+        }
+      ],
+      "later_outcomes": [
+        {"outcome_id": "intel_outcome_2025_10k_delay", "resolves_assessment_id": "intel_2022_01_21_v1", "observed_at": "2025-01-24", "source_ids": ["intel_2024_form_10k_delay"], "result": "Deteriorated", "detail": "The filing disclosed delay drivers; it does not retroactively alter the 2022 call."},
+        {"outcome_id": "intel_outcome_2025_exact_dates", "resolves_assessment_id": "intel_2024_11_26_v1", "observed_at": "2025-02-28", "source_ids": ["intel_2025_ohio_timeline_update"], "result": "Deteriorated", "detail": "Exact revised operating dates confirmed a material deferral."}
+      ]
+    },
+    {
+      "case_id": "tsmc_arizona",
+      "tier": "PRIMARY",
+      "sector": "SEMICONDUCTOR_ELECTRONICS_MANUFACTURING",
+      "status": "REPLAY_READY",
+      "identity": {
+        "company_id": "company:tsmc-cik-0001046179",
+        "company_name": "Taiwan Semiconductor Manufacturing Company Limited",
+        "facility_id": "facility:us-az-phoenix-tsmc-arizona-campus",
+        "facility_basis": "North Phoenix, Arizona manufacturing campus; fab additions remain separately versioned within the campus event lineage.",
+        "relationships": [
+          {"subject": "company:tsmc-cik-0001046179", "predicate": "OPERATES", "object": "facility:us-az-phoenix-tsmc-arizona-campus", "state": "OPERATING", "source_ids": ["tsmc_2024_annual_report_arizona_output"]},
+          {"subject": "facility:us-az-phoenix-tsmc-arizona-campus", "predicate": "PRODUCES", "object": "capability:four-nanometer-semiconductors", "state": "OPERATING", "source_ids": ["tsmc_2024_annual_report_arizona_output"]}
+        ]
+      },
+      "cutoff_assessments": [
+        {
+          "assessment_id": "tsmc_2020_05_15_v1",
+          "as_of": "2020-05-15T23:59:59Z",
+          "visible_source_ids": ["tsmc_2020_arizona_initial"],
+          "excluded_future_source_ids": ["tsmc_2022_arizona_second_fab", "tsmc_2024_arizona_third_fab_6k", "commerce_2024_tsmc_preliminary_terms", "commerce_2024_tsmc_final_award", "white_house_2025_tsmc_additional_investment", "tsmc_2024_annual_report_arizona_output"],
+          "event_state": "One Arizona fab announced at about $12 billion with a 2024 production target.",
+          "prospective_call": {
+            "direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM",
+            "seller_relevance": "Greenfield fab infrastructure plausibly fits the benchmark portfolio, without proving buyer access.",
+            "mechanism": "New advanced manufacturing capacity creates design, build, qualification, and operations demand.",
+            "reasonable_action": "Start site and account mapping and track construction milestones.",
+            "uncertainties": ["Execution schedule", "Domestic supply-chain composition"],
+            "falsifiers": ["Cancellation", "Schedule failure", "No capability fit"]
+          }
+        },
+        {
+          "assessment_id": "tsmc_2022_12_06_v1",
+          "as_of": "2022-12-06T23:59:59Z",
+          "visible_source_ids": ["tsmc_2020_arizona_initial", "tsmc_2022_arizona_second_fab"],
+          "excluded_future_source_ids": ["tsmc_2024_arizona_third_fab_6k", "commerce_2024_tsmc_preliminary_terms", "commerce_2024_tsmc_final_award", "white_house_2025_tsmc_additional_investment", "tsmc_2024_annual_report_arizona_output"],
+          "event_state": "A second fab and new process capability raised the two-fab program to about $40 billion; 2024 and 2026 production targets were stated.",
+          "prospective_call": {
+            "direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "MEDIUM", "evidence_strength": "HIGH", "analytical_confidence": "HIGH",
+            "seller_relevance": "A genuine second-fab expansion broadened site packages and lifecycle demand; it was new information, not a repeat of 2020.",
+            "mechanism": "An additional fab materially expands physical and process scope.",
+            "reasonable_action": "Increase account coverage and distinguish first-fab commissioning from second-fab construction packages.",
+            "uncertainties": ["Package timing", "Qualification and channel access"],
+            "falsifiers": ["Second-fab deferral", "Existing supplier lockout"]
+          }
+        },
+        {
+          "assessment_id": "tsmc_2024_04_08_v1",
+          "as_of": "2024-04-08T23:59:59Z",
+          "visible_source_ids": ["tsmc_2020_arizona_initial", "tsmc_2022_arizona_second_fab", "tsmc_2024_arizona_third_fab_6k", "commerce_2024_tsmc_preliminary_terms"],
+          "excluded_future_source_ids": ["commerce_2024_tsmc_final_award", "white_house_2025_tsmc_additional_investment", "tsmc_2024_annual_report_arizona_output"],
+          "event_state": "TSMC added a third fab and raised the site plan above $65 billion, while first- and second-fab schedules moved to 2025 and 2028. The same-day Commerce release described nonbinding preliminary terms for the same expansion.",
+          "prospective_call": {
+            "direction": "MIXED", "magnitude_band": "TRANSFORMATIVE", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "HIGH",
+            "seller_relevance": "A third fab is materially additive, but schedule shifts defer part of the opportunity and the Commerce headline is not a second investment event.",
+            "mechanism": "Added facility scope expands addressability while revised schedules change sequencing.",
+            "reasonable_action": "Expand long-range account plan, rephase near-term packages, and cluster the two April sources into one event revision.",
+            "uncertainties": ["Preliminary award finalization", "Third-fab package schedule"],
+            "falsifiers": ["Third fab not executed", "Funding terms fail", "Seller capability excluded"]
+          }
+        },
+        {
+          "assessment_id": "tsmc_2025_04_17_v1",
+          "as_of": "2025-04-17T23:59:59Z",
+          "visible_source_ids": ["tsmc_2020_arizona_initial", "tsmc_2022_arizona_second_fab", "tsmc_2024_arizona_third_fab_6k", "commerce_2024_tsmc_preliminary_terms", "commerce_2024_tsmc_final_award", "white_house_2025_tsmc_additional_investment", "tsmc_2024_annual_report_arizona_output"],
+          "excluded_future_source_ids": [],
+          "event_state": "The final award replaced preliminary status, an additional $100 billion U.S. plan was announced, and the annual report confirmed first-fab volume production in Q4 2024 plus second-fab facility progress.",
+          "prospective_call": {
+            "direction": "POSITIVE", "magnitude_band": "TRANSFORMATIVE", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM",
+            "seller_relevance": "Operating proof raises confidence in the campus, but the additional U.S. headline is not all immediately addressable or fully site-allocated in this evidence pack.",
+            "mechanism": "Actual production validates one stage; additional planned facilities extend a multi-year opportunity sequence.",
+            "reasonable_action": "Separate operating-site demand from future fab construction and validate exact package geography before assigning resources.",
+            "uncertainties": ["Allocation and schedules for the additional plan", "Seller-specific access"],
+            "falsifiers": ["Additional facilities do not proceed", "No addressable packages"]
+          }
+        }
+      ],
+      "later_outcomes": [
+        {"outcome_id": "tsmc_outcome_2024_third_fab", "resolves_assessment_id": "tsmc_2022_12_06_v1", "observed_at": "2024-04-08", "source_ids": ["tsmc_2024_arizona_third_fab_6k"], "result": "Expanded with schedule revision", "detail": "A third fab was additive, while prior production targets moved."},
+        {"outcome_id": "tsmc_outcome_2025_first_fab_production", "resolves_assessment_id": "tsmc_2024_04_08_v1", "observed_at": "2025-04-17", "source_ids": ["tsmc_2024_annual_report_arizona_output"], "result": "Partially realized", "detail": "First-fab production was reported; later fabs remained staged."}
+      ]
+    },
+    {
+      "case_id": "micron_new_york",
+      "tier": "PRIMARY",
+      "sector": "SEMICONDUCTOR_ELECTRONICS_MANUFACTURING",
+      "status": "REPLAY_READY",
+      "identity": {
+        "company_id": "company:micron-cik-0000723125",
+        "company_name": "Micron Technology, Inc.",
+        "facility_id": "facility:us-ny-onondaga-clay-white-pine-campus",
+        "facility_basis": "White Pine Commerce Park in Clay, Onondaga County, New York; campus identity persists across phased fabs.",
+        "relationships": [
+          {"subject": "company:micron-cik-0000723125", "predicate": "OWNS", "object": "facility:us-ny-onondaga-clay-white-pine-campus", "state": "UNDER_DEVELOPMENT", "source_ids": ["micron_2022_new_york_announcement", "micron_2026_q2_form_10q"]},
+          {"subject": "facility:us-ny-onondaga-clay-white-pine-campus", "predicate": "HAS_CAPABILITY", "object": "capability:memory-semiconductor-fabrication", "state": "PLANNED", "source_ids": ["micron_2022_new_york_announcement"]}
+        ]
+      },
+      "cutoff_assessments": [
+        {
+          "assessment_id": "micron_2022_10_04_v1",
+          "as_of": "2022-10-04T23:59:59Z",
+          "visible_source_ids": ["micron_2022_new_york_announcement"],
+          "excluded_future_source_ids": ["commerce_2024_micron_preliminary_terms", "commerce_2024_micron_final_award", "micron_2026_new_york_groundbreaking", "micron_2026_q2_form_10q"],
+          "event_state": "Micron announced up to $100 billion over more than twenty years; the first phase was about $20 billion by decade end, with construction then expected in 2024 and output later in the decade.",
+          "prospective_call": {
+            "direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM",
+            "seller_relevance": "The first phase, not the $100 billion headline, is the earliest plausible basis for account planning.",
+            "mechanism": "A phased megafab can generate repeated infrastructure and process packages over decades.",
+            "reasonable_action": "Track site preparation, permits, first-fab funding, and package release; do not book the total headline as pipeline.",
+            "uncertainties": ["Phase authorization", "Construction start", "Memory-cycle demand", "Seller access"],
+            "falsifiers": ["No site progress", "Phase funding not secured", "Seller capability mismatch"]
+          }
+        },
+        {
+          "assessment_id": "micron_2024_12_10_v1",
+          "as_of": "2024-12-10T23:59:59Z",
+          "visible_source_ids": ["micron_2022_new_york_announcement", "commerce_2024_micron_preliminary_terms", "commerce_2024_micron_final_award"],
+          "excluded_future_source_ids": ["micron_2026_new_york_groundbreaking", "micron_2026_q2_form_10q"],
+          "event_state": "Federal support became final for Idaho and New York projects and remained milestone-conditioned; the New York opportunity was still a phased subset of the $100 billion program.",
+          "prospective_call": {
+            "direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM",
+            "seller_relevance": "Final support improves execution confidence but is neither New York-only nor an immediate seller opportunity.",
+            "mechanism": "Milestone-based funding supports staged fab construction.",
+            "reasonable_action": "Increase diligence on the first New York fab while retaining long-duration phasing.",
+            "uncertainties": ["Funding allocation by site", "Environmental review and groundbreaking", "First production date"],
+            "falsifiers": ["Milestones not met", "Funding reallocated", "Construction remains unstarted"]
+          }
+        },
+        {
+          "assessment_id": "micron_2026_03_18_v1",
+          "as_of": "2026-03-18T23:59:59Z",
+          "visible_source_ids": ["micron_2022_new_york_announcement", "commerce_2024_micron_preliminary_terms", "commerce_2024_micron_final_award", "micron_2026_new_york_groundbreaking", "micron_2026_q2_form_10q"],
+          "excluded_future_source_ids": [],
+          "event_state": "Micron reported a January 2026 groundbreaking and supply expected in 2030 and beyond; the filing also disclosed that 2025 amendments reallocated some federal funding to a second Idaho fab.",
+          "prospective_call": {
+            "direction": "MIXED", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "HIGH",
+            "seller_relevance": "Groundbreaking creates concrete first-fab activity, while the 2030-plus supply horizon and funding revision constrain near-term interpretation.",
+            "mechanism": "Physical construction supports package discovery, but production and later phases remain distant.",
+            "reasonable_action": "Pursue verified first-fab construction packages only; keep later fabs outside committed pipeline.",
+            "uncertainties": ["First-fab package timing", "Later fab authorization", "Remaining New York funding allocation"],
+            "falsifiers": ["Construction stalls", "Packages fall outside profile", "Later phases remain unapproved"]
+          }
+        }
+      ],
+      "later_outcomes": [
+        {"outcome_id": "micron_outcome_2026_groundbreaking", "resolves_assessment_id": "micron_2024_12_10_v1", "observed_at": "2026-01-07", "source_ids": ["micron_2026_new_york_groundbreaking"], "result": "First physical milestone realized", "detail": "Groundbreaking supports the first phase, not all four fabs or all $100 billion."},
+        {"outcome_id": "micron_outcome_2026_schedule_and_reallocation", "resolves_assessment_id": "micron_2022_10_04_v1", "observed_at": "2026-03-18T19:00:06-04:00", "source_ids": ["micron_2026_q2_form_10q"], "result": "Delayed and narrowed", "detail": "The first New York fab broke ground later than the 2022 construction expectation, supply was described as 2030-plus, and some support was reallocated."}
+      ]
+    },
+    {
+      "case_id": "hyundai_georgia",
+      "tier": "SECONDARY",
+      "sector": "BATTERY_AUTOMOTIVE",
+      "status": "REPLAY_READY",
+      "identity": {"company_id": "company:hyundai-motor-group", "company_name": "Hyundai Motor Group", "facility_id": "facility:us-ga-bryan-hmgma-metaplant", "facility_basis": "Bryan County Mega Site, Georgia, branded HMGMA; site facts persist across opening.", "relationships": [{"subject": "company:hyundai-motor-group", "predicate": "OPERATES", "object": "facility:us-ga-bryan-hmgma-metaplant", "state": "OPERATING", "source_ids": ["hyundai_2025_hmgma_opening"]}, {"subject": "facility:us-ga-bryan-hmgma-metaplant", "predicate": "PRODUCES", "object": "capability:electric-vehicle-manufacturing", "state": "OPERATING", "source_ids": ["hyundai_2025_hmgma_opening"]}]},
+      "cutoff_assessments": [
+        {"assessment_id": "hyundai_2022_05_20_v1", "as_of": "2022-05-20T23:59:59Z", "visible_source_ids": ["georgia_2022_hyundai_metaplant"], "excluded_future_source_ids": ["hyundai_2025_hmgma_opening"], "event_state": "$5.54 billion smart-factory project announced with a first-half 2025 target and separate anticipated supplier investment.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "MEDIUM", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM", "seller_relevance": "Automation and electrical scope is plausible; no seller relationship is established.", "mechanism": "Greenfield smart manufacturing build and ecosystem.", "reasonable_action": "Map owner, contractors, and announced future RFPs.", "uncertainties": ["Execution", "Supplier packages"], "falsifiers": ["No construction", "No profile fit"]}},
+        {"assessment_id": "hyundai_2025_03_26_v1", "as_of": "2025-03-26T23:59:59Z", "visible_source_ids": ["georgia_2022_hyundai_metaplant", "hyundai_2025_hmgma_opening"], "excluded_future_source_ids": [], "event_state": "The plant opened after first production in October 2024; stated capacity was 300,000 vehicles with an expansion plan to 500,000.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MATERIAL", "time_horizon": "NEAR", "evidence_strength": "HIGH", "analytical_confidence": "HIGH", "seller_relevance": "Operating and ramp evidence shifts relevance from construction to plant operations and capacity expansion.", "mechanism": "Commissioning and ramp create operational automation and monitoring needs.", "reasonable_action": "Validate operating-site and expansion packages.", "uncertainties": ["Seller qualification"], "falsifiers": ["No addressable operating scope"]}}
+      ],
+      "later_outcomes": [{"outcome_id": "hyundai_outcome_opening", "resolves_assessment_id": "hyundai_2022_05_20_v1", "observed_at": "2025-03-26", "source_ids": ["hyundai_2025_hmgma_opening"], "result": "Realized", "detail": "Production began before the initial first-half 2025 target."}]
+    },
+    {
+      "case_id": "toyota_north_carolina_battery",
+      "tier": "SECONDARY",
+      "sector": "BATTERY_AUTOMOTIVE",
+      "status": "REPLAY_READY",
+      "identity": {"company_id": "company:toyota-motor-north-america", "company_name": "Toyota Motor North America", "facility_id": "facility:us-nc-randolph-liberty-tbmnc", "facility_basis": "Greensboro-Randolph Megasite in Liberty, North Carolina; Toyota Battery Manufacturing North Carolina.", "relationships": [{"subject": "company:toyota-motor-north-america", "predicate": "OPERATES", "object": "facility:us-nc-randolph-liberty-tbmnc", "state": "OPERATING", "source_ids": ["toyota_2025_north_carolina_production"]}, {"subject": "facility:us-nc-randolph-liberty-tbmnc", "predicate": "PRODUCES", "object": "capability:automotive-batteries", "state": "OPERATING", "source_ids": ["toyota_2025_north_carolina_production"]}]},
+      "cutoff_assessments": [
+        {"assessment_id": "toyota_2021_12_06_v1", "as_of": "2021-12-06T23:59:59Z", "visible_source_ids": ["toyota_2021_north_carolina_initial"], "excluded_future_source_ids": ["toyota_2023_north_carolina_expansion", "toyota_2025_north_carolina_production"], "event_state": "$1.29 billion battery plant announced with four lines and a 2025 production target.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MATERIAL", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM", "seller_relevance": "Electrical, controls, and instrumentation have a plausible facility mechanism.", "mechanism": "New battery manufacturing lines.", "reasonable_action": "Track site and line packages.", "uncertainties": ["Line schedule"], "falsifiers": ["Cancellation", "Capability mismatch"]}},
+        {"assessment_id": "toyota_2023_10_31_v1", "as_of": "2023-10-31T23:59:59Z", "visible_source_ids": ["toyota_2021_north_carolina_initial", "toyota_2023_north_carolina_expansion"], "excluded_future_source_ids": ["toyota_2025_north_carolina_production"], "event_state": "Nearly $8 billion was added, bringing the site to $13.9 billion and fourteen lines phased through 2030.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "MEDIUM", "evidence_strength": "HIGH", "analytical_confidence": "HIGH", "seller_relevance": "Ten additional lines are a real scope change, but phased timing controls addressability.", "mechanism": "Added manufacturing lines and site infrastructure.", "reasonable_action": "Segment line packages by phase.", "uncertainties": ["Phase release timing"], "falsifiers": ["Expansion phases deferred"]}},
+        {"assessment_id": "toyota_2025_11_12_v1", "as_of": "2025-11-12T23:59:59Z", "visible_source_ids": ["toyota_2021_north_carolina_initial", "toyota_2023_north_carolina_expansion", "toyota_2025_north_carolina_production"], "excluded_future_source_ids": [], "event_state": "Production began at the nearly $14 billion site; a separate up-to-$10 billion U.S. plan had no facility allocation in this source.", "prospective_call": {"direction": "MIXED", "magnitude_band": "MATERIAL", "time_horizon": "NEAR", "evidence_strength": "HIGH", "analytical_confidence": "HIGH", "seller_relevance": "Plant production supports operating demand; the separate U.S. headline is not assigned to Liberty.", "mechanism": "Operating ramp plus separately ungrounded national investment.", "reasonable_action": "Pursue site-specific operating scope and quarantine the unallocated headline.", "uncertainties": ["Additional U.S. investment geography"], "falsifiers": ["No operating scope"]}}
+      ],
+      "later_outcomes": [{"outcome_id": "toyota_outcome_production", "resolves_assessment_id": "toyota_2023_10_31_v1", "observed_at": "2025-11-12", "source_ids": ["toyota_2025_north_carolina_production"], "result": "Operating milestone realized", "detail": "The plant entered production; later line phases remain distinct."}]
+    },
+    {
+      "case_id": "lilly_lebanon_indiana",
+      "tier": "SECONDARY",
+      "sector": "LIFE_SCIENCES_BIOPHARMA",
+      "status": "REPLAY_READY",
+      "identity": {"company_id": "company:eli-lilly", "company_name": "Eli Lilly and Company", "facility_id": "facility:us-in-boone-lebanon-leap-api-campus", "facility_basis": "LEAP Lebanon Innovation District, Boone County, Indiana; source-defined campus with multiple sites.", "relationships": [{"subject": "company:eli-lilly", "predicate": "OWNS", "object": "facility:us-in-boone-lebanon-leap-api-campus", "state": "UNDER_DEVELOPMENT", "source_ids": ["lilly_2022_lebanon_initial", "lilly_2024_lebanon_api_expansion"]}, {"subject": "facility:us-in-boone-lebanon-leap-api-campus", "predicate": "HAS_CAPABILITY", "object": "capability:active-pharmaceutical-ingredient-manufacturing", "state": "PLANNED", "source_ids": ["lilly_2022_lebanon_initial", "lilly_2024_lebanon_api_expansion"]}]},
+      "cutoff_assessments": [
+        {"assessment_id": "lilly_2022_05_25_v1", "as_of": "2022-05-25T23:59:59Z", "visible_source_ids": ["lilly_2022_lebanon_initial"], "excluded_future_source_ids": ["lilly_2024_lebanon_api_expansion"], "event_state": "$2.1 billion for two manufacturing sites was announced, including API and new modalities.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MATERIAL", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM", "seller_relevance": "Process control and instrumentation have a plausible bioprocess facility mechanism, but domain qualification differs from semiconductor sales.", "mechanism": "Greenfield regulated manufacturing capacity.", "reasonable_action": "Validate regulated-process capability fit before account investment.", "uncertainties": ["Qualification burden", "Package scope"], "falsifiers": ["Seller lacks regulated-process capability"]}},
+        {"assessment_id": "lilly_2024_05_24_v1", "as_of": "2024-05-24T23:59:59Z", "visible_source_ids": ["lilly_2022_lebanon_initial", "lilly_2024_lebanon_api_expansion"], "excluded_future_source_ids": [], "event_state": "A $5.3 billion expansion raised the Lebanon investment to $9 billion and specified API capacity for tirzepatide and pipeline medicines.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "MEDIUM", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM", "seller_relevance": "The facility consequence abstraction transfers, though customer relevance needs regulated life-sciences capability evidence.", "mechanism": "Expanded API manufacturing capacity.", "reasonable_action": "Escalate only if seller qualification covers regulated process environments.", "uncertainties": ["Seller capability fit", "Construction packages"], "falsifiers": ["Out-of-profile qualification requirements"]}}
+      ],
+      "later_outcomes": [{"outcome_id": "lilly_outcome_expansion", "resolves_assessment_id": "lilly_2022_05_25_v1", "observed_at": "2024-05-24", "source_ids": ["lilly_2024_lebanon_api_expansion"], "result": "Expanded", "detail": "The site and capability thesis strengthened without proving seller access."}]
+    },
+    {
+      "case_id": "novo_nordisk_north_carolina",
+      "tier": "SECONDARY",
+      "sector": "LIFE_SCIENCES_BIOPHARMA",
+      "status": "REPLAY_READY",
+      "identity": {"company_id": "company:novo-nordisk-cik-0000353278", "company_name": "Novo Nordisk A/S", "facility_id": "facility:us-nc-johnston-clayton-fill-finish-campus", "facility_basis": "Clayton, Johnston County, North Carolina; second fill-and-finish facility tied to the existing site.", "relationships": [{"subject": "company:novo-nordisk-cik-0000353278", "predicate": "OWNS", "object": "facility:us-nc-johnston-clayton-fill-finish-campus", "state": "EXPANDING", "source_ids": ["novo_2024_clayton_expansion", "novo_2024_form_20f_clayton"]}, {"subject": "facility:us-nc-johnston-clayton-fill-finish-campus", "predicate": "HAS_CAPABILITY", "object": "capability:aseptic-fill-finish", "state": "PLANNED", "source_ids": ["novo_2024_clayton_expansion"]}]},
+      "cutoff_assessments": [
+        {"assessment_id": "novo_2024_06_24_v1", "as_of": "2024-06-24T23:59:59Z", "visible_source_ids": ["novo_2024_clayton_expansion"], "excluded_future_source_ids": ["novo_2024_form_20f_clayton"], "event_state": "$4.1 billion second fill-and-finish facility announced at Clayton for aseptic and finished production.", "prospective_call": {"direction": "POSITIVE", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "MEDIUM", "seller_relevance": "Automation and monitoring may fit, but sterile manufacturing qualification is not established for the benchmark seller.", "mechanism": "Large aseptic fill-and-finish expansion.", "reasonable_action": "Validate sterile-process capability and site packages before prioritization.", "uncertainties": ["Qualification", "Commissioning schedule"], "falsifiers": ["Out-of-profile capability"]}},
+        {"assessment_id": "novo_2025_02_05_v1", "as_of": "2025-02-05T23:59:59Z", "visible_source_ids": ["novo_2024_clayton_expansion", "novo_2024_form_20f_clayton"], "excluded_future_source_ids": [], "event_state": "The annual filing placed full operation in 2029, expected DKK 27 billion total spend, and DKK 5.1 billion spent by year-end 2024.", "prospective_call": {"direction": "MIXED", "magnitude_band": "MAJOR", "time_horizon": "LONG", "evidence_strength": "HIGH", "analytical_confidence": "HIGH", "seller_relevance": "The filing improves phasing and confirms activity; other non-U.S. investments in the filing must not collide with Clayton.", "mechanism": "Time-phased site construction toward 2029 operation.", "reasonable_action": "Use Clayton-specific spend and schedule only; reject unrelated facility lines.", "uncertainties": ["Remaining phase timing", "Seller capability fit"], "falsifiers": ["Clayton delay", "No sterile-process fit"]}}
+      ],
+      "later_outcomes": [{"outcome_id": "novo_outcome_20f_phasing", "resolves_assessment_id": "novo_2024_06_24_v1", "observed_at": "2025-02-05", "source_ids": ["novo_2024_form_20f_clayton"], "result": "Phasing clarified", "detail": "The filing separated spent-to-date from expected total and provided a 2029 operating horizon."}]
+    }
+  ],
+  "negative_controls": [
+    {"control_id": "nc_future_evidence", "kind": "FUTURE_EVIDENCE_REJECTED", "case_id": "intel_ohio", "cutoff": "2022-01-21T23:59:59Z", "presented_source_ids": ["intel_2025_ohio_timeline_update"], "expected_result": "REJECT_FROM_VISIBLE_SET", "rationale": "The 2030-2032 schedule cannot alter the frozen 2022 call."},
+    {"control_id": "nc_duplicate_headline", "kind": "DUPLICATE_UNDERLYING_EVENT", "case_id": "tsmc_arizona", "cutoff": "2024-04-08T23:59:59Z", "presented_source_ids": ["tsmc_2024_arizona_third_fab_6k", "commerce_2024_tsmc_preliminary_terms"], "expected_result": "ONE_EVENT_TWO_EVIDENCE_RECORDS", "rationale": "Same-day issuer and agency releases describe one expansion and preliminary award context, not two $65 billion events."},
+    {"control_id": "nc_amendment", "kind": "AMENDED_REVISED_ARTIFACT", "case_id": "micron_new_york", "presented_source_ids": ["commerce_2024_micron_final_award", "micron_2026_q2_form_10q"], "expected_result": "VERSION_LINEAGE_NOT_ADDITIVE", "rationale": "Later amendments reallocated some award funding; do not sum original and revised allocations."},
+    {"control_id": "nc_facility_collision", "kind": "FACILITY_NAME_COLLISION", "case_id": "novo_nordisk_north_carolina", "presented_source_ids": ["novo_2024_form_20f_clayton"], "expected_result": "KEEP_DISTINCT_SITES", "rationale": "The filing lists several large facility investments; company ownership and a generic facility label do not merge them with Clayton."},
+    {"control_id": "nc_company_name_change", "kind": "COMPANY_NAME_CHANGE_IDENTITY_SURVIVES", "case_id": null, "presented_source_ids": ["meta_2021_name_change_8k"], "expected_result": "SAME_ENTITY_BY_CIK", "rationale": "Facebook's rename to Meta should preserve entity identity through the stable SEC registrant identifier."},
+    {"control_id": "nc_large_no_mechanism", "kind": "LARGE_ANNOUNCEMENT_NO_SELLER_MECHANISM", "case_id": "toyota_north_carolina_battery", "presented_source_ids": ["toyota_2025_north_carolina_production"], "expected_result": "NO_ADDITIVE_SITE_CONSEQUENCE", "rationale": "Up to $10 billion of unspecified future U.S. investment lacks site and package grounding for the benchmark seller."},
+    {"control_id": "nc_out_of_profile_geography", "kind": "OUT_OF_PROFILE_GEOGRAPHY", "case_id": "novo_nordisk_north_carolina", "presented_source_ids": ["novo_2024_form_20f_clayton"], "expected_result": "EXCLUDE_FROM_US_CLAYTON_CONSEQUENCE", "rationale": "Non-U.S. investment lines do not belong to the U.S. seller's Clayton case."},
+    {"control_id": "nc_out_of_profile_capability", "kind": "OUT_OF_PROFILE_CAPABILITY", "case_id": "lilly_lebanon_indiana", "presented_source_ids": ["lilly_2024_lebanon_api_expansion"], "expected_result": "REQUIRE_CAPABILITY_VALIDATION", "rationale": "A large project is not relevant if the seller lacks regulated API-process qualifications."},
+    {"control_id": "nc_macro_not_company", "kind": "MACRO_AGGREGATE_NOT_COMPANY_EVENT", "case_id": null, "presented_source_ids": ["commerce_2024_semiconductor_aggregate"], "expected_result": "NO_COMPANY_SPECIFIC_EVENT", "rationale": "A national aggregate cannot be attributed to Intel, TSMC, Micron, or any facility."},
+    {"control_id": "nc_supplier_inference", "kind": "UNSUPPORTED_SUPPLIER_CUSTOMER_INFERENCE", "case_id": "intel_ohio", "presented_source_ids": ["intel_2022_ohio_announcement"], "expected_result": "NO_SUPPLIES_TO_EDGE", "rationale": "Seller fit and a supplier-ecosystem statement do not prove that the synthetic seller supplies Intel."},
+    {"control_id": "nc_headline_addressability", "kind": "HEADLINE_VALUE_EXCEEDS_NEAR_TERM_ADDRESSABILITY", "case_id": "micron_new_york", "presented_source_ids": ["micron_2022_new_york_announcement"], "expected_result": "PHASE_VALUE_AND_HORIZON", "rationale": "Up to $100 billion over more than twenty years is not an immediate seller opportunity; first-phase milestones govern."}
+  ]
+}
