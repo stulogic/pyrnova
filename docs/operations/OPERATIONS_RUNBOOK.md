@@ -222,10 +222,19 @@ revocation, and replay. A backup is not accepted until a restore has been tested
 
 ## Operational acceptance and soak
 
+The executable Phase 1 soak contract, current engineering evidence, fail-closed plan template, and exact
+freshness meanings are in `PHASE1_LIVE_OPS_CLOSURE.md`. Use
+`python -m pyrnova.live_ops_acceptance preflight|start|run-once|serve`; the manual
+`capture-radar --live` path is not unattended-soak evidence. Render
+`ops/com.pyrnova.live-ops.plist.template` with explicit repository, plan, and evidence paths only after
+preflight and one clean foreground cycle.
+
 Before calling the system unattended/production-ready, record dated evidence for a representative set of
 sources and customers: scheduled cadence, restart, dedupe, budget rollover, throttle/service/archive fault,
 stale/degraded display, fan-out/rebuild, access, data volume, resource use, alert delivery, backup/restore,
-and multi-hour/day soak. Current M13 evidence is bounded and does not close this gate.
+and multi-hour/day soak. Current M13 evidence is bounded and does not close this gate. The Phase 1 soak is
+blocked until the owner-approved IronMountain Lens and monitored-object scope make the plan complete; no
+placeholder or substitute customer starts the acceptance clock.
 
 ## Manual-intervention boundaries
 

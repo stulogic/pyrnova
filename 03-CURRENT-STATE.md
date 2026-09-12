@@ -174,6 +174,22 @@ Normal first-login expectation is approximately **3-10 genuine active Material C
 
 During the first 10 business days, the system should normally produce at least **3 genuine Material Changes** if the environment supports them. This is not a quota. Never manufacture volume.
 
+### Live Operations closure execution state (2026-09-12)
+
+The required audit and bounded engineering-gap implementation are complete on the current working branch:
+durable retry scheduling, explicit health/acquisition-freshness state, customer-id-safe live pipeline
+fan-out, Important Miss records, an immutable soak evidence harness, and a macOS supervision template.
+A one-call current USAspending acceptance probe for IronMountain Solutions preserved 10 real records and
+round-tripped its archive hash. Evidence: `docs/operations/PHASE1_LIVE_OPS_CLOSURE.md`.
+
+**Operational soak has not started.** It is blocked because persisted customer state has no owner-approved
+IronMountain Solutions Lens, watchlist/monitored-object set, capability profile, or primary NAICS. The
+repository intentionally does not infer this customer-private configuration from public award records.
+The example plan fails closed until those inputs and the final verified commit are supplied.
+
+Engineering implementation is therefore **conditional / soak pending**, operational acceptance remains
+**blocked before start**, and Customer #1 GO / NO-GO remains out of scope until the literal soak completes.
+
 ## Next decision
 
 After Live Operations closure, the next authorized decision is:
