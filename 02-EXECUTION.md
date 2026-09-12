@@ -15,7 +15,8 @@ Current product and commercial authority: `docs/strategy/PHASE_1_PRODUCT_AUTHORI
 - Access P0: **CLOSED**.
 - Onboarding P0: **CLOSED**.
 - Sole primary remaining design-customer P0: **LIVE OPERATIONS / DATA VOLUME READINESS**.
-- Current Customer #1 target: **IronMountain Solutions**.
+- Operational-soak test Lens: **IRONMOUNTAIN SOLUTIONS, LLC — SOAK TEST LENS — NON-CUSTOMER / NON-COMMERCIAL** (owner clarification 2026-09-12).
+- The fixed CUSTOMER-001 cohort is not altered or reconstructed by this work; IronMountain is not Customer #1, a cohort member, or a substitute for MTSI.
 - Broad Phase 1 research: **FROZEN** except under the explicit exceptions in product authority.
 - Broad product expansion: **NOT AUTHORIZED**.
 
@@ -41,9 +42,9 @@ The workstream must distinguish what already works from genuine gaps. Implement 
 6. Produce automated evidence for the engineering gate.
 7. Prepare and run the unattended live-operation acceptance period.
 8. Evaluate misses, source failures, stale/degraded states, and customer-value output from the soak period.
-9. End with a documented **Customer #1 GO / NO-GO** decision for IronMountain Solutions.
+9. Return the supervised soak as STARTED or BLOCKED, then stop. The literal elapsed operational gate and a separately authorized Customer #1 decision remain outstanding.
 
-The workstream ends at that decision. A GO does not automatically authorize unrelated product expansion.
+The current owner-unblock execution ends at that soak-start handoff. It does not authorize outreach, a Customer #1 decision, or unrelated product expansion.
 
 ## Scope
 
@@ -160,7 +161,7 @@ Do not create a second intelligence model or a new analytics platform to satisfy
 
 ## Customer #1 go/no-go
 
-After both gates pass, produce a Customer #1 readiness decision for **IronMountain Solutions**.
+After both gates pass, a separately authorized formal Customer #1 readiness decision must follow CUSTOMER-001. The IronMountain operational-soak test Lens is non-customer/non-commercial evidence only.
 
 A **GO** requires, at minimum:
 

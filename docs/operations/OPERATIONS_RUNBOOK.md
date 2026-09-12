@@ -112,7 +112,7 @@ There are two distinct live paths:
    SAM, and Federal Register and does not provide the durable M12/M13 scheduler budget/cadence contract.
 2. `SourceScheduler` + `LiveRunner` are the governed operational primitives. They require an explicitly
    constructed request, mode, budget epoch/max calls, archive, source-state directory, and fetcher. No
-   general unattended scheduler CLI/daemon is included.
+   platform is included; the Phase 1 local soak harness below composes these primitives.
 
 Use the second path for controlled operational acceptance. A typical integration must:
 
@@ -224,17 +224,25 @@ revocation, and replay. A backup is not accepted until a restore has been tested
 
 The executable Phase 1 soak contract, current engineering evidence, fail-closed plan template, and exact
 freshness meanings are in `PHASE1_LIVE_OPS_CLOSURE.md`. Use
-`python -m pyrnova.live_ops_acceptance preflight|start|run-once|serve`; the manual
+`python -m pyrnova.live_ops_acceptance preflight|foreground|start|run-once|serve`; the manual
 `capture-radar --live` path is not unattended-soak evidence. Render
 `ops/com.pyrnova.live-ops.plist.template` with explicit repository, plan, and evidence paths only after
 preflight and one clean foreground cycle.
+
+The `foreground` action records real processing and immediate unchanged fan-out under `foreground_*`
+evidence without creating an official manifest. After it passes, loading the rendered launchd service
+runs `serve`, whose `start` creates the immutable official acceptance timestamp. Do not call `start`
+before foreground validation when establishing a new acceptance window. The copied plan paths are relative
+to `var/phase1_soak/plan.json`. See `PHASE1_SOAK_UNBLOCK.md` for the source-backed non-commercial Lens.
 
 Before calling the system unattended/production-ready, record dated evidence for a representative set of
 sources and customers: scheduled cadence, restart, dedupe, budget rollover, throttle/service/archive fault,
 stale/degraded display, fan-out/rebuild, access, data volume, resource use, alert delivery, backup/restore,
 and multi-hour/day soak. Current M13 evidence is bounded and does not close this gate. The Phase 1 soak is
-blocked until the owner-approved IronMountain Lens and monitored-object scope make the plan complete; no
-placeholder or substitute customer starts the acceptance clock.
+requires the owner-approved non-commercial IronMountain test Lens and complete monitored-object scope;
+no placeholder, substitute customer, or commercial designation starts the acceptance clock. Alert delivery,
+production backup/restore, public TLS, PostgreSQL/RLS, and S3 do not block this local soak unless runtime
+preflight independently proves a current necessity.
 
 ## Manual-intervention boundaries
 

@@ -95,18 +95,10 @@ Detailed implementation evidence remains in `04-DECISIONS.md`, `06-HISTORY.md`, 
 
 ## Customer #1
 
-Current Customer #1 target:
-
-**IronMountain Solutions**
-
-Next targets, in order:
-
-1. Trideum
-2. i3
-3. Radiance Technologies
-4. Avion Solutions
-
-The customer list is current authority. Do not swap targets during implementation merely because another prospect looks interesting.
+The fixed CUSTOMER-001 cohort is not changed or reconstructed by this execution. Owner clarification
+(2026-09-12) designates **IRONMOUNTAIN SOLUTIONS, LLC** only as a **SOAK TEST LENS — NON-CUSTOMER /
+NON-COMMERCIAL**. It is not Customer #1, a design customer, a cohort member, an outreach target, or a
+substitute for MTSI. Its output is operational evidence only, not commercial validation or willingness to pay.
 
 ## Commercial state
 
@@ -176,25 +168,28 @@ During the first 10 business days, the system should normally produce at least *
 
 ### Live Operations closure execution state (2026-09-12)
 
-The required audit and bounded engineering-gap implementation are complete on the current working branch:
+The required audit and bounded engineering-gap implementation are integrated on canonical main:
 durable retry scheduling, explicit health/acquisition-freshness state, customer-id-safe live pipeline
 fan-out, Important Miss records, an immutable soak evidence harness, and a macOS supervision template.
 A one-call current USAspending acceptance probe for IronMountain Solutions preserved 10 real records and
 round-tripped its archive hash. Evidence: `docs/operations/PHASE1_LIVE_OPS_CLOSURE.md`.
 
-**Operational soak has not started.** It is blocked because persisted customer state has no owner-approved
-IronMountain Solutions Lens, watchlist/monitored-object set, capability profile, or primary NAICS. The
-repository intentionally does not infer this customer-private configuration from public award records.
-The example plan fails closed until those inputs and the final verified commit are supplied.
+The owner-unblock instruction now approves a non-commercial IronMountain test Lens. It is persisted as
+`soak-ironmountain-solutions` through canonical onboarding, with six source-backed watches, literal
+award-description capability keywords, and no unsupported NAICS/PSC or commercial preferences.
+Foreground validation is separate from the official clock; supervision may start acceptance only after
+preflight, real processing, and unchanged fan-out pass. Configuration/criteria are recorded in
+`docs/operations/PHASE1_SOAK_UNBLOCK.md`; actual runtime start/status are authoritative in gitignored
+`var/phase1_soak/evidence/manifest.json` and `status.json`.
 
-Engineering implementation is therefore **conditional / soak pending**, operational acceptance remains
-**blocked before start**, and Customer #1 GO / NO-GO remains out of scope until the literal soak completes.
+Operational acceptance remains pending the literal seven-calendar-day/five-business-day evidence window.
+No Customer #1 GO / NO-GO or commercial-readiness conclusion is established by this test Lens.
 
 ## Next decision
 
 After Live Operations closure, the next authorized decision is:
 
-**Customer #1 GO / NO-GO: IronMountain Solutions**
+**A separately authorized Customer #1 GO / NO-GO under CUSTOMER-001.**
 
 There is no authorized broad product-expansion decision before that gate.
 

@@ -18,7 +18,7 @@ current execution authority explicitly opens it.
 - M21 and M22: **closed**.
 - Opportunity, Access, and Onboarding design-customer P0s: **closed**.
 - Sole primary remaining design-customer P0: **Live Operations / Data Volume Readiness**.
-- Current Customer #1 target: **IronMountain Solutions**.
+- Operational-soak test Lens: **IronMountain Solutions, LLC — non-customer / non-commercial**. It is not Customer #1 or a substitute for the fixed CUSTOMER-001 cohort.
 - Immediate workstream: **PHASE1-LIVE-OPS-CLOSURE** in `02-EXECUTION.md`.
 - Next decision after Live Ops closure: **Customer #1 GO / NO-GO**.
 

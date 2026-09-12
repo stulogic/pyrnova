@@ -106,7 +106,13 @@ The evidence standard is changed customer behavior, not feature parity.
 
 ## 4. Design-customer order
 
-Current Customer #1 target:
+Owner clarification (2026-09-12): **IRONMOUNTAIN SOLUTIONS, LLC** is authorized solely as a
+**SOAK TEST LENS — NON-CUSTOMER / NON-COMMERCIAL**. It is not Customer #1, a design customer, a member
+of the fixed CUSTOMER-001 first-five cohort, an outreach target, or a substitute for MTSI. This execution
+does not reconstruct or choose replacements in that fixed cohort.
+
+The following earlier local target-order record is superseded where it treats IronMountain as a customer
+or cohort member; retained only for authority-history provenance:
 
 1. **IronMountain Solutions**
 2. **Trideum**
@@ -361,4 +367,6 @@ It does not redefine the cross-phase authority outside that scope.
 
 The single immediate implementation workstream is **`PHASE1-LIVE-OPS-CLOSURE`**, as defined in `02-EXECUTION.md`.
 
-No broad product expansion is authorized. The next decision after Live Operations closure is **Customer #1 GO / NO-GO** for IronMountain Solutions.
+No broad product expansion is authorized. The formal decision after Live Operations closure is
+**Customer #1 GO / NO-GO** under CUSTOMER-001, separately authorized. IronMountain soak evidence is not
+commercial validation or a Customer #1 designation.

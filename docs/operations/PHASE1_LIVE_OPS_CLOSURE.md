@@ -89,13 +89,13 @@ launchd template passed `plutil` validation, changed Python modules compiled suc
 patch passed `git diff --check`.
 
 Copy `ops/phase1_soak_plan.example.json` into gitignored `var/phase1_soak/plan.json` only after the
-owner-approved IronMountain customer, watchlist, capability profile, monitored-object count, and NAICS are
-present. Replace every `SET_` placeholder and pin the verified post-change commit.
+owner-approved non-commercial IronMountain test Lens, watchlist, capability profile, and monitored-object
+count are present. NAICS is optional and must remain absent if unsupported. Replace every `SET_`
+placeholder and pin the verified post-change commit. Paths in the copied plan resolve from its parent.
 
 ```bash
 .venv/bin/python -m pyrnova.live_ops_acceptance preflight --plan var/phase1_soak/plan.json --repo .
-.venv/bin/python -m pyrnova.live_ops_acceptance start --plan var/phase1_soak/plan.json --repo .
-.venv/bin/python -m pyrnova.live_ops_acceptance run-once --plan var/phase1_soak/plan.json --repo .
+.venv/bin/python -m pyrnova.live_ops_acceptance foreground --plan var/phase1_soak/plan.json --repo .
 ```
 
 Render the launchd template only after one clean foreground cycle. Observation may read logs/health,
@@ -108,10 +108,13 @@ Record and inspect reviewer-discovered misses without editing JSONL directly:
 ```bash
 .venv/bin/python -m pyrnova.live_ops_acceptance record-miss --state-dir var/state \
   --miss-class identity --source-id sam_opportunities --source-ref SOURCE_NATIVE_ID \
-  --customer-id ironmountain --reviewer REVIEWER --relevance-state NOT_EMITTED
+  --customer-id soak-ironmountain-solutions --reviewer REVIEWER --relevance-state NOT_EMITTED
 .venv/bin/python -m pyrnova.live_ops_acceptance list-misses --state-dir var/state
 ```
 
-**SOAK BLOCKED.** The approved IronMountain Lens is absent and the example plan intentionally contains
-fail-closed placeholders. Substituting Torch/DAP or inventing the customer configuration would test a
-different question. Operational acceptance is pending before start; no soak time has elapsed.
+At the implementation handoff, **SOAK BLOCKED** applied: the approved IronMountain Lens was absent and
+the example plan intentionally contained fail-closed placeholders. The 2026-09-12 owner decision
+subsequently approves IronMountain only as a source-backed non-commercial soak test Lens. Configuration
+and revised pre-start gates are in `PHASE1_SOAK_UNBLOCK.md`; actual official start/status remain in the
+gitignored runtime evidence, not a completed-soak claim here. Customer #1 commercial readiness and
+GO/NO-GO are not decided by this implementation.
