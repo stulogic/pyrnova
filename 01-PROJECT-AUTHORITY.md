@@ -1,169 +1,205 @@
 # Pyrnova project authority
 
-_Status: canonical · effective 2026-09-08_
+_Status: current root project authority · synchronized to the locked Phase One Constitution 2026-09-11_
 
-## Mission
+## Mission and current product
 
-Pyrnova is an economic and commercial intelligence company. It turns attributable, time-bounded
-external evidence into explainable commercial opportunity judgments and learns from later outcomes.
+Pyrnova is an intelligence company building evidence-backed, historically auditable external intelligence for commercial decision-making.
 
-The first product is **Capture Radar**: human-supervised pre-RFP and recompete intelligence for
-mid-market US federal and defense contractors. The current commercial objective remains the first
-**$100,000 collected**; infrastructure and product scope must earn their place against that objective.
+The current Phase 1 product is **Pyrnova**, a **decision-grade external-intelligence system for government contractors**. Its operating concept is **Material Changes**.
 
-## Long-term thesis vs. Phase 1 (binding)
+Pyrnova helps a government contractor identify which external developments matter, understand why they matter, verify the underlying evidence, and decide what to investigate or do next.
 
-**Long-term direction (not Phase 1 scope):** Pyrnova aims to become a continuously updated, historically
-auditable model of what external change means economically to a specific organization. This preserves
-optionality; it does not authorize building breadth now.
+The overarching cross-phase product and commercial authority is:
 
-**Current differentiated thesis (Phase 1):** the loop **external change → customer-specific consequence
-→ opportunity / threat / monitoring → evidence → review / action → outcome → learning.** Pyrnova is
-*not* differentiated by broad data aggregation, generic company research, generic AI search, a knowledge
-graph by itself, dashboards, or alerts by themselves.
+`docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`
 
-**Phase 1 wedge:** US federal contractors (defense, industrial, technology, engineering, infrastructure),
-working ideal customer ≈ **$50M–$300M revenue** with lean BD/capture capacity. The dominant customer
-question is **"What materially changed since I last looked?"**, with **Material Changes** as the dominant
-surface and dossier/search/graph as supporting surfaces.
+The sole product and implementation authority within Phase 1 scope is:
 
-The full current-product authority — customer, product surfaces, required loop, explicit non-goals,
-finishability, and moat — is **`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`** (canonical; informed by the
-2026-09-09 red team review and strategic data research in `docs/research/`). See D-044…D-050.
+`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`
 
-## Core doctrine
+That document controls the current category, ICP, customer order, commercial offer, Phase 1 acceptance, validation, and explicit non-goals. Capture Radar and the earlier Business Opportunity Pipeline remain important implementation and historical lineage, but they are not a competing Phase 1 product/category authority.
 
-- Show what is known, where it came from, when it was knowable, and what remains unknown.
-- Deterministic facts, identities, timestamps, evidence, calculations, and lifecycle state are
-  authoritative. AI may assist reasoning and communication but cannot silently create facts.
-- Every customer-facing opportunity is explainable from retained evidence and remains human-gated.
-- Unknown stays unknown. Do not fabricate research, payloads, outcomes, values, or acceptance proof.
-- Point-in-time evaluation enforces `available_at <= replay_as_of`; later evidence is explicitly
-  excluded, never smuggled into historical judgment.
-- Human review is evidence, not unquestioned truth; retain model and reviewer outputs so both can be
-  compared with eventual outcomes.
+## Current commercial objective
 
-## Product language authority (binding)
+Prove repeated customer-specific decision value with real design customers and convert that proof into durable recurring revenue.
 
-Pyrnova uses formal, precise, operational business and intelligence language. All user-facing copy —
-dashboards, reports, briefs, notifications, search results, AI-generated analysis, company dossiers,
-exports, and the internal operator UI where applicable — must prioritize information, scope, state,
-evidence, action, and analytical meaning over personality or marketing tone.
+Customer #1 is **IronMountain Solutions**. The current commercial offer and production pricing are internal authority and must not be published externally unless separately authorized.
 
-Prohibited inside the product: slogans, taglines, quirky or clever headings, inspirational or
-rhetorical language, conversational jokes, anthropomorphic AI language, faux-dramatic intelligence
-language, startup motivational copy, vague benefit claims, generic AI-generated prose, unnecessary
-adjectives, headings written mainly for personality, and generic phrases such as "unlock opportunity",
-"stay ahead", "turn insights into action", "navigate uncertainty", "make smarter decisions", or
-equivalent.
+The immediate execution workstream is defined only in `02-EXECUTION.md`.
 
-Acceptable headings are literal and functional, e.g. Company Intelligence, Threat Intelligence,
-Opportunity Assessment, Company Exposure, Material Changes, Evidence, Relationship Analysis, Source
-Operations, Outcome History, Intelligence Gaps, Review Evidence, Run Assessment, Add to Watchlist,
-Export Brief.
+## Phase 1 differentiated thesis
 
-**Copy quality is part of feature acceptance.** A technically correct feature carrying prohibited
-product language is not complete. See D-041. The customer-facing voice is the customer face of the
-corporate posture doctrine (`docs/strategy/CORPORATE_POSTURE_AND_BRAND.md`, D-054): discretion +
-intelligence + competence + control, never menace toward customers.
+The differentiated loop is:
 
-## Locked product boundaries
+```text
+SOURCE
+-> EVIDENCE ARTIFACT
+-> ASSERTION
+-> ASSESSMENT
+-> CUSTOMER CONSEQUENCE
+-> MATERIAL CHANGE
+-> INVESTIGATION / REVIEW
+-> ACTION
+-> OUTCOME
+```
 
-- Capture Radar is the active wedge. Broader Pyrnova products remain future options, not current build
-  authority.
-- Scoring, evidence thresholds, and mechanism rules change only after full-corpus evaluation shows a
-  systematic improvement without unacceptable regression.
-- Do not optimize for showcase cases, build speculative frontends, or add sources because they are
-  merely available.
-- Raw evidence and durable evaluation history are moat inputs; stored data is not itself proof of a
-  moat. The test is measurable predictive and commercial lift.
-- Preserve source-native identity and provenance. Enrichment cannot independently manufacture a
-  candidate or STRIKE.
+Pyrnova is not a generic procurement database, CRM, dashboard builder, generic research/chat product, or an AI wrapper around an incumbent. The customer value is selective interpretation of external change against the customer's real situation, with evidence, temporal truth, review, and later outcome learning.
 
-## Global source-ingestion rule
+The central commercial falsification question is whether Pyrnova can repeatedly tell a GovWin, GovTribe, or current-process customer something materially important their existing process did not adequately provide, early enough to change action.
 
-**Live external calls are scarce infrastructure: archive once, replay many.** Development defaults to
-offline fixtures or archived responses. Fresh uncached calls are reserved for acceptance and
-freshness verification. Adapters must respect provider limits and terms; never rotate keys or accounts
-to evade them.
+## Authority hierarchy
 
-The complete operating contract, modes, budgets, checkpoints, backoff, and metrics is
-`docs/specs/SOURCE_INGESTION.md`.
+Resolve conflicts in this order:
 
-## Scope governance
+1. Current product / strategic authority.
+2. Current milestone / work order.
+3. Durable decisions.
+4. Current state.
+5. Architectural authority.
+6. Roadmap.
+7. Research.
+8. Historical / superseded material.
 
-- `02-EXECUTION.md` authorizes current work. Backlog entries do not.
-- Strategically material capabilities not yet built are recorded durably in
-  `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`. Milestone planning must consult that roadmap; items
-  there may be prioritized, deferred, researched, superseded, or explicitly rejected, but must not be
-  silently dropped without owner direction or a documented decision in `04-DECISIONS.md`. The roadmap is
-  strategic authority only — it never overrides this authority, execution, or a closed milestone.
-- Prefer narrow, test-backed changes and preserve proven behavior.
-- Do not deploy, contact prospects, spend money, or begin a later milestone without explicit authority.
-- Historical research and handovers cannot override current authority. See `00-INDEX.md` for precedence.
+`00-INDEX.md` and `AGENTS.md` define the repository navigation and mandatory reading order.
 
-## Finishability rule (binding)
+Research informs authority. It does not independently authorize implementation.
 
-A missing capability may block the current phase **only if**: correctness requires it; safety requires
-it; architectural integrity requires it; existing acceptance criteria require it; or a real Phase 1
-customer cannot receive the promised Phase 1 decision value without it. Research curiosity, architectural
-elegance, theoretical future usefulness, competitor feature parity, "while we are here", an interesting
-dataset, or an agent noticing another useful relationship/event/source do **not** qualify. Default
-handling: **DOCUMENT → ROADMAP → DEFER.** Expansion is pulled by demonstrated user value, not pushed by
-architectural possibility. Finishability is the greatest founder-controlled risk (2026-09-09 red team
-review). See D-047; this hardens the phase-control rule D-042.
+## Locked intelligence doctrine
 
-## Defensibility / moat (binding)
+The deterministic/evidentiary core is authoritative. Model output may assist extraction, synthesis, assessment, and explanation, but it does not become authoritative fact merely because a model produced it.
 
-Candidate durable moats, in priority order: historical "what could have been known then?" state;
-customer-specific exposure/outcome history; longitudinal outcome calibration; rights-safe relationship
-history; rejected-intelligence history; customer-contributed context; accumulated event/consequence
-performance; evidence and decision lineage. The following are **not** durable moats by themselves: AI,
-prompts, agents, dashboards, graph visualization, natural-language search, company dossiers, alerts, RAG,
-citations, generic entity resolution, generic knowledge graphs. Stored data is not itself proof of a
-moat; the test is measurable predictive and commercial lift. See D-049.
+Preserve these distinctions:
 
-## Competitive doctrine (binding)
+- canonical intelligence truth versus presentation;
+- source capture versus verification versus publication;
+- source reliability versus claim credibility;
+- claim credibility versus assessment confidence;
+- assessment confidence versus event probability;
+- evidence state versus claim state versus outcome state;
+- observed fact versus inference versus assessment;
+- global intelligence versus customer-specific relevance and private context;
+- historical belief at time T versus evidence learned later.
 
-Pyrnova is built to **displace incumbents**, not to reach parity. The Phase 1 commercial test is whether
-Pyrnova can repeatedly tell an existing GovWin/GovTribe/equivalent customer something materially
-important their workflow missed — early and clearly enough to change what they do. Seek positions that
-are CLEARLY BETTER, UNIQUELY CAPABLE, or STRUCTURALLY ADVANTAGED; assume visible features are copied and
-invest in imitation-surviving advantages (the candidate moats above). Attack the adjacent problem
-incumbents solve poorly — "what changed, how does it affect this organization, what consequence follows,
-how certain, what evidence, what happened after" — and do not fight Bloomberg/AlphaSense/Dataminr/Kpler/
-Altana/Exiger/PitchBook where their structural advantage is overwhelming (rent that evidence instead).
-The evidence standard is **displaced spend**. Competitive aggression never authorizes unlawful access,
-misrepresentation, IP theft, system interference, customer-data misuse, license/contract violation, or
-deceptive practice, and never overrides the finishability rule or Phase 1 non-goals. Full doctrine:
-`docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052).
+Unknown remains unknown. Conflicting claims may coexist. Unresolved outcomes may remain unresolved. Later evidence must not silently rewrite earlier belief or retrospectively backfill a forecast.
 
-Competitive intelligence is a first-class capability studied by **lawful means only** (public/open data,
-FOIA, lawfully purchased products, independent research, reverse engineering where permitted, independent
-derivation), never by unauthorized access, credential misuse, malware, bribery, misrepresentation,
-inducing breach of confidentiality, or trade-secret/leaked-code/stolen-database use. Uncertain collection
-techniques are **YELLOW** — legal review before operationalization. Rented data is a challenged
-dependency held under rights-safe, technically separable provenance so Pyrnova can always answer "if we
-terminate this supplier tomorrow, what do we lose?" Full doctrine:
-`docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md` (D-053; operating discipline binding now,
-product build deferred).
+Every customer-facing analytical conclusion must be traceable far enough to support audit and replay. AI/model participation must retain attribution sufficient to explain what came from source evidence, deterministic computation, human judgment, and model-assisted reasoning.
 
-## Canonical execution tree
+## Evidence and source doctrine
 
-**Pyrnova's canonical local execution tree is `/Users/stu/Documents/Pyrnova` on `main`.** All local
-Claude/Codex implementation work must operate from this tree unless the owner explicitly authorizes
-another. GitHub `origin/main` is the repository authority; the canonical tree is the only local working
-copy that carries the project's local-only runtime state.
+Preserve raw evidence with provenance and source-native identity. Archive scarce/live evidence once and replay it many times.
 
-- Agent-created clones or worktrees are **not** implementation authority. A separate clone exists at
-  `/Users/stu/pyrnova` (a different local branch); it lacks `.env`/credentials and `examples/real_evidence/`
-  and must not be used for milestone work or treated as authoritative.
-- Local-only secrets, archives, caches, scheduler/checkpoint state, and `.venv` live only in the
-  canonical tree and must never be assumed to exist in an alternate clone/worktree. Never migrate `.env`
-  or secrets into Git or copy secret values anywhere.
-- If a Claude session starts elsewhere (e.g. its launch directory is the separate clone), switch to the
-  canonical tree before doing any work: `cd /Users/stu/Documents/Pyrnova` (or launch the CLI from there).
-- The untracked `.codex/` directory in the canonical tree is known and intentional; leave it untouched.
+Live external calls are governed infrastructure. They must be intentional, budgeted where appropriate, observable, retry-safe, rate-limit-safe, and incapable of silently changing semantics when a source fails.
 
-The superseded 30-day authority is retained at `docs/archive/EXECUTION_AUTHORITY_30D_V1.md`; its durable
-decisions have been incorporated here and in `04-DECISIONS.md`.
+Current Live Operations doctrine is:
+
+```text
+BULK FIRST
+-> DELTA SECOND
+-> TARGETED LIVE LAST
+
+ARCHIVE ONCE
+-> REPLAY MANY
+```
+
+Source health, freshness, degraded state, and unknown state must be explicit. Never imply current data when the system only has stale or failed acquisition.
+
+## Product language authority
+
+Customer-facing language is formal, precise, operational, and evidence-led. Prefer literal functional language describing information, state, evidence, consequence, uncertainty, and action.
+
+Avoid slogans, clever headings, anthropomorphic AI language, generic startup claims, faux urgency, and unsupported certainty. Copy quality is part of feature acceptance.
+
+Detailed voice/posture authority remains in `docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` and D-041/D-054.
+
+## Phase control and finishability
+
+A missing capability may block current Phase 1 work only when needed for:
+
+- correctness;
+- safety;
+- architectural integrity;
+- current acceptance criteria;
+- valid Customer #1 measurement.
+
+Otherwise:
+
+```text
+DOCUMENT
+-> ROADMAP
+-> DEFER
+```
+
+Research curiosity, elegance, competitor parity, theoretical usefulness, another interesting source, or "while we are here" do not expand the phase.
+
+Broad Phase 1 research is frozen except for a genuine Customer #1 blocker, an unsettled commercial decision that current authority cannot resolve, a correctness/security issue, or customer-driven expansion evidence.
+
+## Engineering and infrastructure doctrine
+
+Implementation must follow `docs/architecture/ENGINEERING_DOCTRINE.md` and `docs/architecture/INFRASTRUCTURE_DOCTRINE.md`.
+
+Core rules include:
+
+- one concept, one canonical implementation;
+- reuse existing Pyrnova patterns unless a recorded reason justifies deviation;
+- explicit state ownership and data flow;
+- no silent semantic fallback;
+- simplicity over speculative abstraction;
+- consequence-proportional testing and observability;
+- correct, clear, measurable behavior before optimization;
+- infrastructure may change, intelligence semantics must not;
+- migrations must preserve identity, provenance, temporal truth, customer isolation, and replay.
+
+Start cheap and architect expensive. Do not create rewrite-at-scale assumptions or infrastructure theatre.
+
+## Competitive doctrine
+
+Pyrnova competes to create materially better customer decisions, not to reproduce incumbent feature lists.
+
+The governing question for a major Phase 1 capability is:
+
+> Why would a rational customer already paying for an incumbent switch budget, workflow, or attention to Pyrnova?
+
+Durable advantage should compound from things competitors cannot cheaply reconstruct after the fact, especially point-in-time evidence history, customer-specific exposure history, rejection history, outcome calibration, rights-safe relationship history, and evidence/decision lineage.
+
+AI, prompts, dashboards, generic graph visualization, generic RAG, generic search, and citations are useful capabilities but are not durable moats by themselves.
+
+Full competitive authority remains in `docs/strategy/COMPETITIVE_DOCTRINE.md`.
+
+## Lawful competitive intelligence and data autonomy
+
+Competitive intelligence is conducted by lawful means only. Do not use unauthorized access, credential misuse, malware, bribery, deception to obtain protected information, inducement to breach confidentiality, trade-secret material, leaked code, or stolen databases.
+
+Collection techniques with uncertain contractual, access-control, copyright, database-rights, or terms-of-service implications require legal review before operationalization.
+
+Keep observation and implementation separable when clean-room discipline matters. Keep rented-data provenance separable so Pyrnova can understand what disappears if a vendor relationship ends.
+
+Full doctrine remains in `docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md`.
+
+## Customer and data boundaries
+
+Phase 1 should prefer a low-friction first-customer shape: bounded monitoring scope, few users, public/external intelligence, minimal customer-private data, no CUI, no classified information, no massive integration dependency, fixed term, and fixed price.
+
+Do not accept bad revenue that requires bespoke analyst outsourcing, architecture forks, exclusivity, unsustainable discounting, endless free pilots, unsupported sensitive-data handling, or consulting disguised as product validation.
+
+Customer-private configuration, relevance, review state, and contributed context must remain distinct from global intelligence truth.
+
+## Current Phase 1 state
+
+M21 and M22 are closed. Opportunity, Access, and Onboarding P0s are closed.
+
+The sole primary remaining design-customer P0 is **Live Operations / Data Volume Readiness**. `02-EXECUTION.md` authorizes exactly one immediate workstream: **PHASE1-LIVE-OPS-CLOSURE**.
+
+Do not invent further M22 lettered milestones to absorb new work. Do not broaden Pyrnova while closing Live Operations.
+
+The next decision after Live Operations acceptance is **Customer #1 GO / NO-GO**.
+
+## Deferred areas
+
+Business Health is specification-complete but not launch-blocking and is not authorized while Live Operations or Customer #1 readiness needs work.
+
+Broader threat-management products, physical threat intelligence, supply-chain threat, red/blue-team productization, social-engineering hardening, foreign-device risk, sector threat mapping, customizable dashboard/workspace building, broad ontology/graph-explorer experiences, complex compartmentation, and other long-term platform breadth remain roadmap-deferred unless customer evidence changes authority.
+
+## Canonical working tree
+
+The canonical local implementation tree is `/Users/stu/Documents/Pyrnova` on `main`; GitHub `origin/main` is repository authority. `/Users/stu/pyrnova` is not the authorized working tree.

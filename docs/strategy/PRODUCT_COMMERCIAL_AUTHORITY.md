@@ -1,16 +1,17 @@
 # Pyrnova product + commercial authority
 
-_Status: canonical product / commercial authority · effective 2026-09-10 · owner-approved. Supersedes
+_Status: canonical cross-phase product / commercial authority · effective 2026-09-10 · owner-approved. Supersedes
 conflicting earlier commercial/product hypotheses where explicitly resolved in §23–§24 below._
 
-> **Authority level.** This is the overarching **current product / commercial authority** — level 1 in
-> the `00-INDEX.md` hierarchy. It sits at the top of tier 1 with `01-PROJECT-AUTHORITY.md`,
-> `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, and `docs/strategy/COMPETITIVE_DOCTRINE.md`, and unifies
-> the current product, commercial/pricing, trust, validation, UX, AI, and expansion doctrine into one
-> current truth. It does **not** override `01-PROJECT-AUTHORITY.md`'s locked doctrine; it specializes it.
-> The Phase 1 product and competitive doctrines remain authoritative, consistent companions; on any
-> direct conflict, this document governs. It does **not** authorize implementation — `02-EXECUTION.md`
-> alone authorizes active work. Read this before using research (`docs/research/`) or roadmap
+> **Authority level and scope.** Owner decisions and the Phase One Constitution are highest authority.
+> This document is the overarching **cross-phase product / commercial authority**. It unifies Pyrnova's
+> broader product, commercial/pricing, trust, validation, UX, AI, and expansion direction across phases.
+> `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` incorporates the locked Phase One Constitution and is the
+> sole product and implementation authority within Phase 1 scope. It may specialize this cross-phase
+> authority for Phase 1, but may not erase, redefine, or supersede it outside Phase 1. Compatible strategy
+> documents remain authoritative within their stated scopes. This document does **not** authorize
+> implementation — `02-EXECUTION.md` alone authorizes active work. Read this before using research
+> (`docs/research/`) or roadmap
 > (`docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`, `05-BACKLOG.md`) material to make any product or
 > commercial decision.
 >
@@ -27,8 +28,8 @@ conflicting earlier commercial/product hypotheses where explicitly resolved in �
 
 # PYRNOVA PRODUCT + COMMERCIAL AUTHORITY
 
-**Status:** CANONICAL PRODUCT / COMMERCIAL AUTHORITY
-**Scope:** Current Product, Phase 1, Design Customer Validation, Commercial Model, Trust Gates, Expansion Discipline
+**Status:** CANONICAL CROSS-PHASE PRODUCT / COMMERCIAL AUTHORITY
+**Scope:** Cross-Phase Product Direction, Commercial Model, Trust Gates, Validation, Expansion Discipline
 **Supersedes:** Conflicting research recommendations and earlier commercial/product hypotheses where explicitly resolved below.
 
 ---

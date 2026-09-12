@@ -1,43 +1,50 @@
-# First target — Torch Technologies
+# Historical target research — Torch Technologies
 
-## Why selected (over the other approved archetypes)
+> **SUPERSEDED AS CURRENT TARGET AUTHORITY 2026-09-11.**
+>
+> Retained for target-research provenance and implementation/evidence lineage only. Torch Technologies
+> is **not** the current Customer #1. The former Torch-first target order and **$2,500 Intelligence Sprint**
+> below are superseded by `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+>
+> Current design-customer order is:
+> 1. **IronMountain Solutions**
+> 2. **Trideum**
+> 3. **i3**
+> 4. **Radiance Technologies**
+> 5. **Avion Solutions**
+>
+> Do not use this file to choose current outreach order, pricing, or commercial structure.
+
+## Original 2026-09-08 target note — superseded
+
+### Why Torch was selected at the time
 - **Clear, public capabilities** in a tight domain (missiles / missile defense / M&S / T&E / RDT&E) that
-  maps cleanly to recompete + pre-solicitation intelligence — the exact wedge Pyrnova has built.
+  maps cleanly to recompete + pre-solicitation intelligence — the exact wedge Pyrnova had built.
 - **Meaningful, concentrated federal work** around Redstone Arsenal (Army AMCOM/PEO MS/SMDC, MDA) and
   the Air/Space Force — a dense, trackable award and pre-solicitation environment.
 - **Mid/large market, employee-owned:** a real BD/Capture function with budget and a growth mandate, but
-  not a prime with an in-house intelligence org — the profile that feels the pain and can expense a
+  not a prime with an in-house intelligence org — the profile that felt the pain and could expense a
   Sprint.
 - **Profile constructible from authoritative public evidence** (their own award history on USAspending +
   public capability descriptions) without inventing anything. See `examples/profiles/torch_technologies.json`
   for the explicit known / inferred / unknown split.
 
-Alternatives held in reserve (approved list): AMERICAN SYSTEMS, MTSI, Systems Planning & Analysis,
-Astrion, Applied Research Associates, Noblis, Credence, Iron Bow, ThunderCat. Try the next one only if
-the live run on Torch yields no STRIKE meeting the bar (and record why).
+Historical alternatives held in reserve were: AMERICAN SYSTEMS, MTSI, Systems Planning & Analysis,
+Astrion, Applied Research Associates, Noblis, Credence, Iron Bow, ThunderCat. This list is also
+superseded as current target-order authority.
 
-## Profile provenance (summary)
+### Profile provenance (summary)
 - **Known (public):** Huntsville ESOP; RDT&E / M&S / systems engineering / T&E for Army, MDA, Air/Space
   Force; large business.
 - **Inferred (search hints, not asserted):** NAICS/PSC codes, contract-size band, agency list.
 - **Unknown (deliberately empty):** specific incumbencies, clearances, certifications, vehicles, names.
 
-## Outbound package (assemble AFTER the live run produces a real Signal Brief)
-> Do not send anything until a real, human-reviewed STRIKE exists. This is the shell to fill.
-
+### Historical outbound package — DO NOT USE AS CURRENT COMMERCIAL COPY
 - **Target company:** Torch Technologies (Huntsville, AL)
-- **Role to approach:** VP / Director of **Business Development** or **Capture** (Growth org). Identify the
-  current named person via the company's leadership page / LinkedIn — do not guess a name.
-- **Why selected (1 line for internal note):** concentrated Redstone/MDA footprint with an active growth
-  mandate and no in-house market-intelligence org.
-- **Outreach thesis (2–3 sentences, to personalize once the brief exists):**
-  > "We track federal demand upstream of the RFP for a narrow set of missile-defense / M&S / T&E buyers.
-  > Below are [N] developments in your agencies and NAICS you may not be tracking yet — one recompete and
-  > one pre-solicitation signal, each with the evidence and the lead time. If useful, a $2,500 Pyrnova
-  > Intelligence Sprint turns this into a ranked, monitored capture picture for your target portfolio."
-- **Attachment:** the live `out/signal_brief_torchtechnologies.md` (3 items max, human-reviewed).
-- **Proposed paid next step:** **$2,500 Intelligence Sprint** — a focused paid diagnostic on one target
-  agency or pursuit.
+- **Role considered:** VP / Director of **Business Development** or **Capture** (Growth org).
+- **Historical outreach thesis:** federal demand upstream of the RFP, with evidence and lead time.
+- **Historical proposed paid next step:** **$2,500 Intelligence Sprint** focused on one target agency or
+  pursuit.
 
-No CRM, no automation, no sending until the brief is real and reviewed. First 10 accounts individually
-researched.
+The $2,500 Sprint is superseded. Current commercial authority is the **10-week Strategic Change Pilot**
+under `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.

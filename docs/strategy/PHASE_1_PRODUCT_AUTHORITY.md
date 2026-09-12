@@ -1,178 +1,364 @@
-# Pyrnova Phase 1 product authority
+# Pyrnova Phase 1 product and commercial authority
 
-_Status: canonical current-product authority · effective 2026-09-09 · informed by the 2026-09-09 red
-team review and strategic data research (`docs/research/`)_
+_Status: CANONICAL AND LOCKED · Phase One Constitution incorporated 2026-09-11_
 
-> **Authority level.** This is the current product/strategic authority for the Phase 1 (M22+)
-> productization phase. In the authority hierarchy (`00-INDEX.md`) it sits with `01-PROJECT-AUTHORITY.md`
-> as current strategic authority, above the milestone work order. It does not override
-> `01-PROJECT-AUTHORITY.md`'s locked doctrine; it specializes it for Phase 1. It does **not** authorize
-> implementation — `02-EXECUTION.md` alone authorizes active work. It is a consistent companion to the
-> overarching `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (owner-approved) and defers to it on any
-> direct conflict; the commercial/pricing model lives there.
+> **Authority level and scope.** This document is the sole product and implementation authority within
+> Phase 1 scope. It incorporates the owner-approved Phase One Constitution, specializes
+> `01-PROJECT-AUTHORITY.md` for Phase 1, and sits above the milestone work order. The overarching
+> `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` separately governs cross-phase product and commercial
+> strategy. This document may specialize that authority for Phase 1, but may not erase, redefine, or
+> supersede it outside Phase 1. It does **not** authorize implementation — `02-EXECUTION.md` alone
+> authorizes active work.
 
-## Long-term thesis (architectural direction, NOT Phase 1 scope)
+Research informs this authority. Research does not override it. Roadmap material does not enter Phase 1 unless `02-EXECUTION.md` explicitly authorizes it under the phase-control rules below.
 
-Pyrnova aims to become **a continuously updated, historically auditable model of what external change
-means economically to a specific organization.** The broader system may eventually span policy, capital,
-procurement, regulation, corporate activity, supply chains, physical events, markets, geopolitics,
-facilities, dependencies, opportunities, threats, and outcomes.
+## 1. Locked Phase 1 product definition
 
-This is long-term direction. It is preserved so foundational choices keep optionality (see
-`STRATEGIC_CAPABILITY_ROADMAP.md`, areas 15–22). **It is not authority to build any of it in Phase 1.**
+**Product:** Pyrnova
 
-## Current differentiated thesis
+**Category:** Decision-grade external-intelligence system for government contractors.
 
-Pyrnova's differentiated product is **not** broad data aggregation, generic company research, generic AI
-search, a knowledge graph by itself, dashboards, alerts by themselves, procurement search alone, global
-event detection, or generic supply-chain mapping.
+**Core job:** Pyrnova helps government contractors identify which external developments matter, understand why they matter, verify the evidence, and decide what to investigate or do next.
 
-The differentiated thesis is the loop:
+**Phase One operating concept:** Material Changes.
 
-> **external change → customer-specific consequence → opportunity / threat / monitoring → evidence →
-> review / action → outcome → learning.**
+Pyrnova is an intelligence system. It is not:
 
-Pyrnova determines: what materially changed; why it affects *this particular* organization; what
-evidence supports the conclusion; what remains uncertain; what merits investigation; and what eventually
-happened.
+- CRM;
+- generic procurement search;
+- GovWin with AI;
+- generic company research;
+- generic AI chat or research;
+- a dashboard-builder product;
+- an AlphaSense clone;
+- a Dataminr clone;
+- a Palantir clone;
+- a general-purpose internal operating system.
 
-## Phase 1 customer wedge (locked)
+The long-term architecture may become broader. Phase 1 sales and category language remains narrow until customer evidence authorizes expansion.
 
-- **Initial customer:** US federal contractors.
-- **Primary sectors:** defense, industrial, technology, engineering, infrastructure.
-- **Working ideal customer:** ≈ **$50M–$300M revenue**, with lean BD/capture/strategy capacity,
-  meaningful federal program exposure, several capabilities, multiple programs/pursuits, and
-  insufficient analyst bandwidth for continuous monitoring.
+The dominant customer question is: **What materially changed since I last looked, why does it matter to us, what evidence supports it, and what should we investigate or do next?**
 
-This is a **launch wedge**, not a permanent constraint. Do not hard-code the architecture so other
-markets become impossible later (`STRATEGIC_CAPABILITY_ROADMAP.md`, area 15). This band refines and
-supersedes the earlier "~$20M–$250M" figure in older README copy (D-045).
+Material Changes is the dominant customer surface. Company and program investigation, evidence, search, review, and outcome history support that workflow. They are not separate products.
 
-## Phase 1 dominant customer question
+## 2. Canonical intelligence lineage
 
-**"What materially changed since I last looked?"**
+The canonical conceptual lineage is:
 
-## Phase 1 commercial test (competitive)
-
-The Phase 1 test is not "Can Pyrnova also do procurement intelligence?" It is: **can Pyrnova repeatedly
-tell an existing GovWin/GovTribe/equivalent customer something materially important their workflow missed
-— early and clearly enough to change what they do?** Prefer design customers who already use an
-incumbent; the evidence standard is **displaced spend**, and the governing question for every major
-capability is "why would a rational customer already paying the incumbent switch to Pyrnova?" A weak
-answer means the capability is not finished. Full competitive doctrine, domination standard, incumbent
-map, and displacement metrics: `docs/strategy/COMPETITIVE_DOCTRINE.md` (D-052).
-
-## Phase 1 product surfaces
-
-The Phase 1 product should support:
-
-- **Material Changes** (the dominant surface)
-- **Customer Intelligence Profile**
-- **Opportunity Intelligence**
-- **Threat Intelligence**
-- **Evidence**
-- **Company / Program Intelligence** (the dossier — a supporting investigation surface)
-- **deterministic entity search**
-- **watchlists**
-- **review / adjudication**
-- **outcome tracking**
-- **explicit unknowns**
-- **historical intelligence**
-
-## Required Phase 1 loop
-
-```
-EVENT
-  → AFFECTED ENTITY / PROGRAM
-  → CUSTOMER RELATIONSHIP
-  → CONSEQUENCE
-  → OPPORTUNITY / THREAT
-  → EVIDENCE
-  → REVIEW / ACTION
-  → OUTCOME
+```text
+SOURCE
+-> EVIDENCE ARTIFACT
+-> ASSERTION
+-> ASSESSMENT
+-> CUSTOMER CONSEQUENCE
+-> MATERIAL CHANGE
+-> INVESTIGATION / REVIEW
+-> ACTION
+-> OUTCOME
 ```
 
-The graph should **primarily support this experience**, not dominate the interface. The dossier is a
-supporting investigation surface; the graph is predominantly hidden from the primary Material-Changes
-workflow (D-046).
+Existing Evidence Plane, Intelligence Plane, Compute Plane, and Delivery Plane architecture remains valid where compatible with this lineage.
 
-## Relationship to Capture Radar
+The following are invariants:
 
-Capture Radar (pre-RFP / recompete intelligence) remains the delivery vehicle and the proven engine
-(M2–M21). Phase 1 productization organizes that engine around the Material-Changes loop for the federal-
-contractor wedge. This is an evolution of framing, not a repudiation: closed-milestone history stands
-(`06-HISTORY.md`), and `scoring_v1`/`fit.py`/severity bands remain frozen.
+- canonical intelligence truth is separate from presentation;
+- capture is distinct from verification and publication;
+- raw evidence is preserved with provenance;
+- source reliability is distinct from claim credibility;
+- claim credibility is distinct from assessment confidence;
+- assessment confidence is distinct from event probability;
+- evidence state is distinct from claim state and outcome state;
+- conflicting claims may coexist;
+- unknown never silently becomes zero;
+- later evidence must not rewrite what was believed at an earlier point in time;
+- no retrospective forecast backfill;
+- unresolved may remain unresolved;
+- customer-specific relevance is distinct from global intelligence;
+- AI or model extraction and assessment must retain attribution sufficient for audit and replay;
+- intelligence semantics must survive infrastructure changes.
 
-## Phase 1 explicit non-goals (durable; deferred / customer-gated)
+Do not flatten these distinctions for implementation convenience.
 
-The following are **not** Phase 1 scope and must not be built merely because research shows eventual
-usefulness. They are deferred or customer-gated unless later real Phase 1 customer evidence changes
-authority (recorded via a decision in `04-DECISIONS.md`):
+## 3. Phase 1 ideal customer profile
 
-- Dataminr-equivalent global real-time event detection
-- broad social-media ingestion
-- commodities intelligence
-- maritime intelligence
-- aviation intelligence
-- global multi-tier supply-chain reconstruction
-- automated replacement-supplier claims
-- comprehensive private-company universe
-- complete beneficial ownership
-- global facilities completeness
-- strategic-intent prediction
-- buyer-intent prediction
-- advanced portfolio modelling
-- state / local procurement
-- complete financial terminal
-- deep person intelligence
-- unrestricted autonomous agents
-- autonomous commercial action
-- broad premium-feed integration
-- unnecessary graph-database migration
-- premature streaming infrastructure
+Primary Phase 1 ICP: U.S. federal contractors at approximately **$50M-$300M annual revenue**, especially:
 
-Preserve future architectural compatibility for these (do not foreclose them); do not implement them.
+- defense;
+- industrial;
+- technology;
+- engineering;
+- infrastructure.
 
-## Finishability rule (binding)
+Strong target characteristics:
 
-A missing capability may block the current phase **only if**: correctness requires it; safety requires
-it; architectural integrity requires it; existing acceptance criteria require it; or a real Phase 1
-customer cannot receive the promised Phase 1 decision value without it.
+- lean BD, capture, or strategy teams;
+- meaningful federal exposure;
+- multiple active pursuits or programs;
+- multiple adjacent capabilities;
+- insufficient analyst capacity for continuous external monitoring;
+- ideally already using GovWin, GovTribe, or a comparable procurement-intelligence process.
 
-The following do **not** qualify: research curiosity; architectural elegance; theoretical future
-usefulness; competitor feature parity; "while we are here"; an interesting new dataset; or an agent
-identifying another potentially useful relationship/event/source.
+Primary falsification question:
 
-Default handling of anything that does not qualify: **DOCUMENT → ROADMAP → DEFER.** Expansion is pulled
-by demonstrated user value, not pushed by architectural possibility. See D-047 (this hardens D-042).
+> Can Pyrnova repeatedly tell a GovWin, GovTribe, or current-process customer something materially important their existing system did not adequately provide, early enough to change action?
 
-## Defensibility / candidate moat
+The evidence standard is changed customer behavior, not feature parity.
 
-Pyrnova's candidate durable moat, in priority order:
+## 4. Design-customer order
 
-1. historical "what could have been known then?" state;
-2. customer-specific exposure / outcome history;
-3. longitudinal outcome calibration;
-4. rights-safe relationship history;
-5. rejected-intelligence history;
-6. customer-contributed context;
-7. accumulated event/consequence performance;
-8. evidence and decision lineage.
+Current Customer #1 target:
 
-The following are **not** durable moats by themselves: AI, prompts, agents, dashboards, graph
-visualization, natural-language search, company dossiers, alerts, RAG, citations, generic entity
-resolution, generic knowledge graphs. (Consistent with `01-PROJECT-AUTHORITY.md`: stored data is not
-itself proof of a moat; the test is measurable predictive and commercial lift.) See D-049.
+1. **IronMountain Solutions**
+2. **Trideum**
+3. **i3**
+4. **Radiance Technologies**
+5. **Avion Solutions**
 
-## Binding architectural principles (Phase 1 preserves all)
+Do not replace this order during ordinary implementation because another company appears interesting. A change requires owner direction or later customer evidence recorded through authority.
 
-Permanent canonical entity identity; all useful source-native identifiers; bitemporal semantics;
-immutable provenance; assertions rather than flattened truth; temporal relationship validity;
-observation vs. inference; confidence-aware intelligence; evidence lineage; evidence independence;
-rights metadata; reversible entity resolution; events as first-class entities; facilities as first-class
-entities; customer isolation; outcome/adjudication history; point-in-time replay; incremental read
-projections; fast deterministic product rendering; **AI only after deterministic filtering**;
-deterministic identity resolution where identifiers exist.
+## 5. Locked commercial offer
 
-**PostgreSQL remains appropriate.** Do not introduce a specialist graph database merely because graph
-semantics exist. Raw evidence remains separable from normalized facts and derived intelligence.
+### Strategic Change Pilot
+
+- Duration: **10 weeks**
+- List price: **$12,500**
+- Absolute floor: **$10,000**
+- Payment: **50% at signature, 50% at week 5**
+- Included users: **up to 10**
+- Monitored objects: **up to 75**
+
+### Production pricing authority
+
+- Target ACV: **$48,000**
+- Floor: **$36,000**
+- Stretch: **$72,000**
+- Pilot-to-production conversion credit: **$6,250**
+
+Do not publish launch pricing publicly on the website.
+
+Any earlier authority describing a materially different pilot, including a **$15,000 prepaid 30-day pilot**, is superseded. Historical copies may remain only where clearly marked historical or superseded and must not be treated as current commercial authority.
+
+## 6. Phase control and research freeze
+
+New ideas do not automatically enter Phase 1.
+
+A newly discovered capability changes current scope only when necessary for:
+
+- correctness;
+- safety;
+- architectural integrity;
+- current acceptance criteria;
+- valid Customer #1 measurement.
+
+Otherwise:
+
+```text
+DOCUMENT
+-> ROADMAP
+-> DEFER
+```
+
+Broad Phase 1 research is frozen. It may reopen only for:
+
+- a Customer #1 blocker;
+- a commercial decision that genuinely cannot be settled from current authority;
+- a correctness or security issue;
+- a customer-driven expansion question.
+
+Do not reopen category, ICP, broad competitive research, product architecture, or feature discovery merely because further research is possible.
+
+## 7. Current implementation state
+
+M21 and M22 remain closed. Do not reopen them unless a genuine correctness, safety, or acceptance defect is discovered.
+
+Do not invent M22-G, M22-H, M22-I, M22-J, or similar containers for new work.
+
+Closed design-customer P0 areas include:
+
+- Opportunity;
+- Access;
+- Onboarding.
+
+The sole primary remaining Phase 1 design-customer P0 is:
+
+**LIVE OPERATIONS / DATA VOLUME READINESS**
+
+The fundamental remaining question is no longer whether Pyrnova can represent this intelligence. It is:
+
+> Can Pyrnova operate continuously on enough real external intelligence to repeatedly produce customer-specific decision value in a real paying organization?
+
+## 8. Live Operations doctrine
+
+The operating doctrine is:
+
+```text
+BULK FIRST
+-> DELTA SECOND
+-> TARGETED LIVE LAST
+
+ARCHIVE ONCE
+-> REPLAY MANY
+```
+
+Additional rules:
+
+- materiality and decision value matter more than raw event volume;
+- no silent source failure;
+- customer-critical sources should normally refresh daily or better;
+- decision-sensitive supported sources may operate approximately every 1-4 hours where justified;
+- do not promise sub-minute realtime intelligence;
+- explicit degraded, stale, and unknown states are preferable to pretending data is current.
+
+## 9. Live Operations P0 acceptance
+
+`PHASE1-LIVE-OPS-CLOSURE` must close, or prove already closed, all of the following:
+
+- correct baseline creation;
+- real authorized evidence;
+- automatic acquisition;
+- appropriate source cadence;
+- durable checkpoints;
+- retry handling;
+- rate-limit handling;
+- source health;
+- freshness state;
+- deduplication;
+- idempotent downstream processing and fan-out;
+- restart and recovery;
+- selective Material Change generation;
+- operational visibility;
+- instrumentation capable of identifying important misses;
+- safe handling of source degradation and failure;
+- point-in-time and replay integrity.
+
+Operational acceptance additionally requires **7 calendar days / 5 business days of unattended live operation**.
+
+Passing unit, integration, replay, or acceptance tests does not satisfy the unattended live-operation gate by itself.
+
+Expected customer experience:
+
+- the first meaningful customer login should normally contain approximately **3-10 genuine active Material Changes**;
+- a small MONITOR set may appear where appropriate;
+- historical context must be clearly separated from genuinely new or live changes;
+- during the first 10 business days, the system should normally produce at least **3 genuine Material Changes** if the external environment supports them.
+
+Never manufacture intelligence volume to hit a numerical target. Zero genuine changes is preferable to fabricated or weak intelligence.
+
+## 10. Validation doctrine and expansion gate
+
+Do not substantially broaden Pyrnova until customer evidence supports it.
+
+The expansion gate remains:
+
+- at least **5 real design customers**;
+- at least **3 willing to continue paying or convert**;
+- repeated net-new material intelligence;
+- measurable customer action;
+- low severe false-positive rate;
+- acceptable high-severity miss rate;
+- voluntary repeat use;
+- opportunity and threat both producing value;
+- onboarding not requiring bespoke analyst work;
+- positive gross-margin trajectory;
+- incumbent differentiation demonstrated;
+- at least one customer requesting broader scope because the current product works.
+
+Expansion is pulled by customers, not pushed by architecture.
+
+## 11. Deferred and non-blocking work
+
+### Business Health
+
+Business Health is:
+
+- **SPECIFICATION COMPLETE**
+- **IMPLEMENTATION NOT STARTED**
+- **DESIRABLE PRE-LAUNCH ONLY IF TRUE SPARE CAPACITY EXISTS**
+- **NOT LAUNCH-BLOCKING**
+- **EARLY POST-LAUNCH OTHERWISE**
+
+It must not delay Customer #1, Live Operations, pilot validation, or core Material Changes.
+
+Longer-term roadmap areas remain deferred unless customer evidence changes priority:
+
+- broader digital threat assessment;
+- physical threat intelligence;
+- supply-chain threat;
+- authorized red-team intelligence;
+- blue-team intelligence;
+- social-engineering hardening;
+- foreign-device risk;
+- sector threat mapping;
+- mature decision-driven intelligence workflows;
+- customizable dashboard or workspace builder;
+- large ontology or graph-explorer experiences;
+- complex compartmentation.
+
+Do not accidentally promote these into Phase 1 P0.
+
+## 12. Bad-revenue guardrails
+
+Reject Phase 1 commercial arrangements that require:
+
+- bespoke analyst outsourcing;
+- endless free pilots;
+- customer control over the general roadmap;
+- architecture forks;
+- unsupported CUI or high-sensitivity work;
+- exclusivity;
+- massive custom integrations;
+- unsustainable discounts;
+- consulting masquerading as product validation.
+
+Preferred first-customer shape:
+
+- few users;
+- no integration dependency;
+- no CUI;
+- no classified information;
+- minimal customer-private data;
+- public and external intelligence;
+- bounded monitoring scope;
+- fixed term;
+- fixed price.
+
+## 13. Authority hierarchy
+
+The effective repository authority order is:
+
+1. **Owner Decisions / Phase One Constitution**
+2. **Cross-Phase Product / Commercial Authority**
+3. **Phase 1 Product / Implementation Authority**
+4. **Execution / State / Milestone / Evidence**
+5. **Architectural Authority**
+6. **Roadmap**
+7. **Research**
+8. **Historical / Superseded**
+
+`00-INDEX.md` and `AGENTS.md` provide the navigation and anti-drift reading order.
+
+Research informs authority. Research does not silently override authority.
+
+## 14. Existing durable doctrine preserved
+
+The Constitution narrows and synchronizes current authority. It does not erase compatible prior doctrine. In particular, preserve:
+
+- deterministic identity and evidence handling;
+- point-in-time truth and replay;
+- append-only review and outcome history;
+- global-intelligence versus customer-private boundaries;
+- Product Language Authority;
+- finishability and anti-scope-drift rules;
+- engineering and infrastructure doctrine;
+- lawful competitive-intelligence and data-autonomy rules;
+- competitive differentiation against incumbent workflows;
+- archive-once, replay-many source discipline.
+
+Where an older document conflicts with this Constitution within Phase 1 scope, this document controls.
+It does not redefine the cross-phase authority outside that scope.
+
+## 15. Immediate authorized work
+
+The single immediate implementation workstream is **`PHASE1-LIVE-OPS-CLOSURE`**, as defined in `02-EXECUTION.md`.
+
+No broad product expansion is authorized. The next decision after Live Operations closure is **Customer #1 GO / NO-GO** for IronMountain Solutions.

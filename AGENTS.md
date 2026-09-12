@@ -13,16 +13,18 @@ session started elsewhere, switch first. The untracked `.codex/` directory is in
 
 ## Authority hierarchy (resolve conflicts in this order)
 
-1. **Current product / strategic authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (overarching
-   product + commercial authority; governs on any direct conflict with the companions below),
-   `01-PROJECT-AUTHORITY.md`, `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, and
-   `docs/strategy/COMPETITIVE_DOCTRINE.md`.
-2. **Current milestone work order** — `02-EXECUTION.md`.
-3. **Durable decisions** — `04-DECISIONS.md`.
-4. **Current state** — `03-CURRENT-STATE.md`.
+1. **Owner decisions / Phase One Constitution** — highest authority; the locked Constitution is
+   incorporated in `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+2. **Cross-phase product / commercial authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`.
+3. **Phase 1 product / implementation authority** — `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` is sole
+   authority within Phase 1 scope. `01-PROJECT-AUTHORITY.md` and the compatible strategy companions
+   summarize or specialize current doctrine; none may erase or redefine cross-phase authority outside
+   Phase 1.
+4. **Execution / state / milestone / evidence** — `02-EXECUTION.md`, `03-CURRENT-STATE.md`,
+   `04-DECISIONS.md`, and relevant `docs/specs/` implement or record higher authority.
 5. **Architectural authority** — `docs/architecture/` (including the binding engineering doctrine
    `ENGINEERING_DOCTRINE.md` and infrastructure & capital doctrine `INFRASTRUCTURE_DOCTRINE.md`, D-059),
-   `db/`, relevant `docs/specs/`.
+   and `db/`.
 6. **Roadmap** — `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md`, then `05-BACKLOG.md`.
 7. **Research** — `docs/research/` (informs authority; never authorizes implementation).
 8. **Historical / superseded** — `06-HISTORY.md`, `docs/handovers/`, `docs/archive/`.
