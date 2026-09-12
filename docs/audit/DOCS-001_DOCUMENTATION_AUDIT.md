@@ -1,8 +1,23 @@
 # DOCS-001 documentation audit
 
-Status: descriptive audit, not authority  
-Audited: 2026-09-12  
-Baseline: local `main` at `ce7ee5c`, isolated branch `docs-001-documentation-foundation`
+- Status: **DOCS-001 FOUNDATION — OWNER ACCEPTED / CLOSED**
+- Audited: 2026-09-12
+- Owner accepted: 2026-09-12
+- Baseline: local `main` at `ce7ee5c`, isolated branch `docs-001-documentation-foundation`
+
+## Owner closure decision
+
+The owner accepts the documentation architecture, reader journey, system and development guidance,
+operations documentation, ADR structure, diligence material, repository map, known-limitations register,
+and engineering handover as the Pyrnova documentation foundation. The 23 new files and seven updated
+files are accepted. The five ADRs are descriptive records of implemented rationale, not new governing
+authority. No existing history was deleted or deprecated, and no further broad DOCS-001 architecture or
+strategy work is required.
+
+Acceptance does not authorize integration or establish production readiness, Customer #1 operational
+GO, security certification, operational acceptance, Live Ops closure, a successful soak, or PostgreSQL
+production readiness. Security and operational limitations remain current-state truth unless later
+repository evidence supersedes them.
 
 ## Safety and scope
 
@@ -100,9 +115,12 @@ description; `docs/architecture/README.md` remains the authority/doctrine index.
 
 After this foundation, a senior engineer can locate architecture, run local tests, find code owners by
 module, understand global/customer boundaries, trace a source through archival and projections, add a
-source against a checklist, and identify production gaps. The test is conditionally passed because a
-real clean-machine setup, production deployment, PostgreSQL integration, restore drill, and engineer
-walkthrough were not performed in DOCS-001.
+source against a checklist, and identify production gaps. The documentation foundation is accepted and
+closed. An unfamiliar-senior-engineer clean-machine walkthrough remains an execution-validation proof
+condition, not an unresolved documentation-strategy decision. Record time to productive understanding,
+confusion, missing prerequisites, inaccurate documentation, undocumented founder knowledge, and failed
+steps. Material defects should become bounded documentation fixes; they do not automatically reopen
+DOCS-001 strategy.
 
 ## Validation evidence
 
@@ -118,15 +136,23 @@ At `docs-001-documentation-foundation` before commit on 2026-09-12:
 - skips were explicit environment/evidence boundaries: two require the gitignored real OFAC archive and
   one requires a loopback socket bind that this execution environment denied.
 
-This is automated repository evidence, not browser, live-provider, deployed-runtime, clean-machine, or
-owner acceptance.
+This is commit-specific automated evidence for the DOCS-001 worktree and its branch/base state. It does
+not supersede the newer isolated repository inspection recorded by the owner as **617 passed, 0 failed,
+3 skipped**. The difference is not classified as a regression without comparison of the exact commits.
+Repository-wide verification truth may be updated only after authority/history reconciliation,
+DOCS-001 integration, and a complete suite run on the resulting canonical `main` commit. Neither result
+is browser, live-provider, deployed-runtime, or clean-machine evidence.
 
 ## Remaining documentation debt
 
-- **P0:** authority owner reconciles divergent documentation tips and stale `02-EXECUTION.md`/
+- **P0 — REPOSITORY HISTORY / AUTHORITY:** authority owner reconciles divergent documentation tips and stale `02-EXECUTION.md`/
   `05-BACKLOG.md` status before merging DOCS-001.
-- **P0:** validate/fix `db/schema.sql` as an executable migration artifact before claiming PostgreSQL
-  readiness; the current file contains a duplicate `reason` column in `join_review`.
+- **P0 — SCHEMA CORRECTNESS / VERIFICATION:** locate the apparent duplicate `reason` column in
+  `join_review`; determine whether it is real, dead text, generated output, unreachable code, or an
+  executable defect; validate parsing/application through the intended PostgreSQL path; determine
+  whether any persisted environment is affected; add or correct automated coverage where appropriate;
+  and document the verified result. A schema that cannot be applied or validated cleanly is a readiness
+  blocker. DOCS-001 does not implement the fix.
 - **P1:** create tested migrations and a runtime PostgreSQL repository adapter, then update storage and
   recovery documentation.
 - **P1:** perform a clean-machine onboarding exercise and a controlled restore drill; record dated proof.
@@ -139,3 +165,14 @@ owner acceptance.
 
 None. DOCS-001 changes Markdown and explanatory comments in `.env.example` only. It does not modify
 product code, schema, tests, corpora, runtime state, source state, credentials, or existing worktrees.
+
+## Integration status
+
+Repository integration remains blocked. Do not merge or cherry-pick commit `69930d8` until the existing
+authority/history reconciliation is complete. Preserve unfinished Claude state, fetch origin, reconcile
+authority history, correct the hierarchy where required, verify and push the reconciliation, integrate
+the already-approved Phase 1.5 replay evidence in its authorized order, and then integrate DOCS-001
+semantically rather than by wholesale overwrite. Run complete tests and documentation validation,
+inspect the final diff, and push only after successful verification.
+
+**DOCS-001 FOUNDATION — OWNER ACCEPTED / CLOSED**
