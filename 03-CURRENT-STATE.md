@@ -182,7 +182,13 @@ preflight, real processing, and unchanged fan-out pass. Configuration/criteria a
 `docs/operations/PHASE1_SOAK_UNBLOCK.md`; actual runtime start/status are authoritative in gitignored
 `var/phase1_soak/evidence/manifest.json` and `status.json`.
 
-Operational acceptance remains pending the literal seven-calendar-day/five-business-day evidence window.
+The real foreground cycle acquired 14 USAspending records and 100 SAM records, processed/fanned out
+idempotently, but the source ledger incorrectly reported zero returned rows because the harness omitted
+its source record counter. Independent evidence verification therefore blocks launchd activation and
+official soak start. The original ledger is preserved; no official manifest/service exists. Details and
+the minimum counter-wiring correction are recorded in `docs/operations/PHASE1_SOAK_UNBLOCK.md`.
+
+Operational acceptance remains blocked before start and requires the literal seven-calendar-day/five-business-day evidence window.
 No Customer #1 GO / NO-GO or commercial-readiness conclusion is established by this test Lens.
 
 ## Next decision

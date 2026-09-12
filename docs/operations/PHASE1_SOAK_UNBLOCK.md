@@ -103,3 +103,36 @@ Service rollback is `launchctl bootout` of the exact installed service, preservi
 evidence. Configuration correction uses append-only profile versions/watch retirement, never JSONL
 rewrites. No irreversible migration or product-scoring/replay change occurs here. A code rollback before
 acceptance requires a newly pinned verified commit; during acceptance it restarts the full window.
+
+## Foreground real cycle — independent evidence gate blocked
+
+The plan pinned to `4b791045f82ae12955b1715c2e828620db15ce61` passed preflight at
+`2026-09-12T19:27:56.800774+00:00`, with one persisted six-object Lens, both credentials/source paths,
+and a clean tracked tree. The single foreground cycle `cycle_ad674920546a4709f84c` began at
+`2026-09-12T19:28:14.725629+00:00` and completed at `2026-09-12T19:31:16.405801+00:00`.
+
+| Source | Actual archived rows | Ledger rows | SHA-256 |
+|---|---:|---:|---|
+| USAspending | 14 | 0 (incorrect) | `df603dca8d27bbae28bf83d33117c6a43d74ea2614c80321ff366ac7834010de` |
+| SAM | 100 | 0 (incorrect) | `c84b27447a621078093ae0675ec6fd517955b16764d91d0b201322bac8636ce6` |
+
+Both hashes independently verified. One call per source was made, no retry/throttle/error occurred, both
+sources were HEALTHY/CURRENT, pending-processing markers cleared, and checkpoints advanced to the cycle
+ID. The source ledger's count discrepancy is not a zero-result provider response.
+
+The pipeline evaluated 26 candidates: 24 REJECT, one WATCH, one STRIKE. Fan-out inserted one relevant
+watched-contract Material Change (`W9126024F5010`), suppressed 28 other global items, and failed zero
+items. Immediate unchanged fan-out inserted/updated zero and suppressed one duplicate. These selective
+results are operational test evidence only, not commercial value or willingness-to-pay proof.
+
+The automatic foreground result returned `ok=true`, but independent artifact inspection fails the overall
+pre-soak evidence gate: the harness did not supply `LiveRunner.record_counter`, so `_null_counter` reported
+zero for non-empty real data. This is an acceptance-critical operational-evidence defect. The original
+foreground ledger/result is preserved unchanged; `pre_soak_gate_decision.json` records the negative gate.
+No metrics/checkpoints/output were manually repaired, no second provider request was issued, and no
+post-cycle product fix was applied. A minimal counter-wiring correction plus non-empty real-artifact
+regression is required before a new verified start gate, respecting retained evidence and cadence/budgets.
+
+**SOAK BLOCKED.** `launchctl print gui/501/com.pyrnova.live-ops` confirmed no such service. No plist was
+installed/activated and `manifest.json` does not exist. The deployment-checklist pre-deploy evidence gate
+held activation. Operational acceptance is blocked before start; no official soak timestamp exists.
