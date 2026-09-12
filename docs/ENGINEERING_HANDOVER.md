@@ -77,12 +77,13 @@ navigation without changing scoring, source activation, or customer behavior.
 
 ## Current known traps
 
-- The canonical repository may be divergent from `origin/main`; inspect, do not assume or auto-reconcile.
+- Inspect canonical `main` against `origin/main`; do not assume a remembered branch state remains current.
 - `02-EXECUTION.md` and `05-BACKLOG.md` contain stale internal status text. Use the full authority order and
   stop on a genuine unresolved conflict.
 - `capture-radar --live` is the original direct manual path, not the governed M12/M13 scheduler path.
 - `PYRNOVA_DATABASE_URL` is configuration only; no runtime PostgreSQL repository uses it.
-- `db/schema.sql` is not tested as a migration and contains a duplicate `reason` column.
+- `db/schema.sql` is not tested as a migration. REPO-RECONCILE-001 found no duplicate `reason` column,
+  but clean PostgreSQL apply/upgrade validation remains unperformed.
 - The default server may fall back to tracked demo intelligence/customers on empty local state.
 - Source registry connectivity/reliability text is dated; do not present it as current without a new run.
 - Test skips can hide real archive/socket/browser/deployment coverage.

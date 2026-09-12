@@ -87,8 +87,9 @@ availability, deployed operation, or future performance.
 
 ## Phase 1.5 industrial replay research
 
-The separate `phase1.5-replay-evidence` branch contains `industrial_replay_corpus_v1` research. Its own
-status is evaluation evidence ready with production implementation locked. The fixture validates source
+The integrated `docs/replay/PHASE1_5_INDUSTRIAL_REPLAY_EVIDENCE.md` and
+`examples/replay/industrial_phase1_5/` paths contain `industrial_replay_corpus_v1` research. Their status
+is evaluation evidence ready with production implementation locked. The fixture validates source
 references, cutoffs, frozen categorical calls, outcomes, facility identities, rights fields, hashes of
 retained paraphrased spans, and negative controls. Its test intentionally does not import production
 pipeline/scoring modules.
@@ -102,7 +103,7 @@ Therefore, Phase 1.5 does **not** currently establish:
 - an industrial outcome vocabulary or production replay runner;
 - customer-facing industrial behavior.
 
-Do not merge that branch or describe it as production implementation without separate execution authority.
+Do not describe or promote this evidence as production implementation without separate execution authority.
 
 ## Determinism boundary
 

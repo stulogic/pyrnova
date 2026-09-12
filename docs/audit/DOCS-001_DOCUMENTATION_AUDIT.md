@@ -145,14 +145,16 @@ is browser, live-provider, deployed-runtime, or clean-machine evidence.
 
 ## Remaining documentation debt
 
-- **P0 — REPOSITORY HISTORY / AUTHORITY:** authority owner reconciles divergent documentation tips and stale `02-EXECUTION.md`/
-  `05-BACKLOG.md` status before merging DOCS-001.
-- **P0 — SCHEMA CORRECTNESS / VERIFICATION:** locate the apparent duplicate `reason` column in
-  `join_review`; determine whether it is real, dead text, generated output, unreachable code, or an
-  executable defect; validate parsing/application through the intended PostgreSQL path; determine
-  whether any persisted environment is affected; add or correct automated coverage where appropriate;
-  and document the verified result. A schema that cannot be applied or validated cleanly is a readiness
-  blocker. DOCS-001 does not implement the fix.
+- **RESOLVED 2026-09-12 — REPOSITORY HISTORY / AUTHORITY:** REPO-RECONCILE-001 preserved the local
+  cross-phase authority and origin Phase One Constitution/Notion work, reconciled their hierarchy by
+  scope in D-063, and integrated replay evidence before DOCS-001.
+- **RESOLVED — NO EXECUTABLE DEFECT 2026-09-12 — SCHEMA `reason` REPORT:** `join_review` has exactly one
+  `reason` column. All six Git revisions containing `join_review` also have exactly one; a structural
+  scan found no duplicate column names across the current schema's 33 `CREATE TABLE` blocks. The audit
+  appears to have mistaken adjacent `reason` fields in separate `review` and `join_review` tables for a
+  duplicate. No schema or runtime correction was required. No runtime PostgreSQL adapter or known
+  persisted PostgreSQL environment is affected. A real PostgreSQL server/client was unavailable, so
+  clean apply/upgrade validation remains a PostgreSQL-activation gate rather than evidence supplied here.
 - **P1:** create tested migrations and a runtime PostgreSQL repository adapter, then update storage and
   recovery documentation.
 - **P1:** perform a clean-machine onboarding exercise and a controlled restore drill; record dated proof.
@@ -168,11 +170,11 @@ product code, schema, tests, corpora, runtime state, source state, credentials, 
 
 ## Integration status
 
-Repository integration remains blocked. Do not merge or cherry-pick commit `69930d8` until the existing
-authority/history reconciliation is complete. Preserve unfinished Claude state, fetch origin, reconcile
-authority history, correct the hierarchy where required, verify and push the reconciliation, integrate
-the already-approved Phase 1.5 replay evidence in its authorized order, and then integrate DOCS-001
-semantically rather than by wholesale overwrite. Run complete tests and documentation validation,
-inspect the final diff, and push only after successful verification.
+Repository integration completed on canonical `main` after the authority/history reconciliation and
+Phase 1.5 replay-evidence integration. Source commit `69930d8` became `d202db8` after semantic resolution
+of the root README and authority index; owner-closure commit `ead6e80` became `a0f02c0`. The accepted
+documentation architecture and closure provenance are preserved without overwriting newer authority.
+Final repository-wide verification belongs to REPO-RECONCILE-001 evidence and does not turn this dated
+audit into operational, deployed-runtime, browser, clean-machine, or owner-product acceptance.
 
 **DOCS-001 FOUNDATION — OWNER ACCEPTED / CLOSED**

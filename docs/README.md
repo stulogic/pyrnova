@@ -50,11 +50,11 @@ Read in this order:
 
 The exact precedence is in [`../00-INDEX.md`](../00-INDEX.md). In summary:
 
-1. current product and strategic authority;
-2. current execution work order;
-3. durable decisions;
-4. current state;
-5. architectural authority and specifications;
+1. owner decisions and the Phase One Constitution;
+2. cross-phase product and commercial authority;
+3. Phase 1 product and implementation authority within Phase 1 scope;
+4. execution, state, milestone, and evidence records;
+5. architectural authority;
 6. roadmap;
 7. research;
 8. historical and superseded records.

@@ -123,7 +123,7 @@ valuable labeled evidence, but it does not silently modify policy weights.
 - Some mechanism families exist but have limited or no reviewed cases.
 - Evidence independence is conservative source counting, not first-class lineage.
 - Materiality bands and Phase 1 relevance are federal-procurement oriented.
-- `industrial_v1` is research terminology on a separate branch, not a current production policy.
+- `industrial_v1` is integrated research/evaluation terminology, not a current production policy.
 - There is no probabilistic calibration service, model registry, or automated policy promotion.
 
 Policy changes require explicit authority, a new version identifier, full applicable corpus comparison,

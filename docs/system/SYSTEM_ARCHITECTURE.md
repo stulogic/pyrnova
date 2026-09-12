@@ -12,8 +12,8 @@ runtime in this baseline does not use a PostgreSQL repository adapter.
 
 The current Phase 1 application is customer-specific federal-contractor Material Changes. Capture Radar,
 cross-source reasoning, consequence/fit, threat propagation, investigation, and replay are capabilities
-inside the same system. Phase 1.5 industrial replay is separate research, not an implemented production
-plane.
+inside the same system. Integrated Phase 1.5 industrial replay remains research/evaluation evidence,
+not an implemented production plane.
 
 ## Planes
 

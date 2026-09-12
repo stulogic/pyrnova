@@ -19,7 +19,7 @@ TLS, backups/restores, monitoring, and soak evidence.
 
 | Review area | Primary evidence | What it establishes | Important limit |
 |---|---|---|---|
-| Product/roadmap authority | `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`, `01-PROJECT-AUTHORITY.md`, `02-EXECUTION.md` | Product boundary and implementation authorization rules | Current branch divergence/status text must be reconciled by owner |
+| Product/roadmap authority | `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`, `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`, `01-PROJECT-AUTHORITY.md`, `02-EXECUTION.md` | Cross-phase and Phase 1 boundaries plus implementation authorization rules | Authority-history divergence was scope-reconciled in D-063; current branch and status must still be verified for each review |
 | Architecture | `docs/system/SYSTEM_ARCHITECTURE.md`, `docs/architecture/`, `docs/adr/`, code | Planes, state owners, decisions, tradeoffs | One process/package today; deployment architecture not implemented |
 | Domain model | `docs/system/DOMAIN_MODEL.md`, `pyrnova/models.py`, `db/schema.sql` | Identity, time, evidence, lifecycle, tenant semantics | Python/JSONL and schema are not a fully verified one-to-one persistence layer |
 | Code quality | engineering doctrine, module docstrings/types/tests, `docs/development/` | Explicit patterns and safe-change guidance | No automated lint/type/complexity/coverage gate |
