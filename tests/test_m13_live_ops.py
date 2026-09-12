@@ -205,6 +205,34 @@ def test_http_fetcher_rejects_request_without_url():
         __import__("pyrnova.live_ops", fromlist=["http_fetcher"]).http_fetcher({"method": "GET"})
 
 
+def test_http_fetcher_preserves_provider_retry_after(monkeypatch):
+    monkeypatch.setattr(
+        "pyrnova.live_ops.http.get_bytes_response",
+        lambda *a, **k: (429, b"", {"Retry-After": "90"}),
+    )
+    with pytest.raises(LiveFetchError) as caught:
+        __import__("pyrnova.live_ops", fromlist=["http_fetcher"]).http_fetcher(
+            {"method": "GET", "url": "https://provider.example/data"}
+        )
+    assert caught.value.failure_category == "throttle"
+    assert caught.value.retry_after_seconds == 90
+
+
+def test_scheduler_retry_uses_provider_retry_after(tmp_path):
+    sched = _sched(tmp_path)
+
+    def throttled(_request):
+        raise LiveFetchError("HTTP 429", status=429, failure_category="throttle",
+                             retry_after_seconds=90)
+
+    result = sched.poll(
+        SID, request=usaspending_request(_payload("a")), mode="LIVE_SAFE",
+        max_calls=5, fetcher=throttled, now=1000,
+    )
+    assert result.retry["provider_retry_after_seconds"] == 90
+    assert sched.next_poll_due(SID) == 1090
+
+
 def test_usaspending_request_targets_the_public_search_endpoint():
     req = usaspending_request(_payload("a"))
     assert req["method"] == "POST"

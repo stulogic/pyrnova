@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -89,6 +90,43 @@ class SourceStateStore:
     def set_checkpoint(self, source_id: str, cursor: Optional[str]) -> None:
         doc = self.load(source_id)
         doc["checkpoint"] = cursor
+        self.save(source_id, doc)
+
+    # ------------------------------------------------------------------ operational history
+
+    def record_operation(
+        self,
+        source_id: str,
+        *,
+        action: str,
+        at: Optional[str] = None,
+        error: Optional[str] = None,
+        network_attempted: bool = False,
+        acquisition_succeeded: bool = False,
+    ) -> None:
+        """Persist the latest scheduler-cycle truth used by operator health views.
+
+        This is deliberately a compact latest-state record, not a second event store. The soak
+        harness owns the append-only per-cycle evidence ledger; source state owns only the values
+        required to recover and answer whether a source is current, degraded, or retrying.
+        """
+        stamp = at or datetime.now(timezone.utc).isoformat()
+        doc = self.load(source_id)
+        operation = dict(doc.get("operation") or {})
+        operation["last_cycle_at"] = stamp
+        operation["last_action"] = action
+        if network_attempted:
+            operation["last_network_attempt_at"] = stamp
+        if acquisition_succeeded:
+            operation["last_successful_acquisition_at"] = stamp
+            operation["consecutive_failed_cycles"] = 0
+            operation["last_error"] = None
+        elif error:
+            operation["consecutive_failed_cycles"] = int(
+                operation.get("consecutive_failed_cycles") or 0
+            ) + 1
+            operation["last_error"] = str(error)
+        doc["operation"] = operation
         self.save(source_id, doc)
 
     # ------------------------------------------------------------------ request dedupe / cache index

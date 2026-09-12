@@ -118,6 +118,7 @@ def run(
     source_observations: Optional[list[dict]] = None,
     archive: EvidenceArchive,
     store: StateStore,
+    customer_id: Optional[str] = None,
     as_of: date,
     window_days: int = 540,
     relevance_threshold: float = 0.3,
@@ -215,17 +216,20 @@ def run(
     scoreboard.record(store, "candidate_opportunities", len(candidates), profile=profile.name)
     scoreboard.record(store, "duplicate_opportunities", duplicate_count, profile=profile.name)
 
-    run_basis = json.dumps(
-        {
-            "profile": profile.name,
-            "as_of": as_of.isoformat(),
-            "replay_as_of": replay_as_of,
-            "awards": sorted(str(a.get("_raw_ref") or "") for a in awards),
-            "notices": sorted(str(n.get("_raw_ref") or "") for n in notices),
-            "precursors": sorted(str(p.get("_raw_ref") or "") for p in precursors),
-        },
-        sort_keys=True,
-    )
+    run_identity = {
+        "profile": profile.name,
+        "as_of": as_of.isoformat(),
+        "replay_as_of": replay_as_of,
+        "awards": sorted(str(a.get("_raw_ref") or "") for a in awards),
+        "notices": sorted(str(n.get("_raw_ref") or "") for n in notices),
+        "precursors": sorted(str(p.get("_raw_ref") or "") for p in precursors),
+    }
+    # Preserve every legacy run id unless an unattended/customer-scoped caller explicitly supplies the
+    # stable tenant key. The new key then prevents two tenants with the same display profile from sharing
+    # a run identity.
+    if customer_id is not None:
+        run_identity["customer_id"] = customer_id
+    run_basis = json.dumps(run_identity, sort_keys=True)
     report = Report(
         profile_name=profile.name,
         as_of=as_of,
@@ -235,7 +239,9 @@ def run(
     lead_times: list[int] = []
 
     for opp in candidates:
-        opp.customer_id = profile.name
+        # The display name is not a tenant key. Existing callers retain the legacy fallback, while
+        # unattended/customer-scoped operation must pass the persisted customer id explicitly.
+        opp.customer_id = customer_id or profile.name
         # Primary source event. Raw source records, not derived summaries, are archived.
         is_award = opp.catalyst.kind == "recompete_expiry"
         primary = (awards if is_award else notices)

@@ -23,8 +23,9 @@ def _session():
     return requests.Session()
 
 
-def post_json(url: str, payload: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT) -> tuple[int, bytes, Any]:
-    """POST json, return (status_code, raw_bytes, parsed_json_or_None). Raw bytes are what we archive."""
+def post_json_response(url: str, payload: dict, *, headers: Optional[dict] = None,
+                       timeout: int = _TIMEOUT) -> tuple[int, bytes, Any, dict]:
+    """POST JSON and include response headers for transport policy such as Retry-After."""
     sess = _session()
     resp = sess.post(url, json=payload, headers=headers or {}, timeout=timeout)
     raw = resp.content
@@ -32,7 +33,13 @@ def post_json(url: str, payload: dict, *, headers: Optional[dict] = None, timeou
         parsed = json.loads(raw) if raw else None
     except json.JSONDecodeError:
         parsed = None
-    return resp.status_code, raw, parsed
+    return resp.status_code, raw, parsed, dict(resp.headers)
+
+
+def post_json(url: str, payload: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT) -> tuple[int, bytes, Any]:
+    """POST json, return (status_code, raw_bytes, parsed_json_or_None). Raw bytes are what we archive."""
+    status, raw, parsed, _ = post_json_response(url, payload, headers=headers, timeout=timeout)
+    return status, raw, parsed
 
 
 def get_json(url: str, params: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT) -> tuple[int, bytes, Any]:
@@ -52,3 +59,11 @@ def get_bytes(url: str, params: Optional[dict] = None, *, headers: Optional[dict
     sess = _session()
     resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
     return resp.status_code, resp.content
+
+
+def get_bytes_response(url: str, params: Optional[dict] = None, *, headers: Optional[dict] = None,
+                       timeout: int = _TIMEOUT) -> tuple[int, bytes, dict]:
+    """GET bytes and include response headers for transport policy such as Retry-After."""
+    sess = _session()
+    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+    return resp.status_code, resp.content, dict(resp.headers)

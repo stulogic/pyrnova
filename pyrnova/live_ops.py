@@ -21,6 +21,8 @@ effective mode is OFFLINE).
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
@@ -37,10 +39,27 @@ RecordCounter = Callable[[bytes], int]
 class LiveFetchError(RuntimeError):
     """A live retrieval returned a non-success status. Tagged so the scheduler records the right fault."""
 
-    def __init__(self, message: str, *, status: Optional[int] = None, failure_category: str = "service"):
+    def __init__(self, message: str, *, status: Optional[int] = None,
+                 failure_category: str = "service", retry_after_seconds: Optional[float] = None):
         super().__init__(message)
         self.status = status
         self.failure_category = failure_category
+        self.retry_after_seconds = retry_after_seconds
+
+
+def _retry_after_seconds(value: Optional[str]) -> Optional[float]:
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except ValueError:
+        try:
+            parsed = parsedate_to_datetime(value)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return max(0.0, (parsed - datetime.now(timezone.utc)).total_seconds())
+        except (TypeError, ValueError, OverflowError):
+            return None
 
 
 def http_fetcher(request: dict) -> bytes:
@@ -55,12 +74,17 @@ def http_fetcher(request: dict) -> bytes:
         raise LiveFetchError("request has no url", failure_category="terminal")
     headers = request.get("headers") or {}
     if method == "POST":
-        status, raw, _ = http.post_json(url, request.get("payload") or {}, headers=headers)
+        status, raw, _, response_headers = http.post_json_response(
+            url, request.get("payload") or {}, headers=headers
+        )
     else:
-        status, raw = http.get_bytes(url, request.get("params"), headers=headers)
+        status, raw, response_headers = http.get_bytes_response(
+            url, request.get("params"), headers=headers
+        )
     if status == 429:
         raise LiveFetchError(f"HTTP 429 throttled by provider for {url}", status=429,
-                             failure_category="throttle")
+                             failure_category="throttle",
+                             retry_after_seconds=_retry_after_seconds(response_headers.get("Retry-After")))
     if not 200 <= status < 300:
         raise LiveFetchError(f"HTTP {status} from {url}", status=status, failure_category="service")
     return raw

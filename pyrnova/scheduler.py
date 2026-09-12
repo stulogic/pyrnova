@@ -165,6 +165,10 @@ class SourceScheduler:
 
         ``None`` interval means 'no cadence configured' → cadence never defers (breaker may still)."""
         sched = self._schedule(source_id)
+        retry_at = sched.get("retry_at")
+        if isinstance(retry_at, (int, float)):
+            breaker_due = self._breaker_next_poll(source_id)
+            return max(float(retry_at), breaker_due) if breaker_due is not None else float(retry_at)
         interval = sched.get("interval_seconds")
         last = sched.get("last_polled")
         cadence_due = (float(last) + float(interval)) if (
@@ -214,9 +218,11 @@ class SourceScheduler:
             params=request.get("params"), headers=request.get("headers"),
             payload=request.get("payload"))
         if self.is_paused(source_id):
-            return SourceJobResult(source_id, SKIPPED_PAUSED, eff_mode.value, fp,
-                                   reason=self._operator(source_id).get("paused_reason") or "operator paused",
-                                   checkpoint=self.state.get_checkpoint(source_id))
+            result = SourceJobResult(source_id, SKIPPED_PAUSED, eff_mode.value, fp,
+                                     reason=self._operator(source_id).get("paused_reason") or "operator paused",
+                                     checkpoint=self.state.get_checkpoint(source_id))
+            self._record_poll_result(source_id, result, now=now)
+            return result
         # The cadence gate only governs requests that would actually reach the network. A request already
         # in the dedupe/cache index (served from archive, no budget) is not deferred by cadence — nor is
         # an OFFLINE replay of supplied fixture bytes. Only a genuine live call obeys the poll window.
@@ -225,15 +231,45 @@ class SourceScheduler:
             or eff_mode == SourceMode.OFFLINE
         )
         if would_hit_network and not self.due(source_id, now=now):
-            return SourceJobResult(source_id, SKIPPED_NOT_DUE, eff_mode.value, fp,
-                                   reason=f"not due until {self.next_poll_at(source_id)}",
-                                   checkpoint=self.state.get_checkpoint(source_id))
+            result = SourceJobResult(source_id, SKIPPED_NOT_DUE, eff_mode.value, fp,
+                                     reason=f"not due until {self.next_poll_at(source_id)}",
+                                     checkpoint=self.state.get_checkpoint(source_id))
+            self._record_poll_result(source_id, result, now=now)
+            return result
         result = self.run_job(source_id, request=request, now=now, **run_job_kwargs)
         # Advance the cadence clock on any real attempt (live fetch, offline replay, or error), but not
         # on a pure cache hit — a dedupe hit did not consume a poll window.
         if result.action != CACHE_HIT:
             self.mark_polled(source_id, now=now)
+        self._record_poll_result(source_id, result, now=now)
         return result
+
+    def _record_poll_result(self, source_id: str, result: SourceJobResult,
+                            *, now: Optional[float] = None) -> None:
+        """Persist retry timing and the latest explicit operational state for one poll."""
+        from datetime import datetime, timezone
+
+        stamp = datetime.fromtimestamp(
+            float(now) if now is not None else _epoch_now(), tz=timezone.utc
+        ).isoformat()
+        sched = self._schedule(source_id)
+        if result.action == ERROR and result.retry and result.retry.get("retryable"):
+            sched["retry_at"] = (float(now) if now is not None else _epoch_now()) + float(
+                result.retry.get("delay_seconds") or 0
+            )
+        elif result.action == LIVE_FETCH:
+            sched.pop("retry_at", None)
+        doc = self.state.load(source_id)
+        doc["schedule"] = sched
+        self.state.save(source_id, doc)
+        self.state.record_operation(
+            source_id,
+            action=result.action,
+            at=stamp,
+            error=result.error,
+            network_attempted=result.action in {LIVE_FETCH, ERROR},
+            acquisition_succeeded=result.action == LIVE_FETCH,
+        )
 
     # ------------------------------------------------------------------ control hydration
 
@@ -349,7 +385,10 @@ class SourceScheduler:
             # so throttle/quota metrics reflect reality; anything untagged is a generic "service" fault.
             category = getattr(exc, "failure_category", "service") or "service"
             control.record_failure(category, now=now)
-            retry = control.retry_metadata(control.breaker.consecutive_failures, reason=str(exc))
+            retry = control.retry_metadata(
+                control.breaker.consecutive_failures, reason=str(exc),
+                retry_after_seconds=getattr(exc, "retry_after_seconds", None),
+            )
             self._persist(source_id, control)
             return SourceJobResult(source_id, ERROR, eff_mode.value, fp, reason="fetcher raised",
                                    retry=_retry_dict(retry), error=str(exc),
@@ -408,6 +447,7 @@ class SourceScheduler:
             # without the caller's max_calls, so the snapshot's budget_limit would otherwise be null; the
             # persisted budget (within the active epoch) is the authoritative operator view.
             budget = doc.get("budget") or {}
+            operation = doc.get("operation") or {}
             budget_limit = snap.get("budget_limit")
             budget_remaining = snap.get("budget_remaining")
             # The durable call count is epoch-independent operator truth. A health view that does not know
@@ -421,6 +461,30 @@ class SourceScheduler:
                 budget_limit = budget["max_calls"]
                 made = budget.get("calls_made") if isinstance(budget.get("calls_made"), int) else 0
                 budget_remaining = max(0, budget_limit - made)
+            interval = self.get_poll_interval(sid)
+            freshness = "UNKNOWN"
+            last_success = operation.get("last_successful_acquisition_at")
+            if last_success and interval is not None:
+                from datetime import datetime, timezone
+                try:
+                    age = max(0.0, datetime.now(timezone.utc).timestamp() -
+                              datetime.fromisoformat(str(last_success).replace("Z", "+00:00")).timestamp())
+                    freshness = "CURRENT" if age <= max(interval * 2, interval + 300) else "STALE"
+                except ValueError:
+                    freshness = "UNKNOWN"
+            elif last_success:
+                freshness = "UNKNOWN"
+            failed_cycles = int(operation.get("consecutive_failed_cycles") or 0)
+            if bool(operator.get("paused")):
+                operational_state = "PAUSED"
+            elif snap.get("circuit_state") == CircuitState.OPEN.value or failed_cycles >= 3:
+                operational_state = "FAILED"
+            elif operation.get("last_error") or freshness == "STALE":
+                operational_state = "DEGRADED"
+            elif last_success:
+                operational_state = "HEALTHY"
+            else:
+                operational_state = "UNKNOWN"
             rows.append({
                 "source_id": sid,
                 "name": spec.name if spec else sid,
@@ -440,9 +504,17 @@ class SourceScheduler:
                 "terminal_errors": snap.get("terminal_errors"),
                 "last_successful_call": snap.get("last_successful_call"),
                 "last_detected_change": snap.get("last_detected_change"),
+                "last_cycle_at": operation.get("last_cycle_at"),
+                "last_network_attempt_at": operation.get("last_network_attempt_at"),
+                "last_successful_acquisition_at": last_success,
+                "last_action": operation.get("last_action"),
+                "last_error": operation.get("last_error"),
+                "consecutive_failed_cycles": failed_cycles,
+                "operational_state": operational_state,
+                "freshness_state": freshness,
                 "checkpoint": doc.get("checkpoint"),
                 "indexed_requests": len(doc.get("requests") or {}),
-                "poll_interval_seconds": self.get_poll_interval(sid),
+                "poll_interval_seconds": interval,
                 "next_poll_at": self.next_poll_at(sid),
                 "due": self.due(sid),
             })
