@@ -55,12 +55,14 @@ entity-context families. `sbir` is the earliest capability/commercialization pre
 
 ## Rights / licensing
 
-All registered sources are US government works (public domain data). API access is governed by each
-provider's terms: SAM.gov (authenticated, quota-limited — never rotate keys), SEC EDGAR (fair-access,
-descriptive User-Agent required), SBIR.gov + Federal Register + Grants.gov (keyless public APIs), and
-OFAC (public bulk downloads; used only as intelligence evidence, not as an authoritative compliance
-screening tool). Exact current OFAC download host and SBIR.gov availability are marked `unverified`
-pending a single connectivity check; the SDN.CSV fixed-field schema and SBIR JSON schema are stable.
+The registry's `rights_note`, provider terms, and the source-rights review are the operational control;
+government availability alone is not a blanket permission for every use or redistribution. Current
+adapter assumptions include SAM.gov authenticated quota limits (never rotate keys), SEC EDGAR fair-
+access behavior and descriptive User-Agent, keyless endpoints for SBIR.gov, Federal Register, and
+Grants.gov, and OFAC bulk downloads used as intelligence evidence rather than an authoritative
+compliance screen. Connectivity and availability statements above are dated observations, not a
+current guarantee. DOCS-001 performed no fresh provider probes; the machine-readable registry remains
+authoritative for the recorded status, reliability, and rights note.
 
 ## Governance
 

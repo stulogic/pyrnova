@@ -2,13 +2,15 @@
 
 **Decision-grade external intelligence for government contractors.**
 
-Pyrnova helps federal contractors identify which external developments matter, understand why they matter, verify the evidence, and decide what to investigate or do next.
+Pyrnova helps federal contractors identify which external developments matter, understand why they
+matter, verify the evidence, and decide what to investigate or do next. Its current Phase 1 application
+turns attributable external change into customer-specific Material Changes: opportunity, threat, or
+monitoring items that retain evidence, uncertainty, temporal truth, review state, and later outcomes.
 
-Phase 1 is organized around **Material Changes**. It is not CRM, generic procurement search, GovWin with AI, generic company research, generic AI chat/research, or a dashboard-builder product.
-
-The overarching cross-phase product and commercial authority is
-`docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`. The sole product and implementation authority within
-Phase 1 scope is `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
+The current customer product is the Material Changes feed with company/program investigation and
+deterministic search. Capture Radar is the opportunity-detection kernel within that product, not a
+separate product. Broader industrial and cross-sector architecture is direction or research unless the
+current execution authority explicitly opens it.
 
 ## Current Phase 1 state
 
@@ -24,118 +26,117 @@ Broad Phase 1 research and broad product expansion are not currently authorized.
 
 ## Start here
 
-- **`AGENTS.md`**: anti-drift rules, canonical tree, authority hierarchy, start/end checks.
-- **`00-INDEX.md`**: canonical navigation and authority precedence.
-- `01-PROJECT-AUTHORITY.md`: mission, boundaries, and locked doctrine.
-- `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`: overarching cross-phase product and commercial authority.
-- `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`: sole product and implementation authority within Phase 1 scope.
-- `03-CURRENT-STATE.md`: current implementation and readiness state.
-- `02-EXECUTION.md`: the single authorized workstream and acceptance gates.
-- `docs/architecture/`: engineering and infrastructure doctrine.
-- `docs/specs/`: detailed implementation and acceptance specifications.
-- `docs/research/00-RESEARCH-INDEX.md`: non-authoritative research provenance and research-to-decision traceability.
+| Reader | First path |
+|---|---|
+| Founder or product owner | [`docs/README.md`](docs/README.md) → governing authority |
+| New engineer | [`docs/ENGINEERING_HANDOVER.md`](docs/ENGINEERING_HANDOVER.md) → [`docs/development/ENGINEERING_GUIDE.md`](docs/development/ENGINEERING_GUIDE.md) |
+| Operator | [`docs/operations/OPERATIONS_RUNBOOK.md`](docs/operations/OPERATIONS_RUNBOOK.md) |
+| Technical reviewer | [`docs/TECHNICAL_DILIGENCE.md`](docs/TECHNICAL_DILIGENCE.md) |
+| Agent | [`AGENTS.md`](AGENTS.md) first, then [`00-INDEX.md`](00-INDEX.md) |
 
-## Phase 1 intelligence lineage
+Owner decisions and the locked Phase One Constitution are highest authority.
+[`docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`](docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md) governs
+cross-phase product and commercial strategy. [`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`](docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md)
+is sole product and implementation authority within Phase 1 scope; it may not redefine the cross-phase
+authority outside that scope. Only [`02-EXECUTION.md`](02-EXECUTION.md) authorizes active implementation.
+Descriptive documentation in
+`docs/system/`, `docs/development/`, and `docs/operations/` explains the repository; it does not create
+product authority.
+
+## Architecture at a glance
 
 ```text
-SOURCE
--> EVIDENCE ARTIFACT
--> ASSERTION
--> ASSESSMENT
--> CUSTOMER CONSEQUENCE
--> MATERIAL CHANGE
--> INVESTIGATION / REVIEW
--> ACTION
--> OUTCOME
+external sources
+      │
+      ▼
+OBSERVE → ARCHIVE → NORMALIZE → RESOLVE → DETECT / CONNECT
+      │                                      │
+      │                                      ▼
+      └──────────── provenance ───────► ASSESS / MATCH
+                                             │
+                                             ▼
+                                   REVIEW → MATERIAL CHANGES
+                                             │
+                                             ▼
+                                      OUTCOME / REPLAY
 ```
 
-Canonical intelligence truth remains separate from presentation. Raw evidence retains provenance. Unknown, unresolved, stale, degraded, and conflicting states remain explicit rather than being converted into false certainty.
+- **Evidence plane:** source registry, governed retrieval, immutable content-addressed archive, source
+  state, and provenance.
+- **Intelligence plane:** normalized events/entities/relationships, opportunity and threat engines,
+  consequence and fit logic, review, and outcomes.
+- **Compute plane:** deterministic pipeline, source scheduler/live driver, fan-out, replay, and metrics.
+- **Delivery plane:** append-only local state, customer-scoped Material Change projections, HTTP API,
+  customer views, internal Operator Console, CLI, and Markdown briefs.
 
-## Customer-facing product
+See [`docs/system/SYSTEM_ARCHITECTURE.md`](docs/system/SYSTEM_ARCHITECTURE.md) and
+[`docs/REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md) for implementation paths.
 
-Run the current customer-facing application locally with:
+## Local setup
+
+Requires Python 3.10 or newer.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+cp .env.example .env
+python -m pytest
+```
+
+The default development path is local and offline-capable. Runtime state is append-only JSONL under
+`var/state`; raw evidence defaults to `var/archive`; generated briefs go to `out`. These paths and `.env`
+are ignored by Git.
+
+Run the deterministic fixture path:
+
+```bash
+python -m pyrnova.cli capture-radar \
+  --profile examples/profiles/acme_c4isr.json \
+  --fixtures
+```
+
+Run the customer-facing product locally:
 
 ```bash
 python -m pyrnova.ops_server
 ```
 
-Material Changes is served at `/`. The local internal Operator Console is at `/console` where allowed by the access policy.
+Open `http://127.0.0.1:8765/` for Material Changes or `/console` for the local-only Operator Console.
+The server may seed tracked demonstration customers and use tracked demonstration intelligence when the
+configured local state is empty; this is demo behavior, not a production ingestion claim.
 
-Customer access and seed-free onboarding are implemented through the current customer/watch/credential tooling. See:
+Live retrieval is never required for ordinary development or tests. When explicitly authorized, see
+[`docs/specs/LIVE_RUN.md`](docs/specs/LIVE_RUN.md) and the stricter current operational contract in
+[`docs/operations/OPERATIONS_RUNBOOK.md`](docs/operations/OPERATIONS_RUNBOOK.md).
 
-- `docs/specs/M22A_MATERIAL_CHANGES.md`
-- `docs/specs/M22B_PERSISTED_CUSTOMER_LIFECYCLE.md`
-- `docs/specs/M22C_CUSTOMER_MATERIAL_CHANGE_STREAMS.md`
-- `docs/specs/M22D_INVESTIGATION_SEARCH.md`
-- `docs/specs/M22E_OPPORTUNITY_MATERIAL_CHANGES.md`
-- `docs/specs/M22F_MINIMAL_ACCESS_ONBOARDING.md`
-- `docs/OPERATOR_CONSOLE.md`
+## Major implementation areas
 
-## Live Operations
+| Area | Primary paths |
+|---|---|
+| Source registry and adapters | `pyrnova/sources/` |
+| Evidence archive and local state | `pyrnova/archive.py`, `pyrnova/state.py` |
+| Pipeline and opportunity detection | `pyrnova/pipeline.py`, `pyrnova/engines/` |
+| Events, relationships, consequences, fit | `pyrnova/models.py`, `pyrnova/chains.py`, `pyrnova/catalysts.py`, `pyrnova/fit.py` |
+| Threats and propagation | `pyrnova/threat.py`, `pyrnova/propagation.py`, `pyrnova/adverse_events.py` |
+| Customer relevance and Material Changes | `pyrnova/customers.py`, `pyrnova/material_changes.py`, `pyrnova/customer_material_changes.py` |
+| Search and investigation | `pyrnova/investigation.py` |
+| Access and delivery | `pyrnova/access.py`, `pyrnova/ops.py`, `pyrnova/ops_server.py`, `pyrnova/ops_web/` |
+| Replay, outcomes, and metrics | `pyrnova/replay.py`, `pyrnova/outcomes.py`, `pyrnova/metrics.py` |
+| Structured-store direction | `db/schema.sql` |
 
-The immediate engineering focus is not new product breadth. It is proving that Pyrnova can run continuously on enough real external intelligence to produce repeated customer-specific decision value.
+## Important boundaries
 
-Operating doctrine:
+- Canonical records are not presentation. Material Changes and investigation pages are derived read
+  projections over retained global and customer-scoped state.
+- Capture, verification, publication, customer review, and outcome are separate states.
+- Missing information remains unknown; absence is not converted to zero, loss, or certainty.
+- `scoring_v1` is the active Phase 1 policy. Challenger policies are evaluation-only.
+- Tenant isolation is implemented in the application layer. Database row-level security is not present.
+- Local JSONL is the active development store. PostgreSQL tables are a production mirror/direction;
+  no runtime PostgreSQL repository adapter is implemented in this baseline.
+- Phase 1.5 industrial replay evidence is integrated under `docs/replay/` and `examples/replay/`; it is
+  evaluation evidence, not production behavior or Phase 1.5 implementation authority.
 
-```text
-BULK FIRST
--> DELTA SECOND
--> TARGETED LIVE LAST
-
-ARCHIVE ONCE
--> REPLAY MANY
-```
-
-Live Ops closure has two separate gates:
-
-1. **ENGINEERING ACCEPTANCE**
-2. **OPERATIONAL SOAK ACCEPTANCE**
-
-The second gate requires **7 calendar days / 5 business days of unattended live operation**. Passing tests alone does not satisfy it.
-
-## Existing kernel and evidence lineage
-
-The original Capture Radar and Business Opportunity Pipeline work remains part of Pyrnova's implementation lineage. Existing deterministic engines, archived evidence, replay corpora, source controls, fit logic, opportunity/threat models, and earlier live-operation primitives remain valid where compatible with current authority.
-
-Historical kernel flow:
-
-```text
-OBSERVE -> ARCHIVE -> NORMALIZE -> RESOLVE -> DETECT -> MATCH -> REVIEW -> STRIKE -> OUTCOME
-```
-
-Do not mistake that historical implementation flow for the current Phase 1 category or customer-facing product definition.
-
-Current source work includes USAspending, SAM.gov, Federal Register, Grants.gov, SEC EDGAR, OFAC, selected official procurement forecasts, and other bounded adapters documented in the source manifest. Source inclusion does not itself authorize new product scope.
-
-## Quickstart
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# Existing deterministic Capture Radar path using live USAspending
-python -m pyrnova.cli capture-radar --profile examples/profiles/acme_c4isr.json --live
-
-# Fully offline deterministic fixture path
-python -m pyrnova.cli capture-radar --profile examples/profiles/acme_c4isr.json --fixtures
-
-pytest -q
-```
-
-The Capture Radar CLI remains useful engineering lineage and testable functionality. It is not a competing current product authority.
-
-## Design rules
-
-- Preserve deterministic identity, provenance, point-in-time truth, and replay.
-- Keep observed evidence, assertions, assessments, customer consequences, review state, and outcomes distinct.
-- Keep customer-specific relevance/private context separate from global intelligence truth.
-- AI is bounded and attributable. Model output is not authoritative fact merely because a model produced it.
-- No silent source failure or semantic fallback.
-- No broad Phase 1 expansion while Live Operations and Customer #1 readiness remain open.
-- New ideas default to **DOCUMENT -> ROADMAP -> DEFER** unless required for correctness, safety, architectural integrity, current acceptance, or valid Customer #1 measurement.
-
-## Repository authority
-
-The canonical local working tree is `/Users/stu/Documents/Pyrnova` on `main`; GitHub `origin/main` is repository authority. `/Users/stu/pyrnova` is not the authorized local tree.
-
-Historical execution authorities, old offers, old targets, and prior "next action" sections remain provenance only when stored under lower-authority historical locations. They do not override the current authority hierarchy.
+See [`docs/KNOWN_LIMITATIONS_AND_TECH_DEBT.md`](docs/KNOWN_LIMITATIONS_AND_TECH_DEBT.md) for the full
+evidenced register.

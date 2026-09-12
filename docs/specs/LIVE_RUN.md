@@ -2,6 +2,11 @@
 
 For an ordinary internet-connected machine. ~5 minutes. USAspending needs no key; SAM needs one key.
 
+> **Scope:** this is the manual, direct-live Capture Radar path. It is not the M12/M13 governed
+> `SourceScheduler`/`LiveRunner` path and is not an unattended production runbook. For source budgets,
+> cadence, breakers, recovery, and operational boundaries, use
+> [`../operations/OPERATIONS_RUNBOOK.md`](../operations/OPERATIONS_RUNBOOK.md).
+
 ## 1. Install
 The only runtime dependency is `requests`. You do **not** need to install the package itself —
 `python -m pyrnova.cli` runs from the repo root.

@@ -1,4 +1,10 @@
-# Pyrnova architecture map
+# Pyrnova architecture authority and map
+
+For the cross-cutting implementation description, read
+[`../system/SYSTEM_ARCHITECTURE.md`](../system/SYSTEM_ARCHITECTURE.md) and
+[`../system/DOMAIN_MODEL.md`](../system/DOMAIN_MODEL.md). This directory contains architectural
+authority and durable engineering doctrine. Descriptive system documents point back here; they do not
+supersede it. Materially important implemented choices are indexed in [`../adr/README.md`](../adr/README.md).
 
 The current package is intentionally compact. Conceptual boundaries exist without premature directory
 splitting:
