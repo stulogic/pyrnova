@@ -221,18 +221,27 @@ def build_prompt(ws):
     )
     lineage = _lineage_block(ws)
     footer = (
+        "# COMPLETION MARKER\n\n"
+        "Your FINAL response for this workstream MUST begin with exactly these "
+        "two lines, verbatim, as the very first characters, with no preamble "
+        "before them:\n\n"
+        "PYRNOVA WORKSTREAM COMPLETE\n"
+        "WORKSTREAM ID: " + ws["id"] + "\n\n"
+        "Immediately after those two lines, provide the HANDOVER DELTA below. "
+        "The full required final structure is:\n\n"
+        "PYRNOVA WORKSTREAM COMPLETE\n"
+        "WORKSTREAM ID: " + ws["id"] + "\n\n"
         "# HANDOVER DELTA\n\n"
-        "Close by returning the following, and only the following:\n\n"
-        "WORKSTREAM ID\n"
         "FINAL STATE\n"
         "KEY FINDINGS\n"
         "DECISIONS / RECOMMENDATIONS\n"
         "ACTIONS PROMOTED INTO EXECUTION\n"
+        "FUTURE CANDIDATES (require owner promotion)\n"
         "ITEMS DEFERRED\n"
-        "FUTURE CANDIDATES (require owner promotion before any execution)\n"
         "UNRESOLVED QUESTIONS\n"
         "MASTER HANDOVER UPDATES\n"
-        "RECOMMENDED REGISTRY STATUS"
+        "RECOMMENDED REGISTRY STATUS\n\n"
+        "Return the HANDOVER DELTA and only the HANDOVER DELTA under that header."
     )
     parts = [header, EXECUTION_FIREWALL, lineage, read_boilerplate(), "---",
              read_body(ws), "---", footer]
@@ -622,9 +631,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._json(404, {"error": "unknown workstream"})
             prompt = build_prompt(ws)
             set_status(ws["id"], "ACTIVE", reason="launch")
+            # Copy to clipboard + mark ACTIVE + persist. Does NOT open ChatGPT
+            # or any browser/tab; the operator switches to ChatGPT and pastes.
             return self._json(200, {"prompt": prompt, "copied": pbcopy(prompt),
-                                    "status": "ACTIVE",
-                                    "chatgpt_url": "https://chatgpt.com/"})
+                                    "status": "ACTIVE"})
 
         if path == "/api/status":
             ws = find_ws(data.get("id", ""))

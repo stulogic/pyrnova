@@ -246,7 +246,8 @@ function onClick(e) {
     post("/api/launch", { id: id }).then(function (d) {
       if (d.prompt) copyText(d.prompt);
       showToast();
-      window.open(d.chatgpt_url || "https://chatgpt.com/", "_blank");
+      // Deliberately does NOT open ChatGPT / a browser / a tab.
+      // The prompt is on the clipboard; the operator switches to ChatGPT manually.
       refresh();
     });
   } else if (act === "copy-prompt") {
