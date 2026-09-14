@@ -1,4 +1,35 @@
 {
   "version": 1,
-  "states": {}
+  "states": {
+    "PYR-PROD-ROADMAP-002": {
+      "status": "DEFERRED"
+    },
+    "PYR-VISION-GAP-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-ADJACENT-STUDY-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-COMMERCIAL-EXPANSION-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-NETWORK-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-MEMBERSHIPS-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-BRAND-SOCIAL-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-SOCIAL-INTEL-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-AUTH-001": {
+      "status": "DEFERRED"
+    },
+    "PYR-BIZ-TOOLS-001": {
+      "status": "DEFERRED"
+    }
+  }
 }
