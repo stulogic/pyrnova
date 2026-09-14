@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pyrnova Workstream Control</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>PYRNOVA WORKSTREAM CONTROL</h1>
+    <div class="counters" id="counters">
+      <div class="counter"><span class="cnum" id="c-ready">0</span><span class="clabel">READY</span></div>
+      <div class="counter"><span class="cnum" id="c-active">0</span><span class="clabel">ACTIVE</span></div>
+      <div class="counter"><span class="cnum" id="c-blocked">0</span><span class="clabel">BLOCKED</span></div>
+      <div class="counter"><span class="cnum" id="c-closed">0</span><span class="clabel">CLOSED</span></div>
+    </div>
+  </header>
+
+  <section class="filters">
+    <input type="search" id="f-search" placeholder="search id / name / objective" />
+    <select id="f-category"><option value="">All categories</option></select>
+    <select id="f-status"><option value="">All statuses</option></select>
+    <select id="f-priority"><option value="">All priorities</option></select>
+  </section>
+
+  <main id="cards" class="cards"></main>
+
+  <div id="toast" class="toast" hidden>
+    <div class="toast-title">PROMPT COPIED</div>
+    <div class="toast-body">PASTE INTO CHATGPT AND PRESS ENTER</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

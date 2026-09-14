@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "workstreams": [
+    {
+      "id": "PYR-PROD-ROADMAP-002",
+      "canonical_name": "Current Product Feature & Competitive Roadmap",
+      "category": "PRODUCT",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Benchmark near-launch Pyrnova against relevant direct and adjacent competitors, identify consequential capability gaps, and recommend additions that increase customer decision value without bloating Phase 1.",
+      "prompt_file": "PYR-PROD-ROADMAP-002.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-VISION-GAP-001",
+      "canonical_name": "Original Vision vs Current Pyrnova",
+      "category": "STRATEGY",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Compare Pyrnova's original concept/research/ideation with today's product and classify ambitions as achieved, deliberately deferred, accidentally lost, obsolete, or worth restoring.",
+      "prompt_file": "PYR-VISION-GAP-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-ADJACENT-STUDY-001",
+      "canonical_name": "Adjacent Company Lessons",
+      "category": "COMPETITIVE",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Study relevant businesses including Palantir, Flock Safety, Anduril, Dataminr, Primer, Recorded Future, Govini, Second Front, Scale AI, Axon, Samsara, CrowdStrike and Cloudflare for company-building lessons.",
+      "prompt_file": "PYR-ADJACENT-STUDY-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-COMMERCIAL-EXPANSION-001",
+      "canonical_name": "Commercial Market Expansion",
+      "category": "MARKET",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Identify valuable Pyrnova applications outside defense, concentrating on markets where external change creates expensive decisions before conventional information environments explain the consequence.",
+      "prompt_file": "PYR-COMMERCIAL-EXPANSION-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-NETWORK-001",
+      "canonical_name": "Founder & Corporate Network Development",
+      "category": "GROWTH",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Develop a professional networking system identifying customers, allies, experts, introducers, advisers and mutually beneficial non-competing relationships.",
+      "prompt_file": "PYR-NETWORK-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-MEMBERSHIPS-001",
+      "canonical_name": "Memberships, Associations & Events",
+      "category": "GROWTH",
+      "priority": "MEDIUM",
+      "status": "READY",
+      "objective": "Identify associations, trade bodies, conferences, memberships and events that offer customer access, useful intelligence, partnerships or institutional credibility.",
+      "prompt_file": "PYR-MEMBERSHIPS-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-BRAND-SOCIAL-001",
+      "canonical_name": "Social Brand Asset System",
+      "category": "BRAND",
+      "priority": "MEDIUM",
+      "status": "READY",
+      "objective": "Define Pyrnova social presence including avatars, headers, company copy, platform profiles and asset requirements while preserving founder privacy doctrine.",
+      "prompt_file": "PYR-BRAND-SOCIAL-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-SOCIAL-INTEL-001",
+      "canonical_name": "Social & Market Monitoring System",
+      "category": "INTELLIGENCE",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Design monitoring for competitors, prospects, keywords, buying signals, relevant discussions and opportunities for useful engagement.",
+      "prompt_file": "PYR-SOCIAL-INTEL-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-AUTH-001",
+      "canonical_name": "Authentication, MFA & Identity Roadmap",
+      "category": "SECURITY",
+      "priority": "HIGH",
+      "status": "READY",
+      "objective": "Define appropriate Phase 1 and future login, MFA, recovery, session, administrative access, SSO and SCIM architecture without unnecessary enterprise complexity.",
+      "prompt_file": "PYR-AUTH-001.md",
+      "dependencies": [],
+      "notes": ""
+    },
+    {
+      "id": "PYR-BIZ-TOOLS-001",
+      "canonical_name": "Business Operations Tool Stack",
+      "category": "COMPANY",
+      "priority": "MEDIUM",
+      "status": "READY",
+      "objective": "Identify useful third-party software/services for sales, finance, support, documentation, security, analytics, communications, automation and operations while avoiding SaaS sprawl.",
+      "prompt_file": "PYR-BIZ-TOOLS-001.md",
+      "dependencies": [],
+      "notes": ""
+    }
+  ]
+}
