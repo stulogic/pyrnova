@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "ids": {
+    "PYR-PROD-ROADMAP-002": {
+      "canonical_name": "Current Product Feature & Competitive Roadmap",
+      "category": "PRODUCT",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-VISION-GAP-001": {
+      "canonical_name": "Original Vision vs Current Pyrnova",
+      "category": "STRATEGY",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-ADJACENT-STUDY-001": {
+      "canonical_name": "Adjacent Company Lessons",
+      "category": "COMPETITIVE",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-COMMERCIAL-EXPANSION-001": {
+      "canonical_name": "Commercial Market Expansion",
+      "category": "MARKET",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-NETWORK-001": {
+      "canonical_name": "Founder & Corporate Network Development",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-MEMBERSHIPS-001": {
+      "canonical_name": "Memberships, Associations & Events",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-BRAND-SOCIAL-001": {
+      "canonical_name": "Social Brand Asset System",
+      "category": "BRAND",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-SOCIAL-INTEL-001": {
+      "canonical_name": "Social & Market Monitoring System",
+      "category": "INTELLIGENCE",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-AUTH-001": {
+      "canonical_name": "Authentication, MFA & Identity Roadmap",
+      "category": "SECURITY",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-BIZ-TOOLS-001": {
+      "canonical_name": "Business Operations Tool Stack",
+      "category": "COMPANY",
+      "first_seen": "2026-09-14T18:38:46"
+    },
+    "PYR-LEADTIME-001": {
+      "canonical_name": "Decision Lead-Time Evidence Methodology",
+      "category": "INTELLIGENCE",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-BD-ROADMAP-002": {
+      "canonical_name": "Aggressive Business Development Roadmap",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-PARTNERSHIPS-001": {
+      "canonical_name": "Strategic Partnership Network",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-ECOSYSTEM-MAP-001": {
+      "canonical_name": "Pyrnova Commercial Ecosystem Map",
+      "category": "MARKET",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-MOAT-001": {
+      "canonical_name": "Pyrnova Defensibility and Moat Development",
+      "category": "STRATEGY",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-SOCIAL-AUTO-001": {
+      "canonical_name": "Automated Social Content Operations",
+      "category": "BRAND",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-THREAT-MODEL-001": {
+      "canonical_name": "Phase 1 Production Threat Model",
+      "category": "SECURITY",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-INCIDENT-001": {
+      "canonical_name": "Incident Response Operating Procedure",
+      "category": "OPERATIONS",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-RETENTION-001": {
+      "canonical_name": "Data Retention and Deletion Operations",
+      "category": "OPERATIONS",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-CUSTOMER-OPS-001": {
+      "canonical_name": "Customer Activation and First 60 Days",
+      "category": "OPERATIONS",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-SALES-OPS-001": {
+      "canonical_name": "Sales Operations and CRM Design",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-COMP-WARGAME-001": {
+      "canonical_name": "Competitive Attack Wargame",
+      "category": "COMPETITIVE",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-INSTITUTIONAL-CRED-001": {
+      "canonical_name": "Institutional Credibility Roadmap",
+      "category": "STRATEGY",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-COMPANY-JOURNEYS-001": {
+      "canonical_name": "Company Journey Pattern Study",
+      "category": "COMPETITIVE",
+      "first_seen": "2026-09-14T18:39:03"
+    },
+    "PYR-DOGFOOD-BD-001": {
+      "canonical_name": "Pyrnova for Pyrnova Customer Discovery",
+      "category": "GROWTH",
+      "first_seen": "2026-09-14T18:39:03"
+    }
+  }
+}

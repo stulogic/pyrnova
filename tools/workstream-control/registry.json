@@ -110,6 +110,171 @@
       "prompt_file": "PYR-BIZ-TOOLS-001.md",
       "dependencies": [],
       "notes": ""
+    },
+    {
+      "id": "PYR-LEADTIME-001",
+      "canonical_name": "Decision Lead-Time Evidence Methodology",
+      "category": "INTELLIGENCE",
+      "priority": "HIGH",
+      "objective": "Define a defensible methodology for measuring how much useful decision time Pyrnova creates before a customer's conventional information environment reaches the same consequential conclusion.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-LEADTIME-001.md"
+    },
+    {
+      "id": "PYR-BD-ROADMAP-002",
+      "canonical_name": "Aggressive Business Development Roadmap",
+      "category": "GROWTH",
+      "priority": "HIGH",
+      "objective": "Create a granular customer-acquisition and growth roadmap beyond the already-locked first-five sequence while preserving focus on collected revenue.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-BD-ROADMAP-002.md"
+    },
+    {
+      "id": "PYR-PARTNERSHIPS-001",
+      "canonical_name": "Strategic Partnership Network",
+      "category": "GROWTH",
+      "priority": "HIGH",
+      "objective": "Identify non-competing businesses and professionals whose existing customer relationships or capabilities could accelerate Pyrnova adoption.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-PARTNERSHIPS-001.md"
+    },
+    {
+      "id": "PYR-ECOSYSTEM-MAP-001",
+      "canonical_name": "Pyrnova Commercial Ecosystem Map",
+      "category": "MARKET",
+      "priority": "HIGH",
+      "objective": "Map the people and organizations surrounding Pyrnova's buyers, including influencers, gatekeepers, advisers, partners, vendors and competitors.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-ECOSYSTEM-MAP-001.md"
+    },
+    {
+      "id": "PYR-MOAT-001",
+      "canonical_name": "Pyrnova Defensibility and Moat Development",
+      "category": "STRATEGY",
+      "priority": "HIGH",
+      "objective": "Determine what can become genuinely defensible as Pyrnova grows from one customer to a scaled intelligence company.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-MOAT-001.md"
+    },
+    {
+      "id": "PYR-SOCIAL-AUTO-001",
+      "canonical_name": "Automated Social Content Operations",
+      "category": "BRAND",
+      "priority": "MEDIUM",
+      "objective": "Design a controlled system for researching, drafting, approving, scheduling and measuring Pyrnova social content.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-SOCIAL-AUTO-001.md"
+    },
+    {
+      "id": "PYR-THREAT-MODEL-001",
+      "canonical_name": "Phase 1 Production Threat Model",
+      "category": "SECURITY",
+      "priority": "HIGH",
+      "objective": "Identify the smallest defensible security closure set required for Customer #1 production access.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-THREAT-MODEL-001.md"
+    },
+    {
+      "id": "PYR-INCIDENT-001",
+      "canonical_name": "Incident Response Operating Procedure",
+      "category": "OPERATIONS",
+      "priority": "HIGH",
+      "objective": "Create a practical incident-response procedure appropriate to a founder-led Pyrnova Phase 1 deployment.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-INCIDENT-001.md"
+    },
+    {
+      "id": "PYR-RETENTION-001",
+      "canonical_name": "Data Retention and Deletion Operations",
+      "category": "OPERATIONS",
+      "priority": "HIGH",
+      "objective": "Define how Pyrnova operationally retains and removes customer, evidence, logging and derived data while respecting source rights and historical integrity.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-RETENTION-001.md"
+    },
+    {
+      "id": "PYR-CUSTOMER-OPS-001",
+      "canonical_name": "Customer Activation and First 60 Days",
+      "category": "OPERATIONS",
+      "priority": "HIGH",
+      "objective": "Define the concrete operating procedure from signed and paid customer through activation, delivery, measurement and continuation.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-CUSTOMER-OPS-001.md"
+    },
+    {
+      "id": "PYR-SALES-OPS-001",
+      "canonical_name": "Sales Operations and CRM Design",
+      "category": "GROWTH",
+      "priority": "MEDIUM",
+      "objective": "Define a lightweight sales operating system that supports aggressive acquisition without turning Pyrnova into a CRM project.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-SALES-OPS-001.md"
+    },
+    {
+      "id": "PYR-COMP-WARGAME-001",
+      "canonical_name": "Competitive Attack Wargame",
+      "category": "COMPETITIVE",
+      "priority": "MEDIUM",
+      "objective": "Identify how an intelligent well-funded competitor could attack Pyrnova and which vulnerabilities warrant attention.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-COMP-WARGAME-001.md"
+    },
+    {
+      "id": "PYR-INSTITUTIONAL-CRED-001",
+      "canonical_name": "Institutional Credibility Roadmap",
+      "category": "STRATEGY",
+      "priority": "MEDIUM",
+      "objective": "Identify the sequence of real achievements that can make Pyrnova increasingly credible to sophisticated customers without founder-profile theater.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-INSTITUTIONAL-CRED-001.md"
+    },
+    {
+      "id": "PYR-COMPANY-JOURNEYS-001",
+      "canonical_name": "Company Journey Pattern Study",
+      "category": "COMPETITIVE",
+      "priority": "MEDIUM",
+      "objective": "Extract recurring company-building patterns from successful adjacent technology and intelligence businesses.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-COMPANY-JOURNEYS-001.md"
+    },
+    {
+      "id": "PYR-DOGFOOD-BD-001",
+      "canonical_name": "Pyrnova for Pyrnova Customer Discovery",
+      "category": "GROWTH",
+      "priority": "MEDIUM",
+      "objective": "Explore how Pyrnova's own intelligence principles can identify organizations experiencing changes that create an immediate reason to buy Pyrnova.",
+      "status": "READY",
+      "dependencies": [],
+      "notes": "",
+      "prompt_file": "PYR-DOGFOOD-BD-001.md"
     }
   ]
 }
