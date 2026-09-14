@@ -69,11 +69,18 @@ Import is two-phase and atomic: validate all IDs → check duplicate IDs → che
 Each launched prompt is assembled as:
 
 1. **Canonical header** — fixed boilerplate declaring ID, canonical name, `STATUS AT LAUNCH: ACTIVE`, ID permanence, the non-authoritative-sidebar rule, and the instruction to operate from existing Pyrnova authority and not reopen closed decisions.
-2. **Shared context** — `prompts/_boilerplate.md` (kept once, not duplicated per workstream).
-3. **Workstream body** — the `prompt_file` task (≈150–400 words).
-4. **HANDOVER DELTA footer** — the required close-out structure.
+2. **Execution firewall** — see below; injected into every prompt.
+3. **Shared context** — `prompts/_boilerplate.md` (kept once, not duplicated per workstream).
+4. **Workstream body** — the `prompt_file` task (≈150–400 words).
+5. **HANDOVER DELTA footer** — the required close-out structure (includes `FUTURE CANDIDATES`).
 
 Research produced by these chats is advisory and does **not** automatically modify Phase 1 authority. Changes to authority must be surfaced under `MASTER HANDOVER UPDATES` for human review.
+
+## Execution firewall
+
+Every dispatched workstream operates under an execution firewall (embedded in `server.py` as `EXECUTION_FIREWALL`, so it is present in every generated prompt and cannot be edited away by a prompt file). A workstream may **research, analyze, compare, design, specify and recommend** only. It has **no authority** to: modify the Pyrnova repository; modify or interact with the protected Live Ops soak (read-only, out of scope); deploy code; change production configuration; send customer/prospect communications; publish social content; purchase services or memberships; create external accounts; change Phase 1 authority; reopen decisions explicitly marked closed; promote its own recommendations into implementation; or bypass SOURCE-RIGHTS restrictions.
+
+Findings may **propose** future actions. Anything affecting the current product, production, Customer #1, the commercial offer, source rights, security posture or Phase 1 execution returns to the architect/owner for **explicit promotion into execution**. Recommendations that conflict with current authority are classified as **FUTURE CANDIDATE**, never silently applied. Customer #1 / first-five sequencing is unchanged unless the owner explicitly revises it.
 
 ## Extending the registry
 

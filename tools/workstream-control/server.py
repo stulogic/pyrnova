@@ -168,6 +168,27 @@ def set_status(ws_id, status, reason=None):
 # prompt assembly
 # ---------------------------------------------------------------------------
 
+EXECUTION_FIREWALL = (
+    "# EXECUTION FIREWALL\n\n"
+    "This workstream may RESEARCH, ANALYZE, COMPARE, DESIGN, SPECIFY and RECOMMEND. "
+    "It has NO authority to act on the live company. It must NOT: modify the Pyrnova "
+    "repository; modify or interact with the protected Live Ops soak (read-only and "
+    "out of scope); deploy code; change production configuration; send customer or "
+    "prospect communications; publish social content; purchase services or "
+    "memberships; create external accounts; change Phase 1 authority; reopen "
+    "decisions explicitly marked closed; promote its own recommendations into "
+    "implementation; or bypass SOURCE-RIGHTS restrictions.\n\n"
+    "Research findings may PROPOSE future actions only. Any proposed action that "
+    "affects the current product, production environment, Customer #1, the "
+    "commercial offer, source rights, security posture or Phase 1 execution must "
+    "return to the Pyrnova architect/owner for explicit promotion into execution. "
+    "Customer #1 / first-five sequencing is unchanged unless the owner explicitly "
+    "revises it.\n\n"
+    "If a recommendation conflicts with current authority, classify it as a "
+    "FUTURE CANDIDATE rather than silently overriding authority."
+)
+
+
 def read_boilerplate():
     return _read_text(BOILERPLATE_FILE, "")
 
@@ -208,12 +229,13 @@ def build_prompt(ws):
         "DECISIONS / RECOMMENDATIONS\n"
         "ACTIONS PROMOTED INTO EXECUTION\n"
         "ITEMS DEFERRED\n"
+        "FUTURE CANDIDATES (require owner promotion before any execution)\n"
         "UNRESOLVED QUESTIONS\n"
         "MASTER HANDOVER UPDATES\n"
         "RECOMMENDED REGISTRY STATUS"
     )
-    parts = [header, lineage, read_boilerplate(), "---", read_body(ws),
-             "---", footer]
+    parts = [header, EXECUTION_FIREWALL, lineage, read_boilerplate(), "---",
+             read_body(ws), "---", footer]
     return "\n\n".join(p for p in parts if p).strip() + "\n"
 
 
