@@ -8,12 +8,23 @@
 </head>
 <body>
   <header class="top">
-    <h1>PYRNOVA WORKSTREAM CONTROL</h1>
-    <div class="counters" id="counters">
-      <div class="counter"><span class="cnum" id="c-ready">0</span><span class="clabel">READY</span></div>
-      <div class="counter"><span class="cnum" id="c-active">0</span><span class="clabel">ACTIVE</span></div>
-      <div class="counter"><span class="cnum" id="c-blocked">0</span><span class="clabel">BLOCKED</span></div>
-      <div class="counter"><span class="cnum" id="c-closed">0</span><span class="clabel">CLOSED</span></div>
+    <div class="top-row">
+      <h1>PYRNOVA WORKSTREAM CONTROL</h1>
+      <div class="counters" id="counters">
+        <div class="counter"><span class="cnum" id="c-ready">0</span><span class="clabel">READY</span></div>
+        <div class="counter"><span class="cnum" id="c-active">0</span><span class="clabel">ACTIVE</span></div>
+        <div class="counter"><span class="cnum" id="c-blocked">0</span><span class="clabel">BLOCKED</span></div>
+        <div class="counter"><span class="cnum" id="c-closed">0</span><span class="clabel">CLOSED</span></div>
+        <div class="counter"><span class="cnum" id="c-superseded">0</span><span class="clabel">SUPERSEDED</span></div>
+      </div>
+    </div>
+    <div class="viewbar">
+      <div class="seg" id="viewseg">
+        <button data-view="operational" class="active">OPERATIONAL</button>
+        <button data-view="archive">ARCHIVE</button>
+        <button data-view="all">ALL</button>
+      </div>
+      <button id="btn-import" class="ghost">IMPORT</button>
     </div>
   </header>
 
@@ -22,6 +33,21 @@
     <select id="f-category"><option value="">All categories</option></select>
     <select id="f-status"><option value="">All statuses</option></select>
     <select id="f-priority"><option value="">All priorities</option></select>
+  </section>
+
+  <section id="import-panel" class="import-panel" hidden>
+    <div class="import-head">
+      <strong>BULK IMPORT</strong>
+      <span class="muted">Paste one workstream object or a JSON array. Nothing is imported until all conflicts are resolved.</span>
+    </div>
+    <textarea id="import-json" spellcheck="false" placeholder='[{"id":"PYR-EXAMPLE-001","canonical_name":"...","category":"PRODUCT","priority":"HIGH","objective":"...","prompt_body":"## Task ..."}]'></textarea>
+    <div class="import-actions">
+      <button id="btn-validate">VALIDATE</button>
+      <button id="btn-commit" disabled>IMPORT</button>
+      <button id="btn-import-close" class="ghost">CLOSE</button>
+      <span id="import-summary" class="import-summary"></span>
+    </div>
+    <div id="import-results" class="import-results"></div>
   </section>
 
   <main id="cards" class="cards"></main>

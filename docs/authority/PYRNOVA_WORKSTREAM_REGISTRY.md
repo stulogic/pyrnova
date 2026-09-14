@@ -21,14 +21,44 @@ ChatGPT sidebar conversation titles are **non-authoritative** and may change. A 
 | `prompt_file` | File under `prompts/` holding the workstream-specific task body. |
 | `dependencies` | List of workstream IDs this depends on (may be empty). |
 | `notes` | Free-form operator notes. |
+| `related_to` | Optional. IDs of related workstreams. |
+| `supersedes` | Optional. ID this workstream replaces (parent is marked `SUPERSEDED`). |
+| `follow_up_to` | Optional. ID of the prior workstream this continues. |
 
 ## Status values
 
 - `READY` — defined, not yet launched.
 - `ACTIVE` — launched / in progress.
 - `BLOCKED` — cannot progress; see notes.
-- `CLOSED` — complete; do not reopen without deliberate decision.
-- `DEFERRED` — intentionally postponed.
+- `CLOSED` — complete; **done and remembered, not deleted**. Preserved as historical memory; hidden from the operational view; visible in ARCHIVE.
+- `DEFERRED` — intentionally postponed (stays in the operational view).
+- `SUPERSEDED` — replaced by a later workstream. Preserved; hidden from operational view; visible in ARCHIVE.
+
+## Design principle
+
+**CLOSED MEANS DONE AND REMEMBERED, NOT DELETED.** The launcher never auto-deletes or purges completed workstreams. Their definitions, permanent IDs, and status history are preserved so the same Pyrnova work is not accidentally commissioned twice.
+
+## Views
+
+- **Operational** (default): everything except `CLOSED` and `SUPERSEDED`.
+- **Archive**: `CLOSED` + `SUPERSEDED` only, searchable, showing ID, name, category, final status, and lineage to follow-up/superseding work.
+- **All**: everything.
+
+## Permanent ID rule
+
+An ID may **never** be silently reused. Every ID that has ever existed is recorded in the permanent ledger `state`/`history.json` in addition to `registry.json`. Before importing, the new ID is checked against the active registry, CLOSED, SUPERSEDED, and the archived ledger. If it has ever existed, the import is **rejected** with a message identifying the existing workstream.
+
+## Duplicate-work protection
+
+Before import, likely semantic duplicates are detected deterministically (Python `difflib` + token Jaccard — no embeddings/AI) across ACTIVE, CLOSED and SUPERSEDED, comparing normalized canonical name, objective, category and keywords. A likely duplicate is **not** silently rejected: the UI shows `POSSIBLE DUPLICATE`, names the existing workstream(s), and requires an explicit `CANCEL` or `IMPORT ANYWAY`.
+
+## Versioning / reopening
+
+Completed research is not normally reopened by flipping `CLOSED` back to `ACTIVE`. Instead use **CREATE FOLLOW-UP**, which mints a new permanent ID (e.g. `PYR-PROD-ROADMAP-003` with `follow_up_to: PYR-PROD-ROADMAP-002`), optionally marking the parent `SUPERSEDED`, preserving the historical chain. An explicit **REOPEN** action exists for work closed by mistake, but it is deliberate, never automatic.
+
+## Bulk import safety
+
+Import is two-phase and atomic: validate all IDs → check duplicate IDs → check likely semantic duplicates → present conflicts → import **only** after conflicts are resolved. One bad item never causes silent partial corruption; a hard conflict yields `0 IMPORTED UNTIL RESOLVED` and writes nothing.
 
 ## Categories
 

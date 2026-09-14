@@ -29,12 +29,24 @@ It does not automate ChatGPT's page. You paste and press Enter.
 
 Every workstream has a permanent ID embedded in both the registry and its prompt. ChatGPT sidebar titles are **non-authoritative** — identity comes from the ID, never the tab name.
 
+## CLOSED means done and remembered, not deleted
+
+Completed work is never purged. `CLOSED` and `SUPERSEDED` workstreams are preserved (definition, permanent ID, status history) and simply hidden from the default **OPERATIONAL** view. Switch the view toggle to **ARCHIVE** to see them (searchable, with lineage).
+
+- **Permanent IDs** are never silently reused. Importing an ID that has ever existed is rejected.
+- **Duplicate protection:** before import, likely semantic duplicates (deterministic `difflib` matching — no AI) are flagged as `POSSIBLE DUPLICATE`; you must choose `CANCEL` or `IMPORT ANYWAY`.
+- **Bulk import** is atomic: validate all → resolve conflicts → then import. One bad item never corrupts the registry (`0 IMPORTED UNTIL RESOLVED`).
+- **CREATE FOLLOW-UP** mints a new permanent ID linked to the parent (`follow_up_to`), optionally marking the parent `SUPERSEDED`, instead of reopening finished work. **REOPEN** exists for accidental closes but is deliberate.
+
+The point: stop accidentally commissioning the same Pyrnova work twice.
+
 ## Files
 
 - `launch.command` — double-click launcher (starts `server.py`, opens the UI).
 - `server.py` — stdlib-only local server + JSON API (127.0.0.1).
 - `registry.json` — canonical workstream definitions (source of truth for *what exists*).
-- `state.json` — persisted status only (source of truth for *current state*). Kept separate from the registry.
+- `state.json` — persisted status + status history (source of truth for *current state*). Kept separate from the registry.
+- `history.json` — permanent ID ledger; every ID that has ever existed, so IDs are never silently reused.
 - `static/` — the UI (`index.html`, `app.js`, `styles.css`).
 - `prompts/` — `_boilerplate.md` (shared context) + one body file per workstream.
 
