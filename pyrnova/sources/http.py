@@ -8,6 +8,14 @@ from typing import Any, Optional
 _TIMEOUT = 60
 
 
+def _authorize(method: str, url: str, source_id: str | None) -> None:
+    if not source_id:
+        from .rights import SourceRightsDenied
+        raise SourceRightsDenied("HTTP source_id is required", reason_code="SOURCE_ID_REQUIRED")
+    from .rights import authorize_request
+    authorize_request(source_id, method, url)
+
+
 def _session():
     try:
         import requests
@@ -24,10 +32,11 @@ def _session():
 
 
 def post_json_response(url: str, payload: dict, *, headers: Optional[dict] = None,
-                       timeout: int = _TIMEOUT) -> tuple[int, bytes, Any, dict]:
+                       timeout: int = _TIMEOUT, source_id: str | None = None) -> tuple[int, bytes, Any, dict]:
     """POST JSON and include response headers for transport policy such as Retry-After."""
+    _authorize("POST", url, source_id)
     sess = _session()
-    resp = sess.post(url, json=payload, headers=headers or {}, timeout=timeout)
+    resp = sess.post(url, json=payload, headers=headers or {}, timeout=timeout, allow_redirects=False)
     raw = resp.content
     try:
         parsed = json.loads(raw) if raw else None
@@ -36,15 +45,16 @@ def post_json_response(url: str, payload: dict, *, headers: Optional[dict] = Non
     return resp.status_code, raw, parsed, dict(resp.headers)
 
 
-def post_json(url: str, payload: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT) -> tuple[int, bytes, Any]:
+def post_json(url: str, payload: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT, source_id: str | None = None) -> tuple[int, bytes, Any]:
     """POST json, return (status_code, raw_bytes, parsed_json_or_None). Raw bytes are what we archive."""
-    status, raw, parsed, _ = post_json_response(url, payload, headers=headers, timeout=timeout)
+    status, raw, parsed, _ = post_json_response(url, payload, headers=headers, timeout=timeout, source_id=source_id)
     return status, raw, parsed
 
 
-def get_json(url: str, params: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT) -> tuple[int, bytes, Any]:
+def get_json(url: str, params: dict, *, headers: Optional[dict] = None, timeout: int = _TIMEOUT, source_id: str | None = None) -> tuple[int, bytes, Any]:
+    _authorize("GET", url, source_id)
     sess = _session()
-    resp = sess.get(url, params=params, headers=headers or {}, timeout=timeout)
+    resp = sess.get(url, params=params, headers=headers or {}, timeout=timeout, allow_redirects=False)
     raw = resp.content
     try:
         parsed = json.loads(raw) if raw else None
@@ -54,16 +64,18 @@ def get_json(url: str, params: dict, *, headers: Optional[dict] = None, timeout:
 
 
 def get_bytes(url: str, params: Optional[dict] = None, *, headers: Optional[dict] = None,
-              timeout: int = _TIMEOUT) -> tuple[int, bytes]:
+              timeout: int = _TIMEOUT, source_id: str | None = None) -> tuple[int, bytes]:
     """GET arbitrary source bytes for archival (CSV/PDF/etc.) without decoding or mutation."""
+    _authorize("GET", url, source_id)
     sess = _session()
-    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout, allow_redirects=False)
     return resp.status_code, resp.content
 
 
 def get_bytes_response(url: str, params: Optional[dict] = None, *, headers: Optional[dict] = None,
-                       timeout: int = _TIMEOUT) -> tuple[int, bytes, dict]:
+                       timeout: int = _TIMEOUT, source_id: str | None = None) -> tuple[int, bytes, dict]:
     """GET bytes and include response headers for transport policy such as Retry-After."""
+    _authorize("GET", url, source_id)
     sess = _session()
-    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+    resp = sess.get(url, params=params or {}, headers=headers or {}, timeout=timeout, allow_redirects=False)
     return resp.status_code, resp.content, dict(resp.headers)

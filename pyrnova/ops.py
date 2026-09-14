@@ -233,7 +233,7 @@ class OperatorConsole:
                 change["first_seen"] = {"status": "PENDING_FANOUT", "delivered_at": None}
             by_disposition[change["disposition"]] = by_disposition.get(change["disposition"], 0) + 1
             by_review_state[state] = by_review_state.get(state, 0) + 1
-        return {
+        payload = {
             "customer": {"id": context.customer_id, "name": context.name},
             "as_of": as_of,
             "disposition_filter": (disposition or "").strip().upper() or None,
@@ -244,6 +244,14 @@ class OperatorConsole:
             "materialized": materialized if self.cmc_store is not None else None,
             "material_changes": changes,
         }
+        from .sources.rights import gate_customer_display
+        gated_changes = [gate_customer_display(change) for change in changes]
+        payload["material_changes"] = gated_changes
+        payload["source_rights"] = {
+            "display": "PARTIAL" if any(c.get("source_rights", {}).get("display") == "BLOCKED" for c in gated_changes) else "ALLOWED",
+            "items": [c.get("source_rights") for c in gated_changes],
+        }
+        return payload
 
     # --- M22-D: deterministic search + company/program investigation pages ------------------------
 
@@ -325,6 +333,17 @@ class OperatorConsole:
         except KeyError:
             raise ValueError(f"entity not found in the Pyrnova estate: {ref}")
         page["generated_at"] = _now()
+        from .sources.rights import gate_customer_display
+        decisions = []
+        for key in ("relationships", "material_history", "evidence"):
+            if isinstance(page.get(key), list):
+                page[key] = [gate_customer_display(item) for item in page[key]]
+                decisions.extend(item.get("source_rights") for item in page[key])
+        ci = page.get("current_intelligence") or {}
+        if isinstance(ci.get("material_events"), list):
+            ci["material_events"] = [gate_customer_display(item) for item in ci["material_events"]]
+            decisions.extend(item.get("source_rights") for item in ci["material_events"])
+        page["source_rights"] = {"display": "PARTIAL" if any(d and d.get("display") == "BLOCKED" for d in decisions) else "ALLOWED", "items": decisions}
         return page
 
     def program_intelligence(self, program_key: str, *, as_of: str | None = None,
@@ -338,6 +357,17 @@ class OperatorConsole:
         except KeyError:
             raise ValueError(f"program not found in the Pyrnova estate: {program_key}")
         page["generated_at"] = _now()
+        from .sources.rights import gate_customer_display
+        decisions = []
+        mc = page.get("material_changes") or {}
+        if isinstance(mc.get("material_events"), list):
+            mc["material_events"] = [gate_customer_display(item) for item in mc["material_events"]]
+            decisions.extend(item.get("source_rights") for item in mc["material_events"])
+        for key in ("relationships", "material_history", "evidence"):
+            if isinstance(page.get(key), list):
+                page[key] = [gate_customer_display(item) for item in page[key]]
+                decisions.extend(item.get("source_rights") for item in page[key])
+        page["source_rights"] = {"display": "PARTIAL" if any(d and d.get("display") == "BLOCKED" for d in decisions) else "ALLOWED", "items": decisions}
         return page
 
     # --- M22-B: persisted customer CRUD + Material Change review/lifecycle -------------------------
@@ -437,8 +467,14 @@ class OperatorConsole:
         if self.cmc_store is None:
             return {"customer_id": customer_id, "material_change_id": material_change_id, "versions": []}
         from .customer_material_changes import version_history
-        return {"customer_id": customer_id, "material_change_id": material_change_id,
-                "versions": version_history(self.cmc_store, customer_id, material_change_id)}
+        payload = {"customer_id": customer_id, "material_change_id": material_change_id,
+                   "versions": version_history(self.cmc_store, customer_id, material_change_id)}
+        from .sources.rights import gate_customer_display
+        versions = [gate_customer_display(v) for v in payload["versions"]]
+        payload["versions"] = versions
+        payload["source_rights"] = {"display": "PARTIAL" if any(v.get("source_rights", {}).get("display") == "BLOCKED" for v in versions) else "ALLOWED",
+                                     "items": [v.get("source_rights") for v in versions]}
+        return payload
 
     def source_operations(self) -> dict:
         """M12 Operations Panel view: durable per-source health + operator controls (read-only).
@@ -729,6 +765,14 @@ class OperatorConsole:
         events = parsed_events.get("events", [])
         flagship = events[0] if events else {}
         propagated = (propagation_result or {}).get("propagated_threats", []) or []
+        raw_authoritative = False
+        try:
+            from .sources.registry import get_spec, StorageMode
+            source_id = flagship.get("source_id") or flagship.get("source_ref", "").split(":", 1)[0]
+            policy = get_spec(str(source_id)).policy
+            raw_authoritative = bool(parsed_events.get("archive_hash")) and policy is not None and StorageMode(policy.raw_storage) is StorageMode.RAW_ALLOWED
+        except (KeyError, TypeError, ValueError):
+            raw_authoritative = False
 
         def edge_row(e):
             return {"relation": e.get("relation"), "from_ref": e.get("from_ref"),
@@ -748,7 +792,7 @@ class OperatorConsole:
             },
             "raw_provenance": {
                 "archive_hash": parsed_events.get("archive_hash"),
-                "raw_authoritative_bytes": bool(parsed_events.get("archive_hash")),
+                "raw_authoritative_bytes": raw_authoritative,
                 "source_ref": flagship.get("source_ref"),
             },
             "deterministic_exposure": {

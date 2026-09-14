@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import re
+import json
 from typing import Callable, Optional
 
 from ..archive import EvidenceArchive
@@ -17,6 +18,7 @@ from ..models import Evidence
 from . import http
 from .control import CircuitBreaker, SourceControl, request_fingerprint
 from .registry import get_spec
+from .rights import authorize_request, validate_source_payload
 
 
 _CIK_RE = re.compile(r"^\d{1,10}$")
@@ -320,7 +322,8 @@ class EdgarClient:
         headers = self._headers()
         fingerprint = request_fingerprint("GET", request_url, headers=headers)
         self.control.prepare(request_fingerprint=fingerprint, now=now)
-        status, raw, parsed = http.get_json(request_url, {}, headers=headers)
+        authorize_request("sec_edgar", "GET", request_url)
+        status, raw, parsed = http.get_json(request_url, {}, headers=headers, source_id="sec_edgar")
         if status == 429:
             self.next_permitted_poll = now + timedelta(seconds=self.cooldown_seconds)
             self.control.record_failure("throttle", now=now)
@@ -328,6 +331,7 @@ class EdgarClient:
         if status != 200 or not isinstance(parsed, dict):
             self.control.record_failure("service" if status in {500, 502, 503, 504} else "terminal", now=now)
             raise RuntimeError(f"SEC EDGAR {endpoint} failed: HTTP {status}")
+        validate_source_payload("sec_edgar", parsed)
         self.next_permitted_poll = now + timedelta(seconds=self.min_interval_seconds)
         self.control.record_success(now=now, changed=True)
         records = filings_since(parsed, since_accession) if endpoint == "submissions" else []
@@ -351,25 +355,19 @@ class EdgarClient:
         return self._fetch(endpoint="companyfacts", cik=normalized_cik, request_url=companyfacts_url(normalized_cik))
 
     def fetch_full_submission(self, cik: str | int, accession_number: str) -> EdgarObservation:
-        """Retrieve the raw EDGAR full-submission archive artifact (the immutable filing BODY).
-
-        This is a deliberate BODY retrieval (order item 3), separate from discovery. A caller reaches it
-        only when intelligence evaluation or archival policy needs the raw filing, and only after
-        ``accession_dedupe`` says the accession is not already archived. Same 403/throttle/circuit
-        discipline as the JSON endpoints: a 403 records a terminal failure and opens the breaker; it is
-        never retried in a loop.
-        """
+        """Retained body-retrieval interface; the current metadata-only profile denies it before transport."""
         normalized_cik = normalize_cik(cik)
         url = full_submission_url(normalized_cik, accession_number)
         if not url:
             raise ValueError("full-submission retrieval requires a valid accession number")
+        authorize_request("sec_edgar", "GET", url)
         now = self.now()
         if self.next_permitted_poll and now < self.next_permitted_poll:
             raise EdgarRateLimitError(f"SEC EDGAR next permitted poll is {self.next_permitted_poll.isoformat()}")
         headers = self._headers()
         fingerprint = request_fingerprint("GET", url, headers=headers)
         self.control.prepare(request_fingerprint=fingerprint, now=now)
-        status, raw = http.get_bytes(url, headers=headers)
+        status, raw = http.get_bytes(url, headers=headers, source_id="sec_edgar")
         if status == 429:
             self.next_permitted_poll = now + timedelta(seconds=self.cooldown_seconds)
             self.control.record_failure("throttle", now=now)
@@ -387,20 +385,29 @@ class EdgarClient:
 
 
 def archive_observation(archive: EvidenceArchive, observation: EdgarObservation) -> Evidence:
-    """Archive one exact source response with secret-free retrieval provenance."""
+    """Archive reviewed structured facts and hash provenance, excluding source expression."""
+    authorize_request("sec_edgar", "GET", observation.request_url)
+    if observation.endpoint == "submissions":
+        facts = [{"accession_number": row.get("accessionNumber"), "form": row.get("form"),
+                  "filed_at": row.get("filingDate"), "date": row.get("reportDate"),
+                  "source_url": filing_url(observation.cik, row.get("accessionNumber"), row.get("primaryDocument"))}
+                 for row in observation.records]
+    else:
+        facts = [{"id": row["fact_identity"], **{key: row[key] for key in (
+            "value_usd", "period_start", "period_end", "filed_at", "form", "accession_number",
+            "fiscal_year", "fiscal_period", "signal")}}
+                 for row in extract_capex_facts(json.loads(observation.raw_response))]
     return archive.put(
         observation.raw_response,
         source_id="sec_edgar",
         retention_tier=get_spec("sec_edgar").retention_tier,
         source_ref=f"{observation.endpoint}:{observation.cik}",
         source_url=observation.request_url,
+        normalized={"id": f"{observation.endpoint}:{observation.cik}", "cik": observation.cik,
+                    "source_ref": observation.request_params.get("since_accession"),
+                    "type": observation.endpoint, "value": facts},
         meta={
-            "endpoint": observation.endpoint,
-            "cik": observation.cik,
-            "request_params": observation.request_params,
             "fetched_at": observation.fetched_at,
-            "records_returned": len(observation.records),
-            "request_headers": {"user_agent": "configured_not_retained"},
             "request_fingerprint": observation.request_fingerprint,
         },
     )

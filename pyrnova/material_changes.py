@@ -146,6 +146,18 @@ def _evidence_block(change: dict) -> dict:
     ev_ids = list(change.get("evidence_ids") or [])
     sources = [s for s in (change.get("evidence_sources") or []) if s]
     distinct_sources = sorted(set(sources))
+    raw_authoritative = False
+    try:
+        from .sources.registry import get_spec, StorageMode
+        # A stored archive hash is raw authority only when the canonical source
+        # profile actually permits RAW_ALLOWED.  Normalized-only evidence keeps
+        # its original hash but must never be labelled as raw bytes.
+        profiled = [get_spec(str(s)).policy for s in sources if s]
+        raw_authoritative = bool(change.get("archive_hash")) and bool(profiled) and all(
+            p is not None and StorageMode(p.raw_storage) is StorageMode.RAW_ALLOWED for p in profiled
+        )
+    except (KeyError, TypeError, ValueError):
+        raw_authoritative = False
     return {
         "evidence_count": len(ev_ids),
         "evidence_ids": ev_ids,
@@ -153,7 +165,7 @@ def _evidence_block(change: dict) -> dict:
         "sources": distinct_sources,
         "single_source": len(distinct_sources) <= 1,
         "catalyst_class": change.get("catalyst_class"),  # OBSERVED vs MODELED (origin, not corroboration)
-        "raw_authoritative_bytes": bool(change.get("archive_hash")),
+        "raw_authoritative_bytes": raw_authoritative,
         "archive_hash": change.get("archive_hash"),
     }
 

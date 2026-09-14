@@ -48,6 +48,10 @@ The current owner-unblock execution ends at that soak-start handoff. It does not
 
 ## Scope
 
+Source-rights work is a bounded correctness and provenance control under this workstream. Its authority
+and limits are recorded in `docs/strategy/SOURCE_RIGHTS_AUTHORITY.md`; it does not change soak status,
+authorize new connectors, or constitute Customer #1 readiness.
+
 The workstream may address only what is needed to prove or close:
 
 - correct baseline creation;

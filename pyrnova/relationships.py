@@ -253,7 +253,6 @@ def ground_subsidiary_edges(
         "provenance": {"child_uei": child_uei, "parent_uei": parent_uei,
                        "child_recipient_id": payload.get("recipient_id"),
                        "parent_recipient_id": payload.get("parent_id"),
-                       "parent_duns": payload.get("parent_duns"),
                        "archive_hash": archive_hash, "role": "subsidiary"},
     }]
 

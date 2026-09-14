@@ -21,6 +21,7 @@ from ..models import Evidence
 from . import http
 from .control import CircuitBreaker, CircuitOpen, SourceControl, SourceControlError
 from .registry import get_spec
+from .rights import authorize_request, validate_source_payload
 
 LIVE_MODES = frozenset({"LIVE-SAFE", "ACCEPTANCE"})
 RETRYABLE_STATUSES = frozenset({429, 500, 502, 503, 504})
@@ -237,9 +238,11 @@ class GrantsGovClient:
                 raise GrantsGovError(f"Grants.gov circuit open: {exc}") from exc
             except SourceControlError as exc:
                 raise GrantsGovError(f"Grants.gov {exc}") from exc
-            status, raw, parsed = http.post_json(self.search_url, payload)
+            authorize_request("grants_gov", "POST", self.search_url)
+            status, raw, parsed = http.post_json(self.search_url, payload, source_id="grants_gov")
             last_status = status
             if status == 200:
+                validate_source_payload("grants_gov", parsed)
                 data = parsed.get("data") if isinstance(parsed, dict) else None
                 if not isinstance(data, dict) or not isinstance(data.get("oppHits"), list):
                     raise GrantsGovError("Grants.gov Search2 returned malformed success payload")

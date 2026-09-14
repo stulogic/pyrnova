@@ -146,7 +146,7 @@ class OfacClient:
         if offline_bytes is not None:
             raw = offline_bytes
         else:
-            status, raw = http.get_bytes(url)
+            status, raw = http.get_bytes(url, source_id=self.spec.id)
             if status != 200:
                 raise RuntimeError(f"OFAC {list_name} download failed: HTTP {status}")
 

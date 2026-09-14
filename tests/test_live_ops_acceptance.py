@@ -272,7 +272,9 @@ def test_harness_preserves_pending_archive_on_processing_failure(tmp_path, monke
     assert cycle["ok"] is False
     source_state = SourceStateStore(tmp_path / "source-state")
     assert source_state.get_checkpoint("usaspending") is None
-    assert source_state.load("usaspending")["pending_processing"]["content_sha256"]
+    # Opaque/HTML-like production API bytes are denied before archive; no
+    # pending raw payload or checkpoint may be created.
+    assert "pending_processing" not in source_state.load("usaspending")
     health = next(row for row in cycle["source_health"]["sources"]
                   if row["source_id"] == "usaspending")
     assert health["operational_state"] == "DEGRADED"
@@ -305,7 +307,10 @@ def test_retained_real_page_counter_ledger_and_parser_agree(tmp_path, source_id,
     assert sha256_hex(raw) == sha
     scheduler = SourceScheduler(SourceStateStore(tmp_path / "source-state"),
                                 archive=LocalEvidenceArchive(tmp_path / "archive"))
-    request = {"method": "GET", "url": "https://example.test/retained"}
+    request = {"method": "GET", "url": (
+        "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+        if source_id == "usaspending" else "https://api.sam.gov/opportunities/v2/search"
+    )}
     scheduler.run_job(source_id, request=request, mode="OFFLINE", offline_bytes=raw)
     runner = LiveRunner(scheduler, source_id, mode="OFFLINE",
                         record_counter=partial(source_record_count, source_id))

@@ -38,7 +38,8 @@ def test_client_preserves_response_request_and_fetch_provenance(monkeypatch):
     raw = b'{"results":[{"document_number":"2026-12345"}]}'
     calls = []
 
-    def fake_get_json(url, params):
+    def fake_get_json(url, params, *, source_id):
+        assert source_id == "federal_register"
         calls.append((url, params))
         return 200, raw, {"results": [{"document_number": "2026-12345"}]}
 

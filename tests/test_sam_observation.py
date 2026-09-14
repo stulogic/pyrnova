@@ -7,7 +7,8 @@ def test_observation_preserves_raw_rows_and_safe_request_provenance(monkeypatch)
     raw = b'{"opportunitiesData":[{"noticeId":"abc"}]}'
     calls = []
 
-    def fake_get_json(url, params):
+    def fake_get_json(url, params, *, source_id):
+        assert source_id == "sam_opportunities"
         calls.append((url, params))
         return 200, raw, {"opportunitiesData": [{"noticeId": "abc"}], "totalRecords": 1}
 
@@ -33,7 +34,8 @@ def test_observation_preserves_raw_rows_and_safe_request_provenance(monkeypatch)
 
 
 def test_observation_paginates_with_distinct_safe_offsets(monkeypatch):
-    def fake_get_json(_url, params):
+    def fake_get_json(_url, params, *, source_id):
+        assert source_id == "sam_opportunities"
         rows = [{"noticeId": str(params["offset"])}]
         return 200, b"{}", {"opportunitiesData": rows, "totalRecords": 3}
 
@@ -58,7 +60,7 @@ def test_pagination_validation_and_legacy_search_compatibility(monkeypatch):
 
     monkeypatch.setattr(
         "pyrnova.sources.sam.http.get_json",
-        lambda _url, _params: (200, b'{"opportunitiesData":[]}', {"opportunitiesData": []}),
+        lambda _url, _params, **_kwargs: (200, b'{"opportunitiesData":[]}', {"opportunitiesData": []}),
     )
     raw, rows = SamClient("secret-key").search(
         posted_from="01/01/2026", posted_to="01/31/2026"

@@ -18,7 +18,7 @@ from pyrnova.live_ops import (
     usaspending_request,
 )
 from pyrnova.scheduler import (
-    CACHE_HIT,
+    CACHE_HIT, ERROR,
     LIVE_FETCH,
     SKIPPED_NOT_DUE,
     SKIPPED_PAUSED,
@@ -326,18 +326,20 @@ def test_archive_failure_after_live_fetch_is_handled_without_crash_or_storm(tmp_
     assert len(st.load(SID).get("requests") or {}) == 0
 
 
-def test_malformed_live_bytes_are_archived_without_corrupting_downstream(tmp_path):
+def test_malformed_live_bytes_are_denied_before_archive(tmp_path):
     sched = _sched(tmp_path)
     runner = LiveRunner(sched, SID, mode="LIVE_SAFE", max_calls=5,
                         fetcher=lambda rq: b"<<not json at all>>",
                         record_counter=usaspending_record_count)
     e = runner.run(usaspending_request(_payload("a")))
-    assert e.action == LIVE_FETCH           # archived exact bytes even though unparseable
-    assert e.records_returned is None      # unavailable is distinct from a genuine empty response
-    assert e.counting_error and runner.summary()["records_returned"] is None
-    # Repeat is a clean cache hit — the malformed payload did not corrupt the dedupe index.
+    assert e.action == ERROR
+    assert e.content_sha256 is None
+    assert "archive/index failed" in e.reason
+    assert not list((tmp_path / "arch" / SID).rglob("*") )
+    assert not sched.state.load(SID).get("requests")
+    # A denied opaque response is never indexed as a cache hit.
     again = runner.run(usaspending_request(_payload("a")))
-    assert again.action == CACHE_HIT
+    assert again.action != CACHE_HIT
 
 
 def test_budget_exhaustion_never_invokes_the_fetcher(tmp_path):

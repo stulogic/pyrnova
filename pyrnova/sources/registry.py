@@ -17,6 +17,99 @@ unchanged. Facts that are genuinely unknown are recorded as ``"unknown"`` — ne
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
+
+
+class RightsClass(str, Enum):
+    """Rights posture for a source profile.
+
+    The class is a policy label, never a legal conclusion.  A missing profile remains
+    unknown and therefore denied by the gate.
+    """
+
+    GREEN = "GREEN"
+    GREEN_WITH_CONDITIONS = "GREEN_WITH_CONDITIONS"
+    AMBER = "AMBER"
+    RED = "RED"
+    BLACK = "BLACK"
+
+
+class RightsState(str, Enum):
+    CURRENTLY_APPROVED = "CURRENTLY_APPROVED"
+    REVIEW_DUE = "REVIEW_DUE"
+    RIGHTS_DEGRADED = "RIGHTS_DEGRADED"
+    INGEST_DISABLED = "INGEST_DISABLED"
+    DISPLAY_DISABLED = "DISPLAY_DISABLED"
+    LICENSE_EXPIRED = "LICENSE_EXPIRED"
+
+
+class StorageMode(str, Enum):
+    RAW_ALLOWED = "RAW_ALLOWED"
+    NORMALIZED_ONLY = "NORMALIZED_ONLY"
+    NO_STORAGE = "NO_STORAGE"
+
+
+@dataclass(frozen=True)
+class SourcePolicy:
+    """Typed, reviewed rights profile attached to :class:`SourceSpec`.
+
+    Every field is explicit so ``unknown`` cannot silently become permission.  URLs and
+    endpoint paths are allowlisted here; callers cannot broaden them by supplying a
+    different source id, URL, or classification marker.
+    """
+
+    identity: str
+    domain: str
+    source_type: str
+    policy_version: str = "source-rights-v1"
+    basis: str = "unknown"
+    scope: tuple[str, ...] = ()
+    terms_url: str = "unknown"
+    terms_version: str = "unknown"
+    terms_hash: str = "unknown"
+    reviewed_at: str = "unknown"
+    review_due_at: str = "unknown"
+    access_method: str = "unknown"
+    commercial_use: str = "unknown"
+    automated_access: str = "unknown"
+    raw_storage: StorageMode = StorageMode.NO_STORAGE
+    historical_retention: str = "unknown"
+    retention_rule: str = "unknown"
+    fact_use: str = "unknown"
+    derived_use: str = "unknown"
+    excerpt_use: str = "unknown"
+    excerpt_rule: str = "unknown"
+    fulltext_use: str = "unknown"
+    redistribution: str = "unknown"
+    attribution: str = "unknown"
+    customer_display: str = "unknown"
+    model_use: str = "unknown"
+    model_processing_allowed: bool = False
+    model_constraints: tuple[str, ...] = ()
+    third_party_use: str = "unknown"
+    licence: str = "unknown"
+    licence_required: bool | None = None
+    licence_reference: str = "unknown"
+    licence_valid_until: str = "unknown"
+    review_required: bool = True
+    review_notes: str = ""
+    rights_class: RightsClass | str = RightsClass.AMBER
+    state: RightsState | str = RightsState.REVIEW_DUE
+    allowed_hosts: tuple[str, ...] = ()
+    allowed_methods: tuple[str, ...] = ("GET",)
+    allowed_path_prefixes: tuple[str, ...] = ()
+    # Public object URLs used only as attribution/provenance references.  They
+    # do not authorize retrieval; transport uses allowed_hosts/path_prefixes.
+    reference_hosts: tuple[str, ...] = ()
+    reference_path_prefixes: tuple[str, ...] = ()
+    attribution_text: str = ""
+    max_excerpt_words: int = 25
+
+    def __post_init__(self) -> None:
+        if not self.identity.strip() or not self.domain.strip() or not self.source_type.strip():
+            raise ValueError("source rights identity, domain, and source_type are required")
+        if self.max_excerpt_words < 1:
+            raise ValueError("max_excerpt_words must be positive")
 
 
 @dataclass(frozen=True)
@@ -47,6 +140,12 @@ class SourceSpec:
     priority: str = "unknown"          # intelligence priority: 'high' | 'medium' | 'low'
     precursor_stage: str = ""          # dominant capital-lifecycle stage this source observes, if any
     rights_note: str = ""              # licensing / commercial-use note ("unknown" allowed)
+    source_policy: SourcePolicy | None = None  # canonical reviewed rights profile; missing => deny
+
+    @property
+    def policy(self) -> SourcePolicy | None:
+        """Compatibility alias used by rights gates and operator inspection."""
+        return self.source_policy
 
 
 # Canonical economic-domain families (materially different observation surfaces, not endpoints).
@@ -61,6 +160,129 @@ FAMILIES = (
     "sanctions_trade",            # sanctions / export controls / trade restrictions
     "science_rd",                 # federal R&D / SBIR-STTR / innovation precursors
 )
+
+
+def _structured_policy(
+    *,
+    identity: str,
+    domain: str,
+    source_type: str,
+    rights_class: RightsClass = RightsClass.GREEN_WITH_CONDITIONS,
+    state: RightsState = RightsState.CURRENTLY_APPROVED,
+    storage: StorageMode = StorageMode.RAW_ALLOWED,
+    hosts: tuple[str, ...],
+    paths: tuple[str, ...],
+    methods: tuple[str, ...] = ("GET",),
+    reference_hosts: tuple[str, ...] = (),
+    reference_paths: tuple[str, ...] = (),
+    attribution: str = "Official source; retain a direct source URL.",
+    notes: str = "",
+) -> SourcePolicy:
+    """Build a deliberately narrow reviewed profile without inventing licence terms."""
+    return SourcePolicy(
+        identity=identity,
+        domain=domain,
+        source_type=source_type,
+        basis="Owner-approved constrained structured endpoint profile; licence and terms facts remain UNKNOWN.",
+        scope=paths,
+        access_method="structured_official_endpoint",
+        commercial_use="owner_approved_constrained_structured_use",
+        automated_access="conditional_reviewed_endpoint",
+        raw_storage=storage,
+        historical_retention="retain_point_in_time_evidence_when_permitted",
+        retention_rule="retain hash and reviewed representation; never delete history for a later rights change",
+        fact_use="structured_facts_only",
+        derived_use="permitted_derived_with_attribution",
+        excerpt_use="limited_excerpt_with_attribution",
+        excerpt_rule="at most 25 words with direct source URL and attribution",
+        fulltext_use="unknown",
+        redistribution="unknown",
+        attribution="required",
+        customer_display="permitted_current_policy_only",
+        model_use="derived_or_structured_only",
+        model_processing_allowed=True,
+        model_constraints=("structured facts or permitted derived content only", "retain attribution"),
+        third_party_use="unknown",
+        licence="unknown",
+        licence_required=False,
+        review_notes=notes,
+        rights_class=rights_class,
+        state=state,
+        allowed_hosts=hosts,
+        allowed_methods=methods,
+        allowed_path_prefixes=paths,
+        reference_hosts=reference_hosts,
+        reference_path_prefixes=reference_paths,
+        attribution_text=attribution,
+    )
+
+
+_USASPENDING_POLICY = _structured_policy(
+    identity="usaspending", domain="api.usaspending.gov", source_type="structured_award_index",
+    rights_class=RightsClass.GREEN, hosts=("api.usaspending.gov",),
+    paths=("/api/v2/search/", "/api/v2/recipient/", "/api/v2/award/", "/api/v2/subawards/"),
+    methods=("GET", "POST"),
+    reference_hosts=("www.usaspending.gov",),
+    reference_paths=("/award/", "/recipient/"),
+)
+_SAM_POLICY = _structured_policy(
+    identity="sam_opportunities", domain="api.sam.gov", source_type="structured_opportunity_index",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, hosts=("api.sam.gov",),
+    paths=("/opportunities/v2/search",), methods=("GET",),
+    reference_hosts=("sam.gov",), reference_paths=("/opp/",),
+    notes="Reject SAM HTML/workspace and sensitive entity APIs; validate payloads before archive/normalization.",
+)
+_FR_POLICY = _structured_policy(
+    identity="federal_register", domain="www.federalregister.gov", source_type="structured_register_index",
+    rights_class=RightsClass.GREEN, hosts=("www.federalregister.gov",),
+    paths=("/api/v1/documents.json",),
+    reference_hosts=("www.federalregister.gov",), reference_paths=("/documents/",),
+)
+_SEC_POLICY = _structured_policy(
+    identity="sec_edgar", domain="data.sec.gov", source_type="structured_government_index_metadata",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, storage=StorageMode.NORMALIZED_ONLY,
+    hosts=("data.sec.gov",), paths=("/submissions/", "/api/xbrl/companyfacts/"),
+    reference_hosts=("www.sec.gov", "sec.gov"), reference_paths=("/Archives/edgar/data/",),
+    notes="SEC structured submissions/company-facts metadata only; filing documents/fulltext are not blanket-approved.",
+)
+_OFAC_POLICY = _structured_policy(
+    identity="sanctions_ofac", domain="www.treasury.gov", source_type="fixed_structured_sanctions_csv",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, hosts=("www.treasury.gov",),
+    paths=("/ofac/downloads/sdn.csv", "/ofac/downloads/consolidated/"),
+)
+_GRANTS_POLICY = _structured_policy(
+    identity="grants_gov", domain="api.grants.gov", source_type="structured_funding_index",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, hosts=("api.grants.gov",),
+    paths=("/v1/api/",), methods=("POST",),
+)
+_SBIR_POLICY = _structured_policy(
+    identity="sbir", domain="api.www.sbir.gov", source_type="structured_award_index",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    hosts=("api.www.sbir.gov",), paths=("/public/api/awards",),
+    notes="Existing connector is retained for offline replay; live ingest remains disabled pending provider review.",
+)
+_AGENCY_ARTIFACT_POLICY = _structured_policy(
+    identity="agency_artifacts", domain="www.acquisition.gov", source_type="fixed_structured_agency_artifact",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY, hosts=("www.acquisition.gov",), paths=("/procurement-forecasts",),
+    notes="Only explicitly reviewed structured artifacts; no blanket federal public-domain assertion.",
+)
+
+_RESTRICTED_POLICIES = {
+    "reuters": SourcePolicy(identity="reuters", domain="reuters.com", source_type="premium_news",
+                             rights_class=RightsClass.BLACK, state=RightsState.INGEST_DISABLED),
+    "bloomberg": SourcePolicy(identity="bloomberg", domain="bloomberg.com", source_type="premium_news",
+                               rights_class=RightsClass.BLACK, state=RightsState.INGEST_DISABLED),
+    "linkedin": SourcePolicy(identity="linkedin", domain="linkedin.com", source_type="platform_scrape",
+                              rights_class=RightsClass.RED, state=RightsState.INGEST_DISABLED),
+    "x": SourcePolicy(identity="x", domain="x.com", source_type="platform_scrape",
+                      rights_class=RightsClass.RED, state=RightsState.INGEST_DISABLED),
+    "generic_corporate": SourcePolicy(identity="generic_corporate", domain="unknown",
+                                       source_type="corporate_disclosure", rights_class=RightsClass.AMBER,
+                                       state=RightsState.DISPLAY_DISABLED,
+                                       raw_storage=StorageMode.NORMALIZED_ONLY,
+                                       review_notes="No connector; explicit domain profile required before use."),
+}
 
 
 REGISTRY: dict[str, SourceSpec] = {
@@ -88,6 +310,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="high",
         precursor_stage="AWARD",
         rights_note="Public domain US government work.",
+        source_policy=_USASPENDING_POLICY,
     ),
     "sam_opportunities": SourceSpec(
         id="sam_opportunities",
@@ -113,6 +336,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="high",
         precursor_stage="PROCUREMENT",
         rights_note="Public domain data; API governed by SAM.gov terms — respect quota, no key rotation.",
+        source_policy=_SAM_POLICY,
     ),
     "federal_register": SourceSpec(
         id="federal_register",
@@ -141,6 +365,7 @@ REGISTRY: dict[str, SourceSpec] = {
             "Public domain US government work; keyless public API. 2026-09-09: filtered connectivity "
             "probe returned HTTP 200 with real documents; bytes archived offline (git-ignored var/)."
         ),
+        source_policy=_FR_POLICY,
     ),
     "sec_edgar": SourceSpec(
         id="sec_edgar",
@@ -165,7 +390,8 @@ REGISTRY: dict[str, SourceSpec] = {
         status="operational",
         priority="high",
         precursor_stage="",
-        rights_note="Public domain filings; SEC fair-access policy requires a descriptive User-Agent.",
+        rights_note="Reviewed structured SEC metadata only; corporate filings are not blanket public domain. Descriptive User-Agent required.",
+        source_policy=_SEC_POLICY,
     ),
     "acquisition_forecast": SourceSpec(
         id="acquisition_forecast",
@@ -194,6 +420,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="medium",
         precursor_stage="MARKET_ENGAGEMENT",
         rights_note="Public domain agency artifacts; per-agency column mappings required.",
+        source_policy=_AGENCY_ARTIFACT_POLICY,
     ),
     "grants_gov": SourceSpec(
         id="grants_gov",
@@ -223,6 +450,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="medium",
         precursor_stage="FUNDING",
         rights_note="Public domain US government work; keyless API.",
+        source_policy=_GRANTS_POLICY,
     ),
     "appropriations": SourceSpec(
         id="appropriations",
@@ -255,6 +483,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="high",
         precursor_stage="AUTHORIZATION",
         rights_note="Public domain budget artifacts.",
+        source_policy=_AGENCY_ARTIFACT_POLICY,
     ),
     # ---------------------------------------------------------------- M14 new families ---
     "sbir": SourceSpec(
@@ -266,7 +495,7 @@ REGISTRY: dict[str, SourceSpec] = {
         active=True,
         notes=(
             "M14: federal R&D awards — the earliest observable capability/commercialization precursor. "
-            "Keyless JSON; carries firm UEI/DUNS + agency/phase/topic, enabling a deterministic "
+            "Keyless JSON; carries firm UEI + agency/phase/topic, enabling a deterministic "
             "SBIR-award -> USAspending-prime-award entity chain (R&D precursor -> procurement lead time). "
             "This source enriches capability evidence and precursor chains; it never independently creates "
             "a candidate or STRIKE."
@@ -276,7 +505,7 @@ REGISTRY: dict[str, SourceSpec] = {
         access_method="rest_api",
         auth="none",
         incremental="award_year window + agency_tracking_number dedupe; start/rows pagination",
-        identifiers=("uei", "duns", "firm", "agency_tracking_number", "solicitation_number", "topic_code"),
+        identifiers=("uei", "firm", "agency_tracking_number", "solicitation_number", "topic_code"),
         links_to=("usaspending", "sec_edgar", "grants_gov", "sam_opportunities"),
         historical_depth="1983+ (multi-decade award history)",
         native_cadence="awards published as agencies report (batched)",
@@ -291,6 +520,7 @@ REGISTRY: dict[str, SourceSpec] = {
             "to api.www.sbir.gov/public/api/awards returned HTTP 403 (provider maintenance / bot-block); "
             "adapter validated offline on fixtures. Retry connectivity when the provider is available."
         ),
+        source_policy=_SBIR_POLICY,
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",
@@ -327,7 +557,39 @@ REGISTRY: dict[str, SourceSpec] = {
             "2026-09-09: host www.treasury.gov/ofac/downloads/sdn.csv confirmed (HTTP 200, 5.68MB, 19,365 "
             "designations); real bytes archived offline (git-ignored var/). Develop against the archive."
         ),
+        source_policy=_OFAC_POLICY,
     ),
+    # Explicitly represented restricted/unreviewed families have no connectors and are inactive.
+    **{
+        key: SourceSpec(
+            id=key,
+            name=key.replace("_", " ").title(),
+            base_url=("https://www.govinfo.gov" if key == "govinfo" else
+                      "https://www.congress.gov" if key == "congress" else
+                      "https://" + policy.domain),
+            rights="unknown",
+            retention_tier="C",
+            active=False,
+            status="blocked",
+            rights_note=policy.review_notes or "No connector; inactive until a fixed reviewed profile exists.",
+            source_policy=policy,
+        )
+        for key, policy in {
+            **_RESTRICTED_POLICIES,
+            "govinfo": SourcePolicy(identity="govinfo", domain="api.govinfo.gov",
+                                     source_type="structured_government_api", rights_class=RightsClass.GREEN_WITH_CONDITIONS,
+                                     state=RightsState.INGEST_DISABLED,
+                                     allowed_hosts=("api.govinfo.gov",), allowed_methods=("GET",),
+                                     allowed_path_prefixes=("/",),
+                                     review_notes="Inactive official API profile only; full documents remain unreviewed/default denied."),
+            "congress": SourcePolicy(identity="congress", domain="api.congress.gov",
+                                      source_type="structured_government_api", rights_class=RightsClass.GREEN_WITH_CONDITIONS,
+                                      state=RightsState.INGEST_DISABLED,
+                                      allowed_hosts=("api.congress.gov",), allowed_methods=("GET",),
+                                      allowed_path_prefixes=("/",),
+                                      review_notes="Inactive official API profile only; full documents remain unreviewed/default denied."),
+        }.items()
+    },
 }
 
 

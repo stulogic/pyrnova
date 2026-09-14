@@ -40,6 +40,10 @@ class Evidence:
     first_seen_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     id: str = field(default_factory=_uid)
     meta: dict = field(default_factory=dict)
+    # Rights provenance is additive and defaults preserve old archived records on replay.
+    source_rights_class_at_retrieval: Optional[str] = None
+    source_policy_version: Optional[str] = None
+    retrieved_at: Optional[str] = None
 
 
 @dataclass
