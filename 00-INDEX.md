@@ -85,6 +85,8 @@ a canonical authority or specification explicitly incorporates them.
   strategic data autonomy, rights-contamination control, vendor displacement (build deferred).
 - `docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` — two-faces posture, customer voice (with D-041),
   external secrecy default (NEED TO KNOW), visual/brand character, competitive reputation.
+- `docs/strategy/SOCIAL_GROWTH_AUTHORITY.md` — accepted SOCIAL-GROWTH-001 audience, distribution,
+  disclosure, rights, visual and human-approval authority; planning assets are linked from it.
 - `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon
   capabilities, non-authoritative over active work but binding on milestone-planning consultation.
 - `docs/architecture/` — current system structure and design boundaries. Includes the binding
