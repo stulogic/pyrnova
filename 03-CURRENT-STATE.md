@@ -125,11 +125,11 @@ Earlier materially different pilot structures are superseded. Historical documen
 
 ## Immediate execution state
 
-One implementation workstream is authorized:
+The broad **PHASE1-LIVE-OPS-CLOSURE** implementation workstream is **SUPERSEDED / RETIRED**; its coding phase is complete and **LIVE OPS ENGINEERING ACCEPTANCE — PASS**. No broad Live Ops coding workstream is active, and none should be reopened.
 
-**PHASE1-LIVE-OPS-CLOSURE**
+The only residual Live Ops state is **PHASE1 LIVE OPS ACCEPTANCE — SOAK IN PROGRESS / PINNED EVIDENCE** — a read-only acceptance activity, not a coding workstream. **CUSTOMER #1 — PENDING SUCCESSFUL SOAK.**
 
-See `02-EXECUTION.md`.
+Exact next Live Ops action: **wait until on/after 2026-09-19T20:03:50Z, then review the protected soak evidence (`var/phase1_soak/evidence_source_counter_fix_2026-09-12`) and classify PASS / FAIL / INVALID.** The running soak is read-only acceptance evidence; do not restart, reconfigure, or alter it or its evidence. See `02-EXECUTION.md` for the full disposition.
 
 The workstream must first determine which Live Operations requirements are already satisfied, then implement only genuine gaps. It has two separate acceptance gates:
 

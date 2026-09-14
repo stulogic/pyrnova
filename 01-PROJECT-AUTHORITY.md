@@ -188,7 +188,7 @@ Customer-private configuration, relevance, review state, and contributed context
 
 M21 and M22 are closed. Opportunity, Access, and Onboarding P0s are closed.
 
-The sole primary remaining design-customer P0 is **Live Operations / Data Volume Readiness**. `02-EXECUTION.md` authorizes exactly one immediate workstream: **PHASE1-LIVE-OPS-CLOSURE**.
+The primary remaining design-customer P0, **Live Operations / Data Volume Readiness**, has reached **LIVE OPS ENGINEERING ACCEPTANCE — PASS**; the broad **PHASE1-LIVE-OPS-CLOSURE** implementation workstream is **SUPERSEDED / RETIRED**. Its only residual state is a read-only soak acceptance activity (**PHASE1 LIVE OPS ACCEPTANCE — SOAK IN PROGRESS / PINNED EVIDENCE**); see `02-EXECUTION.md`. Do not reopen a broad Live Ops coding workstream.
 
 Do not invent further M22 lettered milestones to absorb new work. Do not broaden Pyrnova while closing Live Operations.
 

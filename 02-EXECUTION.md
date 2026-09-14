@@ -1,8 +1,33 @@
 # Pyrnova execution authority
 
-_Current execution window: **PHASE1-LIVE-OPS-CLOSURE** · authorized 2026-09-11_
+_Execution-window disposition · updated 2026-09-14_
 
-This document authorizes one immediate implementation workstream only. It does not authorize product expansion, a new product milestone family, or a redesign.
+## DISPOSITION — PHASE1-LIVE-OPS-CLOSURE broad implementation workstream: SUPERSEDED / RETIRED
+
+The broad **PHASE1-LIVE-OPS-CLOSURE** implementation workstream is **no longer active**. Its engineering objective is met and its coding phase is retired. Do **not** reopen it, relaunch it, or start another broad Live Ops coding session on the basis of anything below. Nothing in the historical body of this document is a live instruction to begin coding.
+
+**Recorded states (authoritative):**
+
+- **LIVE OPS ENGINEERING ACCEPTANCE — PASS** — 657 passed, 0 failed, 0 skipped; no remaining substantive engineering gap; no files changed during the verification pass.
+- **PHASE1-LIVE-OPS-CLOSURE — BROAD IMPLEMENTATION SUPERSEDED / RETIRED** — permanent name, not reused; the historical body below is preserved as provenance.
+- **PHASE1 LIVE OPS ACCEPTANCE — SOAK IN PROGRESS / PINNED EVIDENCE** — this residual state is a **read-only acceptance activity, not a coding workstream**.
+- **CUSTOMER #1 — PENDING SUCCESSFUL SOAK** — no GO / NO-GO until the evidence is reviewed on/after 2026-09-19T20:03:50Z.
+
+**The running soak is read-only acceptance evidence.** The canonical soak runs from pinned commit `e7cb2c98c3594166cbcb4d5691c0f370d4c5eb57`; protected evidence is `var/phase1_soak/evidence_source_counter_fix_2026-09-12`. Do **not** restart, reset, reseed, rebaseline, reconfigure, deploy into, rewrite, or otherwise alter the pinned runtime or its evidence. If a verified correctness defect is later discovered that would make the acceptance run invalid: **STOP AND REPORT** — do not correct or restart it automatically.
+
+**Exact next Live Ops action (the only one):**
+
+```text
+WAIT UNTIL ON/AFTER 2026-09-19T20:03:50Z
+-> REVIEW PROTECTED SOAK EVIDENCE (var/phase1_soak/evidence_source_counter_fix_2026-09-12)
+-> CLASSIFY PASS / FAIL / INVALID
+```
+
+Separate work items — **do not absorb into Live Ops**: Operator Alerts; Backup + Isolated Restore; SOURCE-RIGHTS-001 administrative closure; AS-OF / THEN-NOW; Website GO; production-access preparation.
+
+---
+
+_Historical provenance follows. When opened on 2026-09-11 this document authorized one immediate implementation workstream (no product expansion, new milestone family, or redesign). That authorization is spent; the text is retained only to record what the retired workstream required._
 
 Current product and commercial authority: `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
 

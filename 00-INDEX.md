@@ -116,7 +116,7 @@ a canonical authority or specification explicitly incorporates them.
 
 ## Current execution pointer
 
-`02-EXECUTION.md` authorizes exactly one immediate workstream: **PHASE1-LIVE-OPS-CLOSURE**.
+The broad **PHASE1-LIVE-OPS-CLOSURE** implementation workstream is **SUPERSEDED / RETIRED** (LIVE OPS ENGINEERING ACCEPTANCE — PASS). No broad Live Ops coding workstream is active. The only residual Live Ops state is **PHASE1 LIVE OPS ACCEPTANCE — SOAK IN PROGRESS / PINNED EVIDENCE**, a read-only acceptance activity; see `02-EXECUTION.md` for the disposition and the exact next action.
 
 The next decision after that workstream closes is **Customer #1 GO / NO-GO** for IronMountain Solutions.
 No broad product expansion is authorized before that decision.
