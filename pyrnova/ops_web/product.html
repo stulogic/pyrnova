@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pyrnova Live Intelligence</title>
+  <link rel="stylesheet" href="/access.css">
+  <link rel="stylesheet" href="/product.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead" role="banner">
+    <div class="brand"><span class="mark">PYRNOVA</span> <span class="tag">Live Intelligence</span></div>
+    <nav class="topnav" aria-label="Primary">
+      <a href="#/lens" data-nav="lens">Lens</a>
+      <a href="#/opportunities" data-nav="opportunities">Opportunities</a>
+      <a href="#/search" data-nav="search">Search</a>
+      <a href="/material.html">Material Changes</a>
+    </nav>
+    <div class="ident">
+      <label id="customer-field" hidden>Customer
+        <select id="customer" aria-label="Customer"></select>
+      </label>
+      <span id="org" class="org" aria-live="polite"></span>
+      <label class="asof-field">As&nbsp;of
+        <input id="asof" type="date" aria-label="As-of date (temporal view)">
+      </label>
+      <button id="signout" type="button" hidden>Sign out</button>
+    </div>
+  </header>
+
+  <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+
+  <main id="main" tabindex="-1" role="main"></main>
+
+  <footer class="foot" role="contentinfo">
+    Pyrnova composes source facts, Pyrnova-derived intelligence, and customer decisions — each labelled.
+    UNKNOWN is a legitimate state; source-rights restrictions fail closed.
+  </footer>
+
+  <script src="/access.js"></script>
+  <script src="/product.js"></script>
+</body>
+</html>

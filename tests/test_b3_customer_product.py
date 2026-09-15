@@ -177,6 +177,15 @@ def test_routes_serve_customer_surface_local_dev(tmp_path):
     assert code == 200 and json.loads(body)["opportunities"]["count"] > 0
 
 
+def test_customer_lens_app_assets_are_served(tmp_path):
+    console = _console(tmp_path)
+    policy = AccessPolicy(host="127.0.0.1", require_auth=False, expose_operator=True)
+    for path, needle in (("/", b"Live Intelligence"), ("/product.js", b"Customer Lens"),
+                         ("/product.css", b"masthead")):
+        code, body = _call(console, policy, None, "GET", path)
+        assert code == 200 and needle in body
+
+
 def test_brief_download_route_returns_attachment(tmp_path):
     console = _console(tmp_path)
     oid = _first_opp(console)

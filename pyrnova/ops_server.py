@@ -328,7 +328,11 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
         def _get_asset(self, path: str):
             # Customer-facing app shell + login assets are PUBLIC (the data behind them is protected).
             customer_assets = {
-                "/": ("material.html", "text/html; charset=utf-8"),
+                # B3.1: the Customer Lens is the customer-facing landing experience.
+                "/": ("product.html", "text/html; charset=utf-8"),
+                "/product.html": ("product.html", "text/html; charset=utf-8"),
+                "/product.js": ("product.js", "text/javascript; charset=utf-8"),
+                "/product.css": ("product.css", "text/css; charset=utf-8"),
                 "/material.html": ("material.html", "text/html; charset=utf-8"),
                 "/material.js": ("material.js", "text/javascript; charset=utf-8"),
                 "/material.css": ("material.css", "text/css; charset=utf-8"),
