@@ -6,7 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "pyrnova"
 version = "0.1.0"
 description = "Pyrnova — economic and commercial intelligence. Capture Radar kernel."
-requires-python = ">=3.10"
+# Verified runtime floor: CPython 3.9 (the release-candidate fresh-install verification runs green on
+# 3.9.6; the code uses no >=3.10-only runtime syntax). 3.11+ is the recommended production target. See
+# docs/operations/RELEASE_INSTALL.md.
+requires-python = ">=3.9"
 dependencies = [
     "requests>=2.31",
 ]

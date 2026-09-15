@@ -1,0 +1,18 @@
+# Pyrnova RUNTIME dependency lock — deterministic, fully pinned (B4.5).
+#
+# Reproducible install of the live product path (the requests-backed source fetch layer + its transitive
+# closure). Generated from the verified environment; pin exactly for release-candidate reproducibility.
+#   python -m venv .venv && . .venv/bin/activate
+#   pip install -r requirements.lock.txt
+#
+# Optional extras are intentionally NOT locked here (they are not required to run the kernel):
+#   s3:       boto3    (pyrnova/archive.py off-host object storage)
+#   postgres: psycopg  (future Postgres adapter; Phase 1 is single-node JSONL)
+#
+# Direct runtime dependency:
+requests==2.32.5
+# Transitive closure of requests (pinned):
+certifi==2026.7.22
+charset-normalizer==3.5.1
+idna==3.19
+urllib3==2.6.3

@@ -1,0 +1,17 @@
+# Pyrnova DEV/TEST dependency lock — deterministic, fully pinned (B4.5).
+#
+# Runtime lock + the test toolchain. Use this to reproduce the regression environment exactly:
+#   python -m venv .venv && . .venv/bin/activate
+#   pip install -r requirements-dev.lock.txt
+#   python -m pytest
+#
+-r requirements.lock.txt
+# Test runner + its pinned closure:
+pytest==8.4.2
+iniconfig==2.1.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+# Backports pytest needs on Python < 3.11:
+exceptiongroup==1.3.1
+tomli==2.4.1
