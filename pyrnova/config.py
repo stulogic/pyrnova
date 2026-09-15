@@ -105,3 +105,77 @@ def load_config() -> Config:
         state_dir=Path(_get("PYRNOVA_STATE_DIR", "./var/state")),
         out_dir=Path(_get("PYRNOVA_OUT_DIR", "./out")),
     )
+
+
+def _bool(name: str, default: bool) -> bool:
+    raw = _get(name)
+    if not raw:
+        return default
+    return raw.lower() in {"1", "true", "yes", "on"}
+
+
+def _float(name: str, default: float) -> float:
+    raw = _get(name)
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
+def _int(name: str, default: int) -> int:
+    raw = _get(name)
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+@dataclass(frozen=True)
+class AlertConfig:
+    """Operator-alert + dead-man configuration. All values come from the environment / gitignored ``.env``;
+    no credentials are ever baked into the tree. When ``recipients``/``sender``/``smtp_host`` are absent the
+    transport is explicitly *disabled* (alerts still persist durably; delivery is reported not_configured)."""
+
+    enabled: bool
+    recipients: tuple[str, ...]
+    sender: str
+    smtp_host: str
+    smtp_port: int
+    smtp_username: str
+    smtp_password: str
+    smtp_use_tls: bool
+    max_attempts: int
+    alert_state_dir: Path
+    heartbeat_dir: Path
+    deadman_component: str
+    deadman_max_silence_seconds: float
+
+    @property
+    def delivery_configured(self) -> bool:
+        """True only when a real sending identity exists (host + sender + at least one recipient)."""
+        return bool(self.smtp_host) and bool(self.sender) and bool(self.recipients)
+
+
+def load_alert_config() -> AlertConfig:
+    recipients_raw = _get("PYRNOVA_ALERT_RECIPIENTS")
+    recipients = tuple(r.strip() for r in recipients_raw.split(",") if r.strip())
+    return AlertConfig(
+        enabled=_bool("PYRNOVA_ALERT_ENABLED", True),
+        recipients=recipients,
+        sender=_get("PYRNOVA_ALERT_SENDER"),
+        smtp_host=_get("PYRNOVA_SMTP_HOST"),
+        smtp_port=_int("PYRNOVA_SMTP_PORT", 587),
+        smtp_username=_get("PYRNOVA_SMTP_USERNAME"),
+        # Password is a credential: prefer process env, then the gitignored local .env; never the tree.
+        smtp_password=_get("PYRNOVA_SMTP_PASSWORD") or _local_secret("PYRNOVA_SMTP_PASSWORD"),
+        smtp_use_tls=_bool("PYRNOVA_SMTP_USE_TLS", True),
+        max_attempts=_int("PYRNOVA_ALERT_MAX_ATTEMPTS", 3),
+        alert_state_dir=Path(_get("PYRNOVA_ALERT_STATE_DIR", "./var/alerts")),
+        heartbeat_dir=Path(_get("PYRNOVA_HEARTBEAT_DIR", "./var/heartbeat")),
+        deadman_component=_get("PYRNOVA_DEADMAN_COMPONENT", "live_ops"),
+        deadman_max_silence_seconds=_float("PYRNOVA_DEADMAN_MAX_SILENCE_SECONDS", 900.0),
+    )
