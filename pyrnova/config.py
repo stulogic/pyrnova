@@ -179,3 +179,57 @@ def load_alert_config() -> AlertConfig:
         deadman_component=_get("PYRNOVA_DEADMAN_COMPONENT", "live_ops"),
         deadman_max_silence_seconds=_float("PYRNOVA_DEADMAN_MAX_SILENCE_SECONDS", 900.0),
     )
+
+
+@dataclass(frozen=True)
+class CustomerDeliveryConfig:
+    """B4.3 — customer decision-brief email delivery configuration.
+
+    Distinct from :class:`AlertConfig` (operator alerts are a separate concern): customer-delivery
+    recipients are NOT read from configuration — they are operator-authorized per tenant at runtime — so
+    only the sending identity + SMTP transport come from here. All values come from the environment /
+    gitignored ``.env``; no credentials are ever baked into the tree. When ``smtp_host`` is absent the
+    transport is explicitly disabled (a send is recorded FAILED, never fabricated as delivered)."""
+
+    sender: str
+    smtp_host: str
+    smtp_port: int
+    smtp_username: str
+    smtp_password: str
+    smtp_use_tls: bool
+    max_attempts: int
+
+    @property
+    def transport_configured(self) -> bool:
+        """True only when a real SMTP sending endpoint exists (host + sender)."""
+        return bool(self.smtp_host) and bool(self.sender)
+
+
+def load_customer_delivery_config() -> CustomerDeliveryConfig:
+    """Resolve customer-delivery config from the environment (SMTP transport shared with alerts; a
+    dedicated delivery sender). Never returns fabricated credentials."""
+    return CustomerDeliveryConfig(
+        sender=_get("PYRNOVA_DELIVERY_SENDER", "briefs@pyrnova"),
+        smtp_host=_get("PYRNOVA_SMTP_HOST"),
+        smtp_port=_int("PYRNOVA_SMTP_PORT", 587),
+        smtp_username=_get("PYRNOVA_SMTP_USERNAME"),
+        # Password is a credential: prefer process env, then the gitignored local .env; never the tree.
+        smtp_password=_get("PYRNOVA_SMTP_PASSWORD") or _local_secret("PYRNOVA_SMTP_PASSWORD"),
+        smtp_use_tls=_bool("PYRNOVA_SMTP_USE_TLS", True),
+        max_attempts=_int("PYRNOVA_DELIVERY_MAX_ATTEMPTS", 3),
+    )
+
+
+def build_customer_delivery_transport(config: "CustomerDeliveryConfig | None" = None):
+    """Return the production customer-delivery transport resolved from configuration.
+
+    A real :class:`~pyrnova.alerts.SMTPEmailTransport` when SMTP is configured, else an explicit
+    :class:`~pyrnova.alerts.DisabledTransport` (a missing sending identity is NEVER treated as a delivered
+    mail — the delivery is recorded FAILED). This is the single production wiring seam for B4.3."""
+    from .alerts import DisabledTransport, SMTPEmailTransport
+    config = config or load_customer_delivery_config()
+    if config.transport_configured:
+        return SMTPEmailTransport(host=config.smtp_host, port=config.smtp_port,
+                                  username=config.smtp_username, password=config.smtp_password,
+                                  use_tls=config.smtp_use_tls)
+    return DisabledTransport(reason="customer delivery email transport not configured")

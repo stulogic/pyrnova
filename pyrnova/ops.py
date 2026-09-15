@@ -857,23 +857,30 @@ class OperatorConsole:
                        if r.get("customer_id") == customer_id and r.get("email")})
 
     def deliver_customer_brief(self, customer_id: str, opportunity_id: str, *, recipients,
-                               sender: str = "briefs@pyrnova", transport=None,
-                               as_of: str | None = None, max_attempts: int = 3) -> dict:
-        """B3.11 — deliver a bounded decision brief through the tenant-safe delivery contract.
+                               sender: str | None = None, transport=None,
+                               as_of: str | None = None, max_attempts: int | None = None) -> dict:
+        """B3.11 / B4.3 — deliver a bounded decision brief through the tenant-safe delivery contract.
 
-        Recipients must be operator-authorized for this tenant. With no real transport, the delivery is
-        recorded FAILED (never fabricated as delivered) and REAL DELIVERY VERIFICATION stays pending."""
+        Recipients must be operator-authorized for this tenant. When no transport is injected, the
+        production transport is resolved from configuration (B4.3): a real SMTP transport when SMTP is
+        configured, else an explicit DisabledTransport (the delivery is recorded FAILED, never fabricated
+        as delivered, and REAL EXTERNAL DELIVERY VERIFICATION stays an explicit dependency)."""
         self._require_access(customer_id)
         if self.delivery_store is None:
             raise ValueError("customer delivery is not configured (no delivery store)")
+        from .config import build_customer_delivery_transport, load_customer_delivery_config
         from .customer_delivery import deliver_customer_brief as _deliver
+        cfg = load_customer_delivery_config()
+        if transport is None:
+            transport = build_customer_delivery_transport(cfg)
         brief = self.build_customer_brief(customer_id, opportunity_id, as_of=as_of)
         return _deliver(
             self.delivery_store, customer_id=customer_id, artifact_ref=brief["artifact_ref"],
             subject=brief["subject"], body=brief["body"], recipients=recipients,
-            authorized_recipients=self._authorized_recipients(customer_id), sender=sender,
-            transport=transport, rights_display=brief["rights_display"],
-            content_sha256=brief["content_sha256"], max_attempts=max_attempts)
+            authorized_recipients=self._authorized_recipients(customer_id),
+            sender=sender or cfg.sender, transport=transport, rights_display=brief["rights_display"],
+            content_sha256=brief["content_sha256"],
+            max_attempts=max_attempts if max_attempts is not None else cfg.max_attempts)
 
     def list_customer_deliveries(self, customer_id: str) -> dict:
         """B3.11 — this tenant's delivery audit (tenant-isolated)."""
