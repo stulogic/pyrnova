@@ -533,7 +533,8 @@ class OperatorConsole:
                 "evidence": evidence_map}
         return gate_customer_display(stub, source_ids=self._opp_source_ids(o))["source_rights"]
 
-    def _opportunity_summary(self, o: dict, *, disposition: dict | None = None) -> dict:
+    def _opportunity_summary(self, o: dict, *, disposition: dict | None = None,
+                             pursuit: dict | None = None) -> dict:
         """Rights-gated prioritisation projection of one opportunity (native signals, no new score)."""
         ev = o.get("evidence") or []
         seen = [e.get("first_seen_at") for e in ev if e.get("first_seen_at")]
@@ -557,6 +558,8 @@ class OperatorConsole:
             "evidence_freshness": min(seen) if seen else None,
             # Customer's own disposition (Decision Memory) — distinct from Pyrnova judgment; None if none.
             "customer_disposition": disposition,
+            # B4.1 — compact recomputed pursuit verdict (UNKNOWN where evidence is insufficient).
+            "pursuit": pursuit or {"verdict": "UNKNOWN"},
             "provenance": "PYRNOVA_DERIVED",
         }
         rights = self._display_rights(o)
@@ -570,10 +573,18 @@ class OperatorConsole:
         """B3.3 — this customer's opportunity list, prioritisation-ready and tenant-isolated."""
         self._require_access(customer_id)
         from . import decision_memory as dm
+        from .customers import get_customer
+        from .opportunity_recompute import recompute_decision_components
         rows = self._read_opportunities(customer_id, as_of=as_of)
         disp_by_ref = {d.get("intelligence_ref"): d
                        for d in dm.list_dispositions(self.customer_store, customer_id, as_of=as_of)}
-        items = [self._opportunity_summary(o, disposition=disp_by_ref.get(o.get("id"))) for o in rows]
+        cp = get_customer(self.customer_store, customer_id) if self.customer_store is not None else None
+        items = []
+        for o in rows:
+            comp = recompute_decision_components(o, customer_profile=cp, as_of=as_of)
+            pv = comp.pursuit_verdict
+            pursuit = {"verdict": pv.disposition, "confidence": pv.confidence} if pv else {"verdict": "UNKNOWN"}
+            items.append(self._opportunity_summary(o, disposition=disp_by_ref.get(o.get("id")), pursuit=pursuit))
         # Deterministic priority order: nearest expected action first, then higher attractiveness.
         items.sort(key=lambda s: (s.get("expected_action_at") or "9999",
                                   -(s.get("signal", {}).get("attractiveness") or 0.0)))
@@ -604,7 +615,9 @@ class OperatorConsole:
         the underlying Bundle-2 pursuit inputs are not present in persisted state (they remain UNKNOWN)."""
         self._require_access(customer_id)
         from . import decision_memory as dm
+        from .customers import get_customer
         from .decision_object import assemble_decision
+        from .opportunity_recompute import recompute_decision_components
         from .sources.rights import gate_customer_display
 
         o = self._find_opportunity(customer_id, opportunity_id, as_of=as_of)
@@ -613,12 +626,54 @@ class OperatorConsole:
         related_mc = [c for c in feed if self._mc_touches_opportunity(c, o)]
         disposition = dm.latest_disposition(self.customer_store, customer_id, opportunity_id, as_of=as_of)
 
-        # Compose the B2.10 Integrated Decision contract by reference (material changes are canonical
-        # customer-feed records; other Bundle-2 verdicts stay None/UNKNOWN when not persisted — the
-        # decision object is designed to degrade gracefully).
+        # B4.1 — deterministically recompute the Bundle-2 verdicts for THIS opportunity from its persisted,
+        # accepted evidence (no second engine, no fabrication): each component stays None (UNKNOWN) where
+        # the evidence is genuinely insufficient. See pyrnova/opportunity_recompute.py.
+        cp = get_customer(self.customer_store, customer_id) if self.customer_store is not None else None
+        comp = recompute_decision_components(o, customer_profile=cp, as_of=as_of)
+
+        # Compose the B2.10 Integrated Decision contract by reference, now populated with the recomputed
+        # Bundle-2 components where evidence supports them (the object still degrades gracefully to UNKNOWN).
         integrated = assemble_decision(
             opportunity_ref=o.get("id"), program_key=o.get("program_key"),
-            material_changes=related_mc, as_of=as_of).to_record()
+            material_changes=related_mc, buyer_intelligence=comp.buyer_intelligence,
+            competitive_intelligence=comp.competitive_intelligence, vehicle_access=comp.vehicle_access,
+            fit_reasoning=comp.fit_reasoning, pursuit_verdict=comp.pursuit_verdict, as_of=as_of).to_record()
+
+        # Per-opportunity decision views derived from the recomputed components (UNKNOWN-safe).
+        buyer_view = {"agency": o.get("agency"), "status": "UNKNOWN"}
+        if comp.buyer_intelligence is not None:
+            buyer_view = {"agency": o.get("agency"), "status": "EVIDENCED",
+                          "buyer_intelligence": comp.buyer_intelligence.to_record()}
+        competitive_view = {"incumbent": o.get("incumbent"), "relationships": o.get("relationships") or [],
+                            "customer_is_incumbent": comp.customer_is_incumbent}
+        if comp.competitive_intelligence is not None:
+            competitive_view["competitive_intelligence"] = comp.competitive_intelligence.to_record()
+        access_view = comp.vehicle_access.to_record() if comp.vehicle_access is not None else {"status": "UNKNOWN"}
+        fit_view = {"relevance_score": o.get("relevance_score"),
+                    "relevance_reasons": o.get("relevance_reasons") or [],
+                    "status": "EVIDENCED" if (comp.fit_reasoning is not None or o.get("relevance_reasons"))
+                    else "UNKNOWN"}
+        if comp.fit_reasoning is not None:
+            fit_view["fit_reasoning"] = comp.fit_reasoning.to_record()
+        pursuit_view = {
+            "recommended_action": o.get("recommended_action"),
+            "native_signal": {"attractiveness": o.get("attractiveness"), "confidence": o.get("confidence")},
+            "verdict": "UNKNOWN",
+            "reversal_conditions": [o.get("falsification")] if o.get("falsification") else [],
+        }
+        if comp.pursuit_verdict is not None:
+            pv = comp.pursuit_verdict
+            pursuit_view.update({"verdict": pv.disposition, "confidence": pv.confidence, "why": pv.why,
+                                 "why_not": pv.why_not, "next_actions": pv.next_actions,
+                                 "pursuit_verdict": pv.to_record()})
+            if pv.reversal_conditions:
+                pursuit_view["reversal_conditions"] = pv.reversal_conditions
+        unknown_components = [n for n, v in (("buyer_intelligence", comp.buyer_intelligence),
+                                             ("competitive_intelligence", comp.competitive_intelligence),
+                                             ("vehicle_access", comp.vehicle_access),
+                                             ("fit_reasoning", comp.fit_reasoning),
+                                             ("pursuit_verdict", comp.pursuit_verdict)) if v is None]
 
         gated_evidence = [gate_customer_display(e, source_ids=[e.get("source_id")] if e.get("source_id") else None)
                           for e in (o.get("evidence") or [])]
@@ -628,21 +683,11 @@ class OperatorConsole:
             "why_now": {"kind": cat.get("kind"), "summary": cat.get("summary"),
                         "horizon_days": cat.get("horizon_days"), "detected_by": cat.get("detected_by"),
                         "expected_action_at": o.get("expected_action_at")},
-            "buyer": {"agency": o.get("agency"), "status": "UNKNOWN"},  # B2.3 not persisted per-opportunity
-            "incumbent_competitive": {"incumbent": o.get("incumbent"),
-                                      "relationships": o.get("relationships") or []},
-            "access": {"status": "UNKNOWN"},  # B2.5 vehicle/access not persisted per-opportunity
-            "customer_fit": {"relevance_score": o.get("relevance_score"),
-                             "relevance_reasons": o.get("relevance_reasons") or [],
-                             "status": "UNKNOWN" if not (o.get("relevance_reasons")) else "EVIDENCED"},
-            "pursuit": {
-                # Persisted recommendation + native signals — explicitly NOT a fabricated composite verdict.
-                "recommended_action": o.get("recommended_action"),
-                "native_signal": {"attractiveness": o.get("attractiveness"),
-                                  "confidence": o.get("confidence")},
-                "verdict": "UNKNOWN",  # B2.7 PURSUE/WATCH/INVESTIGATE/PASS requires inputs not persisted here
-                "reversal_conditions": [o.get("falsification")] if o.get("falsification") else [],
-            },
+            "buyer": buyer_view,                       # B2.3 recomputed from persisted evidence (else UNKNOWN)
+            "incumbent_competitive": competitive_view,  # B2.4 recomputed from persisted evidence (else UNKNOWN)
+            "access": access_view,                      # B2.5 recomputed from persisted evidence (else UNKNOWN)
+            "customer_fit": fit_view,                   # B2.6 recomputed from persisted evidence (else UNKNOWN)
+            "pursuit": pursuit_view,                    # B2.7 recomputed from persisted evidence (else UNKNOWN)
             "material_changes": [gate_customer_display(c) for c in related_mc],
             "next_action": o.get("recommended_action"),
             "evidence": gated_evidence,
@@ -652,8 +697,7 @@ class OperatorConsole:
                               if e.get("first_seen_at")])},
             "uncertainty": {"falsification": o.get("falsification"),
                             "confidence": o.get("confidence"),
-                            "unknown_components": ["buyer_intelligence", "vehicle_access",
-                                                   "pursuit_verdict"]},
+                            "unknown_components": unknown_components},
             "customer_disposition": disposition,  # Decision Memory (customer judgment), distinct from above
         }
         opp_rights = self._display_rights(o)
@@ -661,9 +705,11 @@ class OperatorConsole:
         rights_items += [c.get("source_rights") for c in decision_chain["material_changes"]]
         blocked = any(r and r.get("display") == "BLOCKED" for r in rights_items)
         if opp_rights.get("display") == "BLOCKED":
-            # A source policy denies customer display of this opportunity's basis — fail closed.
+            # A source policy denies customer display of this opportunity's basis — fail closed. The
+            # recomputed integrated decision carries derived narrative, so it is minimized here too.
             decision_chain = {"opportunity": {"id": o.get("id")}, "source_rights": opp_rights,
                               "customer_disposition": disposition}
+            integrated = {"opportunity_ref": o.get("id"), "source_rights": opp_rights}
         return {
             "customer_id": customer_id, "opportunity_id": opportunity_id, "as_of": as_of,
             "generated_at": _now(), "decision_chain": decision_chain,
@@ -765,7 +811,9 @@ class OperatorConsole:
             f"  Recommended: {dc['pursuit'].get('recommended_action')}",
             f"  Native signal: attractiveness={dc['pursuit']['native_signal'].get('attractiveness')} "
             f"confidence={dc['pursuit']['native_signal'].get('confidence')}",
-            f"  Verdict: {dc['pursuit'].get('verdict')} (Bundle-2 pursuit inputs not persisted here)",
+            (f"  Verdict: {dc['pursuit'].get('verdict')} (confidence {dc['pursuit'].get('confidence')})"
+             if dc['pursuit'].get('confidence')
+             else f"  Verdict: {dc['pursuit'].get('verdict')} (insufficient persisted evidence for a verdict)"),
             "",
             f"MATERIAL CHANGES: {len(dc['material_changes'])} affecting this opportunity",
             "",

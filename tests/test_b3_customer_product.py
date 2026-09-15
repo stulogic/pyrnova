@@ -69,9 +69,18 @@ def test_decision_view_is_coherent_and_fabricates_no_verdict(tmp_path):
     for key in ("why_now", "incumbent_competitive", "customer_fit", "pursuit", "material_changes",
                 "next_action", "evidence", "temporal", "uncertainty"):
         assert key in dc
-    # No fabricated PURSUE/WATCH/PASS verdict when Bundle-2 pursuit inputs are not persisted.
-    assert dc["pursuit"]["verdict"] == "UNKNOWN"
+    # B4.1 — the Bundle-2 verdict is now RECOMPUTED from persisted, accepted evidence (the Torch
+    # opportunity is a self-incumbent recompete). It is a real evidence-backed disposition with a
+    # qualitative (never a fabricated composite) confidence, not fabricated and not hard-coded UNKNOWN.
+    assert dc["pursuit"]["verdict"] in ("PURSUE", "WATCH", "INVESTIGATE", "PASS")
+    assert dc["pursuit"]["confidence"] in ("LOW", "MEDIUM", "HIGH")
     assert dc["pursuit"]["recommended_action"]  # the real persisted recommendation is still shown
+    # The verdict is evidence-backed (the derived pursuit verdict cites decisive evidence).
+    assert dc["pursuit"]["pursuit_verdict"]["reversal_conditions"]
+    # Buyer / access / fit are no longer hard-coded UNKNOWN where evidence supports them.
+    assert dc["buyer"]["status"] == "EVIDENCED"
+    assert dc["access"]["verdict"] == "DIRECT_ACCESS"
+    assert "pursuit_verdict" not in dc["uncertainty"]["unknown_components"]
     # The B2.10 Integrated Decision contract is composed by reference.
     assert dec["integrated_decision"]["integrated_decision_version"]
     assert dec["integrated_decision"]["opportunity_ref"] == oid

@@ -43,13 +43,15 @@ def test_torch_lens_is_usable_and_coherent(tmp_path):
     assert o["why_now"]["kind"] and o["incumbent"] and o["recommended_action"]
     dec = console.opportunity_decision("torch", o["id"])
     dc = dec["decision_chain"]
-    # evidence is real (usaspending) and pursuit verdict is honest UNKNOWN (not fabricated)
+    # evidence is real (usaspending); B4.1 recomputes an evidence-backed pursuit verdict (self-incumbent
+    # recompete) — a real disposition with qualitative confidence, not fabricated and not hard-coded UNKNOWN.
     assert any(e.get("source_id") == "usaspending" for e in dc["evidence"])
-    assert dc["pursuit"]["verdict"] == "UNKNOWN" and dc["pursuit"]["recommended_action"]
-    # brief representation is truthful (rights disposition present; no unsupported claim of certainty)
+    assert dc["pursuit"]["verdict"] in ("PURSUE", "WATCH", "INVESTIGATE", "PASS")
+    assert dc["pursuit"]["confidence"] in ("LOW", "MEDIUM", "HIGH") and dc["pursuit"]["recommended_action"]
+    # brief representation is truthful (rights disposition present; verdict + confidence, no fabricated score)
     brief = console.build_customer_brief("torch", o["id"])
     assert brief["rights_display"] in ("ALLOWED", "PARTIAL")
-    assert "Verdict: UNKNOWN" in brief["body"]
+    assert f"Verdict: {dc['pursuit']['verdict']} (confidence {dc['pursuit']['confidence']})" in brief["body"]
 
 
 def test_mtsi_lens_is_honestly_empty_not_fabricated(tmp_path):
