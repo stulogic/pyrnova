@@ -66,7 +66,8 @@ class OperatorConsole:
                  contexts_dir: Path | None = None,
                  customer_store: StateStore | None = None,
                  cmc_store: StateStore | None = None,
-                 access_check=None):
+                 access_check=None,
+                 delivery_store=None):
         self.store = store
         self.profiles_dir = Path(profiles_dir)
         self.out_dir = Path(out_dir)
@@ -89,6 +90,9 @@ class OperatorConsole:
         # is the single chokepoint a later AUTHENTICATED ACTOR -> AUTHORIZED CUSTOMER layer attaches to,
         # so no intelligence-model rewrite is needed to add auth. ``None`` means permissive (dev default).
         self.access_check = access_check
+        # B3.11: optional tenant-safe customer brief delivery store (CustomerDeliveryStore). None disables
+        # the delivery surface (it then reports as not configured rather than fabricating a send).
+        self.delivery_store = delivery_store
 
     def _require_access(self, customer_id: str) -> None:
         """Enforce the customer-authorization boundary (§6/§15). Rejects a mismatched/unauthorized id."""
@@ -475,6 +479,359 @@ class OperatorConsole:
         payload["source_rights"] = {"display": "PARTIAL" if any(v.get("source_rights", {}).get("display") == "BLOCKED" for v in versions) else "ALLOWED",
                                      "items": [v.get("source_rights") for v in versions]}
         return payload
+
+    # --- B3: customer product surface — opportunities, decision view, evidence, disposition, brief ---
+    #
+    # These surfaces expose the ALREADY-PERSISTED, accepted opportunity intelligence (Bundle-1 catalyst /
+    # confidence / attractiveness / incumbent / recommended action / falsification / evidence) and COMPOSE
+    # the Bundle-2 Integrated Decision contract (B2.10) by reference. They fabricate no verdict and invent
+    # no composite score: where a Bundle-2 component is not derivable from persisted state it is UNKNOWN.
+    # Every projection is tenant-scoped and rights-gated (fail closed).
+
+    def _read_opportunities(self, customer_id: str, *, as_of: str | None = None) -> list[dict]:
+        """This customer's persisted opportunities, point-in-time (no future evidence leaks in at as_of)."""
+        try:
+            rows = list(_latest(self.mc_store.read("opportunities")).values())
+        except Exception:  # noqa: BLE001 — degrade gracefully if the collection is absent
+            rows = []
+        rows = [o for o in rows if o.get("customer_id") == customer_id]
+        if as_of:
+            cutoff = str(as_of)
+            kept = []
+            for o in rows:
+                seen = [e.get("first_seen_at") for e in (o.get("evidence") or []) if e.get("first_seen_at")]
+                # Known at the cutoff only if some evidence was first seen at/before it (or no evidence times).
+                if not seen or min(seen) <= cutoff:
+                    kept.append(o)
+            rows = kept
+        return rows
+
+    def _find_opportunity(self, customer_id: str, opportunity_id: str, *, as_of: str | None = None) -> dict:
+        for o in self._read_opportunities(customer_id, as_of=as_of):
+            if o.get("id") == opportunity_id:
+                return o
+        raise ValueError(f"opportunity not found for customer: {opportunity_id}")
+
+    @staticmethod
+    def _opp_source_ids(o: dict) -> list[str]:
+        return sorted({e.get("source_id") for e in (o.get("evidence") or []) if e.get("source_id")})
+
+    def _display_rights(self, o: dict) -> dict:
+        """Source-policy display decision for an opportunity, via the canonical DERIVED-projection gate.
+
+        The opportunity's narrative (title/why-now/recommended action) is Pyrnova-DERIVED, not copied
+        source expression, so it is gated on the underlying source POLICY (is customer display permitted?)
+        exactly as the Material Changes feed's derived records are — not on the copied-prose heuristic that
+        governs verbatim source text. Fails closed to BLOCKED if a source policy denies customer display.
+        The raw source facts remain separately inspectable and gated via the Evidence Inspector (B3.6)."""
+        from .sources.rights import gate_customer_display
+        evidence_map = {e.get("id"): {"source_id": e.get("source_id"), "source_url": e.get("source_url")}
+                        for e in (o.get("evidence") or []) if e.get("id")}
+        stub = {"id": o.get("id"), "kind": "opportunity",
+                "observed": {"agency": o.get("agency")},
+                "assessment": {"is_assessment": True},
+                "evidence": evidence_map}
+        return gate_customer_display(stub, source_ids=self._opp_source_ids(o))["source_rights"]
+
+    def _opportunity_summary(self, o: dict, *, disposition: dict | None = None) -> dict:
+        """Rights-gated prioritisation projection of one opportunity (native signals, no new score)."""
+        ev = o.get("evidence") or []
+        seen = [e.get("first_seen_at") for e in ev if e.get("first_seen_at")]
+        cat = o.get("catalyst") or {}
+        summary = {
+            "id": o.get("id"),
+            "title": o.get("title"),
+            "agency": o.get("agency"),
+            "lifecycle_state": o.get("state"),
+            "incumbent": o.get("incumbent"),
+            "value_usd": o.get("value_usd"),
+            "expected_action_at": o.get("expected_action_at"),
+            "why_now": {"kind": cat.get("kind"), "summary": cat.get("summary"),
+                        "horizon_days": cat.get("horizon_days"),
+                        "detected_by": cat.get("detected_by")},
+            "recommended_action": o.get("recommended_action"),
+            # Native persisted signals surfaced as-is (labeled) — NOT combined into a fabricated composite.
+            "signal": {"attractiveness": o.get("attractiveness"), "confidence": o.get("confidence"),
+                       "relevance_score": o.get("relevance_score")},
+            "evidence_count": len(ev),
+            "evidence_freshness": min(seen) if seen else None,
+            # Customer's own disposition (Decision Memory) — distinct from Pyrnova judgment; None if none.
+            "customer_disposition": disposition,
+            "provenance": "PYRNOVA_DERIVED",
+        }
+        rights = self._display_rights(o)
+        if rights.get("display") == "BLOCKED":
+            # Fail closed: retain only stable identifiers + the rights decision.
+            return {"id": o.get("id"), "source_rights": rights}
+        summary["source_rights"] = rights
+        return summary
+
+    def customer_opportunities(self, customer_id: str, *, as_of: str | None = None) -> dict:
+        """B3.3 — this customer's opportunity list, prioritisation-ready and tenant-isolated."""
+        self._require_access(customer_id)
+        from . import decision_memory as dm
+        rows = self._read_opportunities(customer_id, as_of=as_of)
+        disp_by_ref = {d.get("intelligence_ref"): d
+                       for d in dm.list_dispositions(self.customer_store, customer_id, as_of=as_of)}
+        items = [self._opportunity_summary(o, disposition=disp_by_ref.get(o.get("id"))) for o in rows]
+        # Deterministic priority order: nearest expected action first, then higher attractiveness.
+        items.sort(key=lambda s: (s.get("expected_action_at") or "9999",
+                                  -(s.get("signal", {}).get("attractiveness") or 0.0)))
+        blocked = any(i.get("source_rights", {}).get("display") == "BLOCKED" for i in items)
+        return {
+            "customer_id": customer_id, "as_of": as_of, "generated_at": _now(),
+            "count": len(items), "opportunities": items,
+            "source_rights": {"display": "PARTIAL" if blocked else "ALLOWED",
+                              "items": [i.get("source_rights") for i in items]},
+        }
+
+    def _mc_touches_opportunity(self, change: dict, o: dict) -> bool:
+        refs = change.get("refs") or {}
+        subj = (change.get("observed") or {}).get("affected_entity")
+        incumbent = (o.get("incumbent") or "").strip().lower()
+        if incumbent and subj and incumbent == str(subj).strip().lower():
+            return True
+        prog = o.get("program_key")
+        return bool(prog and refs.get("program") == prog)
+
+    def opportunity_decision(self, customer_id: str, opportunity_id: str, *,
+                             as_of: str | None = None) -> dict:
+        """B3.4 — the core decision surface for one opportunity, coherently along the canonical chain.
+
+        Surfaces the persisted opportunity's native decision intelligence and COMPOSES the B2.10 Integrated
+        Decision contract by reference. Pursuit is presented as the opportunity's persisted recommended
+        action + native signals + reversal (falsification); no PURSUE/WATCH/PASS verdict is fabricated when
+        the underlying Bundle-2 pursuit inputs are not present in persisted state (they remain UNKNOWN)."""
+        self._require_access(customer_id)
+        from . import decision_memory as dm
+        from .decision_object import assemble_decision
+        from .sources.rights import gate_customer_display
+
+        o = self._find_opportunity(customer_id, opportunity_id, as_of=as_of)
+        cat = o.get("catalyst") or {}
+        feed = self.material_changes(customer_id, as_of=as_of)["material_changes"]
+        related_mc = [c for c in feed if self._mc_touches_opportunity(c, o)]
+        disposition = dm.latest_disposition(self.customer_store, customer_id, opportunity_id, as_of=as_of)
+
+        # Compose the B2.10 Integrated Decision contract by reference (material changes are canonical
+        # customer-feed records; other Bundle-2 verdicts stay None/UNKNOWN when not persisted — the
+        # decision object is designed to degrade gracefully).
+        integrated = assemble_decision(
+            opportunity_ref=o.get("id"), program_key=o.get("program_key"),
+            material_changes=related_mc, as_of=as_of).to_record()
+
+        gated_evidence = [gate_customer_display(e, source_ids=[e.get("source_id")] if e.get("source_id") else None)
+                          for e in (o.get("evidence") or [])]
+        decision_chain = {
+            "opportunity": {"id": o.get("id"), "title": o.get("title"), "agency": o.get("agency"),
+                            "lifecycle_state": o.get("state"), "value_usd": o.get("value_usd")},
+            "why_now": {"kind": cat.get("kind"), "summary": cat.get("summary"),
+                        "horizon_days": cat.get("horizon_days"), "detected_by": cat.get("detected_by"),
+                        "expected_action_at": o.get("expected_action_at")},
+            "buyer": {"agency": o.get("agency"), "status": "UNKNOWN"},  # B2.3 not persisted per-opportunity
+            "incumbent_competitive": {"incumbent": o.get("incumbent"),
+                                      "relationships": o.get("relationships") or []},
+            "access": {"status": "UNKNOWN"},  # B2.5 vehicle/access not persisted per-opportunity
+            "customer_fit": {"relevance_score": o.get("relevance_score"),
+                             "relevance_reasons": o.get("relevance_reasons") or [],
+                             "status": "UNKNOWN" if not (o.get("relevance_reasons")) else "EVIDENCED"},
+            "pursuit": {
+                # Persisted recommendation + native signals — explicitly NOT a fabricated composite verdict.
+                "recommended_action": o.get("recommended_action"),
+                "native_signal": {"attractiveness": o.get("attractiveness"),
+                                  "confidence": o.get("confidence")},
+                "verdict": "UNKNOWN",  # B2.7 PURSUE/WATCH/INVESTIGATE/PASS requires inputs not persisted here
+                "reversal_conditions": [o.get("falsification")] if o.get("falsification") else [],
+            },
+            "material_changes": [gate_customer_display(c) for c in related_mc],
+            "next_action": o.get("recommended_action"),
+            "evidence": gated_evidence,
+            "temporal": {"as_of": as_of, "expected_action_at": o.get("expected_action_at"),
+                         "evidence_first_seen": sorted(
+                             [e.get("first_seen_at") for e in (o.get("evidence") or [])
+                              if e.get("first_seen_at")])},
+            "uncertainty": {"falsification": o.get("falsification"),
+                            "confidence": o.get("confidence"),
+                            "unknown_components": ["buyer_intelligence", "vehicle_access",
+                                                   "pursuit_verdict"]},
+            "customer_disposition": disposition,  # Decision Memory (customer judgment), distinct from above
+        }
+        opp_rights = self._display_rights(o)
+        rights_items = [opp_rights] + [e.get("source_rights") for e in gated_evidence]
+        rights_items += [c.get("source_rights") for c in decision_chain["material_changes"]]
+        blocked = any(r and r.get("display") == "BLOCKED" for r in rights_items)
+        if opp_rights.get("display") == "BLOCKED":
+            # A source policy denies customer display of this opportunity's basis — fail closed.
+            decision_chain = {"opportunity": {"id": o.get("id")}, "source_rights": opp_rights,
+                              "customer_disposition": disposition}
+        return {
+            "customer_id": customer_id, "opportunity_id": opportunity_id, "as_of": as_of,
+            "generated_at": _now(), "decision_chain": decision_chain,
+            "integrated_decision": integrated,
+            "source_rights": {"display": "PARTIAL" if blocked else "ALLOWED", "items": rights_items},
+        }
+
+    def opportunity_evidence(self, customer_id: str, opportunity_id: str, evidence_id: str, *,
+                             as_of: str | None = None) -> dict:
+        """B3.6 — inspect one evidence item behind an opportunity, rights-gated (fail closed)."""
+        self._require_access(customer_id)
+        from .sources.rights import gate_customer_display
+        o = self._find_opportunity(customer_id, opportunity_id, as_of=as_of)
+        for e in (o.get("evidence") or []):
+            if e.get("id") == evidence_id:
+                gated = gate_customer_display(e, source_ids=[e.get("source_id")] if e.get("source_id") else None)
+                gated["doctrine"] = {"source_fact": e.get("source_id"),
+                                     "provenance": {"source_ref": e.get("source_ref"),
+                                                    "source_url": e.get("source_url"),
+                                                    "content_sha256": e.get("content_sha256"),
+                                                    "archive_uri": e.get("archive_uri")},
+                                     "observed_at": e.get("first_seen_at") or e.get("published_at"),
+                                     "retention_tier": e.get("retention_tier")}
+                return gated
+        raise ValueError(f"evidence not found on opportunity: {evidence_id}")
+
+    def customer_lens(self, customer_id: str, *, as_of: str | None = None) -> dict:
+        """B3.1 — the customer home: what changed, which opportunities matter, and what is uncertain."""
+        self._require_access(customer_id)
+        identity = self.customer_identity(customer_id) or {"id": customer_id, "name": customer_id}
+        changes = self.material_changes(customer_id, as_of=as_of)
+        opps = self.customer_opportunities(customer_id, as_of=as_of)
+        top = opps["opportunities"][:5]
+        uncertain = [{"id": o.get("id"), "title": o.get("title"),
+                      "confidence": (o.get("signal") or {}).get("confidence")}
+                     for o in opps["opportunities"]
+                     if ((o.get("signal") or {}).get("confidence") or 1.0) < 0.6]
+        blocked = (changes.get("source_rights", {}).get("display") == "PARTIAL"
+                   or opps.get("source_rights", {}).get("display") == "PARTIAL")
+        return {
+            "customer": identity, "as_of": as_of, "generated_at": _now(),
+            "material_changes": {"count": changes.get("count", 0),
+                                 "by_disposition": changes.get("by_disposition", {}),
+                                 "items": changes.get("material_changes", [])[:5]},
+            "opportunities": {"count": opps.get("count", 0), "top": top},
+            "uncertainty": {"low_confidence_opportunities": uncertain},
+            "source_rights": {"display": "PARTIAL" if blocked else "ALLOWED"},
+        }
+
+    def record_opportunity_disposition(self, customer_id: str, opportunity_id: str, *,
+                                       relevance: str = "UNKNOWN", novelty: str = "UNKNOWN",
+                                       pursuit: str = "UNKNOWN", timing: str = "UNKNOWN",
+                                       value: str = "UNKNOWN", important_miss: str = "UNKNOWN",
+                                       reason: str = "UNKNOWN", note: str | None = None,
+                                       outcome: str = "UNKNOWN") -> dict:
+        """B3.8 — record the customer's own disposition on an opportunity into Decision Memory.
+
+        This is CUSTOMER judgment (origin CUSTOMER_FEEDBACK), kept strictly distinct from Pyrnova's
+        assessment, and tenant-isolated. The opportunity must be visible to this customer."""
+        self._require_access(customer_id)
+        from . import decision_memory as dm
+        self._find_opportunity(customer_id, opportunity_id)  # tenancy + existence check (raises otherwise)
+        disp = dm.Disposition(customer_id=customer_id, intelligence_ref=opportunity_id,
+                              relevance=relevance, novelty=novelty, pursuit=pursuit, timing=timing,
+                              value=value, important_miss=important_miss, reason=reason, note=note,
+                              outcome=outcome)
+        return dm.record_disposition(self.customer_store, disp)
+
+    def build_customer_brief(self, customer_id: str, opportunity_id: str, *,
+                             as_of: str | None = None) -> dict:
+        """B3.10 — a bounded, deterministic, rights-aware decision brief for one opportunity.
+
+        Returns the brief text plus its content hash and rights disposition (for authenticated download and
+        for the delivery contract). Restricted source expression is never rendered (fail closed)."""
+        import hashlib
+        view = self.opportunity_decision(customer_id, opportunity_id, as_of=as_of)
+        dc = view["decision_chain"]
+        opp = dc["opportunity"]
+        rights_display = view["source_rights"]["display"]
+        lines = [
+            f"PYRNOVA DECISION BRIEF — {opp.get('title') or opp.get('id')}",
+            # No generation timestamp in the hashed body: the brief is DETERMINISTIC for a given
+            # (customer, opportunity, as-of, underlying data) so its content hash is audit-stable and the
+            # delivery contract can dedupe reissues.
+            f"Customer: {customer_id}    As-of: {as_of or 'current'}",
+            "",
+            f"OPPORTUNITY   {opp.get('id')}  ({opp.get('lifecycle_state')})",
+            f"Agency:       {opp.get('agency')}",
+            f"Est. value:   {opp.get('value_usd')}",
+            "",
+            f"WHY NOW       {dc['why_now'].get('kind')}: {dc['why_now'].get('summary')}",
+            f"Expected action by: {dc['why_now'].get('expected_action_at')}",
+            "",
+            f"INCUMBENT     {dc['incumbent_competitive'].get('incumbent')}",
+            f"CUSTOMER FIT  relevance_score={dc['customer_fit'].get('relevance_score')} "
+            f"({dc['customer_fit'].get('status')})",
+            "",
+            "PURSUIT",
+            f"  Recommended: {dc['pursuit'].get('recommended_action')}",
+            f"  Native signal: attractiveness={dc['pursuit']['native_signal'].get('attractiveness')} "
+            f"confidence={dc['pursuit']['native_signal'].get('confidence')}",
+            f"  Verdict: {dc['pursuit'].get('verdict')} (Bundle-2 pursuit inputs not persisted here)",
+            "",
+            f"MATERIAL CHANGES: {len(dc['material_changes'])} affecting this opportunity",
+            "",
+            "UNCERTAINTY",
+            f"  {dc['uncertainty'].get('falsification')}",
+            "",
+            f"EVIDENCE: {len(dc['evidence'])} item(s); source-rights display = {rights_display}",
+        ]
+        body = "\n".join(str(x) for x in lines)
+        content_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        return {
+            "customer_id": customer_id, "opportunity_id": opportunity_id, "as_of": as_of,
+            "subject": f"Pyrnova brief: {opp.get('title') or opp.get('id')}"[:200],
+            "artifact_ref": f"brief:{opportunity_id}:{as_of or 'current'}",
+            "body": body, "content_sha256": content_sha256,
+            "rights_display": rights_display,
+            "filename": f"pyrnova-brief-{opportunity_id}.txt",
+        }
+
+    # --- B3.11: customer brief delivery (wires the tenant-safe delivery contract) --------------------
+
+    _DELIVERY_RECIPIENTS_STREAM = "delivery_recipients"
+
+    def authorize_delivery_recipient(self, customer_id: str, email: str, *,
+                                     provenance: str = "operator") -> dict:
+        """Operator-provisioned: authorize an email to receive this tenant's briefs (append-only)."""
+        email = (email or "").strip().lower()
+        if not email or "@" not in email:
+            raise ValueError("a valid recipient email is required")
+        row = {"customer_id": customer_id, "email": email, "provenance": provenance,
+               "authorized_at": _now()}
+        self.customer_store.append(self._DELIVERY_RECIPIENTS_STREAM, row)
+        return row
+
+    def _authorized_recipients(self, customer_id: str) -> list[str]:
+        try:
+            rows = self.customer_store.read(self._DELIVERY_RECIPIENTS_STREAM)
+        except Exception:  # noqa: BLE001
+            return []
+        return sorted({r.get("email") for r in rows
+                       if r.get("customer_id") == customer_id and r.get("email")})
+
+    def deliver_customer_brief(self, customer_id: str, opportunity_id: str, *, recipients,
+                               sender: str = "briefs@pyrnova", transport=None,
+                               as_of: str | None = None, max_attempts: int = 3) -> dict:
+        """B3.11 — deliver a bounded decision brief through the tenant-safe delivery contract.
+
+        Recipients must be operator-authorized for this tenant. With no real transport, the delivery is
+        recorded FAILED (never fabricated as delivered) and REAL DELIVERY VERIFICATION stays pending."""
+        self._require_access(customer_id)
+        if self.delivery_store is None:
+            raise ValueError("customer delivery is not configured (no delivery store)")
+        from .customer_delivery import deliver_customer_brief as _deliver
+        brief = self.build_customer_brief(customer_id, opportunity_id, as_of=as_of)
+        return _deliver(
+            self.delivery_store, customer_id=customer_id, artifact_ref=brief["artifact_ref"],
+            subject=brief["subject"], body=brief["body"], recipients=recipients,
+            authorized_recipients=self._authorized_recipients(customer_id), sender=sender,
+            transport=transport, rights_display=brief["rights_display"],
+            content_sha256=brief["content_sha256"], max_attempts=max_attempts)
+
+    def list_customer_deliveries(self, customer_id: str) -> dict:
+        """B3.11 — this tenant's delivery audit (tenant-isolated)."""
+        self._require_access(customer_id)
+        rows = self.delivery_store.list_deliveries(customer_id) if self.delivery_store else []
+        return {"customer_id": customer_id, "deliveries": rows, "count": len(rows)}
 
     def source_operations(self) -> dict:
         """M12 Operations Panel view: durable per-source health + operator controls (read-only).

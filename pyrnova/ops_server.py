@@ -109,6 +109,16 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
                 raise ValueError("request too large")
             return json.loads(self.rfile.read(length) or b"{}")
 
+        def _download(self, filename: str, text: str):
+            body = text.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+
         def _asset(self, name: str, content_type: str):
             path = WEB_ROOT / name
             body = path.read_bytes()
@@ -277,6 +287,32 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
                 cid = self._require(LEVEL_CUSTOMER, query.get("customer", [None])[0])
                 return self._json(200, console.customer_material_change_versions(cid, change_id))
 
+            # --- B3: customer product surface (Lens / Opportunities / Decision / Evidence / Brief) -----
+            as_of = query.get("as_of", [None])[0]
+            if path == "/api/lens":  # B3.1
+                cid = self._require(LEVEL_CUSTOMER, query.get("customer", [None])[0])
+                return self._json(200, console.customer_lens(cid, as_of=as_of))
+            if path == "/api/opportunities":  # B3.3
+                cid = self._require(LEVEL_CUSTOMER, query.get("customer", [None])[0])
+                return self._json(200, console.customer_opportunities(cid, as_of=as_of))
+            if path.startswith("/api/opportunities/"):
+                parts = path.split("/")  # ['', 'api', 'opportunities', '<id>', ...]
+                oid = unquote(parts[3]) if len(parts) > 3 else ""
+                cid = self._require(LEVEL_CUSTOMER, query.get("customer", [None])[0])
+                if len(parts) == 5 and parts[4] == "decision":  # B3.4
+                    return self._json(200, console.opportunity_decision(cid, oid, as_of=as_of))
+                if len(parts) == 6 and parts[4] == "evidence":  # B3.6
+                    return self._json(200, console.opportunity_evidence(
+                        cid, oid, unquote(parts[5]), as_of=as_of))
+                if len(parts) == 5 and parts[4] == "brief":  # B3.10 authenticated brief download
+                    brief = console.build_customer_brief(cid, oid, as_of=as_of)
+                    if query.get("download", ["0"])[0] in ("1", "true", "yes"):
+                        return self._download(brief["filename"], brief["body"])
+                    return self._json(200, brief)
+                if len(parts) == 5 and parts[4] == "deliveries":  # B3.11 delivery audit
+                    return self._json(200, console.list_customer_deliveries(cid))
+                return self._json(404, {"error": "not found"})
+
             return self._get_asset(path)
 
         def _customer_overlay(self, requested: str | None) -> str | None:
@@ -367,6 +403,24 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
                     payload["actor"] = ctx.actor_label or ctx.credential_id
                 return self._json(200, console.record_customer_review(cid, change_id, **payload))
 
+            # --- B3: customer disposition (Decision Memory) + brief delivery --------------------------
+            if path.startswith("/api/opportunities/") and path.endswith("/disposition"):  # B3.8
+                oid = unquote(path.split("/")[3])
+                cid = self._require(LEVEL_CUSTOMER, payload.pop("customer", None))
+                return self._json(200, console.record_opportunity_disposition(cid, oid, **payload))
+
+            if path.startswith("/api/opportunities/") and path.endswith("/deliver"):  # B3.11
+                oid = unquote(path.split("/")[3])
+                cid = self._require(LEVEL_CUSTOMER, payload.pop("customer", None))
+                recipients = payload.get("recipients") or []
+                return self._json(200, console.deliver_customer_brief(cid, oid, recipients=recipients))
+
+            # Operator-provisioned recipient authorization for a tenant (onboarding, §18).
+            if path.startswith("/api/customers/") and path.endswith("/delivery-recipients"):
+                cid = unquote(path.split("/")[3])
+                self._require(LEVEL_OPERATOR)
+                return self._json(200, console.authorize_delivery_recipient(cid, payload.get("email", "")))
+
             return self._json(404, {"error": "not found"})
 
         def log_message(self, format, *args):
@@ -386,10 +440,12 @@ def _build_console(cfg, state_store: StateStore, policy: AccessPolicy) -> Operat
     # Defense in depth: bind the console's authorization seam to the per-request actor when auth is
     # enforced; leave it permissive (historical) only in local dev with no credentials.
     check = access.request_access_check if policy.require_auth else None
+    from .customer_delivery import CustomerDeliveryStore
+    delivery_store = CustomerDeliveryStore(Path(cfg.state_dir) / "deliveries")
     return OperatorConsole(
         state_store, Path("examples/profiles"), cfg.out_dir,
         mc_store=mc_store, contexts_dir=demo_dir, customer_store=state_store,
-        cmc_store=state_store, access_check=check)
+        cmc_store=state_store, access_check=check, delivery_store=delivery_store)
 
 
 def main(argv=None) -> int:
