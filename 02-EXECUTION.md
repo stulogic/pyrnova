@@ -6,6 +6,10 @@ This document authorizes one immediate implementation workstream only. It does n
 
 Current product and commercial authority: `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
 
+Mandatory pre-release work order: `docs/specs/PRELAUNCH_CONVERGENCE_001.md` (D-066). No pre-launch-complete
+/ Customer #1 production-ready declaration or production activation while any mandatory CLOSE item is
+materially incomplete. Current owner authorization: **Gate 0 + Bundle 1 only.**
+
 ## Current status
 
 - Phase One Constitution: **COMPLETE AND LOCKED**.

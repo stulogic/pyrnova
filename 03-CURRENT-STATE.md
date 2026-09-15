@@ -40,6 +40,13 @@ SOURCE
 
 Capture Radar and the Business Opportunity Pipeline are preserved as implementation and historical lineage. They do not override the current product/category authority.
 
+**Pre-release gate:** `PRELAUNCH-CONVERGENCE-001` is the mandatory pre-release work order
+(`docs/specs/PRELAUNCH_CONVERGENCE_001.md`, D-066). Release is prohibited while any mandatory CLOSE item
+is materially incomplete; the governing acceptance measure is customer usefulness, expressed through the
+`SIGNAL → OPPORTUNITY → BUYER → INCUMBENT → ACCESS → CUSTOMER FIT → PURSUIT DECISION → MATERIAL CHANGE →
+CUSTOMER ACTION → OUTCOME → LEARNING` decision chain (a refinement of the lineage above). Final Live Ops
+acceptance is revised to require an immutable pinned release/worktree isolated from development.
+
 ## Milestone and P0 status
 
 - M2-M21: **CLOSED**.
