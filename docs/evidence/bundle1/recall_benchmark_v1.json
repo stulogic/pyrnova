@@ -1,0 +1,292 @@
+{
+  "benchmark_items": [
+    {
+      "canonical_identity": "proc-nasa-hls-2019",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2019-09-30T23:59:59+00:00",
+      "mechanism_family": "procurement",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "procurement case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "proc-usps-ngdv-2016",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2016-09-16T23:59:59+00:00",
+      "mechanism_family": "procurement",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "procurement case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "proc-gsa-oasis-plus-2023",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2023-06-15T23:59:59+00:00",
+      "mechanism_family": "procurement",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "procurement case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "proc-army-heating-lines-1987",
+      "classification_reasonable": "YES",
+      "detected": "N/A (true negative \u2014 correctly not surfaced)",
+      "ground_truth_label": "TRUE_NEGATIVE",
+      "important_miss": "NO",
+      "info_as_of": "1987-09-01T23:59:59+00:00",
+      "mechanism_family": "procurement",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "procurement case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "grant-chips-fab-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2022-08-09T23:59:59+00:00",
+      "mechanism_family": "grants_industrial_policy",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "grants_industrial_policy case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "grant-bead-nofo-2021",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-11-15T23:59:59+00:00",
+      "mechanism_family": "grants_industrial_policy",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "grants_industrial_policy case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "grant-nevi-guidance-2021",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-11-15T23:59:59+00:00",
+      "mechanism_family": "grants_industrial_policy",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "grants_industrial_policy case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "grant-tech-hubs-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2022-08-09T23:59:59+00:00",
+      "mechanism_family": "grants_industrial_policy",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "grants_industrial_policy case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "reg-osha-covid-ets-2021",
+      "classification_reasonable": "YES",
+      "detected": "N/A (true negative \u2014 correctly not surfaced)",
+      "ground_truth_label": "TRUE_NEGATIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-11-05T23:59:59+00:00",
+      "mechanism_family": "regulation_compliance",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "regulation_compliance case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "reg-sec-climate-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "PARTIAL",
+      "important_miss": "NO",
+      "info_as_of": "2022-03-21T23:59:59+00:00",
+      "mechanism_family": "regulation_compliance",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "regulation_compliance case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "reg-fda-traceability-2020",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2020-09-23T23:59:59+00:00",
+      "mechanism_family": "regulation_compliance",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "regulation_compliance case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "reg-epa-methane-2021",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-11-15T23:59:59+00:00",
+      "mechanism_family": "regulation_compliance",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "regulation_compliance case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "capex-intel-ohio-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "PARTIAL",
+      "important_miss": "NO",
+      "info_as_of": "2022-01-21T23:59:59+00:00",
+      "mechanism_family": "capex_expansion",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "capex_expansion case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "capex-tsmc-arizona-2020",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2020-05-15T23:59:59+00:00",
+      "mechanism_family": "capex_expansion",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "capex_expansion case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "capex-amazon-hq2-2018",
+      "classification_reasonable": "YES",
+      "detected": "N/A (true negative \u2014 correctly not surfaced)",
+      "ground_truth_label": "TRUE_NEGATIVE",
+      "important_miss": "NO",
+      "info_as_of": "2018-11-13T23:59:59+00:00",
+      "mechanism_family": "capex_expansion",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "capex_expansion case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "disruption-colonial-pipeline-2021",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-05-08T23:59:59+00:00",
+      "mechanism_family": "disruption_distress",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "disruption_distress case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "disruption-abbott-formula-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2022-02-17T23:59:59+00:00",
+      "mechanism_family": "disruption_distress",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "disruption_distress case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "disruption-east-palestine-2023",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2023-02-06T23:59:59+00:00",
+      "mechanism_family": "disruption_distress",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "disruption_distress case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "tech-ie11-retirement-2021",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "TRUE_POSITIVE",
+      "important_miss": "NO",
+      "info_as_of": "2021-05-19T23:59:59+00:00",
+      "mechanism_family": "technology_migration",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "technology_migration case in the canonical evaluation corpus"
+    },
+    {
+      "canonical_identity": "tech-nist-sha1-transition-2022",
+      "classification_reasonable": "YES",
+      "detected": "YES",
+      "ground_truth_label": "AMBIGUOUS",
+      "important_miss": "NO",
+      "info_as_of": "2022-12-15T23:59:59+00:00",
+      "mechanism_family": "technology_migration",
+      "note": "internal (self-sourced) recall; not customer-ground-truthed",
+      "why_in_benchmark": "technology_migration case in the canonical evaluation corpus"
+    }
+  ],
+  "frozen_before_tuning": true,
+  "frozen_on": "2026-09-15",
+  "important_miss_blindness_categories": [
+    {
+      "category": "SOURCE_COVERAGE_GAP",
+      "commercial_tolerability": "LOW \u2014 these are the earliest precursors and the core 'sufficiently early' edge; feeds the owner rights-posture decision recorded in Gate 0 and the CLOSE items budget/program/procurement lineage + opportunity lifecycle continuity.",
+      "evidence": "Gate 0 adjudication + pyrnova/sources/registry.py: SBIR live ingest is INGEST_DISABLED; appropriations and acquisition_forecast are UNPROFILED/ingest-disabled (Gate 0 Category-C blocker).",
+      "miss_shape": "Opportunities observable ONLY through SBIR R&D-award precursors, agency procurement forecasts, or budget/appropriations lines cannot currently be detected from live ingest.",
+      "severity": "MATERIAL"
+    },
+    {
+      "category": "GROUND_TRUTH_GAP",
+      "commercial_tolerability": "TOLERABLE PRE-LAUNCH ONLY IF the Customer Usefulness Ledger (B1.4) captures real customer NOVELTY/RELEVANCE/IMPORTANT-MISS dispositions so ground truth accrues from live use.",
+      "evidence": "No customer-ground-truthed GovCon recall corpus exists; measured recall is over the pipeline's own self-sourced corpus (corpus_v1.json).",
+      "miss_shape": "Internal FNR 0.0 confirms self-consistency, not that Pyrnova finds what a real Torch/MTSI capture team independently judged important.",
+      "severity": "MATERIAL"
+    },
+    {
+      "category": "CORROBORATION_THIN",
+      "commercial_tolerability": "TOLERABLE \u2014 falsification framing is shown to the customer; revisit at soak volume.",
+      "evidence": "replay-corpus mean_corroboration_count = 0.0 on corpus_v1 (single-source cases).",
+      "miss_shape": "Credibility of early single-source signals is unproven at volume; multi-source corroboration appears in the dry run (both STRIKEs multi_source=2) but not in this corpus.",
+      "severity": "LIMITED"
+    },
+    {
+      "category": "VOLUME_UNTESTED",
+      "commercial_tolerability": "DEFERRED to the isolated real-volume soak (revised Live Ops acceptance).",
+      "evidence": "B1.1 dry run universe is 5 candidates; real-volume flood/recall is unmeasured.",
+      "miss_shape": "Recall and flood behavior at production data volume are not established.",
+      "severity": "LIMITED"
+    }
+  ],
+  "internal_recall_headline": "FNR 0.0 / strike precision 0.667 / median lead 306.5 days on 20 self-sourced cases \u2014 self-consistency, NOT independent customer recall",
+  "measured_internal_baseline": {
+    "case_count": 20,
+    "confusion_matrix": {
+      "false_reject": 0,
+      "false_strike": 1,
+      "true_reject": 0,
+      "true_strike": 2,
+      "watch_negative": 2,
+      "watch_positive": 12
+    },
+    "false_negative_rate": 0.0,
+    "false_positive_rate": 0.3333,
+    "ground_truth_distribution": {
+      "AMBIGUOUS": 1,
+      "PARTIAL": 2,
+      "TRUE_NEGATIVE": 3,
+      "TRUE_POSITIVE": 14
+    },
+    "mean_corroboration_count": 0.0,
+    "median_lead_time_by_mechanism": {
+      "capex_expansion": 306.5,
+      "disruption_distress": 19,
+      "grants_industrial_policy": 191.0,
+      "procurement": 412,
+      "regulation_compliance": 789,
+      "technology_migration": 392
+    },
+    "median_lead_time_days": 306.5,
+    "source": "pyrnova replay-corpus (scoring_v1)",
+    "strike_precision": 0.6667,
+    "watch_conversion_rate": 0.8571
+  },
+  "method": "existing evidence only: canonical replay corpus + measured `pyrnova replay-corpus` metrics; no web-research programme; historical failed soak evidence untouched",
+  "schema_version": "recall_benchmark_v1",
+  "scoring_changed": false
+}
