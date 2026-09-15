@@ -2,9 +2,11 @@
 
 **Deliverable:** Pyrnova public informational website.
 **Target state:** `WEBSITE GO / OUTREACH INTAKE DISABLED` (State 1).
-**Current revision:** B (Revision A was owner-reviewed and acceptance was withheld).
+**Current revision:** B, with final polish pass applied (Revision A acceptance was withheld;
+Revision B was conditionally accepted; this pass applies six bounded refinements).
 **Prepared:** 2026-09-15.
-**Status:** REVISION B, READY FOR OWNER REVIEW. Claude does not grant final owner acceptance.
+**Status:** REVISION B FINAL POLISH COMPLETE, READY FOR FINAL OWNER ACCEPTANCE. Claude does not
+grant final owner acceptance.
 
 State 1 means: safe to publish as an informational site; not safe to use as a public
 evaluation-intake destination. Public evaluation intake (State 2) is a separate,
@@ -13,6 +15,57 @@ separately-authorized workstream and is intentionally not built here.
 Branch `website-go-001`, isolated from the Live Ops soak (built on pinned base
 `e7cb2c98c3594166cbcb4d5691c0f370d4c5eb57`). Imports no product code; shares no runtime,
 state, secrets or configuration with `pyrnova/`, `ops/`, `var/`; never touches the soak.
+
+---
+
+## Revision B final polish pass
+
+Applied on the protected Revision B baseline `9cbe0ea`. Six bounded refinements only; no
+redesign. Every locked element (visual direction, canonical mark and wordmark, dark palette,
+cyan-as-signal, telemetry treatment, specimen prominence, product-forward first viewport,
+product UI continuity, evidence/uncertainty/provenance/AS OF grammar, page architecture, State
+1 intake-disabled state, zero em dash, trust posture) was preserved.
+
+Files changed: `website-go/src/site.mjs`, `website-go/assets/site.css`,
+`website-go/tests/site.test.mjs`, `website-go/evidence/screenshots/*`, and this record.
+
+1. **Mobile readability.** Added a narrow-screen typography block: specimen metadata bumped up
+   1 to 2px (facts labels/values 13px, monospaced values 12px, evidence chips 12px, why-detail
+   14px, badges 12px, caption 10.5px, foot 12.5px), with more specimen padding. Density and the
+   authentic product grammar preserved; the headline was not inflated. Before: 10 to 12px
+   metadata was hard to read at 390px. After: materially clearer, still dense.
+2. **Mobile navigation.** Replaced the horizontal-scroll strip (which hid RESEARCH and COMPANY)
+   with a wrapping module strip so all five section routes plus EVALUATE are visible at 390px.
+   Before: two routes were only reachable by an undiscoverable horizontal scroll. After: every
+   route is visible. Restrained language kept; no SaaS drawer or hamburger introduced.
+3. **State 1 CTA semantics.** The primary button copy changed from "Evaluate Pyrnova" to
+   "See how evaluation works" on the home hero and the closing section, and the closing heading
+   changed from "Evaluate Pyrnova against ..." to "An evaluation tests Pyrnova against ...".
+   EVALUATE is retained as the nav/section label and the evaluate page kicker (terminology kept
+   for a future OUTREACH READY state). A test now rejects any button copy implying active
+   submission. No intake, form, booking, mailto or founder-contact path was added.
+4. **Home hero hierarchy.** The second line "Know what it changes." was changed from `--ink-dim`
+   to full `--ink`, so it no longer reads as disabled or unimportant. Composition and tone
+   unchanged.
+5. **Public terminology.** NIGHTGLASS is not established canonical public terminology under
+   current authority (no supporting material exists in the repository), so it was removed from
+   specimen captions and the footer. The required `SYNTHETIC SPECIMEN` disclosure is retained.
+   No replacement terminology was invented. A test asserts NIGHTGLASS does not appear publicly.
+6. **Minor copy tightening.** The closing heading reword above is the only copy change beyond the
+   CTA wording; positioning was not touched and no generic marketing language was introduced.
+
+Additional defect fixed during verification (necessary for the required no-overflow check): the
+decorative hero telemetry field bled ~8px past the viewport, adding to page scroll width. The
+field is now clipped to the hero box (`.hero { overflow: hidden }`); measured page scroll width
+now equals the viewport at 390, 500 and 1440 (no horizontal page overflow). The field's
+appearance is unchanged.
+
+Verification: `npm run build` PASS; `npm test` 14/14 PASS (adds State 1 CTA-semantics and
+NIGHTGLASS-absence checks); em dash count 0 across source and `dist/`; all seven routes
+re-rendered at 1440px and true 390px; no horizontal overflow; specimens remain credible and
+clearly synthetic; all routes discoverable on mobile; CTA represents State 1; no intake or data
+collection introduced; no product code or Live Ops soak touched. Screenshots refreshed in
+`website-go/evidence/screenshots/`.
 
 ---
 

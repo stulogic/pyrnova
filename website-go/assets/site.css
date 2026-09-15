@@ -123,6 +123,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 26px; }
 /* ---------- hero / product theatre ---------- */
 .hero {
   position: relative;
+  overflow: hidden; /* clip the decorative telemetry field so its bleed never causes page overflow */
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: 48px;
@@ -142,7 +143,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 26px; }
   font-size: clamp(2.1rem, 3.4vw, 3.15rem); line-height: 1.08; letter-spacing: -0.02em;
   font-weight: 600; max-width: 15ch;
 }
-.hero h1 .l2 { color: var(--ink-dim); }
+.hero h1 .l2 { color: var(--ink); }
 .hero .lead {
   color: var(--ink-dim); font-size: 1.02rem; line-height: 1.6; margin: 22px 0 30px; max-width: 46ch;
 }
@@ -345,19 +346,39 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 26px; }
   html { scroll-padding-top: 128px; }
   .masthead { flex-wrap: wrap; gap: 12px 18px; padding: 12px 18px; }
   .brand .module { display: none; }
-  .nav-wrap { order: 3; width: 100%; margin-left: 0; gap: 0; }
-  nav.primary {
-    width: 100%; gap: 18px; overflow-x: auto; padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    border-top: 1px solid var(--line); padding-top: 10px;
-  }
-  nav.primary::-webkit-scrollbar { display: none; }
+  /* All routes visible: wrap the module strip instead of hiding routes in a scroller. */
+  .nav-wrap { order: 3; width: 100%; margin-left: 0; flex-wrap: wrap; gap: 12px 16px;
+    border-top: 1px solid var(--line); padding-top: 12px; }
+  nav.primary { width: auto; flex-wrap: wrap; gap: 12px 16px; }
+  nav.primary a { padding: 2px 0; font-size: 11.5px; }
   .nav-cta { margin-left: auto; }
   main { padding: 0 18px; }
   .section { padding: 44px 0; }
   .grid-2, .grid-3, .split { grid-template-columns: 1fr; }
   .chain { grid-template-columns: 1fr; }
   .signal-trace { display: none; }
+  /* Narrow-screen readability: nudge the smallest product metadata up 1-2px and give the
+     specimen more room, without inflating the headline or losing information density. */
+  .spec-body { padding: 16px 16px 18px; }
+  .spec .headline { font-size: 16.5px; }
+  .spec-caption { font-size: 10.5px; letter-spacing: 0.1em; }
+  .why-detail { font-size: 14px; }
+  .relevance-basis { font-size: 12px; }
+  .badge { font-size: 12px; }
+  .facts { gap: 7px 12px; }
+  .facts dt, .facts dd { font-size: 13px; }
+  .facts dd.mono { font-size: 12px; }
+  .evidence { font-size: 13px; }
+  .evidence .chip { font-size: 12px; padding: 3px 9px; }
+  .uncertainty { font-size: 12.5px; }
+  .spec-foot { font-size: 12.5px; }
+  .spec-foot .prov { font-size: 11.5px; }
+  .obj p { font-size: 13.5px; }
+  .result .r-meta, .result .r-right { font-size: 12.5px; }
+  .idchip { font-size: 12.5px; }
+  .hist .h-at { font-size: 12.5px; }
+  .hist .h-sum { font-size: 13.5px; }
+  .meta-rows dd { font-size: 14.5px; }
   .facts dd { text-align: left; }
   .meta-rows > div { grid-template-columns: 1fr; gap: 6px; }
   .hist .h-row { flex-direction: column; gap: 3px; }

@@ -35,7 +35,7 @@ function footer() {
   const links = [...nav, { label: 'EVALUATE', path: evaluatePath }]
     .map((n) => `<a href="${n.path}">${n.label}</a>`)
     .join('');
-  return `<footer class="site-footer"><div class="footer-inner"><div class="f-brand">${MARK.replace('width="26" height="26"', 'width="24" height="24"')}<span class="mark">PYRNOVA</span></div><nav aria-label="Footer navigation">${links}</nav></div><p class="f-note">Company-specific consequence intelligence for federal contractors. This informational website does not collect personal data and does not accept evaluation submissions. Specimens shown are synthetic and illustrate product structure; they are not live production output and represent no customer or source event. Nightglass is Pyrnova's internal research and demonstration corpus.</p></footer>`;
+  return `<footer class="site-footer"><div class="footer-inner"><div class="f-brand">${MARK.replace('width="26" height="26"', 'width="24" height="24"')}<span class="mark">PYRNOVA</span></div><nav aria-label="Footer navigation">${links}</nav></div><p class="f-note">Company-specific consequence intelligence for federal contractors. This informational website does not collect personal data and does not accept evaluation submissions. Specimens shown are synthetic and illustrate product structure; they are not live production output and represent no customer or source event.</p></footer>`;
 }
 
 // ---- Material Change specimen (canonical .change grammar) ----
@@ -55,7 +55,7 @@ function spec(d) {
         .map((f) => `<li>${f}</li>`)
         .join('')}</ul></div>`
     : '';
-  return `<article class="spec ${d.disposition}"><div class="spec-caption"><span>${caption}</span><span class="synthetic">SYNTHETIC SPECIMEN / NIGHTGLASS</span></div><div class="spec-body"><div class="spec-top"><span class="disposition ${d.disposition}">${d.dispoLabel}</span>${badges}</div><h3 class="headline">${d.headline}</h3><div class="why"><span class="why-label">Why it matters</span><span class="why-detail">${d.why}</span><span class="relevance-basis">${d.relevance}</span></div><div class="split"><div class="pane observed"><span class="pane-label">Observed fact</span>${facts(d.observed)}</div><div class="pane assessed"><span class="pane-label">Pyrnova assessment</span>${facts(d.assessed)}</div></div>${evidence}${uncertainty}<div class="spec-foot"><span>Point in time <b class="asof">AS OF ${d.asof}</b></span><span class="prov">${d.provenance}</span></div></div></article>`;
+  return `<article class="spec ${d.disposition}"><div class="spec-caption"><span>${caption}</span><span class="synthetic">SYNTHETIC SPECIMEN</span></div><div class="spec-body"><div class="spec-top"><span class="disposition ${d.disposition}">${d.dispoLabel}</span>${badges}</div><h3 class="headline">${d.headline}</h3><div class="why"><span class="why-label">Why it matters</span><span class="why-detail">${d.why}</span><span class="relevance-basis">${d.relevance}</span></div><div class="split"><div class="pane observed"><span class="pane-label">Observed fact</span>${facts(d.observed)}</div><div class="pane assessed"><span class="pane-label">Pyrnova assessment</span>${facts(d.assessed)}</div></div>${evidence}${uncertainty}<div class="spec-foot"><span>Point in time <b class="asof">AS OF ${d.asof}</b></span><span class="prov">${d.provenance}</span></div></div></article>`;
 }
 
 // Reusable specimens (synthetic; federal-contracting domain; mirror real product structure).
@@ -212,7 +212,7 @@ function temporalAxis() {
 </svg></div>`;
 }
 
-const closing = `<section class="closing"><div><h2>Evaluate Pyrnova against a real external change affecting your organization.</h2><p>See the company-specific consequence, the evidence behind it, the uncertainty it keeps visible and the point in time it was knowable.</p></div><a class="button" href="${evaluatePath}">Evaluate Pyrnova</a></section>`;
+const closing = `<section class="closing"><div><h2>An evaluation tests Pyrnova against a real external change affecting your organization.</h2><p>See the company-specific consequence, the evidence behind it, the uncertainty it keeps visible and the point in time it was knowable.</p></div><a class="button" href="${evaluatePath}">See how evaluation works</a></section>`;
 
 // ---------------- pages ----------------
 const pages = {
@@ -221,7 +221,7 @@ const pages = {
     title: 'Pyrnova - Company-specific consequence intelligence',
     description:
       'Pyrnova detects consequential external change, traces its effect on a specific organization, and shows the evidence, uncertainty and point-in-time basis behind each conclusion.',
-    body: `<section class="hero">${heroField()}<div class="hero-copy"><span class="status-line"><span class="live" aria-hidden="true"></span>Phase 1 · Material Changes · Illustrative specimen</span><h1>Know what changed.<br><span class="l2">Know what it changes.</span></h1><p class="lead">Pyrnova detects consequential external change, traces its effect on a specific organization, and shows the evidence, uncertainty and point-in-time basis behind each conclusion.</p><div class="cta-row"><a class="button" href="${evaluatePath}">Evaluate Pyrnova</a><a class="button secondary" href="/intelligence/">See the intelligence</a></div></div><div class="hero-spec">${spec(specRecompete)}</div></section>
+    body: `<section class="hero">${heroField()}<div class="hero-copy"><span class="status-line"><span class="live" aria-hidden="true"></span>Phase 1 · Material Changes · Illustrative specimen</span><h1>Know what changed.<br><span class="l2">Know what it changes.</span></h1><p class="lead">Pyrnova detects consequential external change, traces its effect on a specific organization, and shows the evidence, uncertainty and point-in-time basis behind each conclusion.</p><div class="cta-row"><a class="button" href="${evaluatePath}">See how evaluation works</a><a class="button secondary" href="/intelligence/">See the intelligence</a></div></div><div class="hero-spec">${spec(specRecompete)}</div></section>
     <section class="section"><div class="sec-head"><h2>Signal to consequence</h2><span class="sec-meta">The path behind every Material Change</span></div><p class="sec-intro">A change in the outside world becomes commercially meaningful only when it is connected to a specific organization. Pyrnova traces that path and keeps the basis inspectable at each step.</p>${signalTrace()}<div class="chain" style="margin-top:18px">${[
       ['01', 'Signal', 'A consequential external change is observed and its source record retained.'],
       ['02', 'Material change', 'The change is structured as an object, separating observed fact from assessment.'],

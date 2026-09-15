@@ -34,8 +34,9 @@ test('every route renders a complete document with masthead, main and footer', (
 test('home carries the locked message, both CTAs and a Material Change specimen in first view', () => {
   const html = renderPage('/', {});
   assert.ok(html.includes('Know what changed.') && html.includes('Know what it changes.'));
-  assert.ok(html.includes('Evaluate Pyrnova'));
+  assert.ok(html.includes('See how evaluation works'));
   assert.ok(html.includes('See the intelligence'));
+  assert.ok(html.includes('href="/evaluate/"'), 'home CTA must link to the informational evaluate page');
   // Product specimen present before any section boundary (first viewport).
   const heroEnd = html.indexOf('class="section"');
   const hero = html.slice(0, heroEnd);
@@ -101,6 +102,22 @@ test('NO page exposes mailto, tel, api endpoint or booking/forms provider', () =
     assert.ok(!/\/api\//i.test(html), `${r} references an api endpoint`);
     assert.ok(!/calendly|cal\.com|savvycal|hubspot|typeform|formspree/i.test(html), `${r} references a booking/forms provider`);
   }
+});
+
+test('State 1 CTA semantics: no button implies active submission', () => {
+  const buttonRe = /<a class="button[^"]*"[^>]*>([^<]+)<\/a>/g;
+  const banned = /(submit|apply|sign\s?up|start your|request an evaluation|book|schedule|get started|request a)/i;
+  for (const r of routes) {
+    const html = renderPage(r, {});
+    let m;
+    while ((m = buttonRe.exec(html))) {
+      assert.ok(!banned.test(m[1]), `${r} CTA "${m[1].trim()}" implies active intake`);
+    }
+  }
+});
+
+test('NIGHTGLASS is not used in public specimen labels', () => {
+  assert.ok(!/nightglass/i.test(allHtml), 'public presentation must not use NIGHTGLASS terminology');
 });
 
 test('evaluate page states intake is not open, shows output specimen, offers no submission', () => {
