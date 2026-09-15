@@ -26,6 +26,7 @@ async function build() {
 
   await copyFile(join(root, 'assets', 'site.css'), join(outDir, 'site.css'));
   await copyFile(join(root, 'assets', 'favicon.svg'), join(outDir, 'favicon.svg'));
+  await copyFile(join(root, 'assets', 'pyrnova-mark.svg'), join(outDir, 'pyrnova-mark.svg'));
   await writeFile(join(outDir, 'robots.txt'), robotsTxt(origin), 'utf8');
   await writeFile(join(outDir, 'sitemap.xml'), sitemapXml(origin), 'utf8');
 

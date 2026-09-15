@@ -1,4 +1,4 @@
-# Pyrnova public website — WEBSITE-GO-001
+# Pyrnova public website. WEBSITE-GO-001 (Revision B)
 
 **Target state: WEBSITE GO / OUTREACH INTAKE DISABLED (State 1).**
 Safe to publish as an informational site. **Not** a public evaluation-intake destination.
@@ -8,12 +8,21 @@ Branch `website-go-001`, isolated from the Live Ops soak (built on pinned base
 shares no runtime, state, secrets or configuration with `pyrnova/`, `ops/`, `var/`,
 and never touches the running soak.
 
-## What this is
+## What this is (Revision B)
 
-A static, dependency-free informational website. Node's standard library renders
-fixed content into `dist/` as one static HTML file per route. There is **no** server
-logic in the published output, **no** JavaScript, **no** forms, **no** analytics, and
-**no** data-collection endpoint of any kind.
+A static, dependency-free informational website that reads as a controlled window into
+the product. Node's standard library renders fixed content into `dist/` as one static
+HTML file per route. There is **no** server logic in the published output, **no**
+JavaScript, **no** forms, **no** analytics, and **no** data-collection endpoint of any
+kind. Motion is CSS only and respects `prefers-reduced-motion`.
+
+It reuses the canonical product grammar from `pyrnova/ops_web` (Material Change objects:
+disposition, materiality, confidence, observed fact vs Pyrnova assessment, evidence
+chips, uncertainty and falsifier, AS OF, provenance) and the canonical brand mark from
+`docs/brand/notion` (`assets/pyrnova-mark.svg`, cropped from the canonical header; no
+invented logo). Canonical brand cyan `#25cfe8` is used as signal only. All specimens are
+synthetic and clearly labelled; none is presented as live production output. Copy follows
+the Product Language Authority (D-041) and contains zero em dash characters (test-enforced).
 
 ## Build, test, preview
 

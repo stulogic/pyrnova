@@ -1,16 +1,19 @@
-// Pyrnova public website — State 1 content.
-// WEBSITE GO / OUTREACH INTAKE DISABLED.
-// Static informational site. No forms, no personal-data collection, no intake endpoints.
-// Content is server-rendered once at build time into static HTML.
+// Pyrnova public website content - Revision B.
+// WEBSITE GO / OUTREACH INTAKE DISABLED (State 1).
+//
+// Doctrine followed:
+//  - Corporate posture & brand (D-054): discretion + intelligence + competence + control;
+//    dark, architectural, expensive without ostentation; canonical cyan as signal only.
+//  - Product Language Authority (D-041): functional, precise, operational copy; no slogans,
+//    no rhetorical headings, no generic startup prose. ZERO em dash characters in public copy.
+//  - Reuses the canonical product grammar from pyrnova/ops_web (Material Change objects:
+//    disposition / materiality / confidence / observed fact / Pyrnova assessment / why it
+//    matters / evidence / uncertainty / AS OF / provenance). The website is a controlled
+//    static window into the product; all specimens are clearly labelled synthetic.
+//  - Canonical mark/wordmark only (docs/brand/notion). No invented logo.
 
-const arrow = '<span aria-hidden="true">↗</span>';
-const label = (text) => `<p class="eyebrow">${text}</p>`;
-const intro = (n, title, text) =>
-  `<div class="section-intro">${label(n)}<h2>${title}</h2>${text ? `<p>${text}</p>` : ''}</div>`;
-const button = (text, href, secondary = false) =>
-  `<a class="button${secondary ? ' secondary' : ''}" href="${href}">${text} ${arrow}</a>`;
+const MARK = '<img class="brandmark" src="/pyrnova-mark.svg" alt="" width="26" height="26">';
 
-// Primary navigation is locked authority.
 export const nav = [
   { label: 'INTELLIGENCE', path: '/intelligence/' },
   { label: 'METHOD', path: '/method/' },
@@ -20,121 +23,336 @@ export const nav = [
 ];
 const evaluatePath = '/evaluate/';
 
-// Reusable closing call-to-action. Points to the informational EVALUATE page only.
-const closing = `<section class="closing"><div>${label('Evaluate Pyrnova')}<h2>Test Pyrnova against a real external change affecting your organization.</h2><p>See the consequence, the evidence behind it, the uncertainty and the point in time it was knowable.</p></div>${button('Evaluate Pyrnova', evaluatePath)}</section>`;
+function masthead(path, module) {
+  const links = nav
+    .map((n) => `<a href="${n.path}"${path === n.path ? ' aria-current="page"' : ''}>${n.label}</a>`)
+    .join('');
+  const evalCurrent = path === evaluatePath ? ' aria-current="page"' : '';
+  return `<header class="masthead"><a class="brand" href="/" aria-label="Pyrnova home">${MARK}<span class="mark">PYRNOVA</span><span class="module">${module}</span></a><div class="nav-wrap"><nav class="primary" aria-label="Sections">${links}</nav><a class="nav-cta" href="${evaluatePath}"${evalCurrent}><span class="dot" aria-hidden="true"></span>Evaluate</a></div></header>`;
+}
 
-// Illustrative evidence panel shared on the home and intelligence pages.
-const evidencePanel = `<aside class="evidence-panel" aria-label="Illustrative consequence intelligence structure"><div class="panel-top"><span>INTELLIGENCE STRUCTURE</span><span>ILLUSTRATIVE</span></div><div class="panel-body"><p class="eyebrow">01 / External change</p><h2>A program changes its acquisition approach.</h2><div class="connector" aria-hidden="true"></div><p class="eyebrow accent">02 / Company-specific consequence</p><p class="panel-consequence">An engineering supplier's route to market may shift from a direct award to a teaming position.</p><div class="evidence-row"><span>Evidence</span><strong>Source-linked reasoning</strong></div><div class="evidence-row"><span>Uncertainty</span><strong>Vehicle &amp; scope unresolved</strong></div><div class="evidence-row"><span>Falsifier</span><strong>Direct award path retained</strong></div><p class="panel-note">Hypothetical example. No customer, source event or product result is represented.</p></div><div class="panel-bottom"><span>FACT ≠ ASSESSMENT</span><span>PRIOR STATE PRESERVED</span></div></aside>`;
+function footer() {
+  const links = [...nav, { label: 'EVALUATE', path: evaluatePath }]
+    .map((n) => `<a href="${n.path}">${n.label}</a>`)
+    .join('');
+  return `<footer class="site-footer"><div class="footer-inner"><div class="f-brand">${MARK.replace('width="26" height="26"', 'width="24" height="24"')}<span class="mark">PYRNOVA</span></div><nav aria-label="Footer navigation">${links}</nav></div><p class="f-note">Company-specific consequence intelligence for federal contractors. This informational website does not collect personal data and does not accept evaluation submissions. Specimens shown are synthetic and illustrate product structure; they are not live production output and represent no customer or source event. Nightglass is Pyrnova's internal research and demonstration corpus.</p></footer>`;
+}
 
+// ---- Material Change specimen (canonical .change grammar) ----
+function facts(rows) {
+  return `<dl class="facts">${rows
+    .map(([dt, dd, mono]) => `<dt>${dt}</dt><dd${mono ? ' class="mono"' : ''}>${dd}</dd>`)
+    .join('')}</dl>`;
+}
+function spec(d) {
+  const caption = d.caption || 'MATERIAL CHANGE';
+  const badges = `<div class="badges"><span class="badge" title="Severity of the economic consequence if the assessment holds">Materiality<b>${d.materiality}</b></span><span class="badge" title="How strongly retained evidence supports the assessment">Confidence<b>${d.confidence}</b></span></div>`;
+  const evidence = `<div class="evidence"><span class="label">Evidence</span>${d.evidence
+    .map((e) => `<span class="chip${e.cls ? ' ' + e.cls : ''}">${e.text}</span>`)
+    .join('')}</div>`;
+  const uncertainty = d.falsifiers
+    ? `<div class="uncertainty"><span class="u-label">Would weaken or falsify</span><ul>${d.falsifiers
+        .map((f) => `<li>${f}</li>`)
+        .join('')}</ul></div>`
+    : '';
+  return `<article class="spec ${d.disposition}"><div class="spec-caption"><span>${caption}</span><span class="synthetic">SYNTHETIC SPECIMEN / NIGHTGLASS</span></div><div class="spec-body"><div class="spec-top"><span class="disposition ${d.disposition}">${d.dispoLabel}</span>${badges}</div><h3 class="headline">${d.headline}</h3><div class="why"><span class="why-label">Why it matters</span><span class="why-detail">${d.why}</span><span class="relevance-basis">${d.relevance}</span></div><div class="split"><div class="pane observed"><span class="pane-label">Observed fact</span>${facts(d.observed)}</div><div class="pane assessed"><span class="pane-label">Pyrnova assessment</span>${facts(d.assessed)}</div></div>${evidence}${uncertainty}<div class="spec-foot"><span>Point in time <b class="asof">AS OF ${d.asof}</b></span><span class="prov">${d.provenance}</span></div></div></article>`;
+}
+
+// Reusable specimens (synthetic; federal-contracting domain; mirror real product structure).
+const specRecompete = {
+  disposition: 'threat',
+  dispoLabel: 'THREAT',
+  materiality: 'High',
+  confidence: 'Moderate',
+  headline: 'A sustainment requirement is consolidated into a multiple-award services vehicle.',
+  why: 'Direct-award pursuit basis weakens for a subject supplier that lacks access to the vehicle.',
+  relevance: 'WATCHED PROGRAM',
+  observed: [
+    ['Source event', 'Acquisition strategy notice'],
+    ['Program', 'Program of record sustainment', true],
+    ['Vehicle', 'Multiple-award IDIQ', true],
+    ['Published', '2026-09-08', true],
+  ],
+  assessed: [
+    ['Exposure path', 'Vehicle access gap'],
+    ['Consequence', 'Route to market shift'],
+    ['Prior thesis', 'Direct pursuit'],
+    ['Materiality band', 'High', true],
+  ],
+  evidence: [
+    { text: 'notice:SAM 3 refs', cls: 'raw' },
+    { text: 'corroboration: single source', cls: 'single' },
+    { text: 'program crosswalk', cls: '' },
+  ],
+  falsifiers: [
+    'A separate direct-award path is retained for the requirement.',
+    'The engineering scope leaves the consolidated vehicle.',
+  ],
+  asof: '2026-09-11',
+  provenance: 'ev:9f2a · src:acq-notice',
+};
+const specTeaming = {
+  disposition: 'opportunity',
+  dispoLabel: 'OPPORTUNITY',
+  materiality: 'Moderate',
+  confidence: 'Moderate',
+  headline: 'A prime adds a task order aligned to a subject supplier capability.',
+  why: 'A teaming position becomes commercially significant where direct access is limited.',
+  relevance: 'CAPABILITY MATCH',
+  observed: [
+    ['Source event', 'Award modification'],
+    ['Prime', 'Incumbent integrator'],
+    ['Scope added', 'Modeling and simulation'],
+    ['Observed', '2026-09-09', true],
+  ],
+  assessed: [
+    ['Exposure path', 'Subcontract relationship'],
+    ['Consequence', 'Pursuit reprioritization'],
+    ['Confidence basis', 'One authoritative source'],
+    ['Materiality band', 'Moderate', true],
+  ],
+  evidence: [
+    { text: 'award:USASpending', cls: 'raw' },
+    { text: 'corroboration: single source', cls: 'single' },
+  ],
+  falsifiers: ['The added scope is self-performed by the prime.'],
+  asof: '2026-09-11',
+  provenance: 'ev:41c7 · src:award-mod',
+};
+const specBudget = {
+  disposition: 'monitoring',
+  dispoLabel: 'MONITORING',
+  materiality: 'Moderate',
+  confidence: 'Low',
+  headline: 'A budget line supporting a watched program is marked for restructuring.',
+  why: 'Timing and scope of the watched program may move; no commercial consequence is established yet.',
+  relevance: 'WATCHED PROGRAM',
+  observed: [
+    ['Source event', 'Budget justification change'],
+    ['Instrument', 'Program element', true],
+    ['Direction', 'Restructure, amount unresolved'],
+    ['Observed', '2026-09-10', true],
+  ],
+  assessed: [
+    ['Exposure path', 'Timing uncertainty'],
+    ['Consequence', 'Unresolved'],
+    ['State', 'Monitoring'],
+    ['Materiality band', 'Moderate', true],
+  ],
+  evidence: [{ text: 'doc:budget-just', cls: 'raw' }, { text: 'corroboration: single source', cls: 'single' }],
+  falsifiers: ['Later evidence restores the original program timing and amount.'],
+  asof: '2026-09-11',
+  provenance: 'ev:7b10 · src:budget-doc',
+};
+
+// ---- deterministic environmental graphics ----
+function heroField() {
+  const nodes = [
+    [128, 300, 2.2],
+    [232, 96, 1.8],
+    [360, 356, 2],
+    [470, 150, 2.4],
+    [96, 168, 1.6],
+  ];
+  const dots = nodes
+    .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#333c47"/>`)
+    .join('');
+  return `<div class="hero-field" aria-hidden="true"><svg viewBox="0 0 600 460" preserveAspectRatio="xMidYMid slice" fill="none">
+<g stroke="#1a2129" stroke-width="1">
+${Array.from({ length: 7 }, (_, i) => `<line x1="${i * 100}" y1="0" x2="${i * 100}" y2="460"/>`).join('')}
+${Array.from({ length: 5 }, (_, i) => `<line x1="0" y1="${i * 100 + 30}" x2="600" y2="${i * 100 + 30}"/>`).join('')}
+</g>
+<g stroke="#2b3a45" stroke-width="1" fill="none">
+<circle cx="452" cy="232" r="150"/>
+<circle cx="452" cy="232" r="96"/>
+<ellipse cx="300" cy="240" rx="288" ry="130" transform="rotate(-14 300 240)"/>
+</g>
+<path class="trace-path" d="M452 232 L300 240 L232 96" stroke="#25cfe8" stroke-width="1.4" fill="none" pathLength="1"/>
+${dots}
+<circle class="sig-node" cx="452" cy="232" r="4" fill="#25cfe8"/>
+<circle cx="452" cy="232" r="9" stroke="#25cfe8" stroke-width="1" fill="none" opacity="0.5"/>
+<line x1="452" y1="208" x2="452" y2="220" stroke="#25cfe8" stroke-width="1.4"/>
+<line x1="452" y1="244" x2="452" y2="256" stroke="#25cfe8" stroke-width="1.4"/>
+</svg></div>`;
+}
+
+function signalTrace() {
+  const stages = ['SIGNAL', 'MATERIAL CHANGE', 'EXPOSURE', 'CONSEQUENCE', 'EVIDENCE', 'UNCERTAINTY', 'AS OF', 'DECISION'];
+  const n = stages.length;
+  const pad = 70;
+  const w = 1120;
+  const step = (w - pad * 2) / (n - 1);
+  const y = 30;
+  const circles = stages
+    .map((s, i) => {
+      const x = pad + i * step;
+      const isSig = i === 0;
+      return `<circle cx="${x}" cy="${y}" r="${isSig ? 5 : 3.5}" fill="${isSig ? '#25cfe8' : '#8fa9c9'}"${isSig ? ' class="sig-node"' : ''}/><text x="${x}" y="60" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" letter-spacing="1" fill="#97a2b0">${s}</text>`;
+    })
+    .join('');
+  return `<div class="signal-trace" aria-hidden="true"><svg viewBox="0 0 ${w} 72" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto">
+<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="#262d36" stroke-width="1"/>
+<path class="trace-path" d="M${pad} ${y} L${w - pad} ${y}" stroke="#25cfe8" stroke-width="1.6" fill="none" pathLength="1"/>
+${circles}
+</svg></div>`;
+}
+
+function temporalAxis() {
+  return `<div class="temporal"><svg viewBox="0 0 760 190" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Point-in-time availability: evidence available before an AS OF cutoff is eligible for the earlier view; later evidence is excluded.">
+<line x1="40" y1="120" x2="720" y2="120" stroke="#333c47" stroke-width="1"/>
+<g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#97a2b0">
+<text x="40" y="150">t0</text><text x="560" y="150" text-anchor="middle">AS OF cutoff</text><text x="720" y="150" text-anchor="end">now</text>
+</g>
+<line x1="380" y1="70" x2="380" y2="140" stroke="#25cfe8" stroke-width="1.4"/>
+<text x="380" y="58" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" letter-spacing="1" fill="#25cfe8">AS OF</text>
+<g fill="#7fa8c9"><circle cx="120" cy="120" r="4"/><circle cx="210" cy="120" r="4"/><circle cx="300" cy="120" r="4"/></g>
+<text x="120" y="102" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#6a7481">eligible</text>
+<g fill="#6a7481" opacity="0.6"><circle cx="470" cy="120" r="4"/><circle cx="560" cy="120" r="4"/><circle cx="650" cy="120" r="4"/></g>
+<text x="560" y="102" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#6a7481">excluded from earlier view</text>
+</svg></div>`;
+}
+
+const closing = `<section class="closing"><div><h2>Evaluate Pyrnova against a real external change affecting your organization.</h2><p>See the company-specific consequence, the evidence behind it, the uncertainty it keeps visible and the point in time it was knowable.</p></div><a class="button" href="${evaluatePath}">Evaluate Pyrnova</a></section>`;
+
+// ---------------- pages ----------------
 const pages = {
   '/': {
-    title: 'Pyrnova — Know what changed. Know what it changes.',
+    module: 'Public Overview',
+    title: 'Pyrnova - Company-specific consequence intelligence',
     description:
-      'Pyrnova detects consequential external change, traces its effect on your organization, and shows the evidence behind each conclusion.',
-    body: `<section class="hero"><div class="hero-copy">${label('External change · Commercial consequence')}<h1>Know what changed. Know what it changes.</h1><p class="lead">Pyrnova detects consequential external change, traces its effect on your organization, and shows the evidence behind each conclusion.</p><div class="cta-row">${button('Evaluate Pyrnova', evaluatePath)}${button('See the intelligence', '/intelligence/', true)}</div></div>${evidencePanel}</section>
-    <section class="section">${intro('01 / The question', 'External information is abundant. Company-specific meaning is harder.', '')}<div class="section-content"><p>Opportunity databases, market research, alerts, analysts and internal capture knowledge each serve a purpose.</p><p class="large">The hard question is what an external change actually means to <em>this</em> particular organization.</p><p>Pyrnova connects the change to an organization's exposure, capabilities and commercial context, with a reasoning path that can be inspected.</p></div></section>
-    <section class="section" id="how-it-works">${intro('02 / How Pyrnova thinks', 'From change to consequence. From outcome to learning.', 'A conclusion is useful when you can inspect its basis and revisit it as evidence changes.')}<div class="section-content"><ol class="reasoning-loop">${['External change', 'Customer relevance', 'Commercial consequence', 'Evidence', 'Investigation', 'Decision', 'Action', 'Outcome', 'Learning'].map((s, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span>${s}</li>`).join('')}</ol><p class="muted">The loop describes the intelligence workflow. Decisions and actions remain with your organization; outcomes require sourced observation. ${button('See the method', '/method/', true)}</p></div></section>
-    <section class="section">${intro('03 / Material change', 'One event. Different commercial consequences.', 'Relevance depends on the organization, not just the headline.')}<div class="section-content example"><p class="example-label">HYPOTHETICAL EXAMPLE — NOT A CUSTOMER RESULT</p><div class="source-block">${label('Source event')}<h3>An agency moves a planned engineering requirement into a broader services vehicle.</h3><p>No actual agency notice is represented in this illustration.</p></div><div class="consequence-grid"><div>${label('Company context')}<p>A specialist supplier has the relevant engineering capability but lacks access to the proposed vehicle.</p></div><div>${label('Pyrnova-derived consequence')}<p>The direct pursuit thesis weakens. A prime relationship may become commercially significant.</p></div></div><div class="example-foot"><div><strong>Investigate</strong><p>Confirm vehicle access, scope and the supplier's potential role.</p></div><div><strong>Could invalidate the thesis</strong><p>The agency retains a separate direct award path, or the engineering scope leaves the requirement.</p></div></div></div></section>
-    <section class="section">${intro('04 / Evidence', 'Know which part is fact. Know which part is judgment.', 'A source citation is a starting point. The distinction between evidence and conclusion matters.')}<div class="section-content"><p>Every conclusion carries the source identity, evidence references, observation times and uncertainty behind it. Fact and assessment are labelled separately, so a reader can inspect the basis rather than trust a claim.</p>${button('How evidence is structured', '/intelligence/', true)}</div></section>
-    <section class="section">${intro('05 / Trust', 'Evidence before assertion.', '')}<div class="section-content"><p>Provenance. Inspectable reasoning. Explicit uncertainty. Customer isolation. Point-in-time integrity.</p><p>We distinguish implemented and tested product behaviour from production controls that have not yet been verified — and we say plainly which is which.</p>${button('Read the Trust page', '/trust/', true)}</div></section>${closing}`,
+      'Pyrnova detects consequential external change, traces its effect on a specific organization, and shows the evidence, uncertainty and point-in-time basis behind each conclusion.',
+    body: `<section class="hero">${heroField()}<div class="hero-copy"><span class="status-line"><span class="live" aria-hidden="true"></span>Phase 1 · Material Changes · Illustrative specimen</span><h1>Know what changed.<br><span class="l2">Know what it changes.</span></h1><p class="lead">Pyrnova detects consequential external change, traces its effect on a specific organization, and shows the evidence, uncertainty and point-in-time basis behind each conclusion.</p><div class="cta-row"><a class="button" href="${evaluatePath}">Evaluate Pyrnova</a><a class="button secondary" href="/intelligence/">See the intelligence</a></div></div><div class="hero-spec">${spec(specRecompete)}</div></section>
+    <section class="section"><div class="sec-head"><h2>Signal to consequence</h2><span class="sec-meta">The path behind every Material Change</span></div><p class="sec-intro">A change in the outside world becomes commercially meaningful only when it is connected to a specific organization. Pyrnova traces that path and keeps the basis inspectable at each step.</p>${signalTrace()}<div class="chain" style="margin-top:18px">${[
+      ['01', 'Signal', 'A consequential external change is observed and its source record retained.'],
+      ['02', 'Material change', 'The change is structured as an object, separating observed fact from assessment.'],
+      ['03', 'Exposure', 'The change is connected to a specific organization by a deterministic relevance basis.'],
+      ['04', 'Consequence', 'The company-specific commercial consequence is derived, with materiality and confidence kept orthogonal.'],
+    ]
+      .map((c) => `<div class="node"><span class="n-step">${c[0]}</span><h3>${c[1]}</h3><p>${c[2]}</p></div>`)
+      .join('')}</div></section>
+    <section class="section"><div class="sec-head"><h2>What the record contains</h2></div><div class="grid-3">${[
+      ['Observed vs assessed', 'The source fact and the Pyrnova assessment are kept in separate structured blocks and never flattened together.'],
+      ['Materiality and confidence', 'Severity of consequence and strength of evidence are reported as orthogonal bands, not a single score.'],
+      ['Point-in-time truth', 'Each conclusion carries an AS OF. Later evidence is excluded from an earlier view; prior state is preserved.'],
+      ['Evidence by reference', 'Statements cite retained evidence by identifier, with conservative treatment of single-source corroboration.'],
+      ['Customer relevance', 'Relevance is established by an explicit basis such as watched program or capability match, not topical similarity.'],
+      ['Uncertainty and falsifiers', 'What is unresolved is stated, along with the evidence that would weaken or falsify the conclusion.'],
+    ]
+      .map((c) => `<div class="obj"><span class="obj-label">${c[0]}</span><p>${c[1]}</p></div>`)
+      .join('')}</div></section>${closing}`,
   },
 
   '/intelligence/': {
-    title: 'Intelligence — Pyrnova',
+    module: 'Intelligence',
+    title: 'Intelligence - Pyrnova',
     description:
-      'What a Pyrnova conclusion contains: a company-specific consequence, the evidence behind it, explicit uncertainty and the point in time it was knowable.',
-    body: `<header class="page-heading">${label('Intelligence')}<h1>A consequence you can inspect, not just an alert you receive.</h1><p class="lead">Pyrnova produces a company-specific commercial consequence from an external change — and shows the evidence, uncertainty and historical state behind it.</p></header>
-    <section class="hero anatomy"><div class="hero-copy">${label('Anatomy of a conclusion')}<p>An alert tells you something happened. Pyrnova tells you what it may mean for a specific organization, and lets you check the reasoning.</p><p>Each conclusion separates the observed source fact from the Pyrnova-derived assessment, keeps the uncertainty visible, and records a falsifier — the evidence that would change the call.</p><p class="muted">The panel shown here is the shape of a single conclusion. It is illustrative and represents no customer or source event.</p></div>${evidencePanel}</section>
-    <section class="section">${intro('01 / Attribution', 'Every statement carries its origin.', 'Provenance is not a footnote. It is part of the conclusion.')}<div class="section-content"><div class="semantic-rows"><div><span class="tag">SOURCE FACT</span><p>Information supported by a retained source record, with source identity and provenance.</p></div><div><span class="tag">PYRNOVA DERIVED</span><p>A calculated or inferred conclusion produced from evidence and company context.</p></div><div><span class="tag">MODEL EXPLANATION</span><p>Model-assisted explanation, attributed separately from authoritative source facts.</p></div><div><span class="tag">HUMAN ASSESSMENT</span><p>An explicitly recorded human judgement, where present. Human review is not implied for every output.</p></div></div><p class="muted">Source identifiers, links, observation times and evidence references make the reasoning inspectable. Missing information remains unknown rather than assumed.</p></div></section>
-    <section class="section">${intro('02 / Uncertainty', 'A confident tone is not evidence.', '')}<div class="section-content"><p>Pyrnova keeps the unresolved parts of a conclusion visible: what is still ambiguous, what would confirm it and what would contradict it.</p><p class="large">Absence of evidence is not treated as a win, a loss or a completed outcome.</p><p>A thesis can be strengthened, weakened, contradicted or falsified as new evidence arrives — without erasing the earlier call.</p><div class="states"><span>Strengthened</span><span>Weakened</span><span>Contradicted</span><span>Falsified</span></div></div></section>
-    <section class="section">${intro('03 / AS-OF', 'What was actually knowable at the time?', 'Historical views should respect when information became available.')}<div class="section-content"><div class="timeline" aria-label="Illustrative point-in-time availability"><div><span>Before cutoff</span><strong>Available evidence</strong><p>Eligible for the historical view.</p></div><div class="cutoff"><span>AS-OF</span><strong>Explicit cutoff</strong><p>A boundary on knowledge.</p></div><div><span>After cutoff</span><strong>Later evidence</strong><p>Excluded from that earlier view.</p></div></div><p>A publication date, Pyrnova's observation time and the time a change became relevant to your organization may differ. A point-in-time reconstruction excludes future information and preserves the earlier assessment state.</p><p class="muted">Historical reconstruction is not a claim of infallible prediction.</p></div></section>${closing}`,
+      'A controlled static view of the Pyrnova intelligence surface: Material Changes, company exposure, resolution and evidence, using synthetic specimens.',
+    body: `<header class="page-head"><span class="label accent">Intelligence</span><h1>The closest public view of using Pyrnova.</h1><p class="lead">The surfaces below use the product's own structure with synthetic specimens. They are not live production output and represent no customer or source event.</p></header>
+    <section class="section"><div class="sec-head"><h2>Material Changes</h2><span class="sec-meta">What materially changed, and why it matters to this organization</span></div><div class="grid-2">${spec(specRecompete)}${spec(specTeaming)}</div><div style="margin-top:18px">${spec(specBudget)}</div></section>
+    <section class="section"><div class="sec-head"><h2>Company exposure</h2><span class="sec-meta">Deterministic relevance basis</span></div><p class="sec-intro">Relevance is established by an explicit, inspectable basis. The same external event carries different consequences for different organizations.</p><div class="idrow"><span class="idchip">Watched programs<b>2</b></span><span class="idchip">Watched entities<b>1</b></span><span class="idchip">Capability matches<b>4</b></span><span class="idchip">Agency interest<b>Army, MDA, Space Force</b></span></div><div class="result"><div><div class="r-name">Program of record sustainment</div><div class="r-meta"><span class="r-type">Watched program</span><span>relevance basis: WATCHED_PROGRAM</span></div></div><div class="r-right">exposure: vehicle access gap</div></div><div class="result"><div><div class="r-name">Modeling and simulation</div><div class="r-meta"><span class="r-type">Capability</span><span>relevance basis: CAPABILITY_MATCH</span></div></div><div class="r-right">exposure: teaming position</div></div></section>
+    <section class="section"><div class="sec-head"><h2>Resolution and evidence</h2><span class="sec-meta">Entity resolution over the estate</span></div><p class="sec-intro">Companies, programs and identifiers are resolved to canonical entities before analysis, so evidence attaches to the right subject.</p><div class="idrow"><span class="idchip">UEI<b>resolved</b></span><span class="idchip">CAGE<b>resolved</b></span><span class="idchip">PIID<b>crosswalk</b></span><span class="idchip">CIK<b>resolved</b></span></div><div class="result"><div><div class="r-name">Subject supplier</div><div class="r-meta"><span class="r-type">Company</span><span>match: exact</span></div></div><div class="r-right">refs: 3</div></div></section>${closing}`,
   },
 
   '/method/': {
-    title: 'Method — Pyrnova',
+    module: 'Method',
+    title: 'Method - Pyrnova',
     description:
-      'How Pyrnova works: a reasoning loop from external change to company-specific consequence, evidence, investigation, outcome and learning.',
-    body: `<header class="page-heading">${label('Method')}<h1>From an external change to a decision you can defend.</h1><p class="lead">Pyrnova follows a repeatable reasoning loop. Each step is recorded so a conclusion can be inspected and revisited as evidence changes.</p></header>
-    <section class="section">${intro('The loop', 'Change in. Consequence, evidence and learning out.', '')}<div class="section-content"><ol class="reasoning-loop">${['External change', 'Customer relevance', 'Commercial consequence', 'Evidence', 'Investigation', 'Decision', 'Action', 'Outcome', 'Learning'].map((s, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span>${s}</li>`).join('')}</ol><p class="muted">Decisions and actions remain with your organization. Pyrnova structures the reasoning and preserves its evidence.</p></div></section>
-    <section class="section">${intro('01 / Detect', 'Consequential change, not every headline.', '')}<div class="section-content"><p>Pyrnova watches for external change — in programs, policy, budgets, technology, acquisition and institutional behaviour — that could carry commercial consequence, and retains the source record behind what it observes.</p></div></section>
-    <section class="section">${intro('02 / Trace', 'Connect the change to a specific organization.', '')}<div class="section-content"><p>Relevance depends on an organization's exposure, capabilities and commercial context. Pyrnova traces how a change reaches a particular company and where it lands, rather than broadcasting the same signal to everyone.</p></div></section>
-    <section class="section">${intro('03 / Evidence', 'Separate the fact from the assessment.', '')}<div class="section-content"><p>The observed source fact and the Pyrnova-derived consequence are recorded distinctly, with links, observation times and references. Uncertainty is kept explicit and a falsifier is stated: the evidence that would change the conclusion.</p>${button('See how evidence is structured', '/intelligence/', true)}</div></section>
-    <section class="section">${intro('04 / Point-in-time integrity', 'Respect what was knowable then.', '')}<div class="section-content"><p>AS-OF reconstruction rebuilds an earlier view using only the evidence available at that time, excluding later information. Prior assessments and review state are preserved rather than overwritten, so a conclusion can be revisited honestly.</p></div></section>
-    <section class="section">${intro('05 / Learn', 'A thesis can change without losing its history.', '')}<div class="section-content"><p>As sourced outcomes arrive, a conclusion may be strengthened, weakened, contradicted or falsified. Pyrnova retains the earlier call alongside the later evidence. Outcome resolution stays unknown when evidence does not establish a result.</p></div></section>${closing}`,
+      'How Pyrnova works: the reasoning chain from signal to decision implication, with observed fact and assessment kept distinct and point-in-time truth enforced.',
+    body: `<header class="page-head"><span class="label accent">Method</span><h1>From signal to decision implication.</h1><p class="lead">Pyrnova follows a repeatable reasoning chain. Each stage is recorded so a conclusion can be inspected and revisited as evidence changes.</p></header>
+    <section class="section"><div class="sec-head"><h2>The intelligence chain</h2></div>${signalTrace()}<div class="chain" style="margin-top:18px">${[
+      ['01', 'Signal', 'A consequential external change is observed and its source record retained.'],
+      ['02', 'Material change', 'The change becomes a structured object; observed fact and assessment stay separate.'],
+      ['03', 'Customer exposure', 'A deterministic relevance basis connects the change to a specific organization.'],
+      ['04', 'Commercial consequence', 'The company-specific consequence is derived; materiality and confidence stay orthogonal.'],
+      ['05', 'Evidence', 'Statements cite retained evidence by identifier, with conservative corroboration.'],
+      ['06', 'Uncertainty', 'What is unresolved is stated, along with a falsifier.'],
+      ['07', 'AS OF', 'The conclusion is bound to a point in time; later evidence is excluded from earlier views.'],
+      ['08', 'Decision implication', 'The implication is presented for the organization to act on. Decisions remain with the customer.'],
+    ]
+      .map((c) => `<div class="node"><span class="n-step">${c[0]}</span><h3>${c[1]}</h3><p>${c[2]}</p></div>`)
+      .join('')}</div></section>
+    <section class="section"><div class="sec-head"><h2>Observed fact and assessment</h2><span class="sec-meta">Never flattened</span></div><p class="sec-intro">The two are kept in separate structured blocks. A model explanation does not become a source fact, and a human judgement is recorded only when it exists.</p><div class="split">${facts([['Source event', 'Acquisition strategy notice'], ['Instrument', 'Multiple-award IDIQ', true], ['Published', '2026-09-08', true]]).replace('class="facts"', 'class="facts"')}${''}</div><div class="grid-2" style="margin-top:16px"><div class="pane observed"><span class="pane-label">Observed fact</span>${facts([['Source event', 'Acquisition strategy notice'], ['Instrument', 'Multiple-award IDIQ', true], ['Published', '2026-09-08', true], ['Corroboration', 'Single source']])}</div><div class="pane assessed"><span class="pane-label">Pyrnova assessment</span>${facts([['Consequence', 'Route to market shift'], ['Exposure path', 'Vehicle access gap'], ['Materiality', 'High', true], ['Confidence', 'Moderate', true]])}</div></div></section>
+    <section class="section"><div class="sec-head"><h2>Point-in-time truth</h2><span class="sec-meta">AS OF</span></div><p class="sec-intro">A publication date, Pyrnova's observation time and the time a change becomes relevant may all differ. An AS OF view is reconstructed using only evidence available before its cutoff.</p>${temporalAxis()}</section>${closing}`,
   },
 
   '/trust/': {
-    title: 'Trust — Pyrnova',
+    module: 'Trust',
+    title: 'Trust - Pyrnova',
     description:
-      'Implemented and tested product behaviour, and an honest account of what has not yet been verified in production.',
-    body: `<header class="page-heading">${label('Trust')}<h1>Make the basis of a conclusion inspectable — including our own claims.</h1><p class="lead">Trust begins with a clear account of what the system does, what has been tested and what has not been verified in production.</p><p class="review-date">Capability review: 12 September 2026</p></header>
-    <section class="section">${intro('Implemented / tested', 'Product behaviour with repository evidence.', '')}<div class="section-content prose"><h3>Identity and customer isolation</h3><p>Credential-based authentication is implemented. Fail-closed application-layer tenant isolation is implemented and covered by offline tests. Customer identity is bound to the credential; cross-customer requests are rejected. This is application-layer isolation, not database row-level security.</p><h3>Evidence and attribution</h3><p>Source identity, evidence references, retained content hashes and observation metadata support provenance. SOURCE FACT, PYRNOVA DERIVED, MODEL EXPLANATION and HUMAN ASSESSMENT distinguish the origin of a statement where applicable. A model explanation does not become a source fact, and human assessment is only represented when recorded.</p><h3>Point-in-time integrity</h3><p>AS-OF views and historical replay apply availability cutoffs. Later evidence is excluded from earlier views; prior predictions, assessments and customer review state are preserved. Replay and future-exclusion behaviour are covered by offline tests.</p><h3>Source rights</h3><p>Source material carries rights and usage constraints. Pyrnova retains source identity and links and applies source-rights controls to how retained material may be used, rather than treating every retrieved item as freely redistributable.</p><h3>Operational behaviour</h3><p>Source health and freshness states, bounded retries, durable checkpoints, restart and recovery handling, duplicate suppression and downstream idempotency are implemented and tested. These capabilities do not by themselves establish uninterrupted service, complete coverage or production resilience.</p></div></section>
-    <section class="section">${intro('Not yet verified', 'Production deployment and control posture.', '')}<div class="section-content prose"><p>Offline application tests are not a production security assessment. Production deployment controls require separate verification before customer operation.</p><p>We do <strong>not</strong> claim verified production backups, disaster recovery, encryption at rest, production TLS architecture or 24/7 monitoring. The HTTPS edge that serves this website does not verify the intelligence product's production controls.</p><p>We do <strong>not</strong> claim database row-level security, production MFA or SSO, penetration testing, SOC 2, ISO 27001, FedRAMP or CMMC certification. No authorization to process classified information, FCI or CUI is represented.</p></div></section>
-    <section class="section">${intro('Data boundary', 'A bounded early environment.', '')}<div class="section-content"><div class="notice"><p><strong>Please do not submit restricted information to Pyrnova.</strong></p><p>Pyrnova does not intentionally accept FCI, CUI, classified information or export-controlled technical data in the current environment. This is an operating boundary, not a technical data-loss-prevention claim.</p></div><p class="muted">Capability evidence and unresolved deployment requirements can be discussed in a founder-led evaluation.</p></div></section>${closing}`,
+      'Fact versus assessment, source provenance, uncertainty, source rights and point-in-time integrity as product objects, with an honest account of what is not yet verified in production.',
+    body: `<header class="page-head"><span class="label accent">Trust</span><h1>The basis of a conclusion is inspectable, including our own claims.</h1><p class="lead">What the system does, what has been tested, and what has not been verified in production. Stated plainly.</p><p class="review-date">Capability review: 2026-09-12</p></header>
+    <section class="section"><div class="sec-head"><h2>Fact and assessment</h2><span class="sec-meta">Separated by construction</span></div><div class="grid-2"><div class="pane observed"><span class="pane-label">Observed fact</span>${facts([['Attribution', 'Retained source record'], ['Identity', 'Source id and provenance'], ['Content', 'Point-in-time hash', true]])}</div><div class="pane assessed"><span class="pane-label">Pyrnova assessment</span>${facts([['Attribution', 'Derived from evidence'], ['Type', 'Calculated or inferred'], ['Model role', 'Explanation, attributed']])}</div></div></section>
+    <section class="section"><div class="sec-head"><h2>Provenance and evidence</h2></div><p class="sec-intro">Statements cite retained evidence by identifier. A single authoritative source is treated as not corroborated.</p><div class="evidence"><span class="label">Evidence</span><span class="chip raw">notice:SAM 3 refs</span><span class="chip single">corroboration: single source</span><span class="chip">program crosswalk</span></div></section>
+    <section class="section"><div class="sec-head"><h2>Uncertainty and falsification</h2></div><div class="obj hold"><span class="obj-label">Unresolved</span><div class="uncertainty" style="margin-top:8px"><span class="u-label">Would weaken or falsify</span><ul><li>A separate direct-award path is retained for the requirement.</li><li>The engineering scope leaves the consolidated vehicle.</li></ul></div><p style="margin-top:8px">Absence of evidence is not treated as a win, a loss or a completed outcome. A conclusion can be strengthened, weakened, contradicted or falsified without erasing the earlier call.</p></div></section>
+    <section class="section"><div class="sec-head"><h2>Point-in-time integrity</h2><span class="sec-meta">AS OF and replay</span></div>${temporalAxis()}</section>
+    <section class="section"><div class="sec-head"><h2>Current posture</h2><span class="sec-meta">Implemented and tested, and what is not</span></div><div class="grid-2"><div class="obj ok"><span class="obj-label">Implemented / tested</span><h3>Product behaviour with repository evidence</h3><p>Credential-based authentication. Fail-closed application-layer tenant isolation covered by offline tests; customer identity bound to the credential and cross-customer requests rejected. This is application-layer isolation, not database row-level security.</p><p>Evidence provenance, source attribution, the observed-versus-assessed distinction, materiality and confidence, AS OF views and historical replay, source-rights controls, bounded retries, durable checkpoints, restart and recovery, and duplicate suppression are implemented and covered by offline tests.</p></div><div class="obj hold"><span class="obj-label">Not yet verified</span><h3>Production deployment and control posture</h3><p>Offline application tests are not a production security assessment. We do not claim verified production backups, disaster recovery, encryption at rest, production TLS architecture or 24/7 monitoring.</p><p>We do not claim database row-level security, production MFA or SSO, penetration testing, SOC 2, ISO 27001, FedRAMP or CMMC certification. No authority to process FCI, CUI or classified information is represented.</p></div></div><div class="notice" style="margin-top:18px"><span class="n-label">Data boundary</span><p><strong>Please do not submit restricted information to Pyrnova.</strong> Pyrnova does not intentionally accept FCI, CUI, classified information or export-controlled technical data in the current environment. This is an operating boundary, not a technical data-loss-prevention claim.</p></div></section>${closing}`,
   },
 
   '/research/': {
-    title: 'Research — Pyrnova',
+    module: 'Research',
+    title: 'Research - Pyrnova',
     description:
-      'Pyrnova’s evidence-led research approach: point-in-time reconstruction, historical replay and falsification discipline.',
-    body: `<header class="page-heading">${label('Research')}<h1>An evidence-led approach, tested against the past.</h1><p class="lead">Pyrnova's methods are examined the same way its conclusions are: with explicit evidence, point-in-time discipline and a willingness to be wrong.</p></header>
-    <section class="section">${intro('Approach', 'Reconstruct the past honestly.', 'Point-in-time reconstruction is the discipline underneath everything else.')}<div class="section-content"><p>To ask whether a consequence would have been knowable, you have to rebuild the past without leaking the present into it. Pyrnova's AS-OF reconstruction excludes later information and preserves the assessment state that existed at a chosen moment.</p><p class="large">A method that quietly uses future information cannot be trusted about the past.</p></div></section>
-    <section class="section">${intro('Practices', 'How the work is examined.', '')}<div class="section-content"><div class="card-grid"><div class="card">${label('Historical replay')}<h3>Replay against recorded events</h3><p>Reasoning is exercised over retained historical events, so behaviour can be inspected rather than asserted.</p></div><div class="card">${label('Future exclusion')}<h3>No hindsight leakage</h3><p>An AS-OF view is reconstructed using only evidence available before its cutoff. Later evidence is excluded from earlier views.</p></div><div class="card">${label('Falsification')}<h3>State what would be wrong</h3><p>Each conclusion records a falsifier — the evidence that would contradict it — so it can be challenged directly.</p></div><div class="card">${label('Provenance')}<h3>Keep the source record</h3><p>Source identity, links and observation times are retained, so a claim can be traced to what it rests on.</p></div></div></div></section>
-    <section class="section">${intro('Honesty', 'Where this stands.', '')}<div class="section-content"><div class="notice"><p>Pyrnova is early. This page describes the research approach and the disciplines applied to it — <strong>not</strong> a claim of predictive accuracy or a published benchmark result.</p></div><p class="muted">Specific evidence relevant to a use case can be reviewed in a founder-led evaluation.</p></div></section>${closing}`,
+      'Point-in-time reconstruction, historical replay, future-exclusion and falsification discipline shown as product objects. No benchmark results are claimed.',
+    body: `<header class="page-head"><span class="label accent">Research</span><h1>An evidence-led approach, tested against the past.</h1><p class="lead">Methods are examined the way conclusions are: with explicit evidence, point-in-time discipline and a stated way to be wrong.</p></header>
+    <section class="section"><div class="sec-head"><h2>Point-in-time reconstruction</h2><span class="sec-meta">Knowable then vs known now</span></div><p class="sec-intro">To ask whether a consequence would have been knowable, the past has to be rebuilt without leaking the present into it. An AS OF view excludes later evidence and preserves the assessment state that existed at that moment.</p>${temporalAxis()}</section>
+    <section class="section"><div class="sec-head"><h2>Historical replay</h2><span class="sec-meta">Illustrative thesis lifecycle</span></div><div class="obj"><div class="hist">${[
+      ['2026-08-24', 'OBSERVED', 'Acquisition strategy notice retained as source record.'],
+      ['2026-08-24', 'ASSESSED', 'Route to market shift derived; materiality High, confidence Moderate.'],
+      ['2026-09-02', 'STRENGTHENED', 'Second reference aligns with the consolidation direction.'],
+      ['2026-09-11', 'MONITORING', 'Vehicle access unresolved; prior assessment state preserved.'],
+    ]
+      .map((r) => `<div class="h-row"><span class="h-at">${r[0]}</span><span class="h-kind">${r[1]}</span><span class="h-sum">${r[2]}</span></div>`)
+      .join('')}</div></div></section>
+    <section class="section"><div class="sec-head"><h2>Validation discipline</h2></div><div class="grid-2">${[
+      ['Historical replay', 'Reasoning is exercised over retained historical events, so behaviour can be inspected rather than asserted.'],
+      ['Future exclusion', 'An AS OF view is reconstructed using only evidence available before its cutoff. Later evidence is excluded.'],
+      ['Falsification', 'Each conclusion records a falsifier, the evidence that would contradict it, so it can be challenged directly.'],
+      ['Provenance', 'Source identity, references and observation times are retained, so a claim can be traced to what it rests on.'],
+    ]
+      .map((c) => `<div class="obj"><span class="obj-label">${c[0]}</span><p>${c[1]}</p></div>`)
+      .join('')}</div><div class="notice" style="margin-top:18px"><span class="n-label">On results</span><p>Pyrnova is early. This page describes the research approach and the disciplines applied to it. It does <strong>not</strong> claim predictive accuracy or a published benchmark result.</p></div></section>${closing}`,
   },
 
   '/company/': {
-    title: 'Company — Pyrnova',
+    module: 'Company',
+    title: 'Company - Pyrnova',
     description:
-      'Pyrnova is a founder-led intelligence company focused on what external change means commercially to a specific organization.',
-    body: `<header class="page-heading">${label('Company')}<h1>External intelligence, grounded in a company's reality.</h1><p class="lead">Pyrnova is a founder-led intelligence company focused on what external change means commercially to a specific organization.</p></header>
-    <section class="section">${intro('Purpose', 'Consequence, with an inspectable basis.', '')}<div class="section-content"><p>Information becomes commercially meaningful when it connects to an organization's capabilities, exposure and situation. Pyrnova is built around that connection.</p><p>We preserve the distinction between source evidence and analytical judgement, make uncertainty explicit and retain what was knowable at a given time.</p></div></section>
-    <section class="section">${intro('Initial application', 'Upstream of capture.', '')}<div class="section-content"><p class="large">Pyrnova is initially being evaluated with mid-market U.S. federal contractors and their growth and capture teams.</p><p>It turns changes in programs, policy, budgets, technology, acquisition and institutional behaviour into customer-specific commercial consequences before they become just another opportunity record.</p><p>Pyrnova augments mature capture and growth systems with earlier, customer-specific consequence intelligence. This initial application does not define the limits of the category.</p></div></section>
-    <section class="section">${intro('Founder-led', 'Built and run with direct accountability.', '')}<div class="section-content"><p>Pyrnova is founder-led. Evaluations and early conversations are handled directly, focused on your organization's commercial context, an external change worth investigating and the evidence needed to judge the conclusion.</p>${button('Evaluate Pyrnova', evaluatePath, true)}</div></section>${closing}`,
+      'A founder-led intelligence company focused on what external change means commercially to a specific organization.',
+    body: `<header class="page-head"><span class="label accent">Company</span><h1>External intelligence, grounded in a company's reality.</h1><p class="lead">Pyrnova is a founder-led intelligence company. Its work is what external change means commercially to a specific organization, with the basis kept inspectable.</p></header>
+    <section class="section"><div class="sec-head"><h2>Position</h2></div><dl class="meta-rows"><div><dt>Focus</dt><dd>Company-specific commercial consequence of external change, with evidence, uncertainty and point-in-time integrity.</dd></div><div><dt>Initial application</dt><dd>Evaluated with mid-market <b>U.S. federal contractors</b> and their growth and capture teams. This does not define the limits of the category.</dd></div><div><dt>Posture</dt><dd>Discreet, precise, evidence-led. <b>Discretion, intelligence, competence, control.</b></dd></div><div><dt>Structure</dt><dd><b>Founder-led</b>, with direct accountability for evaluations and early conversations.</dd></div><div><dt>Disclosure</dt><dd>Need-to-know by default. Capability evidence is discussed where there is a commercial reason.</dd></div></dl></section>
+    <section class="section"><div class="sec-head"><h2>Where Pyrnova sits</h2></div><p class="sec-intro">Pyrnova augments mature capture and growth systems with earlier, customer-specific consequence intelligence. It turns changes in programs, policy, budgets, technology, acquisition and institutional behaviour into commercial consequences before they become just another opportunity record.</p></section>${closing}`,
   },
 
   '/evaluate/': {
-    title: 'Evaluate — Pyrnova',
+    module: 'Evaluate',
+    title: 'Evaluate - Pyrnova',
     description:
-      'What a Pyrnova evaluation involves. Evaluations are arranged directly with the founder; there is no public submission form at this time.',
-    body: `<header class="page-heading">${label('Evaluate Pyrnova')}<h1>Test Pyrnova against a change that matters to your company.</h1><p class="lead">An evaluation puts Pyrnova against a real external change affecting a specific organization — so you can judge the consequence, the evidence and the uncertainty for yourself.</p></header>
-    <section class="section">${intro('What an evaluation is', 'A conclusion you can inspect, on your own context.', '')}<div class="section-content"><p>Rather than a generic demo, an evaluation works from an external change relevant to your organization. You see the company-specific consequence Pyrnova derives, the source evidence behind it, the uncertainty it keeps visible and the point in time the conclusion was knowable.</p><p>The aim is a judgement you can defend: is the reasoning sound, is the evidence real, and does the conclusion hold up when you push on it?</p></div></section>
-    <section class="section">${intro('How it works today', 'Arranged directly, in a limited early program.', '')}<div class="section-content"><div class="notice"><p><strong>Public evaluation intake is not open yet.</strong></p><p>Evaluations are currently arranged directly with the founder as part of a limited early program. This page explains what to expect — there is no submission form or account sign-up here, and this site does not collect your details.</p></div><ol class="step-list"><li><span class="step-num">01</span><div><h3>A specific change</h3><p>An evaluation starts from an external change relevant to your organization — not a canned scenario.</p></div></li><li><span class="step-num">02</span><div><h3>The consequence and its evidence</h3><p>Pyrnova derives the company-specific consequence and shows the source facts, uncertainty and falsifier behind it.</p></div></li><li><span class="step-num">03</span><div><h3>Your judgement</h3><p>You inspect the reasoning and decide whether it holds. Decisions and actions remain with your organization.</p></div></li></ol></div></section>
-    <section class="section">${intro('Before an evaluation', 'One boundary to keep in mind.', '')}<div class="section-content"><div class="notice"><p><strong>Please plan to share public or ordinary business information only.</strong></p><p>Pyrnova does not intentionally accept FCI, CUI, classified information or export-controlled technical data in the current environment. Keep restricted categories out of any evaluation.</p></div><p class="muted">Want the detail behind these claims first? ${button('Read the Trust page', '/trust/', true)}</p></div></section>`,
+      'What a Pyrnova evaluation produces. Evaluations are arranged directly with the founder; there is no public submission form at this time and this site collects no personal data.',
+    body: `<header class="page-head"><span class="label accent">Evaluate Pyrnova</span><h1>Test Pyrnova against a change that matters to your company.</h1><p class="lead">An evaluation puts Pyrnova against a real external change affecting a specific organization, so you can judge the consequence, the evidence and the uncertainty directly.</p></header>
+    <section class="section"><div class="sec-head"><h2>What an evaluation produces</h2><span class="sec-meta">Synthetic specimen of the output</span></div><p class="sec-intro">An evaluation returns the same structured record the product produces: a company-specific consequence with its observed fact, assessment, evidence, uncertainty and AS OF. The specimen below illustrates that output.</p>${spec(specRecompete)}</section>
+    <section class="section"><div class="sec-head"><h2>How it works today</h2></div><div class="notice"><span class="n-label">Intake status</span><p><strong>Public evaluation intake is not open.</strong> Evaluations are currently arranged directly with the founder as part of a limited early program. This page explains what to expect. There is no submission form or account sign-up here, and this site does not collect your details.</p></div><div class="grid-3" style="margin-top:18px">${[
+      ['01', 'A specific change', 'An evaluation starts from an external change relevant to your organization, not a canned scenario.'],
+      ['02', 'The consequence and its evidence', 'Pyrnova derives the company-specific consequence and shows the source facts, uncertainty and falsifier behind it.'],
+      ['03', 'Your judgement', 'You inspect the reasoning and decide whether it holds. Decisions and actions remain with your organization.'],
+    ]
+      .map((c) => `<div class="obj"><span class="obj-label">Step ${c[0]}</span><h3>${c[1]}</h3><p>${c[2]}</p></div>`)
+      .join('')}</div></section>
+    <section class="section"><div class="sec-head"><h2>Before an evaluation</h2></div><div class="notice"><span class="n-label">Data boundary</span><p><strong>Please plan to share public or ordinary business information only.</strong> Pyrnova does not intentionally accept FCI, CUI, classified information or export-controlled technical data in the current environment. Keep restricted categories out of any evaluation.</p></div></section>`,
   },
 };
 
 export const routes = Object.keys(pages);
 
-function headerHtml(path) {
-  const links = nav
-    .map(
-      (item) =>
-        `<a href="${item.path}"${path === item.path ? ' aria-current="page"' : ''}>${item.label}</a>`
-    )
-    .join('');
-  const evalCurrent = path === evaluatePath ? ' aria-current="page"' : '';
-  return `<header class="site-header"><a class="wordmark" href="/" aria-label="Pyrnova home"><span class="brand-mark" aria-hidden="true">P</span>PYRNOVA</a><div class="header-nav"><nav class="primary" aria-label="Main navigation">${links}</nav><a class="nav-cta" href="${evaluatePath}"${evalCurrent}>EVALUATE ${arrow}</a></div></header>`;
-}
-
-function footerHtml() {
-  const links = [...nav, { label: 'Evaluate', path: evaluatePath }]
-    .map((item) => `<a href="${item.path}">${item.label.charAt(0) + item.label.slice(1).toLowerCase()}</a>`)
-    .join('');
-  return `<footer class="site-footer"><div><a class="wordmark" href="/">PYRNOVA</a><p>Company-specific consequence intelligence. Know what changed. Know what it changes.</p></div><nav aria-label="Footer navigation">${links}</nav><p class="copyright">© 2026 Pyrnova. This informational website does not currently collect personal data or accept evaluation submissions.</p></footer>`;
-}
-
 export function renderPage(path, { origin = 'https://pyrnova.com' } = {}) {
   const page = pages[path];
   if (!page) return null;
   const canonical = `${origin}${path}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${page.title}</title><meta name="description" content="${page.description}"><meta name="robots" content="index, follow"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:site_name" content="Pyrnova"><meta property="og:title" content="${page.title}"><meta property="og:description" content="${page.description}"><meta property="og:url" content="${canonical}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/site.css"></head><body><a class="skip-link" href="#main">Skip to content</a>${headerHtml(path)}<main id="main">${page.body}</main>${footerHtml()}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>${page.title}</title><meta name="description" content="${page.description}"><meta name="robots" content="index, follow"><link rel="canonical" href="${canonical}"><meta name="theme-color" content="#0b0d10"><meta property="og:type" content="website"><meta property="og:site_name" content="Pyrnova"><meta property="og:title" content="${page.title}"><meta property="og:description" content="${page.description}"><meta property="og:url" content="${canonical}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/site.css"></head><body><a class="skip-link" href="#main">Skip to content</a>${masthead(path, page.module)}<main id="main">${page.body}</main>${footer()}</body></html>`;
 }
 
 export function robotsTxt(origin) {
   return `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`;
 }
-
 export function sitemapXml(origin) {
   return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes
     .map((p) => `<url><loc>${origin}${p}</loc></url>`)
