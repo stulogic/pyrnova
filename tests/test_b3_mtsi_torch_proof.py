@@ -54,18 +54,28 @@ def test_torch_lens_is_usable_and_coherent(tmp_path):
     assert f"Verdict: {dc['pursuit']['verdict']} (confidence {dc['pursuit']['confidence']})" in brief["body"]
 
 
-def test_mtsi_lens_is_honestly_empty_not_fabricated(tmp_path):
+def test_mtsi_lens_surfaces_its_real_recompetes_tenant_isolated(tmp_path):
+    # B4.2 — MTSI's empty lens was a fan-out gap, not a legitimate empty: the same real detect_recompetes
+    # engine over the real archived usaspending_mtsi.json produces genuine MTSI recompete opportunities.
     console = _console(tmp_path)
-    # Onboard MTSI from its accepted profile (no invented opportunities).
+    # Onboard MTSI from its accepted profile, carrying its canonical entity ref (no invented facts).
     console.create_customer(customer_id="mtsi", name="Modern Technology Solutions",
+                            entity_refs=["co_mtsi"],
                             capabilities=["systems engineering", "modeling and simulation"],
-                            agencies=["Missile Defense Agency", "Space Force"])
+                            agencies=["Missile Defense Agency", "Space Force", "General Services Administration"])
     lens = console.customer_lens("mtsi")
     assert lens["customer"]["id"] == "mtsi"
     opps = console.customer_opportunities("mtsi")
-    # No persisted MTSI opportunities in this environment → honest empty, never fabricated or noisy.
-    assert opps["count"] == 0
-    assert opps["opportunities"] == []
-    # MTSI never sees Torch's opportunities (tenant isolation).
-    torch_ids = {o["id"] for o in console.customer_opportunities("torch")["opportunities"]}
-    assert torch_ids and not any(o.get("id") in torch_ids for o in opps["opportunities"])
+    # Real, persisted MTSI opportunities now surface (from usaspending_mtsi.json), never fabricated.
+    assert opps["count"] > 0
+    o = opps["opportunities"][0]
+    assert o["incumbent"] and "MODERN TECHNOLOGY SOLUTIONS" in o["incumbent"].upper()
+    # Evidence is the real MTSI archive, not Torch's (no cross-tenant copying).
+    dec = console.opportunity_decision("mtsi", o["id"])
+    ev = dec["decision_chain"]["evidence"]
+    assert ev and all("usaspending_mtsi.json" in (e.get("archive_uri") or "")
+                      for e in ev if e.get("archive_uri"))
+    # MTSI never sees Torch's opportunities, and Torch never sees MTSI's (tenant isolation).
+    torch_ids = {t["id"] for t in console.customer_opportunities("torch")["opportunities"]}
+    mtsi_ids = {m["id"] for m in opps["opportunities"]}
+    assert torch_ids and mtsi_ids and torch_ids.isdisjoint(mtsi_ids)

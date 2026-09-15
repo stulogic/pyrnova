@@ -63,6 +63,12 @@ PARENT_UEI = "KMSLVW1MZWU9"
 TORCH_TENANT = "torch"
 TORCH_REF = "co_torch"
 TORCH_NAME = "Torch Technologies Inc"
+# MTSI is the tenant ``mtsi``; its canonical entity is ``co_mtsi``. Its own archived USAspending awards
+# (usaspending_mtsi.json) run through the SAME real ``detect_recompetes`` engine with the SAME accepted
+# parameters as Torch — no copied Torch records, no fabrication, tenant-isolated by ``customer_id``.
+MTSI_TENANT = "mtsi"
+MTSI_REF = "co_mtsi"
+MTSI_NAME = "Modern Technology Solutions, Inc."
 # Pinned recompete scan date so the fixture is deterministic regardless of wall-clock (the engine takes
 # ``as_of`` as a parameter). A $100M materiality floor keeps only substantial recompetes for a mid-market
 # prime; the 540-day forward window is the engine default.
@@ -158,16 +164,19 @@ def _stable_id(prefix: str, payload: dict) -> str:
     return f"{prefix}_" + hashlib.sha256(blob).hexdigest()[:20]
 
 
-def _torch_recompete_opportunities() -> list[dict]:
-    """Torch's own recompete opportunities via the REAL ``detect_recompetes`` engine (M22-E).
+def _recompete_opportunities(*, evidence_file: str, tenant: str, subject_ref: str,
+                             subject_name: str) -> list[dict]:
+    """A customer's own recompete opportunities via the REAL ``detect_recompetes`` engine (M22-E).
 
-    Uses Torch's archived USAspending awards — no new engine, no live call, no fabrication. Each engine
-    field is deterministic; the only engine-assigned ids that default to random uids (opportunity,
+    Uses the customer's archived USAspending awards — no new engine, no live call, no fabrication. Each
+    engine field is deterministic; the only engine-assigned ids that default to random uids (opportunity,
     catalyst, evidence) are pinned here from source-linked content so the fixture is byte-reproducible.
-    The opportunity carries the CANONICAL subject (``co_torch`` / name) distinct from the tenant
-    ``customer_id`` so DIRECT_SUBJECT relevance and investigation links resolve to the real entity.
+    Each opportunity carries the CANONICAL subject (``co_<x>`` / name) distinct from the tenant
+    ``customer_id`` so DIRECT_SUBJECT relevance and investigation links resolve to the real entity, and is
+    tenant-isolated by ``customer_id``. Fan-out is identical across customers; only the source evidence and
+    the tenant/subject differ (no cross-tenant copying).
     """
-    raw = (RE / "usaspending_torch.json").read_bytes()
+    raw = (RE / evidence_file).read_bytes()
     archive_hash = hashlib.sha256(raw).hexdigest()  # the real archived response the awards came from
     awards = [normalize_award(r) for r in json.loads(raw)["results"]]
     opps = detect_recompetes(awards, as_of=OPP_AS_OF, window_days=OPP_WINDOW_DAYS,
@@ -175,22 +184,26 @@ def _torch_recompete_opportunities() -> list[dict]:
     records: list[dict] = []
     for opp in opps:
         award_id = opp.meta.get("award_id")
-        opp.id = _stable_id("opp", {"award": award_id, "kind": opp.catalyst.kind, "subject": TORCH_REF})
+        opp.id = _stable_id("opp", {"award": award_id, "kind": opp.catalyst.kind, "subject": subject_ref})
         opp.catalyst.id = _stable_id("cat", {"award": award_id, "kind": opp.catalyst.kind})
-        opp.customer_id = TORCH_TENANT
+        opp.customer_id = tenant
         opp.state = "candidate"
         opp.evidence = [Evidence(
             source_id="usaspending",
             content_sha256=archive_hash,
-            archive_uri="examples/real_evidence/usaspending_torch.json",
+            archive_uri=f"examples/real_evidence/{evidence_file}",
             retention_tier="hot",
             source_ref=f"usaspending:award:{award_id}",
             source_url=opp.meta.get("url"),
             id=f"ev_usasp_award_{award_id}",
+            # Pin the observation time (else it defaults to wall-clock now()): the fixture must be
+            # byte-reproducible and the AS-OF cutoff deterministic. This is when Pyrnova could first know
+            # the award had entered its recompete window.
+            first_seen_at=f"{OPP_AS_OF.isoformat()}T00:00:00",
         )]
         opp.meta.update({
-            "subject_ref": TORCH_REF,
-            "subject_name": TORCH_NAME,
+            "subject_ref": subject_ref,
+            "subject_name": subject_name,
             "program_key": award_id,
             "source_ref": f"usaspending:award:{award_id}",
             "source_as_of": OPP_AS_OF.isoformat(),  # when Pyrnova could know it entered the recompete window
@@ -201,12 +214,22 @@ def _torch_recompete_opportunities() -> list[dict]:
     return records
 
 
+def _torch_recompete_opportunities() -> list[dict]:
+    return _recompete_opportunities(evidence_file="usaspending_torch.json", tenant=TORCH_TENANT,
+                                    subject_ref=TORCH_REF, subject_name=TORCH_NAME)
+
+
+def _mtsi_recompete_opportunities() -> list[dict]:
+    return _recompete_opportunities(evidence_file="usaspending_mtsi.json", tenant=MTSI_TENANT,
+                                    subject_ref=MTSI_REF, subject_name=MTSI_NAME)
+
+
 def build() -> dict:
     saic_direct, saic_prop = _saic_torch_chain()
     dap_direct, dap_prop = _dap_parent_chain()
     threats = saic_direct + dap_direct
     propagated = saic_prop + dap_prop
-    opportunities = _torch_recompete_opportunities()
+    opportunities = _torch_recompete_opportunities() + _mtsi_recompete_opportunities()
     OUT.mkdir(parents=True, exist_ok=True)
     _write(OUT / "threats.jsonl", threats)
     _write(OUT / "propagated_threats.jsonl", propagated)
