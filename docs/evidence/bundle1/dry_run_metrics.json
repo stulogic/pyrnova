@@ -1,0 +1,102 @@
+{
+  "as_of": "2026-09-08",
+  "lenses": {
+    "mtsi": {
+      "profile": "Modern Technology Solutions",
+      "rejected_titles": [
+        "Presolicitation: Navy Cybersecurity Engineering Services"
+      ],
+      "stats": {
+        "avg_lead_time_days": 29.5,
+        "candidates": 5,
+        "capture": 2,
+        "defend": 0,
+        "duplicate_candidates": 0,
+        "duplicate_opportunity_rate": 0.0,
+        "future_records_excluded": 0,
+        "multi_source": 2,
+        "presolicitation": 2,
+        "raw_candidates": 5,
+        "recompete": 0,
+        "rejected": 1,
+        "run_id": "082c6746a9521a310ccb",
+        "strikes": 2,
+        "watch": 2
+      },
+      "strikes": [
+        {
+          "confidence": 0.7,
+          "kind": "sources_sought",
+          "posture": "capture",
+          "relevance": 0.725,
+          "title": "Sources Sought: Army C4ISR Network Modernization Support"
+        },
+        {
+          "confidence": 0.7,
+          "kind": "special_notice",
+          "posture": "capture",
+          "relevance": 0.6,
+          "title": "Special Notice: Industry Day: Air Force Cloud Modernization"
+        }
+      ],
+      "universe": {
+        "awards": 4,
+        "notices": 4,
+        "precursors": 2
+      },
+      "watch_titles": [
+        "Recompete watch: Department of the Army \u2014 incumbent Acme Federal Systems, Inc. (ends 2027-01-15)",
+        "Recompete watch: Department of the Navy \u2014 incumbent Globex Defense LLC (ends 2026-12-01)"
+      ]
+    },
+    "torch": {
+      "profile": "Torch Technologies",
+      "rejected_titles": [
+        "Presolicitation: Navy Cybersecurity Engineering Services"
+      ],
+      "stats": {
+        "avg_lead_time_days": 29.5,
+        "candidates": 5,
+        "capture": 2,
+        "defend": 0,
+        "duplicate_candidates": 0,
+        "duplicate_opportunity_rate": 0.0,
+        "future_records_excluded": 0,
+        "multi_source": 2,
+        "presolicitation": 2,
+        "raw_candidates": 5,
+        "recompete": 0,
+        "rejected": 1,
+        "run_id": "a7f661c08f2bc7d4dd63",
+        "strikes": 2,
+        "watch": 2
+      },
+      "strikes": [
+        {
+          "confidence": 0.7,
+          "kind": "sources_sought",
+          "posture": "capture",
+          "relevance": 0.6,
+          "title": "Sources Sought: Army C4ISR Network Modernization Support"
+        },
+        {
+          "confidence": 0.7,
+          "kind": "special_notice",
+          "posture": "capture",
+          "relevance": 0.6,
+          "title": "Special Notice: Industry Day: Air Force Cloud Modernization"
+        }
+      ],
+      "universe": {
+        "awards": 4,
+        "notices": 4,
+        "precursors": 2
+      },
+      "watch_titles": [
+        "Recompete watch: Department of the Army \u2014 incumbent Acme Federal Systems, Inc. (ends 2027-01-15)",
+        "Recompete watch: Department of the Navy \u2014 incumbent Globex Defense LLC (ends 2026-12-01)"
+      ]
+    }
+  },
+  "method": "pyrnova.pipeline.run over bundled _fixture_rows(); scoring_v1; offline; no tuning"
+}
