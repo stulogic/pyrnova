@@ -1,0 +1,12 @@
+{
+  "name": "pyrnova-website-go",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pyrnova public informational website (State 1: WEBSITE GO / OUTREACH INTAKE DISABLED). Static, dependency-free, no data collection.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test",
+    "serve": "node build.mjs && node scripts/serve.mjs"
+  }
+}
