@@ -22,6 +22,7 @@ from typing import Optional
 
 from . import http
 from .registry import get_spec
+from .rights import authorize_request, validate_source_payload
 
 
 def build_params(
@@ -91,9 +92,11 @@ class SbirClient:
                 start=start,
                 rows=rows,
             )
+            authorize_request("sbir", "GET", self.search_url)
             status, raw, parsed = http.get_json(self.search_url, params)
             if status != 200 or parsed is None:
                 raise RuntimeError(f"SBIR awards search failed: HTTP {status}")
+            validate_source_payload("sbir", parsed)
             awards = parsed if isinstance(parsed, list) else []
             pages.append(
                 SbirAwardsPage(
@@ -157,6 +160,8 @@ def parse_sbir_awards(raw: bytes, *, company_name: Optional[str] = None) -> list
     ``pyrnova.chains.signals_from_records``. Records without a usable
     ``source_ref`` are skipped, since they cannot join deterministically.
     """
+    from .rights import validate_source_payload
+    validate_source_payload("sbir", json.loads(raw) if raw else [])
     payload = json.loads(raw) if raw else []
     awards = payload if isinstance(payload, list) else []
 

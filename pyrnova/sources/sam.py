@@ -16,6 +16,7 @@ from typing import Optional
 
 from . import http
 from .registry import get_spec
+from .rights import authorize_request, validate_source_payload
 
 # ptype code -> canonical Pyrnova notice class (catalyst kind).
 NOTICE_TYPE_CODES = {
@@ -129,11 +130,13 @@ class SamClient:
             limit=limit,
             offset=offset,
         )
+        authorize_request("sam_opportunities", "GET", self.search_url)
         status, raw, parsed = http.get_json(
-            self.search_url, {"api_key": self.api_key, **params}
+            self.search_url, {"api_key": self.api_key, **params}, source_id="sam_opportunities"
         )
         if status != 200 or parsed is None:
             raise RuntimeError(f"SAM search failed: HTTP {status}")
+        validate_source_payload("sam_opportunities", parsed)
         return raw, (parsed.get("opportunitiesData", []) or [])
 
     def search_observations(
@@ -176,10 +179,11 @@ class SamClient:
                 offset=page_offset,
             )
             status, raw, parsed = http.get_json(
-                self.search_url, {"api_key": self.api_key, **params}
+                self.search_url, {"api_key": self.api_key, **params}, source_id="sam_opportunities"
             )
             if status != 200 or parsed is None:
                 raise RuntimeError(f"SAM search failed: HTTP {status}")
+            validate_source_payload("sam_opportunities", parsed)
             rows = parsed.get("opportunitiesData", []) or []
             observations.append(
                 SamObservation(

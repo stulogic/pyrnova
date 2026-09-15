@@ -111,9 +111,11 @@ class USAspendingClient:
                 page=page,
                 limit=limit,
             )
-            status, raw, parsed = http.post_json(self.search_url, payload)
+            status, raw, parsed = http.post_json(self.search_url, payload, source_id=self.spec.id)
             if status != 200 or not parsed:
                 raise RuntimeError(f"USAspending search failed: HTTP {status}")
+            from .rights import validate_source_payload
+            validate_source_payload(self.spec.id, parsed)
             results = parsed.get("results", []) or []
             pages.append((raw, results))
             if not (parsed.get("page_metadata", {}) or {}).get("hasNext"):

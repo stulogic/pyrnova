@@ -82,11 +82,11 @@ def http_fetcher(request: dict) -> bytes:
     try:
         if method == "POST":
             status, raw, _, response_headers = http.post_json_response(
-                url, request.get("payload") or {}, headers=headers
+                url, request.get("payload") or {}, headers=headers, source_id=request.get("source_id")
             )
         else:
             status, raw, response_headers = http.get_bytes_response(
-                url, request.get("params"), headers=headers
+                url, request.get("params"), headers=headers, source_id=request.get("source_id")
             )
     except RequestException as exc:
         # Requests exception text may include the prepared URL with query-string credentials. Keep the
@@ -112,6 +112,8 @@ def source_response_rows(source_id: str, content: bytes) -> list[dict]:
     if source_id not in keys:
         raise ValueError(f"unsupported source parser: {source_id}")
     parsed = json.loads(content)
+    from .sources.rights import validate_source_payload
+    validate_source_payload(source_id, parsed)
     key = keys[source_id]
     if not isinstance(parsed, dict) or not isinstance(parsed.get(key), list):
         raise ValueError(f"{source_id} response must contain a {key} array")
@@ -186,9 +188,17 @@ class LiveRunner:
     def run(self, request: dict, *, checkpoint: Optional[str] = None, changed: bool = True,
             now: Optional[float] = None) -> LiveRunEntry:
         """Run one request through the cadence-aware scheduler and record the efficiency ledger."""
+        # Keep source identity out of the scheduler fingerprint.  Bind it only
+        # at the transport callback boundary, where HTTP requires it, so cache
+        # and checkpoint identity remains the original request identity.
+        mode_value = getattr(self.mode, "value", self.mode)
+        fetcher = self.fetcher
+        if str(mode_value).upper() != "OFFLINE":
+            def fetcher(bound_request):
+                return self.fetcher({**bound_request, "source_id": self.source_id})
         known_before = self._known_shas()
         result = self.scheduler.poll(
-            self.source_id, request=request, now=now, fetcher=self.fetcher,
+            self.source_id, request=request, now=now, fetcher=fetcher,
             mode=self.mode, max_calls=self.max_calls, checkpoint=checkpoint, changed=changed,
         )
         sent = 1 if result.action == sched.LIVE_FETCH else 0

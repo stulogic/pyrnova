@@ -66,7 +66,8 @@ def test_success_preserves_raw_bytes_and_sanitized_provenance(monkeypatch, tmp_p
     parsed = json.loads(raw)
     calls = []
 
-    def fake_post(url, payload):
+    def fake_post(url, payload, *, source_id):
+        assert source_id == "grants_gov"
         calls.append((url, payload))
         return 200, raw, parsed
 
@@ -90,7 +91,7 @@ def test_success_preserves_raw_bytes_and_sanitized_provenance(monkeypatch, tmp_p
 def test_malformed_success_is_not_reported_or_archived(monkeypatch):
     monkeypatch.setattr(
         "pyrnova.sources.grants_gov.http.post_json",
-        lambda *_args: (200, b'{"notOppHits": []}', {"notOppHits": []}),
+        lambda *_args, **_kwargs: (200, b'{"notOppHits": []}', {"notOppHits": []}),
     )
     with pytest.raises(GrantsGovError, match="malformed"):
         GrantsGovClient(mode="ACCEPTANCE").search_opportunities()
@@ -117,7 +118,7 @@ def test_retry_budget_and_circuit_breaker_behavior(monkeypatch):
     responses = iter([(429, b"slow", None), (200, b'{"data":{"oppHits":[]}}', {"data": {"oppHits": []}})])
     sleeps = []
     now = lambda: datetime(2026, 1, 1, tzinfo=timezone.utc)
-    monkeypatch.setattr("pyrnova.sources.grants_gov.http.post_json", lambda *_args: next(responses))
+    monkeypatch.setattr("pyrnova.sources.grants_gov.http.post_json", lambda *_args, **_kwargs: next(responses))
     client = GrantsGovClient(
         mode="LIVE-SAFE", request_budget=2, max_retries=1, sleep=sleeps.append, now=now, jitter=lambda _a, _b: 1
     )
@@ -126,7 +127,7 @@ def test_retry_budget_and_circuit_breaker_behavior(monkeypatch):
     assert sleeps == [1.0]
     assert client.metrics["calls_made"] == 2
 
-    monkeypatch.setattr("pyrnova.sources.grants_gov.http.post_json", lambda *_args: (429, b"slow", None))
+    monkeypatch.setattr("pyrnova.sources.grants_gov.http.post_json", lambda *_args, **_kwargs: (429, b"slow", None))
     blocked = GrantsGovClient(mode="LIVE-SAFE", request_budget=1, max_retries=0, now=now)
     with pytest.raises(GrantsGovError, match="HTTP 429"):
         blocked.search_opportunities()

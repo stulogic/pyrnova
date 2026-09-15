@@ -34,6 +34,9 @@ def _sidecar_meta(ev: Evidence) -> dict:
         "published_at": ev.published_at,
         "first_seen_at": ev.first_seen_at,
         "retention_tier": ev.retention_tier,
+        "source_rights_class_at_retrieval": ev.source_rights_class_at_retrieval,
+        "source_policy_version": ev.source_policy_version,
+        "retrieved_at": ev.retrieved_at,
         "meta": ev.meta,
     }
 
@@ -52,6 +55,10 @@ class EvidenceArchive:
         source_url: Optional[str] = None,
         published_at: Optional[str] = None,
         meta: Optional[dict] = None,
+        normalized: Optional[dict] = None,
+        representation: Optional[str] = None,
+        excerpt: Optional[str] = None,
+        attribution: Optional[str] = None,
     ) -> Evidence:
         raise NotImplementedError
 
@@ -73,6 +80,9 @@ class EvidenceArchive:
             published_at=kw.get("published_at"),
             first_seen_at=datetime.utcnow().isoformat(),
             meta=kw.get("meta") or {},
+            source_rights_class_at_retrieval=kw.get("source_rights_class_at_retrieval"),
+            source_policy_version=kw.get("source_policy_version"),
+            retrieved_at=kw.get("retrieved_at"),
         )
 
 
@@ -85,6 +95,28 @@ class LocalEvidenceArchive(EvidenceArchive):
         return self.root / source_id / sha[:2] / sha
 
     def put(self, content: bytes, **kw) -> Evidence:
+        from .sources.rights import representation_for_storage, authorize_source_url
+
+        source_id = kw["source_id"]
+        source_url = kw.get("source_url")
+        if source_url:
+            authorize_source_url(source_id, source_url)
+        stored_content, rights_meta = representation_for_storage(
+            source_id, content, normalized=kw.pop("normalized", None),
+            metadata=kw.get("meta") or {}, source_url=source_url,
+            excerpt=kw.pop("excerpt", None), attribution=kw.pop("attribution", None),
+        )
+        kw["meta"] = {**(kw.get("meta") or {}), **rights_meta}
+        try:
+            from .sources.registry import get_spec
+            policy = get_spec(source_id).policy
+            if policy:
+                kw["source_rights_class_at_retrieval"] = str(policy.rights_class.value if hasattr(policy.rights_class, "value") else policy.rights_class)
+                kw["source_policy_version"] = policy.policy_version
+        except KeyError:
+            pass
+        kw["retrieved_at"] = kw.get("retrieved_at") or datetime.utcnow().isoformat()
+        content = stored_content
         sha = sha256_hex(content)
         p = self._path(kw["source_id"], sha)
         uri = f"file://{p.resolve()}"
@@ -128,6 +160,27 @@ class S3EvidenceArchive(EvidenceArchive):
         return f"{source_id}/{sha[:2]}/{sha}"
 
     def put(self, content: bytes, **kw) -> Evidence:
+        from .sources.rights import representation_for_storage, authorize_source_url
+
+        source_id = kw["source_id"]
+        source_url = kw.get("source_url")
+        if source_url:
+            authorize_source_url(source_id, source_url)
+        content, rights_meta = representation_for_storage(
+            source_id, content, normalized=kw.pop("normalized", None),
+            metadata=kw.get("meta") or {}, source_url=source_url,
+            excerpt=kw.pop("excerpt", None), attribution=kw.pop("attribution", None),
+        )
+        kw["meta"] = {**(kw.get("meta") or {}), **rights_meta}
+        try:
+            from .sources.registry import get_spec
+            policy = get_spec(source_id).policy
+            if policy:
+                kw["source_rights_class_at_retrieval"] = str(policy.rights_class.value if hasattr(policy.rights_class, "value") else policy.rights_class)
+                kw["source_policy_version"] = policy.policy_version
+        except KeyError:
+            pass
+        kw["retrieved_at"] = kw.get("retrieved_at") or datetime.utcnow().isoformat()
         sha = sha256_hex(content)
         key = self._key(kw["source_id"], sha)
         uri = f"s3://{self.bucket}/{key}"

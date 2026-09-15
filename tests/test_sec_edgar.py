@@ -84,12 +84,13 @@ def test_malformed_cik_and_response_fail_without_archiving_or_network(monkeypatc
         client.submissions("320193")
 
 
-def test_live_observation_archives_raw_bytes_and_redacts_contact_header(monkeypatch, tmp_path):
+def test_live_observation_archives_normalized_facts_and_redacts_contact_header(monkeypatch, tmp_path):
     raw = (FIXTURES / "sec_submissions_acme.json").read_bytes()
     payload = json.loads(raw)
     calls = []
 
-    def fake_get(url, params, *, headers):
+    def fake_get(url, params, *, headers, source_id):
+        assert source_id == "sec_edgar"
         calls.append((url, params, headers))
         return 200, raw, payload
 
@@ -105,10 +106,29 @@ def test_live_observation_archives_raw_bytes_and_redacts_contact_header(monkeypa
     assert observation.records[0]["accessionNumber"] == "0000320193-26-000002"
     assert calls[0][1] == {}
     assert calls[0][2]["User-Agent"] == "Pyrnova Capture Radar contact@example.test"
-    assert evidence.meta["request_params"] == {"cik": "0000320193", "since_accession": "0000320193-26-000001"}
-    assert evidence.meta["request_headers"] == {"user_agent": "configured_not_retained"}
+    assert evidence.meta["normalized"]["cik"] == "0000320193"
+    assert evidence.meta["normalized"]["source_ref"] == "0000320193-26-000001"
+    assert evidence.meta["normalized"]["value"][0]["accession_number"] == "0000320193-26-000002"
+    stored = LocalEvidenceArchive(tmp_path / "archive").get(evidence.content_sha256, "sec_edgar")
+    assert stored != raw and b"primaryDocDescription" not in stored
     assert "contact@example.test" not in json.dumps(evidence.meta)
     assert evidence.content_sha256
+
+
+def test_companyfacts_archive_retains_selected_facts_without_source_expression(monkeypatch, tmp_path):
+    raw = (FIXTURES / "sec_companyfacts_acme.json").read_bytes()
+    payload = json.loads(raw)
+    monkeypatch.setattr("pyrnova.sources.sec_edgar.http.get_json", lambda *_a, **_kw: (200, raw, payload))
+    observation = EdgarClient(user_agent="Pyrnova contact@example.test", mode="live-safe").companyfacts("320193")
+    archive = LocalEvidenceArchive(tmp_path)
+    evidence = archive_observation(archive, observation)
+    stored = archive.get(evidence.content_sha256, "sec_edgar")
+    normalized = json.loads(stored)["normalized"]
+    expected = extract_capex_facts(payload)
+    assert len(normalized["value"]) == len(expected) > 0
+    assert normalized["value"][0]["value_usd"] == expected[0]["value_usd"]
+    assert stored != raw and b'"label"' not in stored
+    assert not any(path.read_bytes() == raw for path in tmp_path.rglob("*") if path.is_file())
 
 
 def test_requires_contact_user_agent_and_rate_limit_prevents_repeat(monkeypatch):

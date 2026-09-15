@@ -13,6 +13,7 @@ from typing import Optional
 
 from . import http
 from .registry import get_spec
+from .rights import authorize_request, validate_source_payload
 
 
 def build_params(
@@ -94,9 +95,11 @@ class FederalRegisterClient:
                 per_page=per_page,
                 order=order,
             )
-            status, raw, parsed = http.get_json(self.search_url, params)
+            authorize_request("federal_register", "GET", self.search_url)
+            status, raw, parsed = http.get_json(self.search_url, params, source_id=self.spec.id)
             if status != 200 or parsed is None:
                 raise RuntimeError(f"Federal Register document search failed: HTTP {status}")
+            validate_source_payload("federal_register", parsed)
             documents = parsed.get("results", []) or []
             pages.append(
                 FederalRegisterPage(

@@ -93,6 +93,10 @@ a canonical authority or specification explicitly incorporates them.
   **engineering doctrine** (`ENGINEERING_DOCTRINE.md`) and **infrastructure & capital doctrine**
   (`INFRASTRUCTURE_DOCTRINE.md`) — how Pyrnova is built and scaled (D-059); read before substantive
   implementation or infrastructure work.
+- `docs/strategy/SOURCE_RIGHTS_AUTHORITY.md` — source-rights policy and fail-closed boundary doctrine;
+  it does not authorize Live Ops, deployment, or Customer #1 readiness.
+- `docs/strategy/SOURCE_RIGHTS_ENFORCEMENT_EVIDENCE.md` — isolated engineering verification for the
+  Customer #1 source-rights gate; overall readiness and soak acceptance remain separate.
 - `docs/system/` — descriptive cross-cutting system documentation: architecture, domain semantics,
   provenance, replay/temporal truth, scoring, and security/tenancy. These documents explain implemented
   behavior and do not create product authority.

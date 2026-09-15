@@ -45,7 +45,8 @@ def test_recipient_history_preserves_raw_pages(monkeypatch):
     client = USAspendingClient()
     calls = []
 
-    def fake_post(url, payload):
+    def fake_post(url, payload, *, source_id):
+        assert source_id == "usaspending"
         calls.append((url, payload))
         return 200, b'{"results": [{"Award ID": "A-1"}]}', {
             "results": [{"Award ID": "A-1"}], "page_metadata": {"hasNext": False}

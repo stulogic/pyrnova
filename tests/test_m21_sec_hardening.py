@@ -68,14 +68,14 @@ def test_accession_dedupe_skips_archived_and_preserves_amendments():
 def test_403_is_terminal_no_retry_loop_and_spend_is_recorded(monkeypatch):
     calls = {"n": 0}
 
-    def fake_get_bytes(url, params=None, *, headers=None, timeout=60):
+    def fake_get_json(url, params=None, **kwargs):
         calls["n"] += 1
-        return 403, b""
+        return 403, b"", None
 
-    monkeypatch.setattr(http, "get_bytes", fake_get_bytes)
+    monkeypatch.setattr(http, "get_json", fake_get_json)
     client = EdgarClient(user_agent="Pyrnova/test (ops@example.com)", mode="live-safe", request_budget=5)
     with pytest.raises(RuntimeError) as exc:
-        client.fetch_full_submission(CIK, ACCESSION)
+        client.submissions(CIK)
     assert "HTTP 403" in str(exc.value)
     # Exactly one call: the client itself never loops/retries a 403 (a terminal, not transient, failure).
     assert calls["n"] == 1
@@ -85,10 +85,18 @@ def test_403_is_terminal_no_retry_loop_and_spend_is_recorded(monkeypatch):
 
 
 def test_429_throttle_sets_cooldown_distinct_from_terminal_403(monkeypatch):
-    monkeypatch.setattr(http, "get_bytes", lambda *a, **k: (429, b""))
+    monkeypatch.setattr(http, "get_json", lambda *a, **k: (429, b"", None))
     client = EdgarClient(user_agent="Pyrnova/test (ops@example.com)", mode="live-safe",
                          request_budget=5, cooldown_seconds=30.0)
     with pytest.raises(sec_edgar.EdgarRateLimitError):
-        client.fetch_full_submission(CIK, ACCESSION)
+        client.submissions(CIK)
     # A throttle installs a concrete next-permitted-poll cooldown (backoff), unlike a terminal 403.
     assert client.next_permitted_poll is not None
+
+
+def test_unapproved_filing_document_denied_before_transport(monkeypatch):
+    from pyrnova.sources.rights import SourceRightsDenied
+    monkeypatch.setattr(http, "get_bytes", lambda *a, **k: pytest.fail("prohibited transport called"))
+    client = EdgarClient(user_agent="Pyrnova/test (ops@example.com)", mode="live-safe")
+    with pytest.raises(SourceRightsDenied):
+        client.fetch_full_submission(CIK, ACCESSION)

@@ -381,6 +381,15 @@ def fan_out(
 
         for projection in projected:
             try:
+                from .sources.rights import authorize_derived_projection
+                rights_decision = authorize_derived_projection(projection)
+                # Historical/derived persistence is distinct from current
+                # customer display; the read boundary applies display state.
+                if not rights_decision.allowed:
+                    failures.append({"customer_id": cid, "material_change_id": projection.get("id"),
+                                     "stage": "rights", "error": rights_decision.reason})
+                    continue
+                rights_projection = projection
                 mid = projection["id"]
                 c_stats["relevant"] += 1
                 chash = _content_hash(projection)
