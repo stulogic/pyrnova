@@ -388,6 +388,13 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
                 self._require(LEVEL_OPERATOR)  # customer creation is operator-assisted onboarding (§18)
                 return self._json(200, console.create_customer(**payload))
 
+            # Operator-provisioned recipient authorization for a tenant (onboarding, §18). Placed before
+            # the generic customer-scoped block so it is reached (that block otherwise 404s the suffix).
+            if path.startswith("/api/customers/") and path.endswith("/delivery-recipients"):
+                cid = unquote(path.split("/")[3])
+                self._require(LEVEL_OPERATOR)
+                return self._json(200, console.authorize_delivery_recipient(cid, payload.get("email", "")))
+
             # --- customer-scoped surfaces -------------------------------------------------------
             if path.startswith("/api/customers/"):
                 parts = path.split("/")  # ['', 'api', 'customers', '<id>', 'watchlist', ...]
@@ -418,12 +425,6 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
                 cid = self._require(LEVEL_CUSTOMER, payload.pop("customer", None))
                 recipients = payload.get("recipients") or []
                 return self._json(200, console.deliver_customer_brief(cid, oid, recipients=recipients))
-
-            # Operator-provisioned recipient authorization for a tenant (onboarding, §18).
-            if path.startswith("/api/customers/") and path.endswith("/delivery-recipients"):
-                cid = unquote(path.split("/")[3])
-                self._require(LEVEL_OPERATOR)
-                return self._json(200, console.authorize_delivery_recipient(cid, payload.get("email", "")))
 
             return self._json(404, {"error": "not found"})
 
