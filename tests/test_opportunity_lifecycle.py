@@ -10,7 +10,12 @@ from pyrnova.chains import resolve_chain, signals_from_records
 
 PK = "disa:cloud-modernization"
 
-# Same program evolving through stages, including intra-PROCUREMENT amendment/cancel/reissue/recompete.
+# Same program evolving through stages, including intra-PROCUREMENT amendment/cancel/reissue. The four
+# PROCUREMENT notices carry native procurement identity (solicitation number) + typed notice roles so
+# B2.1 can sequence them: sol1/amd1/cancel share DISA-CLOUD-25-R-0007; the reissue sol2 is a DISTINCT
+# instance (DISA-CLOUD-26-R-0002) that explicitly reissues the cancelled one.
+SOL_1 = "DISA-CLOUD-25-R-0007"
+SOL_2 = "DISA-CLOUD-26-R-0002"
 LIFECYCLE = [
     {"source_id": "appropriations", "source_ref": "b1", "stage": "AUTHORIZATION", "program_key": PK,
      "available_at": "2025-02-01", "summary": "budget"},
@@ -19,13 +24,17 @@ LIFECYCLE = [
     {"source_id": "sam_opportunities", "source_ref": "ss1", "stage": "MARKET_ENGAGEMENT", "program_key": PK,
      "available_at": "2025-05-01", "summary": "sources sought"},
     {"source_id": "sam_opportunities", "source_ref": "sol1", "stage": "PROCUREMENT", "program_key": PK,
-     "available_at": "2025-07-01", "summary": "solicitation"},
+     "available_at": "2025-07-01", "summary": "solicitation",
+     "procurement_id": SOL_1, "notice_type": "solicitation"},
     {"source_id": "sam_opportunities", "source_ref": "sol1-amd1", "stage": "PROCUREMENT", "program_key": PK,
-     "available_at": "2025-07-15", "summary": "amendment 1"},
+     "available_at": "2025-07-15", "summary": "amendment 1",
+     "procurement_id": SOL_1, "notice_type": "amendment"},
     {"source_id": "sam_opportunities", "source_ref": "sol1-cancel", "stage": "PROCUREMENT", "program_key": PK,
-     "available_at": "2025-08-20", "summary": "cancellation", "contradicts": True},
+     "available_at": "2025-08-20", "summary": "cancellation", "contradicts": True,
+     "procurement_id": SOL_1, "notice_type": "cancellation"},
     {"source_id": "sam_opportunities", "source_ref": "sol2", "stage": "PROCUREMENT", "program_key": PK,
-     "available_at": "2025-10-01", "summary": "reissue"},
+     "available_at": "2025-10-01", "summary": "reissue",
+     "procurement_id": SOL_2, "notice_type": "reissue", "prior_procurement_id": SOL_1},
     {"source_id": "usaspending", "source_ref": "aw1", "stage": "AWARD", "program_key": PK,
      "available_at": "2026-01-15", "summary": "award"},
 ]
@@ -63,19 +72,49 @@ def test_source_event_identity_is_preserved_and_true_duplicates_collapse():
     assert _resolve(dup).metrics()["duplicates_collapsed"] == 1
 
 
-# --- CHARACTERIZATION of the known intra-stage gap (Bundle-2 will change these) -----------------
+# --- B2.1 intra-stage procurement lineage (closes the OUTCOME-C gap) ----------------------------
 
-def test_intra_stage_lifecycle_is_currently_flat_known_gap():
-    """KNOWN GAP (Bundle 2): amendment / cancellation / reissue are peer PROCUREMENT notices with no
-    supersession/amendment linkage between them, and the cancellation is currently inert. This test
-    documents present behavior truthfully; it is expected to be updated when intra-stage lineage lands.
-    """
+def test_intra_stage_lineage_sequences_amend_cancel_reissue():
+    """Amendment / cancellation / reissue are now linked notice-level lineage, not flat peers."""
     res = _resolve(LIFECYCLE)
-    m = res.metrics()
-    # The cancellation does not (yet) register as a contradiction or supersede the solicitation.
-    assert m["contradictions"] == 0
-    assert m["chain_confidence"]["contradicted"] is False
-    # No intra-stage (PROCUREMENT->PROCUREMENT) relationship links sol1 -> amd1 -> cancel -> sol2.
-    intra = [r for r in res.relationships
-             if getattr(r, "predicate", None) in {"AMENDS", "SUPERSEDES", "REISSUES", "CANCELS"}]
-    assert intra == []
+    preds = {r.predicate for r in res.relationships}
+    assert {"AMENDS", "CANCELS", "REISSUES"} <= preds
+    # Two distinct procurement instances of one program; source-event identity preserved.
+    procurement = [s for s in res.signals if s.stage == "PROCUREMENT"]
+    assert {s.source_ref for s in procurement} == {"sol1", "sol1-amd1", "sol1-cancel", "sol2"}
+    assert res.metrics()["lineage"]["procurement_instances"] == 2
+
+
+def test_cancellation_is_consequential_and_reissue_restarts_liveness():
+    # After the cancellation but BEFORE the reissue is knowable: the current procurement is dead.
+    mid = _resolve(LIFECYCLE, as_of="2025-09-01")
+    assert mid.confidence["procurement_live"] is False
+    assert mid.confidence["contradicted"] is True
+    assert mid.lineage.current_instance(PK).disposition == "cancelled"
+    # All-time: the reissue is a distinct, live instance that restarts the pursuit — history retained.
+    full = _resolve(LIFECYCLE)
+    assert full.confidence["procurement_live"] is True
+    cancelled = full.lineage.instance_for(SOL_1)
+    assert cancelled.disposition == "cancelled" and cancelled.reissued_by == SOL_2
+    assert full.lineage.current_instance(PK).procurement_id == SOL_2
+
+
+def test_lineage_is_temporally_honest_under_replay():
+    # At 2025-07-20 only sol1 + amd1 are knowable: an AMENDS edge exists, no cancellation yet.
+    early = _resolve(LIFECYCLE, as_of="2025-07-20")
+    preds = {r.predicate for r in early.relationships}
+    assert "AMENDS" in preds and "CANCELS" not in preds and "REISSUES" not in preds
+    assert early.confidence["procurement_live"] is True
+
+
+def test_no_procurement_identity_means_no_invented_lineage():
+    # Two PROCUREMENT notices of the same program with NO shared native identity form no lineage.
+    ambiguous = [
+        {"source_id": "sam_opportunities", "source_ref": "x1", "stage": "PROCUREMENT", "program_key": PK,
+         "available_at": "2025-07-01", "summary": "solicitation A"},
+        {"source_id": "sam_opportunities", "source_ref": "x2", "stage": "PROCUREMENT", "program_key": PK,
+         "available_at": "2025-08-01", "summary": "cancellation B", "notice_type": "cancellation"},
+    ]
+    res = _resolve(ambiguous)
+    assert res.metrics()["lineage"]["lineage_relationships"] == 0
+    assert res.confidence["procurement_live"] is None

@@ -18,6 +18,11 @@ import hashlib
 from dataclasses import dataclass, field
 
 from .models import Relationship
+from .lineage import (
+    LINEAGE_PREDICATES,
+    ProcurementLineageResolution,
+    resolve_procurement_lineage,
+)
 from .precursors import PRECURSOR_STAGES, ProgramSignal
 
 CHAIN_RESOLUTION_VERSION = "chain_resolution_v1"
@@ -181,6 +186,7 @@ class ChainResolution:
     deferred: tuple[DeferredJoin, ...] = ()
     entity_relationships: tuple[Relationship, ...] = ()
     inference_scores: tuple[InferenceScore, ...] = ()  # every anchored candidate pair, for calibration
+    lineage: ProcurementLineageResolution | None = None  # B2.1 intra-stage procurement lineage
 
     @property
     def program_keys(self) -> tuple[str, ...]:
@@ -212,6 +218,10 @@ class ChainResolution:
             "stages_present": list(self.stages_present),
             "is_partial": len(self.stages_present) < len(PRECURSOR_STAGES),
             "chain_confidence": self.confidence,
+            "lineage": self.lineage.metrics() if self.lineage else {
+                "lineage_relationships": 0, "procurement_instances": 0,
+                "cancelled_instances": 0, "live_instances": 0, "lineage_predicates": [],
+            },
         }
 
 
@@ -249,6 +259,10 @@ def signals_from_records(records: list[dict], *, as_of: str | None = None) -> li
                 "parent_uei": record.get("parent_uei"),
                 "entity_name": record.get("recipient") or record.get("entity_name"),
                 "place_of_performance": record.get("place_of_performance"),
+                # B2.1 intra-stage procurement lineage anchors (all optional; absence => no lineage).
+                "procurement_id": record.get("procurement_id") or record.get("solicitation_number"),
+                "notice_type": record.get("notice_type"),
+                "prior_procurement_id": record.get("prior_procurement_id"),
             },
         ))
     return signals
@@ -285,14 +299,43 @@ def _relationship(precursor: ProgramSignal, successor: ProgramSignal, *, predica
     return rel
 
 
-def _chain_confidence(signals: list[ProgramSignal], relationships: list[Relationship]) -> dict:
-    linking = [r for r in relationships if r.predicate != "CONTRADICTS"]
+def _lineage_consequence(confidence: dict, lineage: ProcurementLineageResolution | None) -> dict:
+    """Fold intra-stage cancellation consequence into chain confidence (B2.1).
+
+    A program whose CURRENT procurement instance is not live (cancelled, and not restarted by a later
+    reissue) is a contradicted, not-live pursuit even when the cross-stage backbone is otherwise strong.
+    A reissue restarts liveness, so an all-time view with a live successor is not penalised — the
+    consequence tracks the current competition, not the fact that a cancellation ever occurred.
+    """
+    if lineage is None or not lineage.instances:
+        confidence.setdefault("procurement_live", None)
+        return confidence
+    dead = sorted({i.program_key for i in lineage.instances
+                   if (cur := lineage.current_instance(i.program_key)) and not cur.live})
+    confidence["procurement_live"] = not dead
+    if dead:
+        confidence["value"] = round(min(confidence.get("value", 0.0), 0.30), 3)
+        confidence["contradicted"] = True
+        confidence["not_live_programs"] = dead
+        confidence.setdefault("basis", []).append(
+            f"penalized: current procurement not live for {', '.join(dead)}")
+    return confidence
+
+
+def _chain_confidence(signals: list[ProgramSignal], relationships: list[Relationship],
+                      lineage: ProcurementLineageResolution | None = None) -> dict:
+    # Backward-pointing intra-stage lineage edges are not forward chain links; exclude them from the
+    # backbone's weakest-link and temporal-consistency computation (their consequence is applied below).
+    linking = [r for r in relationships
+               if r.predicate != "CONTRADICTS" and r.predicate not in LINEAGE_PREDICATES]
     contradicted = any(r.predicate == "CONTRADICTS" for r in relationships)
     distinct_sources = len({s.source_id for s in signals})
     basis: list[str] = []
     if not linking:
-        return {"value": 0.0, "basis": ["no evidence-backed link"], "contradicted": contradicted,
-                "source_independence": distinct_sources, "temporal_consistent": True}
+        return _lineage_consequence(
+            {"value": 0.0, "basis": ["no evidence-backed link"], "contradicted": contradicted,
+             "source_independence": distinct_sources, "temporal_consistent": True},
+            lineage)
     min_link = min(r.confidence for r in linking)
     value = min_link
     basis.append(f"weakest link confidence {min_link:.2f}")
@@ -315,14 +358,14 @@ def _chain_confidence(signals: list[ProgramSignal], relationships: list[Relation
     if contradicted:
         value = min(value, 0.30)
         basis.append("penalized: contradiction present")
-    return {
+    return _lineage_consequence({
         "value": round(value, 3),
         "min_link_confidence": round(min_link, 3),
         "source_independence": distinct_sources,
         "temporal_consistent": temporal_consistent,
         "contradicted": contradicted,
         "basis": basis,
-    }
+    }, lineage)
 
 
 def _norm_text(value: str | None) -> str | None:
@@ -601,9 +644,17 @@ def resolve_chain(
                 rejected.append(RejectedJoin(left.id, right.id, "agency_name_only",
                                              "same agency without any shared identifier"))
 
+    # 4) Intra-stage procurement lineage (B2.1): additive, gated on native procurement identity.
+    #    Notices without meta['procurement_id'] produce no lineage, so the frozen backbone is unchanged.
+    lineage = resolve_procurement_lineage(list(unique.values()), evidence_by_signal_id=evidence_by_signal_id)
+    for rel in lineage.relationships:
+        if (rel.subject_id, rel.object_id) not in seen_pairs:
+            seen_pairs.add((rel.subject_id, rel.object_id))
+            relationships.append(rel)
+
     entity_relationships = resolve_entity_relationships(
         list(unique.values()), evidence_by_signal_id=evidence_by_signal_id)
-    confidence = _chain_confidence(list(unique.values()), relationships)
+    confidence = _chain_confidence(list(unique.values()), relationships, lineage)
     return ChainResolution(
         signals=tuple(ordered),
         relationships=tuple(relationships),
@@ -613,6 +664,7 @@ def resolve_chain(
         deferred=tuple(deferred),
         entity_relationships=tuple(entity_relationships),
         inference_scores=tuple(inference_scores),
+        lineage=lineage,
     )
 
 
