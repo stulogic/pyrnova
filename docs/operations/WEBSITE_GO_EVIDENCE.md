@@ -5,8 +5,9 @@
 **Current revision:** B, with final polish pass applied (Revision A acceptance was withheld;
 Revision B was conditionally accepted; this pass applies six bounded refinements).
 **Prepared:** 2026-09-15.
-**Status:** REVISION B FINAL POLISH COMPLETE, READY FOR FINAL OWNER ACCEPTANCE. Claude does not
-grant final owner acceptance.
+**Status:** OWNER ACCEPTED / CLOSED. Revision B final polish is complete and the owner has
+granted final acceptance (see "Owner acceptance and closure" below). This record was previously
+"READY FOR FINAL OWNER ACCEPTANCE"; owner acceptance has now been given.
 
 State 1 means: safe to publish as an informational site; not safe to use as a public
 evaluation-intake destination. Public evaluation intake (State 2) is a separate,
@@ -15,6 +16,61 @@ separately-authorized workstream and is intentionally not built here.
 Branch `website-go-001`, isolated from the Live Ops soak (built on pinned base
 `e7cb2c98c3594166cbcb4d5691c0f370d4c5eb57`). Imports no product code; shares no runtime,
 state, secrets or configuration with `pyrnova/`, `ops/`, `var/`; never touches the soak.
+
+---
+
+## Owner acceptance and closure (WEBSITE-GO-001)
+
+**Owner decision:** ACCEPTED.
+**Recorded:** 2026-09-15.
+**Accepted implementation (Revision B final-polish baseline):**
+`8e5ae46559f605816116b43ecf46cf543c5eca77` (tip of `website-go-001`).
+**Accepted operating state:** `WEBSITE GO / OUTREACH INTAKE DISABLED`.
+**Disposition:** OWNER ACCEPTED / CLOSED. This is now the non-regression baseline.
+
+The owner has granted final acceptance of the Revision B final-polish website at the commit
+above. No further design or copy iteration is authorized under this workstream.
+
+### Scope of this acceptance (important)
+
+This acceptance is for `WEBSITE GO / OUTREACH INTAKE DISABLED` (State 1) only. It is explicitly
+NOT `WEBSITE GO / OUTREACH READY`:
+
+- It authorizes publishing the site as an informational destination.
+- It does NOT authorize public evaluation intake (State 2).
+- It does NOT satisfy the separate OUTREACH READY gate, which remains independently gated and
+  separately authorized. Nothing here opens intake, adds a submission or contact path, or
+  changes the intake-disabled operating state.
+
+### Non-regression baseline (preserved)
+
+The accepted implementation is the baseline. Preserved without regression: canonical Pyrnova
+mark and wordmark; dark institutional palette; restrained cyan `#25cfe8` signal treatment;
+telemetry / texture treatment; product-forward home hero; Material Change specimen prominence;
+product UI grammar; observed-fact vs Pyrnova-assessment distinction; evidence / uncertainty /
+falsifier / provenance / AS OF presentation; page architecture; desktop composition; wrapped
+mobile navigation; mobile readability treatment; State 1 CTA language "SEE HOW EVALUATION
+WORKS"; EVALUATE terminology in navigation and descriptive contexts; synthetic specimen
+disclosure; trust posture; zero-em-dash rule; intake-disabled operating state.
+
+Future video, motion, real product screenshots, richer product demonstrations and conversion
+improvements are DEFERRED enhancement work under a later separately authorized scope. They are
+not defects in WEBSITE-GO-001 and are not to be started now.
+
+### Preserved evidence at acceptance
+
+- Desktop (1440) and mobile (390) render review: PASS (see "Browser acceptance" below).
+- `npm run build`: PASS.
+- `npm test`: 14/14 PASS (State 1 CTA-semantics and NIGHTGLASS-absence checks included).
+- Em dash (U+2014) count: 0 across source and `dist/`.
+- Intake-disabled invariants: verified (no input/form/submit, no hidden collection path, no
+  calendar/upload/founder workaround, no dormant endpoint).
+- Live Ops soak: not touched, not tested against, not deployed into. No process, configuration,
+  checkpoint, cadence or evidence change.
+
+The test count is 14/14 for the final-polish pass; the "Build and tests" section below records
+the pre-polish 12-suite baseline and the polish pass added the State 1 CTA-semantics and
+NIGHTGLASS-absence checks. Both records are retained for provenance.
 
 ---
 
@@ -249,4 +305,7 @@ separately authorized and is not built.
 
 ## Final state
 
-`WEBSITE GO / OUTREACH INTAKE DISABLED`, Revision B, READY FOR OWNER REVIEW.
+`WEBSITE GO / OUTREACH INTAKE DISABLED`, Revision B final polish, OWNER ACCEPTED / CLOSED.
+Accepted baseline commit `8e5ae46559f605816116b43ecf46cf543c5eca77`. This is the non-regression
+baseline. OUTREACH READY remains a separate, independently gated authorization and is not
+granted by this acceptance.
