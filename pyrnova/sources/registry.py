@@ -102,6 +102,11 @@ class SourcePolicy:
     # do not authorize retrieval; transport uses allowed_hosts/path_prefixes.
     reference_hosts: tuple[str, ...] = ()
     reference_path_prefixes: tuple[str, ...] = ()
+    # Official-publisher domain suffixes (e.g. ".gov", ".mil") accepted ONLY as
+    # attribution/provenance references, never for retrieval.  This encodes
+    # "authoritative U.S. government publisher" for first-party official-artifact
+    # sources without creating any transport/crawling permission.
+    reference_host_suffixes: tuple[str, ...] = ()
     attribution_text: str = ""
     max_excerpt_words: int = 25
 
@@ -175,6 +180,7 @@ def _structured_policy(
     methods: tuple[str, ...] = ("GET",),
     reference_hosts: tuple[str, ...] = (),
     reference_paths: tuple[str, ...] = (),
+    reference_host_suffixes: tuple[str, ...] = (),
     attribution: str = "Official source; retain a direct source URL.",
     notes: str = "",
 ) -> SourcePolicy:
@@ -213,6 +219,7 @@ def _structured_policy(
         allowed_path_prefixes=paths,
         reference_hosts=reference_hosts,
         reference_path_prefixes=reference_paths,
+        reference_host_suffixes=reference_host_suffixes,
         attribution_text=attribution,
     )
 
@@ -261,11 +268,40 @@ _SBIR_POLICY = _structured_policy(
     hosts=("api.www.sbir.gov",), paths=("/public/api/awards",),
     notes="Existing connector is retained for offline replay; live ingest remains disabled pending provider review.",
 )
-_AGENCY_ARTIFACT_POLICY = _structured_policy(
-    identity="agency_artifacts", domain="www.acquisition.gov", source_type="fixed_structured_agency_artifact",
-    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
-    storage=StorageMode.NORMALIZED_ONLY, hosts=("www.acquisition.gov",), paths=("/procurement-forecasts",),
-    notes="Only explicitly reviewed structured artifacts; no blanket federal public-domain assertion.",
+# PRELAUNCH-CONVERGENCE-001 Bundle 2 owner rights-posture ruling: OFFICIAL FIRST-PARTY
+# U.S. GOVERNMENT APPROPRIATIONS AND ACQUISITION-FORECAST ARTIFACTS may be ingested when
+# obtained directly from the authoritative U.S. government publisher (a .gov/.mil domain),
+# access is public and un-circumvented, provenance + acquisition timestamp are retained,
+# and rate/access constraints are respected.  Transport stays exact-host allowlisted; the
+# .gov/.mil suffix authorizes only attribution/provenance references, never retrieval or
+# blanket government-site crawling.  Third-party mirrors / commercial substitutes / copied
+# paywalled material remain prohibited (unknown/conflicting rights still fail closed).
+_OFFICIAL_GOV_PUBLISHER_SUFFIXES = (".gov", ".mil")
+_APPROPRIATIONS_POLICY = _structured_policy(
+    identity="appropriations", domain="www.usaspending.gov",
+    source_type="official_us_gov_budget_artifact",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.CURRENTLY_APPROVED,
+    storage=StorageMode.RAW_ALLOWED,
+    hosts=("www.usaspending.gov", "www.acquisition.gov"), paths=("/artifacts/", "/api/"),
+    reference_host_suffixes=_OFFICIAL_GOV_PUBLISHER_SUFFIXES, reference_paths=("/",),
+    notes=(
+        "Owner ruling (PRELAUNCH-CONVERGENCE-001 Bundle 2): first-party official appropriations/"
+        "budget artifacts from the authoritative U.S. government publisher only; bounded and auditable; "
+        "not blanket crawling; SBIR/STTR and third-party mirrors remain out of scope."
+    ),
+)
+_ACQUISITION_FORECAST_POLICY = _structured_policy(
+    identity="acquisition_forecast", domain="www.acquisition.gov",
+    source_type="official_us_gov_forecast_artifact",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.CURRENTLY_APPROVED,
+    storage=StorageMode.RAW_ALLOWED,
+    hosts=("www.acquisition.gov",), paths=("/procurement-forecasts",),
+    reference_host_suffixes=_OFFICIAL_GOV_PUBLISHER_SUFFIXES, reference_paths=("/",),
+    notes=(
+        "Owner ruling (PRELAUNCH-CONVERGENCE-001 Bundle 2): first-party official agency acquisition-"
+        "forecast artifacts from the authoritative U.S. government publisher only; per-agency column "
+        "mappings required; forecast rows cannot independently create candidates/STRIKEs."
+    ),
 )
 
 _RESTRICTED_POLICIES = {
@@ -420,7 +456,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="medium",
         precursor_stage="MARKET_ENGAGEMENT",
         rights_note="Public domain agency artifacts; per-agency column mappings required.",
-        source_policy=_AGENCY_ARTIFACT_POLICY,
+        source_policy=_ACQUISITION_FORECAST_POLICY,
     ),
     "grants_gov": SourceSpec(
         id="grants_gov",
@@ -483,7 +519,7 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="high",
         precursor_stage="AUTHORIZATION",
         rights_note="Public domain budget artifacts.",
-        source_policy=_AGENCY_ARTIFACT_POLICY,
+        source_policy=_APPROPRIATIONS_POLICY,
     ),
     # ---------------------------------------------------------------- M14 new families ---
     "sbir": SourceSpec(

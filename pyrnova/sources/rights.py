@@ -481,13 +481,31 @@ def _display_decision(value: Any, source_ids: Sequence[str] | None = None) -> Ri
     return RightsDecision(True, "current source policies permit display", tuple(sorted(ids)), tuple(versions), "ALLOWED")
 
 
+def _host_matches_suffixes(host: str, suffixes: Sequence[str]) -> bool:
+    """True only when ``host`` is, or is a sub-domain of, an official publisher suffix.
+
+    Matched on domain labels so a substring such as ``evilgov.com`` never satisfies
+    ``.gov``; a lone suffix is compared as an exact host too.
+    """
+    for suffix in suffixes:
+        label = str(suffix).lower().lstrip(".").rstrip(".")
+        if label and (host == label or host.endswith("." + label)):
+            return True
+    return False
+
+
 def _url_allowed_for_policy(policy: SourcePolicy, url: str, *, reference: bool = False) -> bool:
     parts = urlsplit(url)
     if parts.scheme.lower() != "https" or not parts.hostname:
         return False
     hosts = policy.reference_hosts if reference and policy.reference_hosts else policy.allowed_hosts
     prefixes = policy.reference_path_prefixes if reference and policy.reference_path_prefixes else policy.allowed_path_prefixes
-    if parts.hostname.lower().rstrip(".") not in {h.lower().rstrip(".") for h in hosts}:
+    host = parts.hostname.lower().rstrip(".")
+    host_ok = host in {h.lower().rstrip(".") for h in hosts}
+    if not host_ok and reference:
+        # Official-publisher suffixes authorize a provenance REFERENCE only (no retrieval).
+        host_ok = _host_matches_suffixes(host, policy.reference_host_suffixes)
+    if not host_ok:
         return False
     return any((parts.path or "/").startswith(prefix) for prefix in prefixes)
 
