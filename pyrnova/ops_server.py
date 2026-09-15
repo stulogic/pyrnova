@@ -218,6 +218,18 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
             query = parse_qs(parsed.query)
             path = parsed.path
 
+            if path == "/healthz":
+                # Public, unauthenticated liveness/release probe (B4.6 deploy health verification). Reports
+                # the active release SHA from the release manifest in the working directory when present.
+                release = None
+                try:
+                    manifest = Path("RELEASE.json")
+                    if manifest.exists():
+                        release = json.loads(manifest.read_text()).get("sha")
+                except Exception:  # noqa: BLE001 — health must never fail on manifest read
+                    release = None
+                return self._json(200, {"status": "ok", "release": release})
+
             if path == "/api/me":
                 return self._me()
 

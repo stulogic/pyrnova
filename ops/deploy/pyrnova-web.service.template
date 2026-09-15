@@ -1,0 +1,33 @@
+# Pyrnova web/product + operator console — systemd unit template (B4.6).
+# Single-node VM behind a Cloudflare tunnel; the app binds LOCAL only (Cloudflare terminates TLS at the
+# edge and forwards to 127.0.0.1). Copy to /etc/systemd/system/pyrnova-web.service and fill placeholders.
+#
+# Code lives in the immutable active release (/srv/pyrnova/current -> releases/<sha>). DURABLE STATE and
+# SECRETS live OUTSIDE the release payload and are NOT rolled back with code.
+[Unit]
+Description=Pyrnova web/product + operator console
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pyrnova
+Group=pyrnova
+# The active release is a symlink; WorkingDirectory resolves it at each (re)start so a symlink swap +
+# restart activates the new code deterministically.
+WorkingDirectory=/srv/pyrnova/current
+# Durable state + config/secrets are OUTSIDE the release (never in the release payload / repo).
+Environment=PYRNOVA_STATE_DIR=/srv/pyrnova/state
+EnvironmentFile=/etc/pyrnova/pyrnova.env
+# Fail-closed auth is forced when bound non-locally; we bind local behind the tunnel and require auth.
+ExecStart=/srv/pyrnova/venv/bin/python -m pyrnova.ops_server --host 127.0.0.1 --port 8765 --require-auth
+Restart=on-failure
+RestartSec=3
+# Least privilege: the app may write only its state/evidence roots.
+ReadWritePaths=/srv/pyrnova/state /srv/pyrnova/evidence /srv/pyrnova/backups
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
