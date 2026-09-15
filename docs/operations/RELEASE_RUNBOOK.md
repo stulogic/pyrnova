@@ -9,7 +9,7 @@ payload and are never rolled back with code.
 ```
 Cloudflare edge/tunnel  ->  single production VM  ->  Pyrnova web/product (127.0.0.1:8765)
                                                    ->  Live Ops + watcher/alerts
-                                                   ->  durable state (/srv/pyrnova/state)
+                                                   ->  durable state (/srv/pyrnova/var/state)
                                                    ->  private evidence/backups
 ```
 
@@ -18,12 +18,16 @@ Cloudflare edge/tunnel  ->  single production VM  ->  Pyrnova web/product (127.0
 ```
 /srv/pyrnova/releases/<sha>     immutable release artifact (exact git SHA; carries RELEASE.json)
 /srv/pyrnova/current -> releases/<sha>   active release (atomic symlink swap)
-/srv/pyrnova/state              DURABLE STATE — outside releases, never rolled back with code
-/srv/pyrnova/evidence           private evidence
+/srv/pyrnova/var/state          DURABLE STATE (jsonl) — outside releases, never rolled back with code
+/srv/pyrnova/var/archive        content-addressed evidence archive
 /srv/pyrnova/backups            local backup staging (off-host copy is a separate step)
 /srv/pyrnova/venv               runtime venv (pip install -r requirements.lock.txt)
 /etc/pyrnova/pyrnova.env        secrets/config — OUTSIDE the repo and release payload
 ```
+
+The state/archive paths follow the backup contract: `pyrnova.backup.create_backup(source_root=/srv/pyrnova, ...)`
+captures `var/state/*.jsonl` + `var/archive/**` + `db/schema.sql`. `PYRNOVA_STATE_DIR=/srv/pyrnova/var/state`
+in the service unit keeps the live write path and the backup source aligned.
 
 Config/secrets are supplied via `EnvironmentFile=/etc/pyrnova/pyrnova.env` (systemd) and never committed.
 
@@ -48,7 +52,7 @@ active release SHA.
 ops/deploy/deploy.sh rollback     # repoint current -> previously-activated release, restart, health-verify
 ```
 
-Rollback moves **code** to the previous release. It does **NOT** touch `/srv/pyrnova/state` — code
+Rollback moves **code** to the previous release. It does **NOT** touch `/srv/pyrnova/var/state` — code
 rollback and data recovery are distinct operations. To recover DATA, use the backup/restore procedure
 (`docs/operations/BACKUP_RESTORE_EVIDENCE.md`); restoring state is a deliberate, separate action.
 

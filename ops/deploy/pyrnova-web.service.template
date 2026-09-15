@@ -17,14 +17,14 @@ Group=pyrnova
 # restart activates the new code deterministically.
 WorkingDirectory=/srv/pyrnova/current
 # Durable state + config/secrets are OUTSIDE the release (never in the release payload / repo).
-Environment=PYRNOVA_STATE_DIR=/srv/pyrnova/state
+Environment=PYRNOVA_STATE_DIR=/srv/pyrnova/var/state
 EnvironmentFile=/etc/pyrnova/pyrnova.env
 # Fail-closed auth is forced when bound non-locally; we bind local behind the tunnel and require auth.
 ExecStart=/srv/pyrnova/venv/bin/python -m pyrnova.ops_server --host 127.0.0.1 --port 8765 --require-auth
 Restart=on-failure
 RestartSec=3
 # Least privilege: the app may write only its state/evidence roots.
-ReadWritePaths=/srv/pyrnova/state /srv/pyrnova/evidence /srv/pyrnova/backups
+ReadWritePaths=/srv/pyrnova/var /srv/pyrnova/backups
 ProtectSystem=strict
 ProtectHome=true
 NoNewPrivileges=true
