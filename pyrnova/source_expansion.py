@@ -14,7 +14,7 @@ from .precursors import ProgramChain, ProgramSignal, build_program_chains
 from .sources.acquisition_forecast import parse_forecast_csv, public_artifact_url
 from .sources.grants_gov import deduplicate_opportunities
 from .sources.registry import get_spec
-from .sources.sec_edgar import extract_capex_facts, filings_since, normalize_filing
+from .sources.sec_edgar import extract_capex_facts, filing_url, filings_since, normalize_filing
 
 
 @dataclass
@@ -29,7 +29,8 @@ class SourceExpansionBatch:
 
 
 def _archive_page(archive: EvidenceArchive, source_id: str, raw: bytes, source_ref: str,
-                  source_url: str, observed_at: str) -> Evidence:
+                  source_url: str, observed_at: str,
+                  normalized: dict | None = None, meta: dict | None = None) -> Evidence:
     spec = get_spec(source_id)
     return archive.put(
         raw,
@@ -37,7 +38,8 @@ def _archive_page(archive: EvidenceArchive, source_id: str, raw: bytes, source_r
         retention_tier=spec.retention_tier,
         source_ref=source_ref,
         source_url=source_url,
-        meta={"offline_replay": True, "observed_at": observed_at},
+        normalized=normalized,
+        meta=meta if meta is not None else {"offline_replay": True, "observed_at": observed_at},
     )
 
 
@@ -106,19 +108,43 @@ def ingest_source_expansion(
         metrics = ledger.source("sec_edgar")
         metrics.raw_records += len(rows) + len(capex_facts)
         metrics.normalized_events += len(filings) + len(capex_facts)
+        cik10 = str(submissions["cik"]).zfill(10)
+        # sec_edgar is NORMALIZED_ONLY: durably archive only reviewed structured facts +
+        # hash provenance (original_content_sha256 links back to the raw page), never raw
+        # source expression. Mirrors sec_edgar.archive_observation's normalized contract.
+        submissions_facts = [
+            {"accession_number": row.get("accessionNumber"), "form": row.get("form"),
+             "filed_at": row.get("filingDate"), "date": row.get("reportDate"),
+             "source_url": filing_url(cik10, row.get("accessionNumber"), row.get("primaryDocument"))}
+            for row in rows
+        ]
         evidence = _archive_page(
             archive, "sec_edgar", sec_submissions_response,
-            f"submissions:{str(submissions['cik']).zfill(10)}",
-            f"https://data.sec.gov/submissions/CIK{str(submissions['cik']).zfill(10)}.json", observed_at,
+            f"submissions:{cik10}",
+            f"https://data.sec.gov/submissions/CIK{cik10}.json", observed_at,
+            normalized={"id": f"submissions:{cik10}", "cik": cik10,
+                        "source_ref": f"submissions:{cik10}", "type": "submissions",
+                        "value": submissions_facts},
+            meta={"fetched_at": observed_at},
         )
         batch.evidence.append(evidence)
         companyfacts_evidence = None
         if sec_companyfacts_response is not None:
+            companyfacts_facts = [
+                {"id": fact["fact_identity"], **{key: fact[key] for key in (
+                    "value_usd", "period_start", "period_end", "filed_at", "form",
+                    "accession_number", "fiscal_year", "fiscal_period", "signal")}}
+                for fact in capex_facts
+            ]
             companyfacts_evidence = _archive_page(
                 archive, "sec_edgar", sec_companyfacts_response,
-                f"companyfacts:{str(submissions['cik']).zfill(10)}",
-                f"https://data.sec.gov/api/xbrl/companyfacts/CIK{str(submissions['cik']).zfill(10)}.json",
+                f"companyfacts:{cik10}",
+                f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik10}.json",
                 observed_at,
+                normalized={"id": f"companyfacts:{cik10}", "cik": cik10,
+                            "source_ref": f"companyfacts:{cik10}", "type": "companyfacts",
+                            "value": companyfacts_facts},
+                meta={"fetched_at": observed_at},
             )
             batch.evidence.append(companyfacts_evidence)
         batch.entities.append(sec_issuer_entity(
