@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyrnova.sources import http, sbir
+from pyrnova.sources.rights import SourceRightsDenied
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -37,40 +38,34 @@ def test_build_params_validates_rows_and_start_bounds():
         sbir.build_params(start=-1)
 
 
-def test_client_search_awards_parses_top_level_array_and_preserves_provenance(monkeypatch):
-    import json
+def test_client_live_search_is_denied_while_ingest_disabled(monkeypatch):
+    # SOURCE-RIGHTS-001 authority: SBIR is retained for offline replay only; live
+    # ingest remains disabled pending provider review. The client must fail closed at
+    # the rights gate before any transport, regardless of a (mocked) available endpoint.
+    called = {"transport": False}
 
-    parsed = json.loads(SBIR_AWARDS_BYTES)
-    captured = {}
-
-    def fake_get_json(url, params, **kwargs):
-        captured["url"] = url
-        captured["params"] = params
-        return 200, SBIR_AWARDS_BYTES, parsed
+    def fake_get_json(url, params, **kwargs):  # pragma: no cover - must not run
+        called["transport"] = True
+        return 200, SBIR_AWARDS_BYTES, None
 
     monkeypatch.setattr(http, "get_json", fake_get_json)
 
     client = sbir.SbirClient()
-    pages = client.search_awards(firm="Torch Technologies", rows=100)
-
-    assert len(pages) == 1
-    page = pages[0]
-    assert page.raw_response == SBIR_AWARDS_BYTES
-    assert page.awards == parsed
-    assert page.request_params == captured["params"]
-    assert page.source_url == "https://api.www.sbir.gov/public/api/awards"
-    assert captured["url"] == page.source_url
-    assert page.fetched_at
+    with pytest.raises(SourceRightsDenied, match="INGEST_DISABLED"):
+        client.search_awards(firm="Torch Technologies", rows=100)
+    assert called["transport"] is False
 
 
-def test_client_raises_on_non_200(monkeypatch):
-    def fake_get_json(url, params, **kwargs):
+def test_client_ingest_gate_precedes_transport_error_handling(monkeypatch):
+    # Even a non-200 transport is never reached while ingest is disabled: the rights
+    # denial takes precedence over the connector's HTTP error handling.
+    def fake_get_json(url, params, **kwargs):  # pragma: no cover - must not run
         return 503, b"", None
 
     monkeypatch.setattr(http, "get_json", fake_get_json)
 
     client = sbir.SbirClient()
-    with pytest.raises(RuntimeError, match="HTTP 503"):
+    with pytest.raises(SourceRightsDenied, match="INGEST_DISABLED"):
         client.search_awards()
 
 
