@@ -66,3 +66,40 @@ def test_national_brief_preserves_nz_truth_including_thin_prime():
     assert "491.0" in brief and "PYRNOVA-NZ-SPEC-001" in brief
     assert "654.5" not in brief
     assert "not itself an Opportunity" in brief
+
+
+def _uk_decision(*, route="SINGLE_SOURCE", consequential="POST_AWARD_RISK_INCREASED",
+                 sscr_qdc="QDC_CONFIRMED", lifecycle="POST_AWARD_CHANGE", access="INCUMBENT",
+                 industrial="INCUMBENT_ARCHITECTURE"):
+    uk = get_domain("GB")
+    ev = NationalEvidence("gb-ev-ajax", "uk_gov_uk", "2021-03-15", lifecycle, route)
+    mc = derive_material_change_fixture(uk, ev, as_of="2024-01-01", mc_id="gb-ajax",
+                                        consequential_change_kind=consequential, sscr_qdc=sscr_qdc)
+    acc = assess_access(uk, access_class=access, industrial_position=industrial)
+    opp = NationalOpportunity(mc, acc, "eval-uk")
+    anchors = TemporalAnchors("2021-03-15", "2021-03-16", None, None, "2021-03-20", None)
+    return uk, to_decision(uk, opp, anchors=anchors, as_of="2024-01-01")
+
+
+def test_national_brief_preserves_uk_truth_postaward_and_qdc():
+    uk, dec = _uk_decision()
+    brief = render_national_brief(uk, dec, customer_name="Evaluation Target UK")
+    assert "United Kingdom (GB)" in brief
+    assert "SINGLE_SOURCE" in brief
+    assert "POST_AWARD_RISK_INCREASED" in brief
+    # SSCR/QDC is shown as an EVIDENCED field, and post-award is explicitly not terminal.
+    assert "QDC_CONFIRMED" in brief
+    assert "not** a terminal state" in brief
+    # No UK numeric DLT calibration is cited (none is authorized).
+    assert "PYRNOVA-UK-SPEC" not in brief  # no fabricated cited calibration line
+    assert "not itself an Opportunity" in brief
+
+
+def test_uk_brief_direct_award_does_not_show_qdc():
+    uk, dec = _uk_decision(route="DIRECT_AWARD", consequential="OPPORTUNITY_NARROWED",
+                           sscr_qdc="UNKNOWN", lifecycle="AWARD", access="INCUMBENT",
+                           industrial="SOVEREIGN_CAPABILITY")
+    brief = render_national_brief(uk, dec, customer_name="Evaluation Target UK")
+    assert "DIRECT_AWARD" in brief
+    assert "SSCR/QDC status (SOURCE-EVIDENCED, not derived): **UNKNOWN**" in brief
+    assert "QDC_CONFIRMED" not in brief
