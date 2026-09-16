@@ -51,16 +51,28 @@ def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
     end = as_of.isoformat()
     naics = profile.naics or None
     client = USAspendingClient()
+    usaspending_attempts = 0
+    usaspending_failures = 0
 
     def _collect(**kw):
-        for _raw, results in client.search_awards(
-            action_date_start=start, action_date_end=end, max_pages=3, limit=100, **kw
-        ):
-            for r in results:
-                key = r.get("generated_internal_id") or r.get("Award ID")
-                if key and key not in seen:
-                    seen.add(key)
-                    award_rows.append(r)
+        nonlocal usaspending_attempts, usaspending_failures
+        usaspending_attempts += 1
+        # A single source read failing (timeout, 5xx, transport error) degrades that pass — it must not
+        # crash the whole capture run. SAM and Federal Register below already degrade this way; the
+        # primary source must behave consistently so partial intelligence is still produced and any
+        # empty result is EXPLAINED (source degraded), never a silent/unexplained empty.
+        try:
+            for _raw, results in client.search_awards(
+                action_date_start=start, action_date_end=end, max_pages=3, limit=100, **kw
+            ):
+                for r in results:
+                    key = r.get("generated_internal_id") or r.get("Award ID")
+                    if key and key not in seen:
+                        seen.add(key)
+                        award_rows.append(r)
+        except Exception as exc:  # pragma: no cover - network dependent
+            usaspending_failures += 1
+            print(f"[warn] USAspending fetch failed ({kw!r}): {exc}", file=sys.stderr)
 
     # Pass 1 (anchor): the target company's own awards — incumbency + their upcoming recompetes.
     for name in profile.search_names:
@@ -68,6 +80,10 @@ def _live_rows(cfg, profile: CapabilityProfile, as_of: date, window_days: int):
     # Pass 2 (market): recompete landscape in the target's NAICS they could compete for.
     if naics:
         _collect(naics_codes=naics)
+    if usaspending_attempts and usaspending_failures == usaspending_attempts:
+        print("[warn] USAspending DEGRADED — all award passes failed this run; awards intelligence "
+              "is unavailable (this empty is source-degradation, not an absence of activity).",
+              file=sys.stderr)
     # NOTE: agency-name filtering is intentionally omitted (brittle toptier/subtier naming);
     # agency relevance is handled deterministically by the capability matcher instead.
 
