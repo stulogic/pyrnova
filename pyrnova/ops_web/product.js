@@ -198,10 +198,13 @@ function wireOpportunity(id) {
     } catch (err) { note(err.message); }
   });
   const btn = document.querySelector("#deliver-btn");
-  if (btn) btn.addEventListener("click", async () => {
-    const to = prompt("Deliver this brief to (authorized recipient email):");
-    if (!to) return;
-    const out = document.querySelector("#deliver-out");
+  const out = document.querySelector("#deliver-out");
+  // Inline, validated recipient entry — not a raw browser prompt(). The form discloses on demand,
+  // validates the email client-side, disables while sending, and reports a deterministic delivery
+  // status (including an explicit FAILED state when no verified transport is configured).
+  async function submitDelivery(to, statusEl, submitEl) {
+    submitEl.disabled = true;
+    statusEl.textContent = "Sending…";
     try {
       const res = await Pyrnova.authFetch(`/api/opportunities/${encodeURIComponent(id)}/deliver`,
         { method: "POST", headers: { "Content-Type": "application/json" },
@@ -210,7 +213,35 @@ function wireOpportunity(id) {
       if (!res.ok) throw new Error(j.error || "delivery failed");
       out.innerHTML = `<p class="muted">Delivery <code>${esc(j.delivery_id)}</code> — status
         <strong>${esc(j.status)}</strong>${j.status === "FAILED" ? " (no verified transport configured — real external delivery pending)" : ""}.</p>`;
-    } catch (err) { out.innerHTML = `<p class="muted">${esc(err.message)}</p>`; }
+    } catch (err) {
+      statusEl.textContent = err.message;
+      submitEl.disabled = false;
+    }
+  }
+  if (btn) btn.addEventListener("click", () => {
+    if (document.querySelector("#deliver-form")) { document.querySelector("#deliver-to").focus(); return; }
+    out.innerHTML =
+      `<form id="deliver-form" class="deliver-form" novalidate>
+        <label for="deliver-to">Deliver this brief to an authorized recipient</label>
+        <div class="deliver-row">
+          <input id="deliver-to" type="email" inputmode="email" autocomplete="off" spellcheck="false"
+                 placeholder="name@organization.gov" required>
+          <button class="act primary" type="submit">Send</button>
+          <button class="act" type="button" id="deliver-cancel">Cancel</button>
+        </div>
+        <p class="deliver-status muted" id="deliver-status" aria-live="polite"></p>
+      </form>`;
+    const form = document.querySelector("#deliver-form");
+    const input = document.querySelector("#deliver-to");
+    const statusEl = document.querySelector("#deliver-status");
+    input.focus();
+    document.querySelector("#deliver-cancel").addEventListener("click", () => { out.innerHTML = ""; });
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const to = input.value.trim();
+      if (!to || !input.checkValidity()) { statusEl.textContent = "Enter a valid recipient email."; input.focus(); return; }
+      submitDelivery(to, statusEl, form.querySelector('button[type="submit"]'));
+    });
   });
 }
 
