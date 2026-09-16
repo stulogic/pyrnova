@@ -665,6 +665,45 @@ def cmd_search(args) -> int:
     return 0
 
 
+def cmd_domains_list(args) -> int:
+    from .domains import all_domains
+    rows = []
+    for d in all_domains():
+        rows.append({
+            "code": d.code, "name": d.name, "validated": d.validated,
+            "build_authority": d.build_authority,
+            "operational": bool(d.validated and d.build_authority),
+            "sources": {s.id: s.activation.value for s in d.sources},
+            "dlt_calibrated": d.dlt_calibration is not None,
+        })
+    print(json.dumps(rows, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_domains_show(args) -> int:
+    from .domains import get_domain
+    d = get_domain(args.code)
+    print(json.dumps({
+        "code": d.code, "name": d.name, "validated": d.validated,
+        "build_authority": d.build_authority,
+        "operational": bool(d.validated and d.build_authority),
+        "lifecycle": list(d.lifecycle), "routes": d.routes,
+        "access_classes": list(d.access_classes),
+        "industrial_position_classes": list(d.industrial_position_classes),
+        "important_miss": list(d.important_miss),
+        "evidence_languages": list(d.evidence_languages),
+        "sources": [{"id": s.id, "name": s.name, "activation": s.activation.value,
+                     "ingestible": s.ingestible, "role": s.role, "note": s.note} for s in d.sources],
+        "dlt_calibration": (None if d.dlt_calibration is None else {
+            "median_dlt_to_market_days": d.dlt_calibration.median_dlt_to_market_days,
+            "p25_days": d.dlt_calibration.p25_days, "corpus_size": d.dlt_calibration.corpus_size,
+            "qualifying_cases": d.dlt_calibration.qualifying_cases,
+            "source_reference": d.dlt_calibration.source_reference}),
+        "notes": d.notes,
+    }, indent=2, sort_keys=False))
+    return 0
+
+
 def cmd_backup_create(args) -> int:
     from . import backup as _bk
     cfg = load_config()
@@ -904,6 +943,15 @@ def main(argv=None) -> int:
     contribution.add_argument("--source", default=None)
     contribution.add_argument("--scoring-version", default="scoring_v1")
     contribution.set_defaults(func=cmd_source_contribution)
+
+    # --- National-domain visibility (international operability / Phase 7/14) -----------------------
+    dm = sub.add_parser("domains", help="inspect registered national government-intelligence domains")
+    dm_sub = dm.add_subparsers(dest="subcmd", required=True)
+    dm_l = dm_sub.add_parser("list", help="list national domains + activation posture")
+    dm_l.set_defaults(func=cmd_domains_list)
+    dm_s = dm_sub.add_parser("show", help="show one national domain's declared truth + sources")
+    dm_s.add_argument("code", help="national code (US, AU, UK/GB, CA, NZ)")
+    dm_s.set_defaults(func=cmd_domains_show)
 
     # --- Operator backup / restore control plane (Phase 7) ----------------------------------------
     # An operator must be able to back up and restore durable state without writing Python. These
