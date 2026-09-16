@@ -1,0 +1,38 @@
+PYRNOVA DECISION BRIEF — CA DIRECTED_OEM — ca-victoria-bilingual
+Customer: eval-ca    As-of: 2025-06-01
+
+OPPORTUNITY   opp_92f6ee556b8326b28cbb  (candidate)
+NATIONAL DOMAIN: Canada (CA)
+  Lifecycle stage: SUSTAINMENT
+  Acquisition route: DIRECTED_OEM — Directed to an OEM / design authority (route crystallized around one supplier).
+  Access position (PYRNOVA DERIVED): INCUMBENT
+  Industrial Position: SUSTAINMENT_POSITION
+  Important Miss addressed: —
+  Consequential change: OPPORTUNITY_EXPANDED
+  SSCR/QDC status (EVIDENCED, not derived): UNKNOWN
+  Acquisition mechanism: DIRECTED_OEM
+  Timing class (no numeric DLT threshold): N_A
+  ITB/VP status (EVIDENCED, not derived; ITB != prime access): UNKNOWN
+  Bilingual evidence: original-language authority preserved (EN and FR are both original; any translation is PYRNOVA DERIVED, never authoritative).
+  National value: —
+
+Agency:       None
+Est. value:   None
+
+WHY NOW       OPPORTUNITY_EXPANDED: None
+Expected action by: None
+
+INCUMBENT     None
+CUSTOMER FIT  relevance_score=None (UNKNOWN)
+
+PURSUIT
+  Recommended: None
+  Native signal: attractiveness=None confidence=None
+  Verdict: UNKNOWN (insufficient persisted evidence for a verdict)
+
+MATERIAL CHANGES: 1 affecting this opportunity
+
+UNCERTAINTY
+  None
+
+EVIDENCE: 1 item(s); source-rights display = ALLOWED
