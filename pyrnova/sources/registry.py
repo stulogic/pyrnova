@@ -338,6 +338,28 @@ _UK_GOV_UK_POLICY = _structured_policy(
           "AS-OF required — a first-published date does not prove the current page body existed then.",
 )
 
+# Canada national domain (INTERNATIONAL-GOVERNMENT-ROLLOUT-001, CA vertical). CanadaBuys downloadable/open
+# datasets have a likely-favourable open-data posture and are a strong candidate for future live production
+# use, but the EXACT dataset licensing must be verified before activation — so the state is INGEST_DISABLED:
+# live transport fails closed (UNKNOWN => DENY), while lawful owner-accepted historical/replay evidence may
+# back a DERIVED, attributed customer projection. The national domain (pyrnova/domains/ca.py) independently
+# governs acquisition activation (FIXTURE_ONLY). Both fail closed and must agree. CanadaBuys portal scraping,
+# DND/CAF web, ordinary Canada.ca redistribution, DCB automation and third-party mirrors remain UNKNOWN =>
+# DENY (no reviewed rights profile at all).
+_CA_CANADABUYS_DATASET_POLICY = _structured_policy(
+    identity="ca_canadabuys_dataset", domain="canadabuys.canada.ca",
+    source_type="structured_open_procurement_dataset",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY,
+    hosts=("canadabuys.canada.ca",), paths=("/",),
+    reference_hosts=("canadabuys.canada.ca",), reference_paths=("/",),
+    attribution="CanadaBuys open procurement datasets (Government of Canada); retain a direct source URL.",
+    notes="CanadaBuys downloadable/open datasets — downstream evidence only. Open-dataset posture likely "
+          "favourable but EXACT dataset/record licensing not yet verified: INGEST_DISABLED. Lawful "
+          "owner-accepted replay/historical evidence may back a derived, attributed projection. Public "
+          "availability is NOT production-source authorization; portal scraping rights are separate and denied.",
+)
+
 # PRELAUNCH-CONVERGENCE-001 Bundle 2 owner rights-posture ruling: OFFICIAL FIRST-PARTY
 # U.S. GOVERNMENT APPROPRIATIONS AND ACQUISITION-FORECAST ARTIFACTS may be ingested when
 # obtained directly from the authoritative U.S. government publisher (a .gov/.mil domain),
@@ -727,6 +749,30 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="low",
         rights_note="OGL v3.0; live ingest disabled (not activated), replay-derived use only.",
         source_policy=_UK_GOV_UK_POLICY,
+    ),
+    "ca_canadabuys_dataset": SourceSpec(
+        id="ca_canadabuys_dataset",
+        name="CanadaBuys downloadable / open datasets",
+        base_url="https://canadabuys.canada.ca",
+        rights="open_data_conditional",  # open-data posture likely; exact licensing not yet verified
+        retention_tier="A",  # notices/datasets are amended/withdrawn; each observation is point-in-time truth
+        active=False,        # not active for live production ingestion (INGEST_DISABLED)
+        notes=(
+            "INTERNATIONAL-GOVERNMENT-ROLLOUT-001 (CA vertical): CanadaBuys downloadable/open datasets are "
+            "DOWNSTREAM EVIDENCE, never the acquisition ontology. Strong candidate for future live use, but "
+            "EXACT dataset/record licensing must be verified before activation: INGEST_DISABLED. Owner-accepted "
+            "historical/replay evidence may back a derived, attributed customer projection. Portal scraping / "
+            "automation rights are separate and NOT presumed."
+        ),
+        family="procurement_opportunities",
+        signals=("tender_notice", "award_notice", "amendment", "standing_offer", "acan"),
+        access_method="bulk_dataset",
+        auth="none",
+        reliability="fixture_only",
+        status="blocked",
+        priority="medium",
+        rights_note="CanadaBuys exact dataset licensing not yet verified; live ingest disabled, replay-derived only.",
+        source_policy=_CA_CANADABUYS_DATASET_POLICY,
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",

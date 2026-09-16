@@ -44,11 +44,16 @@ from .pipeline import NationalEvidence, NationalOpportunity, _assert_asof
 # as MONITORING. A narrowed / access-changed / prime-changed / window-changed / post-award-risk change stays
 # open but flagged for review. Award is NOT terminal: post-award risk keeps the opportunity monitored, never
 # silently closed. Everything else (created/expanded/progression/capability-insertion) is a live candidate.
-_DOWNGRADE_KINDS = {"CANCELLATION", "CONSOLIDATION", "OPPORTUNITY_CLOSED"}
+_DOWNGRADE_KINDS = {"CANCELLATION", "CONSOLIDATION", "OPPORTUNITY_CLOSED", "PROGRAMME_CANCELLED"}
 _REVIEW_KINDS = {
     "RE_SCOPE", "ROUTE_CHANGE",
     "OPPORTUNITY_NARROWED", "ACCESS_CHANGED", "PRIME_POSITION_CHANGED", "DECISION_WINDOW_CHANGED",
     "POST_AWARD_RISK_INCREASED",
+    # CA consequential-change states that keep an opportunity OPEN but flagged for review. PROGRAMME_REISSUED
+    # is deliberately NOT here: a reissue is a fresh live candidate (a NEW opportunity id / program key), so
+    # it must not silently continue the cancelled programme.
+    "ROUTE_CHANGED", "INDUSTRIAL_POSITION_CHANGED", "ITB_VP_RELEVANCE_CHANGED", "QUALIFICATION_CHANGED",
+    "SUPPLY_CHAIN_ACCESS_CHANGED",
 }
 
 
@@ -125,15 +130,23 @@ def build_national_opportunity_record(
     for ev in evidence:
         _assert_asof(ev.available_at, as_of)
         _assert_source_rights(domain, ev.source_id)
-        ev_records.append({
+        ev_rec = {
             "id": ev.evidence_id,
             "source_id": ev.source_id,
             "source_ref": ev.payload.get("source_ref") or ev.evidence_id,
             "source_url": ev.payload.get("source_url"),
             "archive_uri": ev.payload.get("archive_uri"),
             "first_seen_at": ev.available_at,
-            "language": ev.language,
-        })
+            "language": ev.language,   # ORIGINAL language (EN and FR are both original)
+        }
+        # Bilingual evidence provenance (CA): a PYRNOVA-DERIVED translation and a cross-language entity key
+        # ride through ONLY when present, so US/AU/NZ/UK evidence records stay byte-identical. A translation
+        # is DERIVED content and never becomes the evidentiary authority — the original ``language`` stands.
+        if ev.translation is not None:
+            ev_rec["translation"] = ev.translation
+        if ev.entity_key is not None:
+            ev_rec["entity_key"] = ev.entity_key
+        ev_records.append(ev_rec)
 
     evidence_sources = sorted({ev.source_id for ev in evidence})
     national = {
@@ -149,6 +162,12 @@ def build_national_opportunity_record(
         # for domains that do not use them, so no US/AU/NZ record changes).
         "consequential_change_kind": mc.consequential_change_kind,
         "sscr_qdc": mc.sscr_qdc,
+        # CA national truth: mechanism family, timing class (no numeric DLT threshold — timing is qualified,
+        # never fabricated as exact), and the SEPARATE evidenced ITB/VP field. None/"UNKNOWN" for other
+        # domains, so their records are unchanged; the shared brief renders these ONLY when a mechanism is set.
+        "mechanism": mc.mechanism,
+        "timing_class": mc.timing_class,
+        "itb_vp": mc.itb_vp,
         # Post-award marker: award is NOT terminal. A change at a post-award lifecycle stage remains
         # monitored; the flag lets the read model / brief show post-award intelligence explicitly.
         "post_award": mc.lifecycle_stage in ("PERFORMANCE", "POST_AWARD_CHANGE"),

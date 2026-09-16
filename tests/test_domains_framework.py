@@ -35,15 +35,17 @@ UK_CORPUS = Path(__file__).resolve().parent.parent / "examples" / "uk_replay" / 
 def test_registry_has_five_domains_us_au_nz_uk_operational():
     codes = {d.code for d in all_domains()}
     assert codes == {"US", "AU", "GB", "CA", "NZ"}
-    # US, AU, NZ and now the UK (GB) are validated AND have owner build authority (implementable now).
-    assert {d.code for d in operational_domains()} == {"US", "AU", "NZ", "GB"}
+    # US, AU, NZ, the UK (GB) and now Canada (CA) are validated AND have owner build authority.
+    assert {d.code for d in operational_domains()} == {"US", "AU", "NZ", "GB", "CA"}
     assert get_domain("uk").code == "GB"  # alias, case-insensitive
 
 
-def test_unvalidated_domain_may_not_carry_fabricated_calibration():
-    # Canada validation is still external — its seam must not fabricate a result.
-    d = get_domain("CA")
-    assert d.validated is False and d.dlt_calibration is None and d.build_authority is False
+def test_canada_is_operational_with_no_numeric_dlt_threshold():
+    # Canadian build authority granted (PYRNOVA-CA-SPEC-001 + HISTORICAL-VALIDATION-001/002 accepted).
+    ca = get_domain("CA")
+    assert ca.validated is True and ca.build_authority is True
+    # NO Canadian national numeric DLT threshold is authorized or required — calibration stays None.
+    assert ca.dlt_calibration is None
 
 
 def test_uk_is_operational_with_no_numeric_dlt_threshold():

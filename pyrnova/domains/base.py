@@ -115,6 +115,19 @@ class NationalDomain:
     # taxonomy above. Empty for domains (US/AU/NZ) that model change only via ``important_miss``; the shared
     # bridge falls back to ``important_miss`` when a record carries no consequential-change kind.
     consequential_states: tuple[str, ...] = ()
+    # Optional national MECHANISM families — the acquisition mechanism a Material Change belongs to
+    # (e.g. CA: competitive/open, directed/OEM, FMS/GtG, strategic-source, digital/ICT). National truth:
+    # different mechanisms carry different timing/access/industrial meaning and must NOT be flattened into a
+    # single "competition" model. Empty for domains that do not classify mechanism (US/AU/NZ/UK).
+    mechanisms: tuple[str, ...] = ()
+    # Optional national TIMING classes — how a Material Change's timing evidence is qualified when NO
+    # national numeric DLT threshold applies (e.g. CA: EXACT / BOUNDED / CONTAMINATED / N_A / UNKNOWN). This
+    # lets a domain refuse to fabricate exactness. Empty for domains that do not use it; "UNKNOWN" is always
+    # a permissible default even for those domains.
+    timing_classes: tuple[str, ...] = ()
+    # Optional national ITB / Value-Proposition EVIDENCED states — a SEPARATE evidenced field (like UK
+    # SSCR/QDC), NEVER inferred from contract value, ownership, presence, or access. Empty otherwise.
+    itb_vp_states: tuple[str, ...] = ()
     sources: tuple[NationalSource, ...] = ()     # national source-rights ownership
     dlt_calibration: Optional[DLTCalibration] = None   # None until validated — never fabricated
     validated: bool = False                      # historical validation accepted for this nation?
@@ -150,6 +163,15 @@ class NationalDomain:
 
     def known_consequential_state(self, state: str) -> bool:
         return state in self.consequential_states
+
+    def known_mechanism(self, mechanism: str) -> bool:
+        return mechanism in self.mechanisms
+
+    def known_timing_class(self, timing_class: str) -> bool:
+        return timing_class in self.timing_classes
+
+    def known_itb_vp(self, itb_vp: str) -> bool:
+        return itb_vp in self.itb_vp_states
 
     def __post_init__(self):
         if len(self.code) != 2 or not self.code.isupper():

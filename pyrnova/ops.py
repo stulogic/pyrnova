@@ -765,6 +765,19 @@ class OperatorConsole:
                                                     "archive_uri": e.get("archive_uri")},
                                      "observed_at": e.get("first_seen_at") or e.get("published_at"),
                                      "retention_tier": e.get("retention_tier")}
+                # Bilingual original-language authority (CA): the ORIGINAL language is authoritative; any
+                # translation is PYRNOVA DERIVED and flagged as such (never silently authoritative). A
+                # cross-language entity key links EN/FR variants without erasing original provenance. Present
+                # only when the evidence carries these fields, so other domains' inspectors are unchanged.
+                if e.get("language") is not None or e.get("translation") is not None:
+                    tr = e.get("translation")
+                    gated["doctrine"]["language"] = {
+                        "original_language": e.get("language"),
+                        "original_is_authoritative": True,
+                        "translation": tr,
+                        "translation_is_derived": bool(tr),   # PYRNOVA DERIVED, not evidentiary authority
+                        "entity_key": e.get("entity_key"),
+                    }
                 return gated
         raise ValueError(f"evidence not found on opportunity: {evidence_id}")
 
@@ -877,6 +890,19 @@ class OperatorConsole:
                 block.append(f"  SSCR/QDC status (EVIDENCED, not derived): {national.get('sscr_qdc') or 'UNKNOWN'}")
                 if national.get("post_award"):
                     block.append("  Post-award intelligence: award is NOT terminal — monitoring continues.")
+            # CA national truth (mechanism / timing class / ITB-VP / bilingual). Rendered ONLY when a
+            # mechanism is present (CA), so US/AU/NZ/UK briefs are byte-identical. Timing is QUALIFIED with
+            # NO numeric DLT threshold; a BOUNDED/CONTAMINATED class is never presented as exact. ITB/VP is
+            # the SEPARATE evidenced field and does NOT imply prime access.
+            if national.get("mechanism"):
+                block.append(f"  Acquisition mechanism: {national.get('mechanism')}")
+                block.append(f"  Timing class (no numeric DLT threshold): {national.get('timing_class') or 'UNKNOWN'}")
+                block.append(f"  ITB/VP status (EVIDENCED, not derived; ITB != prime access): "
+                             f"{national.get('itb_vp') or 'UNKNOWN'}")
+                if any((e.get("language") == "fr" or e.get("translation"))
+                       for e in (dc.get("evidence") or [])):
+                    block.append("  Bilingual evidence: original-language authority preserved (EN and FR are "
+                                 "both original; any translation is PYRNOVA DERIVED, never authoritative).")
             block.append(
                 f"  National value: {val.get('amount')} {val.get('currency')}" if val else "  National value: —")
             block.append("")
