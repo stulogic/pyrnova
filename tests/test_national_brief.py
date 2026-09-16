@@ -36,3 +36,33 @@ def test_national_brief_preserves_au_truth():
     assert "654.5" in brief and "PYRNOVA-AU-SPEC-001" in brief
     # The distinctions are stated.
     assert "not itself an Opportunity" in brief
+
+
+def _nz_decision():
+    nz = get_domain("NZ")
+    ev = NationalEvidence("nz-ev-002", "nz_mod", "2021-03-01", "APPROACH_TO_MARKET", "CLOSED")
+    mc = derive_material_change_fixture(nz, ev, as_of="2024-01-01", important_miss_kind="ROUTE_CHANGE",
+                                        mc_id="nz-thin-prime-case")
+    # Thin Prime is an ACCESS class; the Industrial Position is a DISTINCT axis (economic benefit).
+    acc = assess_access(nz, access_class="THIN_PRIME", industrial_position="ECONOMIC_BENEFIT")
+    opp = NationalOpportunity(mc, acc, "eval-nz")
+    anchors = TemporalAnchors("2021-03-01", "2021-03-02", None, None, "2021-03-10", "2021-12-31")
+    return nz, to_decision(nz, opp, anchors=anchors, as_of="2024-01-01")
+
+
+def test_national_brief_preserves_nz_truth_including_thin_prime():
+    nz, dec = _nz_decision()
+    brief = render_national_brief(nz, dec, customer_name="Evaluation Target NZ")
+    # NZ meaning present, not flattened into AU or the US ontology.
+    assert "New Zealand (NZ)" in brief
+    assert "CLOSED" in brief and "Closed" in brief
+    # Thin Prime access preserved; economic benefit is the distinct Industrial Position axis.
+    assert "THIN_PRIME" in brief
+    assert "ECONOMIC_BENEFIT" in brief
+    # SOURCE FACT vs PYRNOVA DERIVED stated; shared-engine DLT shown.
+    assert "PYRNOVA DERIVED" in brief and "SOURCE FACT" in brief
+    assert "decision lead time" in brief.lower()
+    # Cited NZ calibration appears (not fabricated inline) and is NOT the AU number.
+    assert "491.0" in brief and "PYRNOVA-NZ-SPEC-001" in brief
+    assert "654.5" not in brief
+    assert "not itself an Opportunity" in brief

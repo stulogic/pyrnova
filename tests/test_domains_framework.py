@@ -26,6 +26,7 @@ from pyrnova.domains.pipeline import (
 )
 
 CORPUS = Path(__file__).resolve().parent.parent / "examples" / "au_replay" / "corpus.json"
+NZ_CORPUS = Path(__file__).resolve().parent.parent / "examples" / "nz_replay" / "corpus.json"
 
 
 # --- 1. registry / boundary -----------------------------------------------------------------------
@@ -119,6 +120,42 @@ def test_au_replay_runs_through_shared_kernel():
             qualifying += 1
     # The corpus's qualifying subset exercised the DLT engine (as in the accepted replay design).
     assert qualifying == 3
+
+
+def test_nz_replay_runs_through_shared_kernel():
+    nz = get_domain("NZ")
+    corpus = json.loads(NZ_CORPUS.read_text())
+    assert corpus["domain"] == "NZ"
+    # GETS must never appear as a source in the NZ replay corpus.
+    assert all(case["source_id"] != "nz_gets" for case in corpus["cases"])
+    qualifying = 0
+    for case in corpus["cases"]:
+        ev = NationalEvidence(
+            evidence_id=case["evidence_id"], source_id=case["source_id"],
+            available_at=case["available_at"], lifecycle_stage=case["lifecycle_stage"],
+            route=case["route"])
+        mc = derive_material_change_fixture(
+            nz, ev, as_of="2024-01-01", important_miss_kind=case["important_miss_kind"],
+            mc_id=case["case_id"])
+        # NZ national meaning preserved on the change (route/stage/miss are NZ truth).
+        assert mc.route == case["route"] and nz.known_route(mc.route)
+        assert mc.lifecycle_stage in nz.lifecycle
+        assert mc.important_miss_kind in nz.important_miss
+        acc = assess_access(nz, access_class=case["access_class"],
+                            industrial_position=case["industrial_position"])
+        opp = NationalOpportunity(material_change=mc, access=acc, customer_id="eval-nz")
+        a = case["anchors"]
+        anchors = TemporalAnchors(t0_source_available_at=a["t0"], t1_acquired_at=a["t1"],
+                                  t4_customer_ready_at=a["t4"], benchmark_b=a["benchmark_b"])
+        dec = to_decision(nz, opp, anchors=anchors, as_of="2024-01-01")
+        assert dec.material_changes[0]["route_meaning"] == nz.routes[case["route"]]
+        assert dec.uncertainty["access_verdict"] == case["access_class"]
+        established = dec.decision_lead_time["external_lead_time_established"]
+        assert established is case["expect_qualifying"]
+        if established:
+            qualifying += 1
+    # Five corpus cases carry a benchmark and exercise the shared DLT engine; the cancellation does not.
+    assert qualifying == 5
 
 
 def test_strict_as_of_blocks_future_evidence():

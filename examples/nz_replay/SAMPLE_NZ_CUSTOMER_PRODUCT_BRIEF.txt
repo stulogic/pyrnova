@@ -1,0 +1,32 @@
+PYRNOVA DECISION BRIEF — NZ CLOSED acquisition — nz-mod-thin-prime-closed
+Customer: eval-nz    As-of: 2024-01-01
+
+OPPORTUNITY   opp_e09234d98b25d7553927  (reviewing)
+NATIONAL DOMAIN: New Zealand (NZ)
+  Lifecycle stage: APPROACH_TO_MARKET
+  Acquisition route: CLOSED — Closed / invited approach — limited competition to nominated suppliers.
+  Access position (PYRNOVA DERIVED): THIN_PRIME
+  Industrial Position: ECONOMIC_BENEFIT
+  Important Miss addressed: ROUTE_CHANGE
+  National value: 95000000.0 NZD
+
+Agency:       None
+Est. value:   None
+
+WHY NOW       ROUTE_CHANGE: None
+Expected action by: 2021-12-31
+
+INCUMBENT     None
+CUSTOMER FIT  relevance_score=None (UNKNOWN)
+
+PURSUIT
+  Recommended: None
+  Native signal: attractiveness=None confidence=None
+  Verdict: UNKNOWN (insufficient persisted evidence for a verdict)
+
+MATERIAL CHANGES: 1 affecting this opportunity
+
+UNCERTAINTY
+  None
+
+EVIDENCE: 1 item(s); source-rights display = ALLOWED
