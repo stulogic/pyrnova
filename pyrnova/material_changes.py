@@ -228,6 +228,9 @@ def project_material_change(change: dict, relevance: dict) -> dict:
             "archive_hash": change.get("archive_hash"),
             "adverse_event_family": change.get("adverse_event_family"),
         },
+        # National acquisition truth, kept national (not flattened into the observed/assessment blocks).
+        # Present only on records that carry it; the customer product renders it where real.
+        "national": change.get("national"),
         "available_at": change.get("observed_at"),  # the point-in-time gate value (for sorting/filtering)
     }
 
@@ -335,6 +338,9 @@ def _opportunity_change(rec: dict) -> dict:
         "uncertainty": [{"type": "FALSIFICATION", "detail": rec.get("falsification")}]
         if rec.get("falsification") else [],
         "path_refs": [],
+        # National acquisition truth (route/lifecycle/access/Industrial Position/Important Miss), passed
+        # through untouched when present. None for US records — no domain special-casing here.
+        "national": meta.get("national"),
     }
 
 

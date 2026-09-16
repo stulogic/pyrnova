@@ -398,12 +398,15 @@ def _derived_projection(value: Any) -> bool:
         "id", "kind", "title", "disposition", "observed", "assessment", "relevance", "evidence",
         "uncertainty", "lifecycle_state", "outcome_state", "propagation", "refs", "provenance", "available_at",
         "review", "investigation", "first_seen", "customer_overlay",
+        # National acquisition truth block (route/lifecycle/access/Industrial Position/Important Miss);
+        # PYRNOVA DERIVED classification carried on the canonical envelope, not copied source prose.
+        "national",
     }
     version_keys = {
         "customer_id", "material_change_id", "source_kind", "content_version", "content_hash", "disposition",
         "relevance_basis", "relevance_reasons", "assessment_snapshot", "outcome_state", "outcome_ref",
         "intelligence_observed_at", "first_relevant_at", "delivered_at", "last_updated_at", "source_refs",
-        "change_kind", "valid_from", "ingest_run_id", "schema_version", "record_id", "review",
+        "change_kind", "valid_from", "ingest_run_id", "schema_version", "record_id", "review", "national",
     }
     if isinstance(value.get("assessment"), Mapping) and isinstance(value.get("observed"), Mapping):
         return set(value).issubset(material_keys) and isinstance(value.get("evidence"), Mapping)

@@ -268,6 +268,25 @@ _SBIR_POLICY = _structured_policy(
     hosts=("api.www.sbir.gov",), paths=("/public/api/awards",),
     notes="Existing connector is retained for offline replay; live ingest remains disabled pending provider review.",
 )
+# Australian national domain (INTERNATIONAL-GOVERNMENT-ROLLOUT-001). AusTender is DOWNSTREAM
+# EVIDENCE of an Australian acquisition, never the acquisition ontology. Live production ingestion
+# of AusTender requires Australian source-rights approval that has NOT been granted, so the state is
+# INGEST_DISABLED: live transport fails closed (UNKNOWN => DENY), while lawful owner-accepted
+# historical/replay evidence may still back a DERIVED customer projection with attribution and may be
+# displayed under current policy — exactly the SBIR replay posture. This registry policy governs
+# rights (transport/derived/display); the national domain (pyrnova/domains/au.py) independently
+# governs acquisition activation posture (FIXTURE_ONLY). Both fail closed and must agree.
+_AU_AUSTENDER_POLICY = _structured_policy(
+    identity="au_austender", domain="www.tenders.gov.au", source_type="structured_tender_notice_index",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY,  # no raw-storage rights for AusTender; normalized facts only
+    hosts=("www.tenders.gov.au",), paths=("/api/",),
+    reference_hosts=("www.tenders.gov.au",), reference_paths=("/",),
+    attribution="AusTender (Commonwealth of Australia); retain a direct source URL.",
+    notes="AusTender is downstream evidence only. Live production ingestion requires Australian "
+          "source-rights approval (not granted): INGEST_DISABLED. Lawful owner-accepted replay/"
+          "historical evidence may back a derived, attributed customer projection.",
+)
 # PRELAUNCH-CONVERGENCE-001 Bundle 2 owner rights-posture ruling: OFFICIAL FIRST-PARTY
 # U.S. GOVERNMENT APPROPRIATIONS AND ACQUISITION-FORECAST ARTIFACTS may be ingested when
 # obtained directly from the authoritative U.S. government publisher (a .gov/.mil domain),
@@ -557,6 +576,29 @@ REGISTRY: dict[str, SourceSpec] = {
             "adapter validated offline on fixtures. Retry connectivity when the provider is available."
         ),
         source_policy=_SBIR_POLICY,
+    ),
+    "au_austender": SourceSpec(
+        id="au_austender",
+        name="AusTender (Australian Government tender notices)",
+        base_url="https://www.tenders.gov.au",
+        rights="unknown",  # Australian source-rights approval not granted; fail closed for live use
+        retention_tier="A",  # notices are amended/withdrawn; each observation is point-in-time truth
+        active=False,        # not active for live production ingestion (INGEST_DISABLED)
+        notes=(
+            "INTERNATIONAL-GOVERNMENT-ROLLOUT-001: AusTender is DOWNSTREAM EVIDENCE of an Australian "
+            "acquisition, never the acquisition ontology. Live ingestion requires Australian rights "
+            "approval (not granted): INGEST_DISABLED. Owner-accepted historical/replay evidence may "
+            "back a derived, attributed customer projection and be displayed under current policy."
+        ),
+        family="procurement_opportunities",
+        signals=("tender_notice", "amendment", "cancellation", "contract_notice"),
+        access_method="rest_api",
+        auth="unknown",
+        reliability="fixture_only",
+        status="blocked",
+        priority="medium",
+        rights_note="Australian rights approval pending; live ingest disabled, replay-derived use only.",
+        source_policy=_AU_AUSTENDER_POLICY,
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",

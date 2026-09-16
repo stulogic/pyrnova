@@ -105,6 +105,7 @@ class CustomerMaterialChange:
     delivered_at: str = ""
     last_updated_at: str = ""
     source_refs: dict = field(default_factory=dict)
+    national: dict = field(default_factory=dict)
     change_kind: str = CHANGE_INITIAL
     valid_from: str = ""
     ingest_run_id: Optional[str] = None
@@ -163,6 +164,19 @@ def _content_hash(projection: dict) -> str:
         "relevance_basis": (projection.get("relevance") or {}).get("basis"),
         "outcome_state": projection.get("outcome_state", "UNKNOWN"),
     }
+    # National acquisition truth (route/lifecycle/access/Industrial Position/Important Miss) is part of a
+    # national record's version identity, so a national progression, route change, re-scope or
+    # cancellation produces a new version. Added ONLY when present: US records (no national block) hash
+    # byte-identically to before, so no US behaviour changes.
+    national = projection.get("national")
+    if national:
+        payload["national"] = {
+            "route": national.get("route"),
+            "lifecycle_stage": national.get("lifecycle_stage"),
+            "access_class": national.get("access_class"),
+            "industrial_position": national.get("industrial_position"),
+            "important_miss_kind": national.get("important_miss_kind"),
+        }
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()
     return hashlib.sha256(blob).hexdigest()[:24]
 
@@ -188,7 +202,13 @@ def _classify_change(prior: dict, projection: dict) -> str:
     prior_basis = prior.get("relevance_basis")
     new_snap = _assessment_snapshot(projection)
     new_basis = (projection.get("relevance") or {}).get("basis")
-    if prior_snap == new_snap and prior_basis == new_basis:
+    # A national progression/route change/re-scope moves national acquisition truth even when the shared
+    # assessment snapshot holds, so it is an ASSESSMENT change, not merely an outcome update.
+    prior_nat = prior.get("national") or {}
+    new_nat = projection.get("national") or {}
+    national_key = lambda n: (n.get("route"), n.get("lifecycle_stage"), n.get("access_class"),
+                              n.get("industrial_position"), n.get("important_miss_kind"))
+    if prior_snap == new_snap and prior_basis == new_basis and national_key(prior_nat) == national_key(new_nat):
         return CHANGE_OUTCOME  # assessment held; only the linked outcome moved
     return CHANGE_ASSESSMENT
 
@@ -413,6 +433,7 @@ def fan_out(
                             projection, profile=profile, watch_rows=watch_rows, observed_at=observed_at),
                         delivered_at=now, last_updated_at=now, valid_from=now,
                         source_refs=_source_refs(projection),
+                        national=projection.get("national") or {},
                         change_kind=CHANGE_INITIAL, ingest_run_id=run_id)
                     cmc_store.append(STREAM_CUSTOMER_MATERIAL_CHANGES, row.to_record())
                     existing[mid] = row.to_record()
@@ -435,6 +456,7 @@ def fan_out(
                         delivered_at=prior.get("delivered_at"),
                         last_updated_at=now, valid_from=now,
                         source_refs=_source_refs(projection),
+                        national=projection.get("national") or {},
                         change_kind=_classify_change(prior, projection), ingest_run_id=run_id)
                     cmc_store.append(STREAM_CUSTOMER_MATERIAL_CHANGES, row.to_record())
                     existing[mid] = row.to_record()
