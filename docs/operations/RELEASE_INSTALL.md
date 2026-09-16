@@ -78,7 +78,9 @@ the developer `.venv`), installing **only** from `requirements-dev.lock.txt` + `
 - Full regression in the clean venv: **866 passed / 0 failed / 2 skipped** on CPython 3.9.6.
 - **No dependency or configuration defect found.**
 
-The **CPython 3.11+** recommended-target reproduction remains an environment dependency: no `>=3.10`
-interpreter is available in this build environment and none is installable here (no `brew`/`pyenv`/`uv`).
-The code uses no `>=3.10`-only syntax and `requires-python = ">=3.9"`, so nothing blocks it; it is simply
-not independently verified here and requires an operator-provided/authorized 3.11+ interpreter to run.
+The **CPython 3.11+** recommended-target reproduction is now **verified**: the same isolated clean rebuild
+was repeated on **CPython 3.14.7** (`/opt/homebrew/bin/python3.14`) — pinned locks resolved, `pyrnova`
+built/installed, `import pyrnova` resolved from site-packages with `PYTHONPATH` unset, the CLI entry
+resolved, and the full regression ran **866 passed / 0 failed / 2 skipped**. No dependency or
+configuration defect on 3.14. The candidate is thus clean-rebuild verified on both the declared floor
+(3.9.6) and a current 3.11+ target (3.14.7).

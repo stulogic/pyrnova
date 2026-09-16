@@ -1,8 +1,8 @@
 # RC-K — clean-environment reproducibility (exact candidate)
 
-**Result: clean rebuild reproduces the exact candidate with no dependency/config defect. No executable
-code changed.** Verified runtime floor CPython 3.9 (`requires-python = ">=3.9"`). The recommended 3.11+
-target could not be exercised here (no 3.11+ interpreter available/installable) — see the residual.
+**Result: clean rebuild reproduces the exact candidate with no dependency/config defect, on BOTH the
+declared floor (CPython 3.9.6) and a current 3.11+ target (CPython 3.14.7). No executable code changed.**
+`requires-python = ">=3.9"`. The 3.11+ residual noted at first reconciliation is now closed.
 
 ## Existing evidence assessed first
 
@@ -28,10 +28,13 @@ manifests, at code-complete SHA `50e1b7a`:
 **No dependency or configuration defect found.** Because RC-K exposed no code defect, no executable
 candidate code was changed.
 
-## Residual (environment dependency, not a candidate defect)
+## 3.11+ target verification (now closed)
 
-The **CPython 3.11+** recommended-target clean reproduction is **not** verified here: no `>=3.10`
-interpreter is available in this build environment, and none is installable (`brew`/`pyenv`/`uv` all
-absent, no authorized network install). The code carries no `>=3.10`-only syntax and `requires-python`
-is `>=3.9`, so nothing blocks 3.11+; it simply needs an operator-provided/authorized 3.11+ interpreter to
-be independently exercised. This is the single item preventing a fully unqualified RC-K closure.
+The recommended **CPython 3.11+** target is verified. The identical isolated clean rebuild was repeated on
+**CPython 3.14.7** (`/opt/homebrew/bin/python3.14`): fresh venv, install strictly from
+`requirements-dev.lock.txt` (pinned locks resolved), `pip install .`, `import pyrnova` (+ key modules)
+from **site-packages** with `PYTHONPATH` unset from a non-source dir, `pyrnova` CLI entry resolves, and
+full regression **866 passed / 0 failed / 2 skipped**. **No dependency or configuration defect on 3.14.**
+
+RC-K is therefore clean-rebuild verified on both the declared floor (3.9.6) and a current 3.11+ target
+(3.14.7), with no residual and no executable code change.
