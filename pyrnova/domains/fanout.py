@@ -36,12 +36,20 @@ from typing import Optional, Sequence
 from .base import NationalDomain, SourceActivation
 from .pipeline import NationalEvidence, NationalOpportunity, _assert_asof
 
-# National Important-Miss categories that DOWNGRADE or CLOSE a customer opportunity rather than present
-# it as a live pursuit. A cancelled/consolidated approach is material (the customer must not miss it) but
-# is not an actionable opportunity, so it maps to a shared opportunity ``state`` the read model treats as
-# MONITORING (not in the strike/candidate/reviewing set). Re-scope stays open but flagged for review.
-_DOWNGRADE_MISS = {"CANCELLATION", "CONSOLIDATION"}
-_REVIEW_MISS = {"RE_SCOPE", "ROUTE_CHANGE"}
+# National change categories that DOWNGRADE/CLOSE, or flag for REVIEW, a customer opportunity rather than
+# present it as a fresh live pursuit. These are country-NEUTRAL string sets (no per-country branching): a
+# domain supplies its own kinds (AU/NZ via ``important_miss``; UK via the richer consequential-change state
+# model) and the same disposition mapping applies. A cancelled/closed change is material (the customer must
+# not miss it) but is not an actionable opportunity, so it maps to a shared ``state`` the read model treats
+# as MONITORING. A narrowed / access-changed / prime-changed / window-changed / post-award-risk change stays
+# open but flagged for review. Award is NOT terminal: post-award risk keeps the opportunity monitored, never
+# silently closed. Everything else (created/expanded/progression/capability-insertion) is a live candidate.
+_DOWNGRADE_KINDS = {"CANCELLATION", "CONSOLIDATION", "OPPORTUNITY_CLOSED"}
+_REVIEW_KINDS = {
+    "RE_SCOPE", "ROUTE_CHANGE",
+    "OPPORTUNITY_NARROWED", "ACCESS_CHANGED", "PRIME_POSITION_CHANGED", "DECISION_WINDOW_CHANGED",
+    "POST_AWARD_RISK_INCREASED",
+}
 
 
 def _stable_id(prefix: str, payload: dict) -> str:
@@ -49,13 +57,18 @@ def _stable_id(prefix: str, payload: dict) -> str:
     return f"{prefix}_" + hashlib.sha256(blob).hexdigest()[:20]
 
 
-def _national_state(important_miss_kind: Optional[str]) -> str:
-    """Shared opportunity ``state`` derived from national Important-Miss (country-neutral downgrade)."""
-    kind = (important_miss_kind or "").upper()
-    if kind in _DOWNGRADE_MISS:
+def _national_state(important_miss_kind: Optional[str],
+                    consequential_change_kind: Optional[str] = None) -> str:
+    """Shared opportunity ``state`` derived from a national change kind (country-neutral downgrade).
+
+    The consequential-change state (UK) takes precedence when present; otherwise the Important-Miss kind
+    (AU/NZ) is used. The mapping is identical for both — one shared disposition rule, no country fork.
+    """
+    kind = (consequential_change_kind or important_miss_kind or "").upper()
+    if kind in _DOWNGRADE_KINDS:
         return "cancelled"      # -> MONITORING in the shared read model (downgraded / closed)
-    if kind in _REVIEW_MISS:
-        return "reviewing"      # -> OPPORTUNITY, flagged for review (scope/route materially moved)
+    if kind in _REVIEW_KINDS:
+        return "reviewing"      # -> OPPORTUNITY, flagged for review (materially moved / post-award risk)
     return "candidate"          # -> OPPORTUNITY (live)
 
 
@@ -132,6 +145,13 @@ def build_national_opportunity_record(
         "access_class": access.verdict,
         "industrial_position": access.industrial_position,
         "important_miss_kind": mc.important_miss_kind,
+        # UK consequential-change state + SSCR/QDC evidenced field ride through untouched (None/"UNKNOWN"
+        # for domains that do not use them, so no US/AU/NZ record changes).
+        "consequential_change_kind": mc.consequential_change_kind,
+        "sscr_qdc": mc.sscr_qdc,
+        # Post-award marker: award is NOT terminal. A change at a post-award lifecycle stage remains
+        # monitored; the flag lets the read model / brief show post-award intelligence explicitly.
+        "post_award": mc.lifecycle_stage in ("PERFORMANCE", "POST_AWARD_CHANGE"),
         "value_local": value,
         "national_material_change_id": mc.material_change_id,
         "dlt_calibration_ref": (domain.dlt_calibration.source_reference
@@ -143,7 +163,7 @@ def build_national_opportunity_record(
     return {
         "id": opp_id,
         "customer_id": opportunity.customer_id,
-        "state": _national_state(mc.important_miss_kind),
+        "state": _national_state(mc.important_miss_kind, mc.consequential_change_kind),
         "title": title,
         # Top-level program key (= the national material-change id) so the shared decision view relates
         # this opportunity to its own Material Change on the customer feed (country-neutral linkage).
@@ -154,7 +174,8 @@ def build_national_opportunity_record(
         "incumbent": None,         # AU uses the national access position, not the US "incumbent" concept
         "confidence": confidence,
         "expected_action_at": expected_action_at,
-        "catalyst": {"kind": mc.important_miss_kind or "NATIONAL_MATERIAL_CHANGE"},
+        "catalyst": {"kind": (mc.consequential_change_kind or mc.important_miss_kind
+                              or "NATIONAL_MATERIAL_CHANGE")},
         "evidence": ev_records,
         "meta": {
             "subject_ref": subject_ref,

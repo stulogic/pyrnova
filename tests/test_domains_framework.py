@@ -31,18 +31,25 @@ NZ_CORPUS = Path(__file__).resolve().parent.parent / "examples" / "nz_replay" / 
 
 # --- 1. registry / boundary -----------------------------------------------------------------------
 
-def test_registry_has_five_domains_us_au_nz_operational():
+def test_registry_has_five_domains_us_au_nz_uk_operational():
     codes = {d.code for d in all_domains()}
     assert codes == {"US", "AU", "GB", "CA", "NZ"}
-    # US, AU and now NZ are validated AND have owner build authority (implementable now).
-    assert {d.code for d in operational_domains()} == {"US", "AU", "NZ"}
+    # US, AU, NZ and now the UK (GB) are validated AND have owner build authority (implementable now).
+    assert {d.code for d in operational_domains()} == {"US", "AU", "NZ", "GB"}
     assert get_domain("uk").code == "GB"  # alias, case-insensitive
 
 
 def test_unvalidated_domain_may_not_carry_fabricated_calibration():
-    for code in ("GB", "CA"):
-        d = get_domain(code)
-        assert d.validated is False and d.dlt_calibration is None and d.build_authority is False
+    # Canada validation is still external — its seam must not fabricate a result.
+    d = get_domain("CA")
+    assert d.validated is False and d.dlt_calibration is None and d.build_authority is False
+
+
+def test_uk_is_operational_with_no_numeric_dlt_threshold():
+    uk = get_domain("GB")
+    assert uk.validated is True and uk.build_authority is True
+    # n=3 strict-qualifying cases: NO UK numeric DLT threshold is authorized. DLT is an observed attribute.
+    assert uk.dlt_calibration is None
 
 
 # --- 5. national truth kept national (not flattened) ----------------------------------------------

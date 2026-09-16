@@ -51,6 +51,14 @@ class NationalMaterialChange:
     important_miss_kind: Optional[str]     # which national Important-Miss category this addresses, if any
     evidence_ids: tuple[str, ...]
     observed_at: str
+    # UK-style consequential-change state (created/expanded/narrowed/access-changed/prime-changed/window-
+    # changed/closed/post-award-risk/capability-insertion). None for domains that model change only via
+    # important_miss; drives the shared opportunity disposition when present.
+    consequential_change_kind: Optional[str] = None
+    # SSCR / QDC (Single Source Contract Regulations / Qualifying Defence Contract) status — a SEPARATE
+    # EVIDENCED field. NEVER derived from route/single-source/incumbency/sovereignty: UNKNOWN unless
+    # contract-specific evidence supports it. Values: UNKNOWN | QDC_CONFIRMED | NOT_QDC.
+    sscr_qdc: str = "UNKNOWN"
 
 
 @dataclass(frozen=True)
@@ -80,7 +88,8 @@ def _assert_asof(available_at: str, as_of: Optional[str]) -> None:
 
 def derive_material_change(domain: NationalDomain, evidence: NationalEvidence, *,
                            as_of: Optional[str], important_miss_kind: Optional[str] = None,
-                           mc_id: Optional[str] = None) -> NationalMaterialChange:
+                           mc_id: Optional[str] = None, consequential_change_kind: Optional[str] = None,
+                           sscr_qdc: str = "UNKNOWN") -> NationalMaterialChange:
     """National classification of a source fact into a Material Change. Fails closed on unknown national
     truth (route/stage) and on AS-OF violation — the source is evidence, never the ontology."""
     _assert_asof(evidence.available_at, as_of)
@@ -89,32 +98,47 @@ def derive_material_change(domain: NationalDomain, evidence: NationalEvidence, *
         # replay/fixtures set the domain source to FIXTURE_ONLY and use derive_material_change_fixture.
         raise PermissionError(f"[{domain.code}] source {evidence.source_id!r} is not ACTIVE for live "
                               "ingestion (UNKNOWN => DENY)")
-    return _material_change(domain, evidence, important_miss_kind, mc_id)
+    return _material_change(domain, evidence, important_miss_kind, mc_id,
+                            consequential_change_kind, sscr_qdc)
 
 
 def derive_material_change_fixture(domain: NationalDomain, evidence: NationalEvidence, *,
                                    as_of: Optional[str], important_miss_kind: Optional[str] = None,
-                                   mc_id: Optional[str] = None) -> NationalMaterialChange:
+                                   mc_id: Optional[str] = None,
+                                   consequential_change_kind: Optional[str] = None,
+                                   sscr_qdc: str = "UNKNOWN") -> NationalMaterialChange:
     """Replay/fixture path: lawful for a FIXTURE_ONLY source. Never permitted for a PROHIBITED source."""
     _assert_asof(evidence.available_at, as_of)
     src = domain.source(evidence.source_id)
     if src is None or src.activation is SourceActivation.PROHIBITED:
         domain.assert_ingestible(evidence.source_id)  # raises ProhibitedSourceIngestion / denies
-    return _material_change(domain, evidence, important_miss_kind, mc_id)
+    return _material_change(domain, evidence, important_miss_kind, mc_id,
+                            consequential_change_kind, sscr_qdc)
 
 
-def _material_change(domain, evidence, important_miss_kind, mc_id) -> NationalMaterialChange:
+_SSCR_QDC_VALUES = ("UNKNOWN", "QDC_CONFIRMED", "NOT_QDC")
+
+
+def _material_change(domain, evidence, important_miss_kind, mc_id,
+                     consequential_change_kind=None, sscr_qdc="UNKNOWN") -> NationalMaterialChange:
     if not domain.known_route(evidence.route):
         raise ValueError(f"[{domain.code}] unknown national route {evidence.route!r}")
     if evidence.lifecycle_stage not in domain.lifecycle:
         raise ValueError(f"[{domain.code}] unknown national lifecycle stage {evidence.lifecycle_stage!r}")
     if important_miss_kind is not None and important_miss_kind not in domain.important_miss:
         raise ValueError(f"[{domain.code}] unknown Important-Miss kind {important_miss_kind!r}")
+    if consequential_change_kind is not None and not domain.known_consequential_state(consequential_change_kind):
+        raise ValueError(f"[{domain.code}] unknown consequential-change state {consequential_change_kind!r}")
+    if sscr_qdc not in _SSCR_QDC_VALUES:
+        # SSCR/QDC is a separate EVIDENCED field; only the reviewed values are permitted (never derived).
+        raise ValueError(f"[{domain.code}] invalid SSCR/QDC status {sscr_qdc!r} (expected one of "
+                         f"{_SSCR_QDC_VALUES})")
     return NationalMaterialChange(
         material_change_id=mc_id or f"{domain.code.lower()}-mc-{evidence.evidence_id}",
         domain_code=domain.code, lifecycle_stage=evidence.lifecycle_stage, route=evidence.route,
         important_miss_kind=important_miss_kind, evidence_ids=(evidence.evidence_id,),
-        observed_at=evidence.available_at)
+        observed_at=evidence.available_at, consequential_change_kind=consequential_change_kind,
+        sscr_qdc=sscr_qdc)
 
 
 def assess_access(domain: NationalDomain, *, access_class: str, industrial_position: str,
@@ -138,6 +162,7 @@ def to_decision(domain: NationalDomain, opportunity: NationalOpportunity, *,
         "material_change_id": mc.material_change_id, "domain": mc.domain_code,
         "lifecycle_stage": mc.lifecycle_stage, "route": mc.route,
         "route_meaning": domain.routes.get(mc.route), "important_miss_kind": mc.important_miss_kind,
+        "consequential_change_kind": mc.consequential_change_kind, "sscr_qdc": mc.sscr_qdc,
         "evidence_ids": list(mc.evidence_ids), "observed_at": mc.observed_at,
         "industrial_position": opportunity.access.industrial_position,
     }

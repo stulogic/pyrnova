@@ -45,6 +45,13 @@ def render_national_brief(domain: NationalDomain, decision: Any, *, customer_nam
     lines.append(f"- Industrial Position: **{_dash(mc.get('industrial_position'))}**")
     if mc.get("important_miss_kind"):
         lines.append(f"- Important Miss category addressed: **{mc['important_miss_kind']}**")
+    # Consequential-change state + SSCR/QDC evidenced field (UK). Rendered only when present so other
+    # national briefs are unchanged. SSCR/QDC is the EVIDENCED value (UNKNOWN unless proven) — never derived.
+    if mc.get("consequential_change_kind"):
+        lines.append(f"- Consequential change (PYRNOVA DERIVED): **{mc['consequential_change_kind']}**")
+        lines.append(f"- SSCR/QDC status (SOURCE-EVIDENCED, not derived): **{mc.get('sscr_qdc') or 'UNKNOWN'}**")
+        if mc.get("lifecycle_stage") in ("PERFORMANCE", "POST_AWARD_CHANGE"):
+            lines.append("- Post-award intelligence: award is **not** a terminal state — monitoring continues.")
     lines.append(f"- Observed at (SOURCE FACT): {_dash(mc.get('observed_at'))}")
     lines.append("")
 

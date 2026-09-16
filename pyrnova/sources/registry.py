@@ -307,6 +307,37 @@ _NZ_MOD_POLICY = _structured_policy(
           "back a derived, attributed customer projection. NZ GETS is separately PROHIBITED.",
 )
 
+# United Kingdom national domain (INTERNATIONAL-GOVERNMENT-ROLLOUT-001, UK vertical). OGL-covered GOV.UK
+# material and structured procurement data (Contracts Finder / Find a Tender) have a potentially favourable
+# production posture, but historical accessibility is NOT production authorization and record-level coverage
+# is unconfirmed — so the state is INGEST_DISABLED: live transport fails closed (UNKNOWN => DENY), while
+# lawful owner-accepted historical/replay evidence may back a DERIVED customer projection with attribution.
+# The national domain (pyrnova/domains/uk.py) independently governs acquisition activation (FIXTURE_ONLY).
+# Both fail closed and must agree. DSP/SSRO/NAO/attachments/supplier/archive-mirror remain UNKNOWN => DENY.
+_UK_CONTRACTS_FINDER_POLICY = _structured_policy(
+    identity="uk_contracts_finder", domain="www.find-tender.service.gov.uk",
+    source_type="structured_tender_notice_index",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY,
+    hosts=("www.find-tender.service.gov.uk", "www.contractsfinder.service.gov.uk"), paths=("/",),
+    reference_hosts=("www.find-tender.service.gov.uk", "www.contractsfinder.service.gov.uk"), reference_paths=("/",),
+    attribution="Contracts Finder / Find a Tender (Crown copyright, Open Government Licence); retain a direct source URL.",
+    notes="UK structured procurement data (OGL posture likely). Downstream evidence only. Live production "
+          "ingestion requires confirmed record-level rights coverage (not established): INGEST_DISABLED. "
+          "Lawful owner-accepted replay/historical evidence may back a derived, attributed projection.",
+)
+_UK_GOV_UK_POLICY = _structured_policy(
+    identity="uk_gov_uk", domain="www.gov.uk", source_type="official_uk_gov_ogl_material",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY,
+    hosts=("www.gov.uk",), paths=("/",),
+    reference_hosts=("www.gov.uk",), reference_paths=("/",),
+    attribution="GOV.UK (Crown copyright, Open Government Licence v3.0); retain a direct source URL.",
+    notes="OGL-covered GOV.UK material. Live production ingestion not activated: INGEST_DISABLED. Lawful "
+          "owner-accepted replay/historical evidence may back a derived, attributed projection. Version-level "
+          "AS-OF required — a first-published date does not prove the current page body existed then.",
+)
+
 # PRELAUNCH-CONVERGENCE-001 Bundle 2 owner rights-posture ruling: OFFICIAL FIRST-PARTY
 # U.S. GOVERNMENT APPROPRIATIONS AND ACQUISITION-FORECAST ARTIFACTS may be ingested when
 # obtained directly from the authoritative U.S. government publisher (a .gov/.mil domain),
@@ -650,6 +681,52 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="medium",
         rights_note="NZ rights approval pending; live ingest disabled, replay-derived use only.",
         source_policy=_NZ_MOD_POLICY,
+    ),
+    "uk_contracts_finder": SourceSpec(
+        id="uk_contracts_finder",
+        name="Contracts Finder / Find a Tender (UK)",
+        base_url="https://www.find-tender.service.gov.uk",
+        rights="ogl_v3_conditional",  # OGL posture likely; live production coverage not established
+        retention_tier="A",  # notices are amended/withdrawn; each observation is point-in-time truth
+        active=False,        # not active for live production ingestion (INGEST_DISABLED)
+        notes=(
+            "INTERNATIONAL-GOVERNMENT-ROLLOUT-001 (UK vertical): structured UK procurement data is DOWNSTREAM "
+            "EVIDENCE, never the acquisition ontology. Live ingestion requires confirmed record-level rights "
+            "coverage (not established): INGEST_DISABLED. Owner-accepted historical/replay evidence may back a "
+            "derived, attributed customer projection."
+        ),
+        family="procurement_opportunities",
+        signals=("tender_notice", "award_notice", "amendment", "pipeline_notice"),
+        access_method="rest_api",
+        auth="unknown",
+        reliability="fixture_only",
+        status="blocked",
+        priority="medium",
+        rights_note="UK record-level rights coverage not established; live ingest disabled, replay-derived only.",
+        source_policy=_UK_CONTRACTS_FINDER_POLICY,
+    ),
+    "uk_gov_uk": SourceSpec(
+        id="uk_gov_uk",
+        name="GOV.UK OGL material (UK)",
+        base_url="https://www.gov.uk",
+        rights="ogl_v3",  # Open Government Licence v3.0 posture
+        retention_tier="A",  # pages are mutable; version-level point-in-time truth
+        active=False,        # not active for live production ingestion (INGEST_DISABLED)
+        notes=(
+            "INTERNATIONAL-GOVERNMENT-ROLLOUT-001 (UK vertical): OGL-covered GOV.UK material. Live ingestion "
+            "not activated: INGEST_DISABLED. Owner-accepted replay/historical evidence may back a derived, "
+            "attributed projection. VERSION-LEVEL AS-OF required (mutable pages): a first-published date does "
+            "not prove the current page body existed then — never back-project later revisions."
+        ),
+        family="regulation_policy",
+        signals=("policy_page", "programme_page", "announcement", "guidance"),
+        access_method="http",
+        auth="none",
+        reliability="fixture_only",
+        status="blocked",
+        priority="low",
+        rights_note="OGL v3.0; live ingest disabled (not activated), replay-derived use only.",
+        source_policy=_UK_GOV_UK_POLICY,
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",

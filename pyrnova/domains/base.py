@@ -109,6 +109,12 @@ class NationalDomain:
     industrial_position_classes: tuple[str, ...] # national Industrial Position taxonomy
     important_miss: tuple[str, ...]              # national Important Miss taxonomy
     evidence_languages: tuple[str, ...]          # e.g. ("en",) US; ("en","fr") CA (original-language authority)
+    # Optional national CONSEQUENTIAL-CHANGE state taxonomy — the explicit states a Material Change can
+    # drive an Opportunity into (created / expanded / narrowed / access-changed / prime-changed / window-
+    # changed / closed / post-award-risk / capability-insertion). DISTINCT from the Important-Miss failure
+    # taxonomy above. Empty for domains (US/AU/NZ) that model change only via ``important_miss``; the shared
+    # bridge falls back to ``important_miss`` when a record carries no consequential-change kind.
+    consequential_states: tuple[str, ...] = ()
     sources: tuple[NationalSource, ...] = ()     # national source-rights ownership
     dlt_calibration: Optional[DLTCalibration] = None   # None until validated — never fabricated
     validated: bool = False                      # historical validation accepted for this nation?
@@ -141,6 +147,9 @@ class NationalDomain:
 
     def known_route(self, route_code: str) -> bool:
         return route_code in self.routes
+
+    def known_consequential_state(self, state: str) -> bool:
+        return state in self.consequential_states
 
     def __post_init__(self):
         if len(self.code) != 2 or not self.code.isupper():

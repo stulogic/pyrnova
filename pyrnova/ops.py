@@ -860,7 +860,7 @@ class OperatorConsole:
         national = dc.get("national_acquisition")
         if national:
             val = national.get("value_local") or {}
-            lines[4:4] = [
+            block = [
                 f"NATIONAL DOMAIN: {national.get('domain_name')} ({national.get('domain')})",
                 f"  Lifecycle stage: {national.get('lifecycle_stage')}",
                 f"  Acquisition route: {national.get('route')} — {national.get('route_meaning')}",
@@ -868,9 +868,19 @@ class OperatorConsole:
                 f"  Industrial Position: {national.get('industrial_position')}",
                 (f"  Important Miss addressed: {national.get('important_miss_kind')}"
                  if national.get('important_miss_kind') else "  Important Miss addressed: —"),
-                (f"  National value: {val.get('amount')} {val.get('currency')}" if val else "  National value: —"),
-                "",
             ]
+            # UK-style consequential-change state + SSCR/QDC evidenced field + post-award marker. Rendered
+            # ONLY when the record carries a consequential-change kind (UK), so US/AU/NZ briefs are
+            # byte-identical. SSCR/QDC is shown as its EVIDENCED value (UNKNOWN unless proven) — never derived.
+            if national.get("consequential_change_kind"):
+                block.append(f"  Consequential change: {national.get('consequential_change_kind')}")
+                block.append(f"  SSCR/QDC status (EVIDENCED, not derived): {national.get('sscr_qdc') or 'UNKNOWN'}")
+                if national.get("post_award"):
+                    block.append("  Post-award intelligence: award is NOT terminal — monitoring continues.")
+            block.append(
+                f"  National value: {val.get('amount')} {val.get('currency')}" if val else "  National value: —")
+            block.append("")
+            lines[4:4] = block
         body = "\n".join(str(x) for x in lines)
         content_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
         return {

@@ -14,7 +14,8 @@ def test_domains_list_reports_operational_posture(capsys):
     assert by_code["US"]["operational"] is True and by_code["AU"]["operational"] is True
     # NZ is now operational (validated + owner build authority).
     assert by_code["NZ"]["operational"] is True and by_code["NZ"]["dlt_calibrated"] is True
-    assert by_code["GB"]["operational"] is False  # seam only
+    # UK (GB) is now operational, but with NO numeric DLT threshold (n=3 strict-qualifying).
+    assert by_code["GB"]["operational"] is True and by_code["GB"]["dlt_calibrated"] is False
     # NZ GETS activation is visible to the operator as PROHIBITED; the replay evidence family is FIXTURE_ONLY.
     assert by_code["NZ"]["sources"]["nz_gets"] == "PROHIBITED"
     assert by_code["NZ"]["sources"]["nz_mod"] == "FIXTURE_ONLY"
