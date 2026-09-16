@@ -1,0 +1,261 @@
+{
+  "as_of_before_first_seen": {
+    "as_of": "2026-08-01",
+    "mtsi_opportunity_count": 0
+  },
+  "brief": {
+    "contains_obsolete_sprint": false,
+    "content_sha256": "4959367c4842cbdc4e1060460e377806f2d2639be14f3bb3dcb944a8fa0439f3",
+    "rights_display": "PARTIAL"
+  },
+  "capability_status_legend": {
+    "IMPLEMENTED/TESTED": "product capability proven by candidate code + tests",
+    "PRODUCTION/LIVE-OPS-ACCEPTED": "requires the final replacement soak \u2014 NOT claimed here"
+  },
+  "customer_1": "mtsi",
+  "customer_sequence": [
+    "mtsi",
+    "torch",
+    "celestar",
+    "shorepoint",
+    "hyertek"
+  ],
+  "delivery_state": {
+    "delivery_id": "cd_cd5ce512c80ec407c0cd",
+    "recorded_sends": 1,
+    "status": "DELIVERED",
+    "transport": "in-memory RecordingTransport (records, never sends externally)"
+  },
+  "disposition_to_decision_memory": {
+    "opportunity_id": "opp_da81c6e9482af12f83d2",
+    "pursuit": "INVESTIGATE",
+    "relevance": "RELEVANT"
+  },
+  "locked_commercial_offer": {
+    "billing": "100% invoiced after signature \u00b7 Net 15 default \u00b7 activation normally after cleared payment",
+    "continuation": "$18,000 quarterly prepaid",
+    "engagement_fee_usd": 15000,
+    "no_default_discount": true,
+    "no_free_pilot": true,
+    "obsolete_do_not_use": "The $2,500 Intelligence Sprint is obsolete and must not appear.",
+    "optional_annual": "$72,000",
+    "product": "PYRNOVA LIVE INTELLIGENCE",
+    "scope": "one Customer Lens \u00b7 bounded intelligence surface \u00b7 up to 10 Named Users",
+    "term_days": 60
+  },
+  "mtsi": {
+    "customer_id": "mtsi",
+    "empty_state": false,
+    "lens_identity": {
+      "id": "mtsi",
+      "name": "Modern Technology Solutions"
+    },
+    "opportunities": [
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_mtsi.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_da81c6e9482af12f83d2",
+        "incumbent": "MODERN TECHNOLOGY SOLUTIONS, INC.",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: General Services Administration \u2014 incumbent MODERN TECHNOLOGY SOLUTIONS, INC. (ends 2026-11-18)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 78,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2026-11-18 (2.6 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_mtsi.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_cea610910c49a242e069",
+        "incumbent": "MODERN TECHNOLOGY SOLUTIONS, INC.",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: General Services Administration \u2014 incumbent MODERN TECHNOLOGY SOLUTIONS, INC. (ends 2026-12-19)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 109,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2026-12-19 (3.6 months)."
+        }
+      }
+    ],
+    "opportunity_count": 2
+  },
+  "note": "Exact-candidate rehearsal against tracked demo state. No fabricated data. No external send. No soak started or claimed passed.",
+  "torch_populated_proof": {
+    "customer_id": "torch",
+    "empty_state": false,
+    "lens_identity": {
+      "id": "torch",
+      "name": "Torch Technologies"
+    },
+    "opportunities": [
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_f1b42dfff3d4202b4195",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2026-09-30)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 29,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2026-09-30 (1.0 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_4d1cf1e1ab1a47133122",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2026-11-11)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 71,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2026-11-11 (2.3 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_996e2d85a6c6917df87b",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2027-03-31)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 211,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2027-03-31 (6.9 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_e8b51fd1863aee234c2d",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2027-05-28)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 269,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2027-05-28 (8.8 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_24e34202d37c003680eb",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2027-05-31)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 272,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2027-05-31 (8.9 months)."
+        }
+      },
+      {
+        "evidence_archives": [
+          "examples/real_evidence/usaspending_torch.json"
+        ],
+        "evidence_inspector_ok": true,
+        "evidence_sources": [
+          "usaspending"
+        ],
+        "id": "opp_1973159705af2bd83489",
+        "incumbent": "TORCH TECHNOLOGIES INC",
+        "pursuit": {
+          "confidence": "MEDIUM",
+          "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+          "verdict": "PURSUE"
+        },
+        "recommended_action": "Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.",
+        "title": "Recompete watch: Department of Defense \u2014 incumbent TORCH TECHNOLOGIES INC (ends 2027-07-21)",
+        "why_now": {
+          "detected_by": "recompete_engine",
+          "horizon_days": 323,
+          "kind": "recompete_expiry",
+          "summary": "Contract period of performance ends 2027-07-21 (10.6 months)."
+        }
+      }
+    ],
+    "opportunity_count": 6
+  }
+}
