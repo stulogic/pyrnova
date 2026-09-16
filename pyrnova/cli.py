@@ -704,6 +704,55 @@ def cmd_domains_show(args) -> int:
     return 0
 
 
+def cmd_domains_sources(args) -> int:
+    """Operator: national source status crossing activation posture × registry rights (fail closed)."""
+    from .domains.operator import domain_source_status
+    print(json.dumps(domain_source_status(args.code), indent=2, sort_keys=False))
+    return 0
+
+
+def _domain_console():
+    from .customer_delivery import CustomerDeliveryStore
+    from .ops import OperatorConsole
+    cfg = load_config()
+    store = _state_store()
+    return OperatorConsole(store, cfg.state_dir / "profiles", cfg.state_dir / "out",
+                           mc_store=store, customer_store=store, cmc_store=store,
+                           delivery_store=CustomerDeliveryStore(cfg.state_dir / "deliveries"))
+
+
+def cmd_domains_lens(args) -> int:
+    """Operator: inspect a customer lens's national opportunity / Important-Miss state (shared product)."""
+    from .domains.operator import lens_national_state
+    print(json.dumps(lens_national_state(_domain_console(), args.customer, as_of=args.as_of),
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_domains_provision_eval(args) -> int:
+    """Operator: provision a national EVALUATION lens from accepted replay evidence, then fan out.
+
+    Loads the replay proof builder by file path (evaluation identities live in examples/, never in the
+    runtime package — mirrors ``seed-customers``). Materializes only rights-approved sources; a case whose
+    source is not rights-approved is honestly reported as blocked. Idempotent."""
+    import importlib.util
+
+    from .customer_material_changes import fan_out
+
+    replay_dir = Path(args.replay_dir)
+    spec = importlib.util.spec_from_file_location("pyrnova_domain_eval_proof",
+                                                  replay_dir / "build_customer_proof.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    store = _state_store()
+    seeded = module.seed(store)
+    report = fan_out(mc_store=store, customer_store=store, cmc_store=store, as_of=None)
+    print(json.dumps({"seeded": seeded, "fanout": {"inserted": report["inserted"],
+                      "updated": report["updated"], "duplicates_suppressed": report["duplicates_suppressed"],
+                      "failures": report["failure_count"]}}, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_backup_create(args) -> int:
     from . import backup as _bk
     cfg = load_config()
@@ -952,6 +1001,20 @@ def main(argv=None) -> int:
     dm_s = dm_sub.add_parser("show", help="show one national domain's declared truth + sources")
     dm_s.add_argument("code", help="national code (US, AU, UK/GB, CA, NZ)")
     dm_s.set_defaults(func=cmd_domains_show)
+    dm_src = dm_sub.add_parser("sources",
+                               help="national source status: activation posture × registry rights (fail closed)")
+    dm_src.add_argument("code", help="national code (US, AU, UK/GB, CA, NZ)")
+    dm_src.set_defaults(func=cmd_domains_sources)
+    dm_lens = dm_sub.add_parser("lens",
+                                help="inspect a customer lens's national opportunity / Important-Miss state")
+    dm_lens.add_argument("customer", help="customer/lens id")
+    dm_lens.add_argument("--as-of", default=None, dest="as_of")
+    dm_lens.set_defaults(func=cmd_domains_lens)
+    dm_pe = dm_sub.add_parser("provision-eval",
+                              help="provision a national EVALUATION lens from accepted replay evidence + fan out")
+    dm_pe.add_argument("--replay-dir", default="examples/au_replay",
+                       help="dir with build_customer_proof.py (default: examples/au_replay)")
+    dm_pe.set_defaults(func=cmd_domains_provision_eval)
 
     # --- Operator backup / restore control plane (Phase 7) ----------------------------------------
     # An operator must be able to back up and restore durable state without writing Python. These
