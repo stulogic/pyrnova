@@ -174,14 +174,23 @@ class Manifest:
 
 # ---------------------------------------------------------------------- create
 
-def _iter_durable_sources(source_root: Path) -> Iterable[tuple[str, Path]]:
-    """Yield ``(backup_relpath, absolute_source_path)`` for every durable artifact to capture."""
-    state_dir = source_root / "var" / "state"
+def _iter_durable_sources(source_root: Path, *, state_dir: Optional[Path] = None,
+                          archive_dir: Optional[Path] = None) -> Iterable[tuple[str, Path]]:
+    """Yield ``(backup_relpath, absolute_source_path)`` for every durable artifact to capture.
+
+    ``state_dir``/``archive_dir`` default to ``source_root/var/state`` and ``source_root/var/archive``
+    but may be given explicitly. This matters in production, where durable state lives at
+    ``PYRNOVA_STATE_DIR`` / ``PYRNOVA_ARCHIVE_DIR`` (e.g. ``/srv/pyrnova/var/state``) — a stable path
+    *outside* the release working directory (``/srv/pyrnova/current``). Deriving the state path from the
+    repo root would silently back up an empty directory; the operator CLI passes the config-resolved
+    dirs so the backup captures the real live state regardless of where the release is checked out.
+    """
+    state_dir = Path(state_dir) if state_dir is not None else source_root / "var" / "state"
     for stream in DURABLE_STATE_STREAMS:
         p = state_dir / f"{stream}.jsonl"
         if p.exists():
             yield f"{STATE_SUBDIR}/{stream}.jsonl", p
-    archive_dir = source_root / "var" / "archive"
+    archive_dir = Path(archive_dir) if archive_dir is not None else source_root / "var" / "archive"
     if archive_dir.exists():
         for p in sorted(archive_dir.rglob("*")):
             if p.is_file():
@@ -193,11 +202,14 @@ def _iter_durable_sources(source_root: Path) -> Iterable[tuple[str, Path]]:
 
 
 def create_backup(source_root: Path, dest_dir: Path, *, source_commit: str = "",
-                  now: Optional[str] = None) -> Manifest:
+                  now: Optional[str] = None, state_dir: Optional[Path] = None,
+                  archive_dir: Optional[Path] = None) -> Manifest:
     """Create a backup of Pyrnova durable state at ``source_root`` into a fresh ``dest_dir``.
 
     Reads the source read-only. Fails loudly (``status='failed'`` + raise) if any required artifact
-    cannot be copied; a partial backup is never reported as success.
+    cannot be copied; a partial backup is never reported as success. ``state_dir``/``archive_dir``
+    override the repo-relative defaults so a backup honours ``PYRNOVA_STATE_DIR``/``PYRNOVA_ARCHIVE_DIR``
+    when durable state lives outside the release directory (see :func:`_iter_durable_sources`).
     """
     source_root = Path(source_root).resolve()
     dest_dir = Path(dest_dir)
@@ -213,7 +225,7 @@ def create_backup(source_root: Path, dest_dir: Path, *, source_commit: str = "",
         derived_excluded=list(DERIVED_REGENERABLE_STREAMS), status="in_progress",
     )
     try:
-        for rel, src in _iter_durable_sources(source_root):
+        for rel, src in _iter_durable_sources(source_root, state_dir=state_dir, archive_dir=archive_dir):
             out = dest_dir / rel
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, out)

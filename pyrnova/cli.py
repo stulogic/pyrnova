@@ -649,6 +649,56 @@ def cmd_search(args) -> int:
     return 0
 
 
+def cmd_backup_create(args) -> int:
+    from . import backup as _bk
+    cfg = load_config()
+    src = _git_head_commit(args.source_root)
+    manifest = _bk.create_backup(
+        Path(args.source_root), Path(args.dest), source_commit=src,
+        state_dir=cfg.state_dir, archive_dir=cfg.archive_dir)
+    print(json.dumps({
+        "status": manifest.status,
+        "files": len(manifest.files),
+        "state_dir": str(cfg.state_dir),
+        "archive_dir": str(cfg.archive_dir),
+        "dest": str(Path(args.dest).resolve()),
+        "manifest_sha256": manifest.manifest_sha256,
+        "source_commit": manifest.source_commit,
+    }, indent=2, sort_keys=True))
+    return 0 if manifest.status == "complete" else 1
+
+
+def cmd_backup_verify(args) -> int:
+    from . import backup as _bk
+    result = _bk.verify_backup(Path(args.backup_dir))
+    print(json.dumps({"ok": result.ok, "checked": result.checked,
+                      "problems": result.problems}, indent=2, sort_keys=True))
+    return 0 if result.ok else 1
+
+
+def cmd_backup_restore(args) -> int:
+    from . import backup as _bk
+    result = _bk.restore_backup(Path(args.backup_dir), Path(args.target),
+                                verify=not args.no_verify)
+    print(json.dumps({
+        "target_root": result.target_root,
+        "restored_files": result.restored_files,
+        "verify_ok": result.verify.ok,
+        "note": "run reconcile_display before any customer display (restore != display authorisation)",
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+def _git_head_commit(root: str) -> str:
+    import subprocess
+    try:
+        out = subprocess.run(["git", "-C", root, "rev-parse", "HEAD"],
+                             capture_output=True, text=True, timeout=5)
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -838,6 +888,25 @@ def main(argv=None) -> int:
     contribution.add_argument("--source", default=None)
     contribution.add_argument("--scoring-version", default="scoring_v1")
     contribution.set_defaults(func=cmd_source_contribution)
+
+    # --- Operator backup / restore control plane (Phase 7) ----------------------------------------
+    # An operator must be able to back up and restore durable state without writing Python. These
+    # honour PYRNOVA_STATE_DIR / PYRNOVA_ARCHIVE_DIR (via load_config), so they capture the *real*
+    # live state even when it lives outside the release working directory (production layout).
+    bk = sub.add_parser("backup", help="operator backup / restore of durable state (Phase 7/8)")
+    bk_sub = bk.add_subparsers(dest="subcmd", required=True)
+    bk_c = bk_sub.add_parser("create", help="create a verified backup of durable state into --dest")
+    bk_c.add_argument("--dest", required=True, help="empty destination directory for the backup")
+    bk_c.add_argument("--source-root", default=".", help="repo root (for db/schema.sql only)")
+    bk_c.set_defaults(func=cmd_backup_create)
+    bk_v = bk_sub.add_parser("verify", help="independently verify a backup's integrity")
+    bk_v.add_argument("backup_dir")
+    bk_v.set_defaults(func=cmd_backup_verify)
+    bk_r = bk_sub.add_parser("restore", help="restore a backup into a clean, isolated --target")
+    bk_r.add_argument("backup_dir")
+    bk_r.add_argument("--target", required=True, help="clean/empty isolated target root")
+    bk_r.add_argument("--no-verify", action="store_true", help="skip pre-restore integrity verification")
+    bk_r.set_defaults(func=cmd_backup_restore)
 
     args = p.parse_args(argv)
     return args.func(args)
