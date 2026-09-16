@@ -3,6 +3,17 @@
 _Status: canonical cross-phase product / commercial authority · effective 2026-09-10 · owner-approved. Supersedes
 conflicting earlier commercial/product hypotheses where explicitly resolved in §23–§24 below._
 
+> **⚠ CURRENT LOCKED PHASE 1 COMMERCIAL AUTHORITY (owner-locked 2026-09-15) — read first.**
+> The current Phase 1 commercial offer is **PYRNOVA LIVE INTELLIGENCE: $15,000 · 60 days · one Customer
+> Lens · bounded intelligence surface · up to 10 Named Users · 100% invoiced after signature · Net 15
+> default · continuation $18,000 quarterly prepaid · annual option $72,000 prepaid · no free pilot · no
+> default discount.** Wherever this document (or any companion authority) still describes the earlier
+> **$12,500 / $10,000-floor design pilot ("Strategic Change Pilot")**, its 10-week/50%-50%/conversion-credit
+> terms, the **$48,000 / $36,000 / $72,000 ACV** ladder, or the obsolete **$2,500 Intelligence Sprint**,
+> those figures are **SUPERSEDED and are not current authority** — retained only as historical cross-phase
+> strategy context. See `04-DECISIONS.md` D-067. This is an administrative authority reconciliation, not a
+> reopening of pricing strategy.
+
 > **Authority level and scope.** Owner decisions and the Phase One Constitution are highest authority.
 > This document is the overarching **cross-phase product / commercial authority**. It unifies Pyrnova's
 > broader product, commercial/pricing, trust, validation, UX, AI, and expansion direction across phases.
@@ -99,17 +110,22 @@ Pyrnova's initial competitive strategy is not immediate replacement of GovWin, G
 
 The initial commercial posture is a **premium mid-market intelligence product**, not low-cost procurement software.
 
-Canonical initial pricing:
+Canonical initial pricing (**current locked Phase 1 commercial authority — PYRNOVA LIVE INTELLIGENCE**,
+owner-locked 2026-09-15; see the superseding notice at the top of this document and `04-DECISIONS.md`
+D-067):
 
-- Design pilot list/target: **$12,500**
-- Pilot duration: **10 weeks**
-- Founder-authorized pilot floor: **$10,000**
-- Payment: **50% at signature, 50% at midpoint**
-- Annual conversion credit: **50% of pilot fee**, if the annual agreement is executed within 30 days of pilot completion
-- Initial annual target ACV: **$48,000**
-- Ordinary annual floor: **$36,000**
-- Initial stretch ACV: **$72,000**
+- Initial engagement: **$15,000**
+- Term: **60 days**
+- Scope: **one Customer Lens · bounded intelligence surface · up to 10 Named Users**
+- Billing: **100% invoiced after signature · Net 15 default · activation normally after cleared payment**
+- Continuation: **$18,000 quarterly prepaid**
+- Annual option: **$72,000 prepaid**
+- **No free pilot. No default discount.**
 - Pricing unit: **licensed organizational scope**, not alert volume, searches or raw usage
+
+_Superseded (retained as historical cross-phase context, not current authority): the earlier
+**$12,500 / $10,000-floor, 10-week design pilot**, its **50%/50%** and **50%-conversion-credit** terms,
+the **$48,000 / $36,000** annual ACV targets, and the obsolete **$2,500 Intelligence Sprint**._
 
 Phase 1 has **one product**, not a SKU zoo.
 
@@ -1068,6 +1084,9 @@ A company within the operational ICP that:
 
 ### PILOT STRUCTURE
 
+_SUPERSEDED — not current authority (historical context only). The current locked Phase 1 offer is
+PYRNOVA LIVE INTELLIGENCE ($15,000 / 60 days); see the top superseding notice and `04-DECISIONS.md` D-067._
+
 - Duration: **10 weeks**
 - Price: **$12,500 target**
 - Founder-authorized floor: **$10,000**
@@ -1393,6 +1412,9 @@ Customers buy:
 They do not buy alert count.
 
 ### DESIGN PILOT
+
+_SUPERSEDED — not current authority (historical context only). The current locked Phase 1 offer is
+PYRNOVA LIVE INTELLIGENCE ($15,000 / 60 days); see the top superseding notice and `04-DECISIONS.md` D-067._
 
 **List / target:** $12,500
 **Founder-authorized floor:** $10,000

@@ -188,7 +188,7 @@ Do not:
 
 - redesign Pyrnova;
 - reopen the category or ICP;
-- change the Strategic Change Pilot or production pricing;
+- change the locked commercial offer (**PYRNOVA LIVE INTELLIGENCE** — $15,000 / 60 days, `04-DECISIONS.md` D-067; supersedes the earlier "Strategic Change Pilot") or production pricing;
 - create new broad research tasks;
 - implement Business Health;
 - build customizable dashboard/workspace systems;

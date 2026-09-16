@@ -124,25 +124,22 @@ Do not replace this order during ordinary implementation because another company
 
 ## 5. Locked commercial offer
 
-### Strategic Change Pilot
+### PYRNOVA LIVE INTELLIGENCE — current locked Phase 1 commercial authority (owner-locked 2026-09-15)
 
-- Duration: **10 weeks**
-- List price: **$12,500**
-- Absolute floor: **$10,000**
-- Payment: **50% at signature, 50% at week 5**
-- Included users: **up to 10**
-- Monitored objects: **up to 75**
-
-### Production pricing authority
-
-- Target ACV: **$48,000**
-- Floor: **$36,000**
-- Stretch: **$72,000**
-- Pilot-to-production conversion credit: **$6,250**
+- Initial engagement: **$15,000**
+- Term: **60 days**
+- Scope: **one Customer Lens · bounded intelligence surface · up to 10 Named Users**
+- Billing: **100% invoiced after signature · Net 15 default · activation normally after cleared payment**
+- Continuation: **$18,000 quarterly prepaid**
+- Annual option: **$72,000 prepaid**
+- **No free pilot. No default discount.**
 
 Do not publish launch pricing publicly on the website.
 
-Any earlier authority describing a materially different pilot, including a **$15,000 prepaid 30-day pilot**, is superseded. Historical copies may remain only where clearly marked historical or superseded and must not be treated as current commercial authority.
+**Superseded — not current authority (retained as history; see `04-DECISIONS.md` D-067):** the earlier
+**$12,500 / $10,000-floor, 10-week "Strategic Change Pilot"** and its **$48,000 / $36,000 / $72,000** ACV
+and **$6,250** conversion-credit figures; any still-earlier **$15,000 prepaid 30-day pilot**; and the
+obsolete **$2,500 Intelligence Sprint**. These must not be treated as current commercial authority.
 
 ## 6. Phase control and research freeze
 

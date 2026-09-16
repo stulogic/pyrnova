@@ -109,15 +109,18 @@ substitute for MTSI. Its output is operational evidence only, not commercial val
 
 ## Commercial state
 
-Current offer: **Strategic Change Pilot**.
+Current offer: **PYRNOVA LIVE INTELLIGENCE** (owner-locked 2026-09-15; authority `04-DECISIONS.md` D-067,
+`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` §5).
 
-- 10 weeks;
-- $12,500 list price;
-- $10,000 absolute floor;
-- 50% at signature;
-- 50% at week 5;
-- up to 10 users;
-- up to 75 monitored objects.
+- $15,000 initial engagement;
+- 60 days;
+- one Customer Lens; bounded intelligence surface; up to 10 Named Users;
+- 100% invoiced after signature; Net 15 default; activation normally after cleared payment;
+- continuation $18,000 quarterly prepaid; annual option $72,000 prepaid;
+- no free pilot; no default discount.
+
+_Superseded (not current): the earlier $12,500 / $10,000-floor 10-week "Strategic Change Pilot" and the
+obsolete $2,500 Intelligence Sprint._
 
 Production pricing authority:
 
