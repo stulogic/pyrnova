@@ -1,0 +1,35 @@
+PYRNOVA DECISION BRIEF — UK SINGLE_SOURCE — uk-ajax-postaward
+Customer: eval-uk    As-of: 2024-01-01
+
+OPPORTUNITY   opp_561831f86724b9a4b539  (reviewing)
+NATIONAL DOMAIN: United Kingdom (GB)
+  Lifecycle stage: POST_AWARD_CHANGE
+  Acquisition route: SINGLE_SOURCE — Single-source; SSCR/QDC applicability is a SEPARATE evidenced determination.
+  Access position (PYRNOVA DERIVED): INCUMBENT
+  Industrial Position: INCUMBENT_ARCHITECTURE
+  Important Miss addressed: —
+  Consequential change: POST_AWARD_RISK_INCREASED
+  SSCR/QDC status (EVIDENCED, not derived): QDC_CONFIRMED
+  Post-award intelligence: award is NOT terminal — monitoring continues.
+  National value: —
+
+Agency:       None
+Est. value:   None
+
+WHY NOW       POST_AWARD_RISK_INCREASED: None
+Expected action by: None
+
+INCUMBENT     None
+CUSTOMER FIT  relevance_score=None (UNKNOWN)
+
+PURSUIT
+  Recommended: None
+  Native signal: attractiveness=None confidence=None
+  Verdict: UNKNOWN (insufficient persisted evidence for a verdict)
+
+MATERIAL CHANGES: 1 affecting this opportunity
+
+UNCERTAINTY
+  None
+
+EVIDENCE: 1 item(s); source-rights display = ALLOWED
