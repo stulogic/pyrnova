@@ -127,6 +127,11 @@ def lens_national_state(console, customer_id: str, *, as_of: Optional[str] = Non
             "important_miss_kind": nat.get("important_miss_kind"),
             "consequential_change_kind": cck,
             "sscr_qdc": nat.get("sscr_qdc"),
+            # CA national truth (None for domains that do not use it): mechanism family, QUALIFIED timing
+            # class (no numeric DLT threshold) and the SEPARATE evidenced ITB/VP field.
+            "mechanism": nat.get("mechanism"),
+            "timing_class": nat.get("timing_class"),
+            "itb_vp": nat.get("itb_vp"),
             "post_award": nat.get("post_award"),
             "shared_state": item.get("lifecycle_state"),
             "source_rights": item.get("source_rights", {}).get("display"),
