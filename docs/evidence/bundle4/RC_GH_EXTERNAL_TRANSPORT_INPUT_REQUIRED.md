@@ -1,5 +1,11 @@
 # RC-G / RC-H — real external transport verification: INPUT REQUIRED
 
+> **SUPERSEDED (disposition):** The *INPUT REQUIRED* holding status below has been resolved by a completed
+> bounded external transport attempt and an owner acceptance-boundary revision. G and H are now **CLOSED
+> AS RC BLOCKER / DEPLOYMENT ACTIVATION REQUIRED** — see `RC_GH_EXTERNAL_TRANSPORT_DISPOSITION.md`. The
+> operator-supplied values described here are now the deployment activation requirement / pre-soak
+> activation check, not an RC executable-candidate blocker.
+
 Both gates require a **real external SMTP send to an explicitly owner-authorized verification inbox**,
 with the recipient actually receiving the message. The loopback-sink evidence (B4.16) is deterministic
 transport proof only and does **not** satisfy these gates.
