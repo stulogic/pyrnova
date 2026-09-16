@@ -757,6 +757,21 @@ def cmd_domains_provision_eval(args) -> int:
     return 0
 
 
+def cmd_domains_readiness(args) -> int:
+    """Operator: shared live-activation readiness across all national domains + runtime (fail closed).
+
+    Composes existing runtime truth (domain registry × source-rights registry × config × capabilities).
+    It never activates a source, never prints a secret value, and never infers authorization from public
+    accessibility — UNKNOWN/DECLARED stay denied, PROHIBITED hard-locked, FIXTURE_ONLY non-live."""
+    from .domains.readiness import readiness_report, render_readiness_text
+    report = readiness_report()
+    if getattr(args, "as_json", False):
+        print(json.dumps(report, indent=2, sort_keys=False))
+    else:
+        print(render_readiness_text(report))
+    return 0
+
+
 def cmd_lifecycle_set(args) -> int:
     """Operator: record a customer account-lifecycle transition (append-only; fail closed)."""
     from . import customer_lifecycle as cl
@@ -1048,6 +1063,11 @@ def main(argv=None) -> int:
     dm_pe.add_argument("--replay-dir", default="examples/au_replay",
                        help="dir with build_customer_proof.py (default: examples/au_replay)")
     dm_pe.set_defaults(func=cmd_domains_provision_eval)
+    dm_rd = dm_sub.add_parser("readiness",
+                              help="shared live-activation readiness report across all national domains")
+    dm_rd.add_argument("--json", action="store_true", dest="as_json",
+                       help="emit the machine-readable readiness report instead of the operator text view")
+    dm_rd.set_defaults(func=cmd_domains_readiness)
 
     # --- Shared commercial customer lifecycle (Boundary D) ----------------------------------------
     lc = sub.add_parser("lifecycle",
