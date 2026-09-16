@@ -753,6 +753,34 @@ def cmd_domains_provision_eval(args) -> int:
     return 0
 
 
+def cmd_lifecycle_set(args) -> int:
+    """Operator: record a customer account-lifecycle transition (append-only; fail closed)."""
+    from . import customer_lifecycle as cl
+    try:
+        result = cl.set_state(_state_store(), args.customer, args.state,
+                              actor=args.actor or "operator", reason=args.reason or "",
+                              invoice_ref=args.invoice_ref, note=args.note or "")
+    except cl.LifecycleError as exc:
+        print(json.dumps({"error": str(exc)}))
+        return 1
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_lifecycle_show(args) -> int:
+    from . import customer_lifecycle as cl
+    print(json.dumps(cl.status(_state_store(), args.customer, as_of=args.as_of),
+                     indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_lifecycle_history(args) -> int:
+    from . import customer_lifecycle as cl
+    print(json.dumps(cl.history(_state_store(), args.customer, as_of=args.as_of),
+                     indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_backup_create(args) -> int:
     from . import backup as _bk
     cfg = load_config()
@@ -804,6 +832,7 @@ def _git_head_commit(root: str) -> str:
 
 
 def main(argv=None) -> int:
+    from .customer_lifecycle import STATES as _LIFECYCLE_STATES
     p = argparse.ArgumentParser(prog="pyrnova", description="Pyrnova Capture Radar kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -1015,6 +1044,28 @@ def main(argv=None) -> int:
     dm_pe.add_argument("--replay-dir", default="examples/au_replay",
                        help="dir with build_customer_proof.py (default: examples/au_replay)")
     dm_pe.set_defaults(func=cmd_domains_provision_eval)
+
+    # --- Shared commercial customer lifecycle (Boundary D) ----------------------------------------
+    lc = sub.add_parser("lifecycle",
+                        help="manage the customer account lifecycle (activation/suspension/expiry/offboarding)")
+    lc_sub = lc.add_subparsers(dest="subcmd", required=True)
+    lc_set = lc_sub.add_parser("set", help="record an account-lifecycle transition (append-only)")
+    lc_set.add_argument("customer")
+    lc_set.add_argument("state", help=f"target state (one of: {', '.join(_LIFECYCLE_STATES)})")
+    lc_set.add_argument("--actor", default=None)
+    lc_set.add_argument("--reason", default=None)
+    lc_set.add_argument("--invoice-ref", default=None, dest="invoice_ref",
+                        help="operator-attested manual invoice reference (PAYMENT_CLEARED; no processor)")
+    lc_set.add_argument("--note", default=None)
+    lc_set.set_defaults(func=cmd_lifecycle_set)
+    lc_show = lc_sub.add_parser("show", help="show current account state + derived access/payment posture")
+    lc_show.add_argument("customer")
+    lc_show.add_argument("--as-of", default=None, dest="as_of")
+    lc_show.set_defaults(func=cmd_lifecycle_show)
+    lc_hist = lc_sub.add_parser("history", help="show the full append-only lifecycle audit trail")
+    lc_hist.add_argument("customer")
+    lc_hist.add_argument("--as-of", default=None, dest="as_of")
+    lc_hist.set_defaults(func=cmd_lifecycle_history)
 
     # --- Operator backup / restore control plane (Phase 7) ----------------------------------------
     # An operator must be able to back up and restore durable state without writing Python. These

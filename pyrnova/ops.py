@@ -95,9 +95,31 @@ class OperatorConsole:
         self.delivery_store = delivery_store
 
     def _require_access(self, customer_id: str) -> None:
-        """Enforce the customer-authorization boundary (§6/§15). Rejects a mismatched/unauthorized id."""
+        """Enforce the customer-authorization boundary (§6/§15). Rejects a mismatched/unauthorized id.
+
+        Also enforces the ACCOUNT LIFECYCLE (Boundary D): a customer whose managed lifecycle state denies
+        normal product access (suspended / expired / offboarded, or any pre-activation state) cannot use
+        the product surfaces. An UNMANAGED account (no lifecycle record) is grandfathered as permitted, so
+        this never retroactively locks out existing customers. An OPERATOR actor bypasses the lifecycle
+        gate (admin inspection); a customer actor and the permissive dev default are both gated.
+        """
         if self.access_check is not None and not self.access_check(customer_id):
             raise PermissionError(f"actor is not authorized for customer: {customer_id}")
+        try:
+            from . import access as _access
+            ctx = _access.current_context()
+            if ctx is not None and ctx.is_operator:
+                return  # operator admin inspection bypasses the account-lifecycle gate
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            from . import customer_lifecycle as _cl
+            state = _cl.current_state(self.customer_store, customer_id)
+        except Exception:  # noqa: BLE001 — fail closed only when a state was found to deny; else permit
+            return
+        if not _cl.access_enabled(state):
+            raise PermissionError(
+                f"customer account is not active for product access (state={state}): {customer_id}")
 
     # --- M22-A: Material Changes (customer-facing "what materially changed?") ---------------------
 

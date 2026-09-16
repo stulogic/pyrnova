@@ -268,6 +268,17 @@ def authenticate(store, token: str) -> Optional[AuthContext]:
     presented = _hash_secret(secret, cred.salt)
     if not hmac.compare_digest(expected, presented):
         return None
+    # Named-user credentials obey ACCOUNT STATE: a customer whose managed lifecycle state denies normal
+    # product access (suspended / expired / offboarded, or any pre-activation state) cannot authenticate.
+    # An UNMANAGED account (no lifecycle record) is grandfathered as permitted. Operators are unaffected.
+    # Fail closed on any error rather than granting a session.
+    if cred.role == ROLE_CUSTOMER and cred.customer_id:
+        try:
+            from . import customer_lifecycle as _cl
+            if not _cl.access_enabled(_cl.current_state(store, cred.customer_id)):
+                return None
+        except Exception:  # noqa: BLE001 — fail closed
+            return None
     return AuthContext(credential_id=cred.credential_id, role=cred.role,
                        customer_id=cred.customer_id, actor_label=cred.actor_label)
 
