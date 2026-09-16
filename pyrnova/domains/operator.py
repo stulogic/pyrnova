@@ -107,6 +107,7 @@ def lens_national_state(console, customer_id: str, *, as_of: Optional[str] = Non
     opps = console.customer_opportunities(customer_id, as_of=as_of)
     rows = []
     important_miss: dict[str, int] = {}
+    consequential: dict[str, int] = {}      # UK consequential-change rollup (empty for AU/NZ)
     for item in opps.get("opportunities", []):
         dec = console.opportunity_decision(customer_id, item["id"], as_of=as_of)
         nat = dec.get("decision_chain", {}).get("national_acquisition")
@@ -114,6 +115,9 @@ def lens_national_state(console, customer_id: str, *, as_of: Optional[str] = Non
             continue
         kind = nat.get("important_miss_kind") or "—"
         important_miss[kind] = important_miss.get(kind, 0) + 1
+        cck = nat.get("consequential_change_kind")
+        if cck:
+            consequential[cck] = consequential.get(cck, 0) + 1
         rows.append({
             "opportunity_id": item["id"], "title": item.get("title"),
             "domain": nat.get("domain"), "route": nat.get("route"),
@@ -121,11 +125,15 @@ def lens_national_state(console, customer_id: str, *, as_of: Optional[str] = Non
             "access_class": nat.get("access_class"),
             "industrial_position": nat.get("industrial_position"),
             "important_miss_kind": nat.get("important_miss_kind"),
+            "consequential_change_kind": cck,
+            "sscr_qdc": nat.get("sscr_qdc"),
+            "post_award": nat.get("post_award"),
             "shared_state": item.get("lifecycle_state"),
             "source_rights": item.get("source_rights", {}).get("display"),
         })
     return {"customer_id": customer_id, "as_of": as_of, "count": len(rows),
-            "important_miss": dict(sorted(important_miss.items())), "opportunities": rows}
+            "important_miss": dict(sorted(important_miss.items())),
+            "consequential_change": dict(sorted(consequential.items())), "opportunities": rows}
 
 
 __all__ = ["domain_source_status", "lens_national_state"]

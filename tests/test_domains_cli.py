@@ -33,6 +33,27 @@ def test_domains_show_nz_exposes_national_truth_incl_thin_prime(capsys):
     assert "ECONOMIC_BENEFIT" in d["industrial_position_classes"]
 
 
+def test_domains_show_uk_exposes_state_model_and_no_dlt(capsys):
+    assert main(["domains", "show", "GB"]) == 0
+    d = json.loads(capsys.readouterr().out)
+    assert d["operational"] is True
+    # International/GtG is a distinct route from open competition.
+    assert d["routes"]["INTERNATIONAL_GTG"] != d["routes"]["OPEN"]
+    # Prime and supply-chain are distinct access classes (prime closure != supply-chain closure).
+    assert "PRIME" in d["access_classes"] and "SUPPLY_CHAIN" in d["access_classes"]
+    # No numeric DLT calibration is authorized.
+    assert d["dlt_calibration"] is None
+
+
+def test_domains_sources_uk_shows_families(capsys):
+    assert main(["domains", "sources", "GB"]) == 0
+    status = json.loads(capsys.readouterr().out)
+    by_id = {s["id"]: s for s in status["sources"]}
+    assert by_id["uk_contracts_finder"]["replay_derived_permitted"] is True
+    assert by_id["uk_contracts_finder"]["live_activatable"] is False
+    assert by_id["uk_ssro"]["replay_derived_permitted"] is False
+
+
 def test_domains_sources_nz_shows_gets_prohibited(capsys):
     assert main(["domains", "sources", "NZ"]) == 0
     status = json.loads(capsys.readouterr().out)
