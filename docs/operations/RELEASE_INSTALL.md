@@ -63,3 +63,22 @@ from `requirements-dev.lock.txt` + `pip install .`:
 
 No dependency on developer-machine global packages; `boto3`/`psycopg` are absent from the runtime install
 and their code paths are import-guarded/optional.
+
+### RC-K re-verification at the exact RC candidate (2026-09-15)
+
+Re-run at code-complete SHA `50e1b7a` in a **fresh isolated venv** (system `python3 -m venv`, no access to
+the developer `.venv`), installing **only** from `requirements-dev.lock.txt` + `pip install .`:
+
+- Install resolved **exactly** the pinned closure (`requests==2.32.5` + `certifi`/`charset-normalizer`/
+  `idna`/`urllib3`; dev toolchain `pytest==8.4.2` + `iniconfig`/`packaging`/`pluggy`/`Pygments`/
+  `exceptiongroup`/`tomli`) — no hidden local packages.
+- `pyrnova` package builds and installs; `import pyrnova` (and `cli`/`ops`/`release`/`soak_provenance`/
+  `customer_delivery`/`alerts`/`state`) resolves from installed **site-packages** with `PYTHONPATH` unset,
+  run from a non-source directory; the `pyrnova` console entry point resolves.
+- Full regression in the clean venv: **866 passed / 0 failed / 2 skipped** on CPython 3.9.6.
+- **No dependency or configuration defect found.**
+
+The **CPython 3.11+** recommended-target reproduction remains an environment dependency: no `>=3.10`
+interpreter is available in this build environment and none is installable here (no `brew`/`pyenv`/`uv`).
+The code uses no `>=3.10`-only syntax and `requires-python = ">=3.9"`, so nothing blocks it; it is simply
+not independently verified here and requires an operator-provided/authorized 3.11+ interpreter to run.
