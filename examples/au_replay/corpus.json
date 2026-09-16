@@ -1,0 +1,58 @@
+{
+  "_note": "Lawful AU replay fixtures for PYRNOVA-AU-SPEC-001. Synthetic, clearly-fixture evidence used ONLY to exercise the national module through the shared kernel while live AusTender production acquisition is not yet rights-approved (source activation FIXTURE_ONLY). No live ingestion, no fabricated source activation, no fabricated validation result.",
+  "domain": "AU",
+  "cases": [
+    {
+      "case_id": "au-open-progression",
+      "evidence_id": "au-ev-001",
+      "source_id": "au_austender",
+      "available_at": "2021-05-10",
+      "lifecycle_stage": "APPROACH_TO_MARKET",
+      "route": "OPEN",
+      "important_miss_kind": "PROGRESSION",
+      "access_class": "NO_ESTABLISHED_ACCESS",
+      "industrial_position": "AIC_ALIGNED",
+      "anchors": {"t0": "2021-05-10", "t1": "2021-05-11", "t4": "2021-05-20", "benchmark_b": "2023-02-28"},
+      "expect_qualifying": true
+    },
+    {
+      "case_id": "au-limited-route-change",
+      "evidence_id": "au-ev-002",
+      "source_id": "au_austender",
+      "available_at": "2022-03-01",
+      "lifecycle_stage": "APPROACH_TO_MARKET",
+      "route": "LIMITED",
+      "important_miss_kind": "ROUTE_CHANGE",
+      "access_class": "PANEL_MEMBER",
+      "industrial_position": "SOVEREIGN_CAPABILITY",
+      "anchors": {"t0": "2022-03-01", "t1": "2022-03-02", "t4": "2022-03-06", "benchmark_b": "2023-12-16"},
+      "expect_qualifying": true
+    },
+    {
+      "case_id": "au-fms-case-movement",
+      "evidence_id": "au-ev-003",
+      "source_id": "au_defence_iip",
+      "available_at": "2020-08-15",
+      "lifecycle_stage": "APPROVAL_GATE",
+      "route": "FMS",
+      "important_miss_kind": "FMS_GTG_MOVEMENT",
+      "access_class": "TEAMING_PARTNER",
+      "industrial_position": "FOREIGN_OWNED_LOCALLY_PRESENT",
+      "anchors": {"t0": "2020-08-15", "t1": "2020-08-20", "t4": "2020-09-01", "benchmark_b": "2022-06-01"},
+      "expect_qualifying": true
+    },
+    {
+      "case_id": "au-gtg-cancellation",
+      "evidence_id": "au-ev-004",
+      "source_id": "au_austender",
+      "available_at": "2023-01-09",
+      "lifecycle_stage": "EVALUATION",
+      "route": "GTG",
+      "important_miss_kind": "CANCELLATION",
+      "access_class": "UNKNOWN",
+      "industrial_position": "UNKNOWN",
+      "anchors": {"t0": "2023-01-09", "t1": "2023-01-10", "t4": "2023-01-15", "benchmark_b": null},
+      "expect_qualifying": false
+    }
+  ]
+}

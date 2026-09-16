@@ -1,0 +1,151 @@
+"""National pipeline adapter — runs a national domain's chain THROUGH the shared kernel.
+
+This is where "SHARE MECHANISM, KEEP NATIONAL TRUTH NATIONAL" becomes executable. The adapter is
+domain-parameterized (works for any :class:`NationalDomain`) and demonstrated with Australia. National
+truth — lifecycle stage, route meaning, access, Industrial Position, Important Miss — is owned by the
+domain; the temporal/decision machinery (strict AS-OF, the Decision-Lead-Time engine, the Integrated
+Decision object) is the shared kernel's and is NOT re-implemented per country.
+
+Chain:  NATIONAL SOURCE -> NATIONAL EVIDENCE -> NATIONAL EVENT -> NATIONAL MATERIAL CHANGE
+        -> NATIONAL ACQUISITION STATE -> ACCESS / INDUSTRIAL POSITION -> CUSTOMER-SPECIFIC OPPORTUNITY
+        -> SHARED DECISION OBJECT (+ shared DLT) -> customer product / brief.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Optional
+
+from ..decision_lead_time import TemporalAnchors, derive_decision_lead_time
+from ..decision_object import assemble_decision, IntegratedDecision
+from .base import NationalDomain, SourceActivation
+
+
+class ASOFViolation(RuntimeError):
+    """Raised when evidence dated after the AS-OF instant would leak into a point-in-time view."""
+
+
+@dataclass(frozen=True)
+class NationalEvidence:
+    """A national source fact with provenance + AS-OF availability. Original-language authority is a
+    national concern; ``language`` records the original, and any translation would be PYRNOVA DERIVED."""
+
+    evidence_id: str
+    source_id: str
+    available_at: str            # ISO-8601 — when this evidence became lawfully available (T0/T1)
+    lifecycle_stage: str         # national lifecycle stage this evidence observes
+    route: str                   # national acquisition route code
+    language: str = "en"
+    payload: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class NationalMaterialChange:
+    """A materially significant national event. Material Change != Opportunity (a shared kernel truth),
+    so this may or may not become a customer opportunity depending on national access/fit."""
+
+    material_change_id: str
+    domain_code: str
+    lifecycle_stage: str
+    route: str
+    important_miss_kind: Optional[str]     # which national Important-Miss category this addresses, if any
+    evidence_ids: tuple[str, ...]
+    observed_at: str
+
+
+@dataclass(frozen=True)
+class NationalAccessPosition:
+    """National access + Industrial Position for a customer against a material change.
+
+    ``verdict`` is read by the shared decision object's uncertainty view. Access != customer decision:
+    a strong access position is not itself a pursuit decision (a shared kernel distinction)."""
+
+    verdict: str                 # an access_class from the national domain
+    industrial_position: str     # an industrial_position_class from the national domain
+    facts: tuple = ()            # evidence-referencing facts (shared decision object reads .facts)
+
+
+@dataclass(frozen=True)
+class NationalOpportunity:
+    material_change: NationalMaterialChange
+    access: NationalAccessPosition
+    customer_id: str
+
+
+def _assert_asof(available_at: str, as_of: Optional[str]) -> None:
+    if as_of and available_at and available_at > as_of:
+        raise ASOFViolation(f"evidence available_at={available_at!r} is after as_of={as_of!r} "
+                            "(strict AS-OF: no future-data leakage)")
+
+
+def derive_material_change(domain: NationalDomain, evidence: NationalEvidence, *,
+                           as_of: Optional[str], important_miss_kind: Optional[str] = None,
+                           mc_id: Optional[str] = None) -> NationalMaterialChange:
+    """National classification of a source fact into a Material Change. Fails closed on unknown national
+    truth (route/stage) and on AS-OF violation — the source is evidence, never the ontology."""
+    _assert_asof(evidence.available_at, as_of)
+    if not domain.is_ingestible(evidence.source_id):
+        # UNKNOWN => DENY. A non-ACTIVE source (fixture/declared/prohibited) cannot back a *live* change;
+        # replay/fixtures set the domain source to FIXTURE_ONLY and use derive_material_change_fixture.
+        raise PermissionError(f"[{domain.code}] source {evidence.source_id!r} is not ACTIVE for live "
+                              "ingestion (UNKNOWN => DENY)")
+    return _material_change(domain, evidence, important_miss_kind, mc_id)
+
+
+def derive_material_change_fixture(domain: NationalDomain, evidence: NationalEvidence, *,
+                                   as_of: Optional[str], important_miss_kind: Optional[str] = None,
+                                   mc_id: Optional[str] = None) -> NationalMaterialChange:
+    """Replay/fixture path: lawful for a FIXTURE_ONLY source. Never permitted for a PROHIBITED source."""
+    _assert_asof(evidence.available_at, as_of)
+    src = domain.source(evidence.source_id)
+    if src is None or src.activation is SourceActivation.PROHIBITED:
+        domain.assert_ingestible(evidence.source_id)  # raises ProhibitedSourceIngestion / denies
+    return _material_change(domain, evidence, important_miss_kind, mc_id)
+
+
+def _material_change(domain, evidence, important_miss_kind, mc_id) -> NationalMaterialChange:
+    if not domain.known_route(evidence.route):
+        raise ValueError(f"[{domain.code}] unknown national route {evidence.route!r}")
+    if evidence.lifecycle_stage not in domain.lifecycle:
+        raise ValueError(f"[{domain.code}] unknown national lifecycle stage {evidence.lifecycle_stage!r}")
+    if important_miss_kind is not None and important_miss_kind not in domain.important_miss:
+        raise ValueError(f"[{domain.code}] unknown Important-Miss kind {important_miss_kind!r}")
+    return NationalMaterialChange(
+        material_change_id=mc_id or f"{domain.code.lower()}-mc-{evidence.evidence_id}",
+        domain_code=domain.code, lifecycle_stage=evidence.lifecycle_stage, route=evidence.route,
+        important_miss_kind=important_miss_kind, evidence_ids=(evidence.evidence_id,),
+        observed_at=evidence.available_at)
+
+
+def assess_access(domain: NationalDomain, *, access_class: str, industrial_position: str,
+                  facts: tuple = ()) -> NationalAccessPosition:
+    if access_class not in domain.access_classes:
+        raise ValueError(f"[{domain.code}] unknown access class {access_class!r}")
+    if industrial_position not in domain.industrial_position_classes:
+        raise ValueError(f"[{domain.code}] unknown Industrial Position {industrial_position!r}")
+    return NationalAccessPosition(verdict=access_class, industrial_position=industrial_position, facts=facts)
+
+
+def to_decision(domain: NationalDomain, opportunity: NationalOpportunity, *,
+                anchors: TemporalAnchors, as_of: Optional[str] = None) -> IntegratedDecision:
+    """Project a national opportunity through the SHARED decision object + SHARED DLT engine.
+
+    National meaning travels as data on the shared object (route, lifecycle stage, access, Industrial
+    Position); the composition and Decision-Lead-Time derivation are the kernel's, not re-implemented."""
+    mc = opportunity.material_change
+    dlt = derive_decision_lead_time(anchors)  # shared, country-neutral engine
+    national_material_change = {
+        "material_change_id": mc.material_change_id, "domain": mc.domain_code,
+        "lifecycle_stage": mc.lifecycle_stage, "route": mc.route,
+        "route_meaning": domain.routes.get(mc.route), "important_miss_kind": mc.important_miss_kind,
+        "evidence_ids": list(mc.evidence_ids), "observed_at": mc.observed_at,
+        "industrial_position": opportunity.access.industrial_position,
+    }
+    return assemble_decision(
+        opportunity_ref=f"{domain.code}:{mc.material_change_id}:{opportunity.customer_id}",
+        program_key=mc.material_change_id,
+        material_changes=[national_material_change],
+        vehicle_access=opportunity.access,      # shared object reads .verdict / .facts
+        decision_lead_time=dlt,
+        as_of=as_of,
+    )
