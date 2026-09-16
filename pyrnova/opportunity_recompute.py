@@ -88,6 +88,13 @@ def recompute_decision_components(o: dict, *, customer_profile: Any = None,
     the ``opportunities`` collection). Returns :class:`RecomputedComponents`; each field is ``None`` where
     the evidence is genuinely insufficient. Pure/deterministic given (``o``, ``customer_profile``, ``as_of``)."""
     meta = o.get("meta") or {}
+    # National records carry their OWN acquisition access/Industrial-Position truth (kept national on the
+    # meta["national"] block and surfaced by the decision view). The Bundle-2 recompute here is US-semantic
+    # (US "incumbent", US vehicle/access, US-calibrated pursuit); running it on a national record would
+    # import US access assumptions into another nation. So national records stay UNKNOWN for these US
+    # components — their national access truth is authoritative, not a US-derived verdict.
+    if meta.get("national"):
+        return RecomputedComponents(customer_is_incumbent=False)
     agency = o.get("agency")
     sub_agency = meta.get("sub_agency")
     ev_id = _primary_evidence_id(o)

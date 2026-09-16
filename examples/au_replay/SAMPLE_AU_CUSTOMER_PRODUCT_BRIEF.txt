@@ -1,0 +1,38 @@
+PYRNOVA DECISION BRIEF — AU LIMITED acquisition — au-limited-route-change
+Customer: eval-au    As-of: 2024-01-01
+
+OPPORTUNITY   opp_8198e319f73c7d759a36  (reviewing)
+NATIONAL DOMAIN: Australia (AU)
+  Lifecycle stage: APPROACH_TO_MARKET
+  Acquisition route: LIMITED — Limited tender — approach to one or more nominated suppliers (competition constrained).
+  Access position (PYRNOVA DERIVED): PANEL_MEMBER
+  Industrial Position: SOVEREIGN_CAPABILITY
+  Important Miss addressed: ROUTE_CHANGE
+  National value: 420000000.0 AUD
+
+Agency:       None
+Est. value:   None
+
+WHY NOW       ROUTE_CHANGE: None
+Expected action by: 2023-12-16
+
+INCUMBENT     None
+CUSTOMER FIT  relevance_score=None (UNKNOWN)
+
+PURSUIT
+  Recommended: None
+  Native signal: attractiveness=None confidence=None
+  Verdict: UNKNOWN (insufficient persisted evidence for a verdict)
+
+MATERIAL CHANGES: 1 affecting this opportunity
+
+UNCERTAINTY
+  None
+
+EVIDENCE: 1 item(s); source-rights display = ALLOWED
+
+---
+content_sha256: fbcb4d0e9e6f282091d70c96672d5b240f1fbcd3b38ea1569d2eaa137ac9ac8e
+filename: pyrnova-brief-opp_8198e319f73c7d759a36.txt
+artifact_ref: brief:opp_8198e319f73c7d759a36:2024-01-01
+rights_display: ALLOWED

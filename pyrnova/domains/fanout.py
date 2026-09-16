@@ -145,6 +145,9 @@ def build_national_opportunity_record(
         "customer_id": opportunity.customer_id,
         "state": _national_state(mc.important_miss_kind),
         "title": title,
+        # Top-level program key (= the national material-change id) so the shared decision view relates
+        # this opportunity to its own Material Change on the customer feed (country-neutral linkage).
+        "program_key": mc.material_change_id,
         # National-inapplicable US fields stay None (no US assumption imported):
         "agency": buyer,           # a national buyer name if supplied; NOT a US agency taxonomy
         "value_usd": None,         # AU value is carried in meta.national.value_local, in AUD

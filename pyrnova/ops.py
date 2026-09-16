@@ -622,6 +622,9 @@ class OperatorConsole:
 
         o = self._find_opportunity(customer_id, opportunity_id, as_of=as_of)
         cat = o.get("catalyst") or {}
+        # The feed is ALREADY rights-gated (single canonical gate). Relate — but never re-gate — those
+        # changes: re-gating an already-gated projection (which now carries a source_rights key) would
+        # spuriously fail the canonical-envelope check and fail closed. Related changes are used as-is.
         feed = self.material_changes(customer_id, as_of=as_of)["material_changes"]
         related_mc = [c for c in feed if self._mc_touches_opportunity(c, o)]
         disposition = dm.latest_disposition(self.customer_store, customer_id, opportunity_id, as_of=as_of)
@@ -688,7 +691,7 @@ class OperatorConsole:
             "access": access_view,                      # B2.5 recomputed from persisted evidence (else UNKNOWN)
             "customer_fit": fit_view,                   # B2.6 recomputed from persisted evidence (else UNKNOWN)
             "pursuit": pursuit_view,                    # B2.7 recomputed from persisted evidence (else UNKNOWN)
-            "material_changes": [gate_customer_display(c) for c in related_mc],
+            "material_changes": related_mc,             # already rights-gated by the feed; not re-gated
             "next_action": o.get("recommended_action"),
             "evidence": gated_evidence,
             "temporal": {"as_of": as_of, "expected_action_at": o.get("expected_action_at"),
@@ -700,6 +703,13 @@ class OperatorConsole:
                             "unknown_components": unknown_components},
             "customer_disposition": disposition,  # Decision Memory (customer judgment), distinct from above
         }
+        # National acquisition context (route/lifecycle/access/Industrial Position/Important Miss), kept
+        # NATIONAL and not flattened into the US decision fields. Present only for national records; None
+        # for US, so no US decision view changes. This is the shared decision surface reading national
+        # truth that travels on the record — not a per-country decision view.
+        national = (o.get("meta") or {}).get("national")
+        if national:
+            decision_chain["national_acquisition"] = national
         opp_rights = self._display_rights(o)
         rights_items = [opp_rights] + [e.get("source_rights") for e in gated_evidence]
         rights_items += [c.get("source_rights") for c in decision_chain["material_changes"]]
@@ -822,6 +832,23 @@ class OperatorConsole:
             "",
             f"EVIDENCE: {len(dc['evidence'])} item(s); source-rights display = {rights_display}",
         ]
+        # National acquisition context — rendered on the SHARED brief when the opportunity carries national
+        # truth (no country brief fork). National acquisition meaning is preserved, not flattened into the
+        # US fields above. Absent for US opportunities, so the US brief is byte-identical to before.
+        national = dc.get("national_acquisition")
+        if national:
+            val = national.get("value_local") or {}
+            lines[4:4] = [
+                f"NATIONAL DOMAIN: {national.get('domain_name')} ({national.get('domain')})",
+                f"  Lifecycle stage: {national.get('lifecycle_stage')}",
+                f"  Acquisition route: {national.get('route')} — {national.get('route_meaning')}",
+                f"  Access position (PYRNOVA DERIVED): {national.get('access_class')}",
+                f"  Industrial Position: {national.get('industrial_position')}",
+                (f"  Important Miss addressed: {national.get('important_miss_kind')}"
+                 if national.get('important_miss_kind') else "  Important Miss addressed: —"),
+                (f"  National value: {val.get('amount')} {val.get('currency')}" if val else "  National value: —"),
+                "",
+            ]
         body = "\n".join(str(x) for x in lines)
         content_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
         return {
