@@ -28,6 +28,7 @@ from .live_ops import LiveRunner, http_fetcher, source_record_count, source_resp
 from .match import CapabilityProfile
 from .pipeline import run as run_pipeline
 from .scheduler import CACHE_HIT, ERROR, LIVE_FETCH, SourceScheduler
+from .soak_provenance import build_provenance, verify_provenance
 from .sources.registry import get_spec
 from .sources.source_state import SourceStateStore
 from .state import StateStore
@@ -329,6 +330,9 @@ class SoakHarness:
             "expected_earliest_completion_at": (start_dt + timedelta(days=7)).isoformat(),
             "fifth_business_day": business.date().isoformat(), "plan": self.plan.raw,
             "plan_hash": self.plan.manifest_hash,
+            # Immutability anchor: every subsequent cycle must run at this exact commit. Any
+            # acceptance-critical code change is a restart of the window, not a silent continuation.
+            "commit": report["current_commit"],
         }
         manifest_path = self.evidence_dir / "manifest.json"
         if manifest_path.exists():
@@ -352,8 +356,25 @@ class SoakHarness:
                 raise RuntimeError("foreground preflight failed: " + "; ".join(report["errors"]))
             if manifest_path.exists():
                 raise RuntimeError("official soak already started; foreground validation cannot move its clock")
-        elif not manifest_path.exists():
-            raise RuntimeError("soak has not been started")
+        else:
+            if not manifest_path.exists():
+                raise RuntimeError("soak has not been started")
+            # Machine-enforce the restart rule: an in-progress soak may only advance at the exact
+            # commit pinned at start, on a clean tracked tree. Drift fails the cycle closed and records
+            # an invalidating intervention rather than silently accruing evidence under changed code.
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            pinned = manifest.get("commit")
+            current = _repo_commit(self.repo)
+            drift = None
+            if pinned and current != pinned:
+                drift = f"running commit {current} != pinned soak commit {pinned}"
+            elif _repo_tracked_changes(self.repo):
+                drift = "canonical repository has uncommitted tracked changes during an active soak"
+            if drift:
+                self.record_intervention(
+                    kind="code_drift", actor="harness", reason=drift, invalidates_soak=True,
+                )
+                raise RuntimeError("soak immutability violated: " + drift)
         self._ensure_runtime()
         assert self.state is not None and self.source_state is not None and self.archive is not None
         at = now or datetime.now(timezone.utc)
@@ -653,6 +674,8 @@ class SoakHarness:
         signal.signal(signal.SIGINT, stop)
         while not stopping:
             self.run_cycle()
+            # Keep an independently-recomputable provenance chain current alongside the evidence.
+            build_provenance(self.evidence_dir, archive=self.archive, write=True)
             deadline = time.monotonic() + check_interval_seconds
             while not stopping and time.monotonic() < deadline:
                 time.sleep(min(1.0, deadline - time.monotonic()))
@@ -661,7 +684,8 @@ class SoakHarness:
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pyrnova.live_ops_acceptance")
     parser.add_argument(
-        "action", choices=("preflight", "foreground", "start", "run-once", "serve", "record-miss", "list-misses")
+        "action", choices=("preflight", "foreground", "start", "run-once", "serve",
+                           "provenance", "record-miss", "list-misses")
     )
     parser.add_argument("--plan")
     parser.add_argument("--repo", default=".")
@@ -708,6 +732,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0 if report["ok"] else 2
     harness = SoakHarness(plan, repo=repo)
+    if args.action == "provenance":
+        archive = LocalEvidenceArchive(harness.archive_dir)
+        report = verify_provenance(harness.evidence_dir, archive=archive)
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0 if report["ok"] else 2
     if args.action == "foreground":
         result = (harness.verify_retained_foreground(Path(args.retained_foreground))
                   if args.retained_foreground else harness.run_foreground())
