@@ -30,10 +30,11 @@ CORPUS = Path(__file__).resolve().parent.parent / "examples" / "au_replay" / "co
 
 # --- 1. registry / boundary -----------------------------------------------------------------------
 
-def test_registry_has_five_domains_only_us_and_au_operational():
+def test_registry_has_five_domains_us_au_nz_operational():
     codes = {d.code for d in all_domains()}
     assert codes == {"US", "AU", "GB", "CA", "NZ"}
-    assert {d.code for d in operational_domains()} == {"US", "AU"}  # validated AND build authority
+    # US, AU and now NZ are validated AND have owner build authority (implementable now).
+    assert {d.code for d in operational_domains()} == {"US", "AU", "NZ"}
     assert get_domain("uk").code == "GB"  # alias, case-insensitive
 
 
@@ -133,3 +134,41 @@ def test_au_calibration_is_the_cited_accepted_result():
     assert cal.median_dlt_to_market_days == 654.5 and cal.p25_days == 105.0
     assert cal.corpus_size == 44 and cal.qualifying_cases == 24
     assert "PYRNOVA-AU-SPEC-001" in cal.source_reference
+
+
+def test_nz_calibration_is_the_cited_accepted_result_and_not_inflated():
+    nz = get_domain("NZ")
+    assert nz.validated is True and nz.build_authority is True
+    cal = nz.dlt_calibration
+    # The CITED accepted NZ historical validation numbers — not invented, not inflated.
+    assert cal.median_dlt_to_market_days == 491.0 and cal.p25_days == 292.0
+    assert cal.corpus_size == 36 and cal.qualifying_cases == 17
+    assert "PYRNOVA-NZ-SPEC-001" in cal.source_reference
+
+
+def test_nz_national_truth_is_distinct_not_flattened_into_au():
+    nz, au = get_domain("NZ"), get_domain("AU")
+    # NZ routes are NZ meanings, not AU's — DIRECT_SOURCE and PANEL are NZ-specific, FMS is not an NZ route.
+    assert nz.known_route("DIRECT_SOURCE") and nz.known_route("PANEL")
+    assert not nz.known_route("FMS")
+    # Thin Prime is an ACCESS class only — never an Industrial Position.
+    assert "THIN_PRIME" in nz.access_classes
+    assert "THIN_PRIME" not in nz.industrial_position_classes
+    # economic benefit != sovereign capability != resilience (three distinct Industrial Positions).
+    for ip in ("ECONOMIC_BENEFIT", "SOVEREIGN_CAPABILITY", "RESILIENCE_RELEVANT"):
+        assert ip in nz.industrial_position_classes
+    # NZ lifecycle is its own, not AU's.
+    assert nz.lifecycle != au.lifecycle
+
+
+def test_nz_source_families_codified_fail_closed_except_replay_evidence():
+    nz = get_domain("NZ")
+    # GETS is the hard lock.
+    assert nz.source("nz_gets").activation is SourceActivation.PROHIBITED
+    # Only the lawful historical/replay evidence family is FIXTURE_ONLY (replay-derived, live NOT active).
+    assert nz.source("nz_mod").activation is SourceActivation.FIXTURE_ONLY
+    assert nz.is_ingestible("nz_mod") is False  # FIXTURE_ONLY is not live-ingestible
+    # Every civil/caution candidate family is DECLARED (UNKNOWN => DENY) — not activated by history alone.
+    for sid in ("nz_treasury", "nz_linz", "nz_greater_wellington", "nz_police", "nz_nzta"):
+        assert nz.source(sid).activation is SourceActivation.DECLARED
+        assert nz.is_ingestible(sid) is False

@@ -287,6 +287,26 @@ _AU_AUSTENDER_POLICY = _structured_policy(
           "source-rights approval (not granted): INGEST_DISABLED. Lawful owner-accepted replay/"
           "historical evidence may back a derived, attributed customer projection.",
 )
+# New Zealand national domain (INTERNATIONAL-GOVERNMENT-ROLLOUT-001, NZ vertical). The NZ MoD lawful
+# historical/replay evidence family is DOWNSTREAM EVIDENCE, never the acquisition ontology. Live
+# production ingestion requires NZ source-rights approval that has NOT been granted, so the state is
+# INGEST_DISABLED: live transport fails closed (UNKNOWN => DENY), while lawful owner-accepted historical/
+# replay evidence may still back a DERIVED customer projection with attribution and be displayed under
+# current policy — exactly the AusTender/SBIR replay posture. This registry policy governs rights
+# (transport/derived/display); the national domain (pyrnova/domains/nz.py) independently governs
+# acquisition activation posture (FIXTURE_ONLY). Both fail closed and must agree.
+_NZ_MOD_POLICY = _structured_policy(
+    identity="nz_mod", domain="www.defence.govt.nz", source_type="structured_defence_acquisition_evidence",
+    rights_class=RightsClass.GREEN_WITH_CONDITIONS, state=RightsState.INGEST_DISABLED,
+    storage=StorageMode.NORMALIZED_ONLY,  # no raw-storage rights; normalized facts only
+    hosts=("www.defence.govt.nz",), paths=("/",),
+    reference_hosts=("www.defence.govt.nz",), reference_paths=("/",),
+    attribution="New Zealand Ministry of Defence; retain a direct source URL.",
+    notes="NZ MoD is downstream evidence only. Live production ingestion requires NZ source-rights "
+          "approval (not granted): INGEST_DISABLED. Lawful owner-accepted replay/historical evidence may "
+          "back a derived, attributed customer projection. NZ GETS is separately PROHIBITED.",
+)
+
 # PRELAUNCH-CONVERGENCE-001 Bundle 2 owner rights-posture ruling: OFFICIAL FIRST-PARTY
 # U.S. GOVERNMENT APPROPRIATIONS AND ACQUISITION-FORECAST ARTIFACTS may be ingested when
 # obtained directly from the authoritative U.S. government publisher (a .gov/.mil domain),
@@ -332,6 +352,14 @@ _RESTRICTED_POLICIES = {
                               rights_class=RightsClass.RED, state=RightsState.INGEST_DISABLED),
     "x": SourcePolicy(identity="x", domain="x.com", source_type="platform_scrape",
                       rights_class=RightsClass.RED, state=RightsState.INGEST_DISABLED),
+    # NZ GETS HARD LOCK (INTERNATIONAL-GOVERNMENT-ROLLOUT-001, NZ-D). GETS is PROHIBITED at the national
+    # domain layer (pyrnova/domains/nz.py) AND hard-denied here at the rights layer: BLACK class +
+    # INGEST_DISABLED so transport, derived use and display all fail closed. Not an ingestion source.
+    "nz_gets": SourcePolicy(identity="nz_gets", domain="www.gets.govt.nz", source_type="prohibited_tender_service",
+                            rights_class=RightsClass.BLACK, state=RightsState.INGEST_DISABLED,
+                            raw_storage=StorageMode.NORMALIZED_ONLY,
+                            review_notes="HARD LOCK: GETS is NOT a Pyrnova ingestion source. No scrape/crawl/"
+                                         "browse/harvest/reproduce. Prohibited at both governance layers."),
     "generic_corporate": SourcePolicy(identity="generic_corporate", domain="unknown",
                                        source_type="corporate_disclosure", rights_class=RightsClass.AMBER,
                                        state=RightsState.DISPLAY_DISABLED,
@@ -599,6 +627,29 @@ REGISTRY: dict[str, SourceSpec] = {
         priority="medium",
         rights_note="Australian rights approval pending; live ingest disabled, replay-derived use only.",
         source_policy=_AU_AUSTENDER_POLICY,
+    ),
+    "nz_mod": SourceSpec(
+        id="nz_mod",
+        name="New Zealand Ministry of Defence (lawful historical/replay evidence)",
+        base_url="https://www.defence.govt.nz",
+        rights="unknown",  # NZ source-rights approval not granted; fail closed for live use
+        retention_tier="A",  # acquisition evidence is amended/withdrawn; each observation is point-in-time
+        active=False,        # not active for live production ingestion (INGEST_DISABLED)
+        notes=(
+            "INTERNATIONAL-GOVERNMENT-ROLLOUT-001 (NZ vertical): NZ MoD lawful historical/replay evidence is "
+            "DOWNSTREAM EVIDENCE of an NZ acquisition, never the acquisition ontology. Live ingestion "
+            "requires NZ rights approval (not granted): INGEST_DISABLED. Owner-accepted historical/replay "
+            "evidence may back a derived, attributed customer projection. NZ GETS is separately PROHIBITED."
+        ),
+        family="procurement_opportunities",
+        signals=("acquisition_evidence", "route_change", "cancellation", "award_notice"),
+        access_method="rest_api",
+        auth="unknown",
+        reliability="fixture_only",
+        status="blocked",
+        priority="medium",
+        rights_note="NZ rights approval pending; live ingest disabled, replay-derived use only.",
+        source_policy=_NZ_MOD_POLICY,
     ),
     "sanctions_ofac": SourceSpec(
         id="sanctions_ofac",
