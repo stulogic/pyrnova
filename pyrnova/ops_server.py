@@ -448,11 +448,48 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
     return Handler
 
 
+_DEMO_GLOBAL_STREAMS = ("threats", "propagated_threats", "opportunities")
+
+
+def _seed_demo_global_intelligence(demo_dir: Path, store: StateStore) -> int:
+    """Seed the committed demo global intelligence into persisted state (idempotent, local dev only).
+
+    Mirrors :func:`_seed_demo_customers`: the demo records live in ``examples/`` and are IMPORTED into the
+    operator's own state, rather than the console silently reading a *different* store. That distinction
+    matters — the previous behaviour pointed the console's global-intelligence store at the demo directory
+    whenever persisted state had no ``threats``, which silently hid any global intelligence the operator
+    had genuinely provisioned there (for example a national or multinational evaluation estate). One store
+    is the truth; no silent fallback changes what the product shows.
+
+    Idempotent per record id, so it is order-independent: provisioning an evaluation estate before or
+    after first launch yields the same state, and the demo records are never duplicated.
+    """
+    seeded = 0
+    for stream in _DEMO_GLOBAL_STREAMS:
+        src = demo_dir / "state" / f"{stream}.jsonl"
+        if not src.exists():
+            continue
+        present = {r.get("id") for r in store.read(stream)}
+        for line in src.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            record = json.loads(line)
+            if record.get("id") in present:
+                continue
+            store.append(stream, record)
+            present.add(record.get("id"))
+            seeded += 1
+    return seeded
+
+
 def _build_console(cfg, state_store: StateStore, policy: AccessPolicy) -> OperatorConsole:
     demo_dir = Path("examples/material_changes_demo")
     mc_store = state_store
-    if not (Path(cfg.state_dir) / "threats.jsonl").exists() and (demo_dir / "state" / "threats.jsonl").exists():
-        mc_store = StateStore(demo_dir / "state")
+    # Local development only: committed demo intelligence must never be written into an enforced
+    # (credentialed / non-local) deployment's state.
+    if not policy.require_auth:
+        _seed_demo_global_intelligence(demo_dir, state_store)
     from . import customers as _cust
     if not _cust.list_customers(state_store) and (demo_dir / "seed_customers.py").exists():
         _seed_demo_customers(demo_dir, state_store)

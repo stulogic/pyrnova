@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Iterable, Optional
 
 from pyrnova.customers import CustomerProfile, upsert_customer
 from pyrnova.domains import get_domain
@@ -61,18 +62,32 @@ def seed_customer(store) -> dict:
     return {"customer_id": EVAL_ID, "created": created}
 
 
-def build_opportunity_records() -> dict:
+def build_opportunity_records(*, customer_id: str = EVAL_ID, subject_ref: str = EVAL_REF,
+                              subject_name: str = EVAL_NAME,
+                              case_ids: Optional[Iterable[str]] = None,
+                              titles: Optional[dict] = None) -> dict:
     """Project the accepted Canadian corpus into shared opportunity records for the evaluation lens.
 
     Returns ``{"records": [...], "blocked": [...]}``: ``records`` are the materialized Canadian opportunities
     (rights-approved source), ``blocked`` are the cases honestly withheld because their source is not
     rights-approved for a derived customer projection (fail closed).
+
+    The lens identity is a PARAMETER so the same accepted projection can serve either this national
+    evaluation lens (the defaults) or the shared multinational evaluation estate
+    (``examples/evaluation_estate``) — one projection path, no second national implementation.
+    ``case_ids`` optionally restricts the projection to a selected subset; the rights gate and every
+    national semantic are unchanged either way.
+    ``titles`` optionally supplies a human-readable programme title per case (the estate draws these
+    from the corpus's own notes); without it the existing route/case title is used unchanged.
     """
     ca = get_domain("CA")
     corpus = _load_corpus()
+    wanted = set(case_ids) if case_ids is not None else None
     records: list[dict] = []
     blocked: list[dict] = []
     for case in corpus["cases"]:
+        if wanted is not None and case["case_id"] not in wanted:
+            continue
         payload = {"source_ref": f"ca:{case['source_id']}:{case['case_id']}",
                    "archive_uri": f"examples/ca_replay/corpus.json#{case['case_id']}"}
         if case.get("provenance_conflict"):
@@ -92,12 +107,13 @@ def build_opportunity_records() -> dict:
             itb_vp=case.get("itb_vp", "UNKNOWN"))
         acc = assess_access(ca, access_class=case["access_class"],
                             industrial_position=case["industrial_position"])
-        opp = NationalOpportunity(mc, acc, EVAL_ID)
+        opp = NationalOpportunity(mc, acc, customer_id)
         value = national_value_block(case.get("value_cad"), "CAD") if case.get("value_cad") else None
         try:
             rec = build_national_opportunity_record(
-                ca, opp, evidence=[ev], subject_ref=EVAL_REF, subject_name=EVAL_NAME,
-                title=f"CA {case['mechanism']} — {case['case_id']}", as_of=PROOF_AS_OF,
+                ca, opp, evidence=[ev], subject_ref=subject_ref, subject_name=subject_name,
+                title=(titles or {}).get(case["case_id"])
+                or f"CA {case['mechanism']} — {case['case_id']}", as_of=PROOF_AS_OF,
                 value=value, expected_action_at=case.get("expected_action_at"))
             records.append(rec)
         except PermissionError as exc:

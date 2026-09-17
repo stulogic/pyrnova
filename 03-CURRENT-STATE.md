@@ -100,6 +100,22 @@ The verified implementation baseline includes:
 
 Detailed implementation evidence remains in `04-DECISIONS.md`, `06-HISTORY.md`, `docs/specs/`, and `docs/replay/`.
 
+### Internal evaluation estate (PRODUCT-DEMO-001, 2026-09-16)
+
+The customer product can now be inspected under realistic data load via one **internal** evaluation Lens,
+`eval-multinational` ("Pyrnova Internal Evaluation"): 31 opportunities across all five national domains
+(CA 9, GB 8, US 6, NZ 5, AU 3), projected from accepted replay/fixture evidence through each country's own
+existing `build_customer_proof.py` — one projection path, no demo-only product logic, no country UI fork.
+It is not a real customer and holds no live production intelligence; two rights-denied cases stay blocked
+and two US evidence records stay withheld, both reported. Launch and contents:
+`examples/evaluation_estate/README.md`. Guarded by `tests/test_evaluation_estate.py`.
+
+Two shared-kernel defects were fixed to make it visible: the customer product's opportunity **list** now
+passes national acquisition truth through (it previously dropped it, so international rows rendered as
+"Unknown"), and the local launch path now **imports** the committed demo intelligence into persisted state
+instead of silently pointing the console at a different store — which had hidden any genuinely provisioned
+global intelligence. Full suite at this close: **1054 passed, 2 skipped, 0 failed**.
+
 ## Customer #1
 
 The fixed CUSTOMER-001 cohort is not changed or reconstructed by this execution. Owner clarification

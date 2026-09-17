@@ -142,6 +142,53 @@ function changeCard(c) {
       ${rightsPill(c.source_rights)}</div></div>`;
 }
 
+// National acquisition truth (AU/CA/GB/NZ/US-as-domain). ONE country-neutral renderer driven entirely by
+// the block the kernel passes through: nothing here branches on a country code, so a new national domain
+// renders with no UI change. Absent block => nothing rendered and US-ontology records are untouched.
+function natLabel(v) { return String(v || "").replace(/_/g, " "); }
+function natMoney(v) {
+  if (!v || v.amount == null) return null;
+  const n = Number(v.amount);
+  const compact = n >= 1e9 ? (n / 1e9).toFixed(n >= 1e10 ? 0 : 1) + "bn"
+    : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "m" : String(n);
+  return `${compact} ${v.currency || ""}`.trim();
+}
+function nationalChips(n) {
+  if (!n) return "";
+  const known = v => v && v !== "UNKNOWN";
+  const mech = n.mechanism || n.route;
+  const val = natMoney(n.value_local);
+  return `<span class="chip steel">${esc(n.domain_name || n.domain)}</span>`
+    + (mech ? `<span class="chip">${esc(natLabel(mech))}</span>` : "")
+    + (known(n.access_class) ? `<span class="chip">${esc(natLabel(n.access_class))}</span>` : "")
+    + (known(n.timing_class) ? `<span class="chip">Timing · ${esc(natLabel(n.timing_class))}</span>` : "")
+    + (n.post_award ? `<span class="chip warn">Post-award</span>` : "")
+    + (val ? `<span class="chip">${esc(val)}</span>` : "");
+}
+function nationalSection(n) {
+  if (!n) return "";
+  const known = v => v && v !== "UNKNOWN";
+  const row = (label, value, extra) => value
+    ? `<p class="prov">${esc(label)}</p><p>${esc(value)}${extra ? ` <span class="prov">${esc(extra)}</span>` : ""}</p>` : "";
+  return `
+        <section class="dgroup span2">
+          <h2 class="label accent">National acquisition · ${esc(n.domain_name || n.domain)}</h2>
+          <div class="verdict-row">${nationalChips(n)}</div>
+          ${row("Acquisition route", natLabel(n.route), n.route_meaning || "")}
+          ${row("Lifecycle stage", natLabel(n.lifecycle_stage))}
+          ${row("Access position", natLabel(n.access_class))}
+          ${known(n.industrial_position) ? row("Industrial position", natLabel(n.industrial_position)) : ""}
+          ${known(n.consequential_change_kind) ? row("Consequential change", natLabel(n.consequential_change_kind)) : ""}
+          ${known(n.important_miss_kind) ? row("Important miss", natLabel(n.important_miss_kind)) : ""}
+          ${known(n.timing_class) ? row("Timing basis", natLabel(n.timing_class),
+            "qualified, never promoted to exact") : ""}
+          ${known(n.itb_vp) ? row("ITB / Value Proposition", natLabel(n.itb_vp), "evidenced, never derived") : ""}
+          ${known(n.sscr_qdc) ? row("SSCR / QDC", natLabel(n.sscr_qdc), "evidenced, never route-derived") : ""}
+          ${n.post_award ? `<p class="prov">Award is not terminal — this opportunity stays monitored after award.</p>` : ""}
+          ${n.dlt_calibration_ref ? `<p class="prov">Decision-lead-time calibration · <span class="mono">${esc(n.dlt_calibration_ref)}</span></p>` : ""}
+        </section>`;
+}
+
 function oppCard(o) {
   if ((o.source_rights || {}).display === "BLOCKED")
     return `<div class="card opp"><div class="opp-top"><h3 class="opp-title">Restricted</h3>${rightsPill(o.source_rights)}</div>
@@ -160,6 +207,7 @@ function oppCard(o) {
     <div class="opp-foot">
       ${windowChip(w, o)}
       ${o.value_usd != null ? `<span class="chip">${esc(money(o.value_usd))}</span>` : ""}
+      ${nationalChips(o.national)}
       ${o.evidence_count != null ? `<span class="chip source">Evidence · ${esc(o.evidence_count)}</span>` : ""}
       ${disp ? `<span class="chip signal">Your view · ${esc(dash(disp.pursuit))}</span>` : ""}
       ${rightsPill(o.source_rights)}
@@ -192,6 +240,11 @@ async function viewOpportunity(id) {
     const opp = dc.opportunity || {}, w = dc.why_now || {}, ic = dc.incumbent_competitive || {},
       fit = dc.customer_fit || {}, p = dc.pursuit || {}, unc = dc.uncertainty || {}, t = dc.temporal || {},
       acc = dc.access || {}, buyer = dc.buyer || {}, ns = p.native_signal || {}, fr = fit.fit_reasoning || {};
+    // A record carrying national acquisition truth is governed by THAT truth: the US-ontology access /
+    // incumbent panels are structurally UNKNOWN for it by design (see opportunity_recompute), so showing
+    // them would present "Unknown" where the authoritative national position exists. One shared rule, no
+    // per-country branch; US-ontology records keep the existing layout exactly.
+    const nat = dc.national_acquisition || null;
     const listOf = arr => (arr || []).filter(Boolean);
     const reasonsFor = listOf(p.why), reasonsNot = listOf(p.why_not), reversals = listOf(p.reversal_conditions);
     const wiso = w.expected_action_at || opp.expected_action_at || t.expected_action_at;
@@ -244,15 +297,16 @@ async function viewOpportunity(id) {
         <section class="dgroup">
           <h2 class="label accent">Decision window</h2>
           <div class="window-line"><span class="big ${wcls}">${wbig}</span> ${wunit}</div>
-          <p class="prov" style="margin-top:8px">Buyer <span class="pill ${statusClass(buyer.status)}">${esc(dash(buyer.status))}</span></p>
+          ${nat ? "" : `<p class="prov" style="margin-top:8px">Buyer <span class="pill ${statusClass(buyer.status)}">${esc(dash(buyer.status))}</span></p>`}
         </section>
 
+        ${nat ? nationalSection(nat) : `
         <section class="dgroup">
           <h2 class="label accent">Access · route</h2>
           <p><span class="pill ${statusClass(acc.verdict)}">${esc(dash(acc.verdict))}</span>${acc.teaming_required ? ` <span class="pill warn">Teaming required</span>` : ""}</p>
           ${acc.summary ? `<p>${esc(acc.summary)}</p>` : ""}
           ${acc.required_vehicle ? `<p class="prov">Required vehicle <span class="mono">${esc(acc.required_vehicle)}</span></p>` : ""}
-        </section>
+        </section>`}
 
         <section class="dgroup">
           <h2 class="label accent">Customer consequence · fit</h2>
@@ -262,11 +316,16 @@ async function viewOpportunity(id) {
           ${fr.decisive_factor ? `<p class="prov">Decisive factor · ${esc(String(fr.decisive_factor).replace(/_/g, " "))}</p>` : ""}
         </section>
 
+        ${nat ? (dc.next_action ? `
+        <section class="dgroup">
+          <h2 class="label accent">Next action</h2>
+          <p>${esc(dc.next_action)}</p>
+        </section>` : "") : `
         <section class="dgroup">
           <h2 class="label accent">Incumbent · competitive</h2>
           <p>${esc(dash(ic.incumbent))}</p>
           ${dc.next_action ? `<p class="prov">Next action</p><p>${esc(dash(dc.next_action))}</p>` : ""}
-        </section>
+        </section>`}
 
         <section class="dgroup span2">
           <h2 class="label accent">Uncertainty · what would make this wrong</h2>

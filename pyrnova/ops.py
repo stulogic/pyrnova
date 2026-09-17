@@ -583,6 +583,11 @@ class OperatorConsole:
             # B4.1 — compact recomputed pursuit verdict (UNKNOWN where evidence is insufficient).
             "pursuit": pursuit or {"verdict": "UNKNOWN"},
             "provenance": "PYRNOVA_DERIVED",
+            # National acquisition truth, passed through UNTOUCHED for the records that carry it — the same
+            # block the decision view already surfaces as ``national_acquisition``. ``None`` for US-ontology
+            # records, so their payload is byte-unchanged. Without it the list view shows a national
+            # opportunity stripped of the only semantics that actually apply to it.
+            "national": (o.get("meta") or {}).get("national"),
         }
         rights = self._display_rights(o)
         if rights.get("display") == "BLOCKED":
