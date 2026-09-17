@@ -1,0 +1,32 @@
+PYRNOVA VISIBLE-SURFACE SMOKE TRANSCRIPT
+Captured: 2026-09-17T00:36:02Z  Branch: international-government-rollout-001  Tip: 3cf3119
+Server: python -m pyrnova.ops_server (local dev, no-auth) on 127.0.0.1:8765
+Customer under test: torch (Torch Technologies)   [dap also seeded]
+
+== GET /healthz ==
+{"status": "ok", "release": null}
+== GET /api/me (identity + tenant posture the SPA renders from) ==
+{"require_auth": false, "authenticated": false, "actor": null, "customer": null, "customers": [{"id": "dap", "name": "DAP Construction Management LLC"}, {"id": "torch", "name": "Torch Technologies"}]}
+== GET /api/lens?customer=torch (Customer Lens) — summary ==
+customer {'id': 'torch', 'name': 'Torch Technologies'} | material_changes.count 8 | by_disposition {'OPPORTUNITY': 6, 'THREAT': 2}
+== GET /api/opportunities?customer=torch (ranked list) — summary ==
+count 6
+ - opp_f1b42dfff3d4202b4195 | Recompete watch: Department of Defense — incumbent TORCH TECHNOLOGIES  | attractiveness 0.91 | conf 0.59 | rights ALLOWED
+ - opp_4d1cf1e1ab1a47133122 | Recompete watch: Department of Defense — incumbent TORCH TECHNOLOGIES  | attractiveness 0.92 | conf 0.69 | rights ALLOWED
+ - opp_996e2d85a6c6917df87b | Recompete watch: Department of Defense — incumbent TORCH TECHNOLOGIES  | attractiveness 0.86 | conf 0.75 | rights ALLOWED
+== GET /api/opportunities/opp_f1b42dfff3d4202b4195/decision (Decision View) — keys ==
+why_now: Contract period of performance ends 2026-09-30 (1.0 months).
+buyer.status: EVIDENCED
+== GET /api/opportunities/opp_f1b42dfff3d4202b4195/evidence/ev_usasp_award_FA248622FA005 (Evidence Inspector) — provenance ==
+source_id usaspending | source_ref usaspending:award:FA248622FA005
+source_url https://www.usaspending.gov/award/CONT_AWD_FA248622FA005_9700_GS00Q14OADS737_4732
+content_sha256 7385d12d90ae76a0a30ab6dfde60f44a1e28611ff5d6ea918fc1de4216d3224f
+== GET /api/material-changes?customer=torch&as_of=2024-06-01 (AS-OF / historical) ==
+as_of 2024-06-01 | count 2 | materialized 0 | by_disposition {'THREAT': 2}
+== GET /api/opportunities/opp_f1b42dfff3d4202b4195/brief?download=1 (Downloadable Brief) ==
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.9.6
+Content-Disposition: attachment; filename="pyrnova-brief-opp_f1b42dfff3d4202b4195.txt"
+  bytes:     1342  first line: PYRNOVA DECISION BRIEF — Recompete watch: Department of Defense — incumbent TORCH TECHNOLOGIES INC (ends 2026-09-30)
+== GET /api/opportunities?customer=dap (second tenant, legitimate empty state — no fake data) ==
+customer dap | count 0 (empty state rendered as such, not fabricated)
