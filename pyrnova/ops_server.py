@@ -340,6 +340,8 @@ def make_handler(console: OperatorConsole, policy: AccessPolicy | None = None,
         def _get_asset(self, path: str):
             # Customer-facing app shell + login assets are PUBLIC (the data behind them is protected).
             customer_assets = {
+                # Shared visual system (FRONTEND-R2) — public app chrome; the data behind it is protected.
+                "/system.css": ("system.css", "text/css; charset=utf-8"),
                 # B3.1: the Customer Lens is the customer-facing landing experience.
                 "/": ("product.html", "text/html; charset=utf-8"),
                 "/product.html": ("product.html", "text/html; charset=utf-8"),

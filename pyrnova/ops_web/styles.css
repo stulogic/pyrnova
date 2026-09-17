@@ -1,1 +1,76 @@
-:root{color-scheme:dark;--ink:#f4f0e7;--muted:#999b96;--line:#30332f;--panel:#171916;--green:#9be15d;--amber:#e0b45f;--red:#e17767}*{box-sizing:border-box}body{margin:0;background:#0d0f0c;color:var(--ink);font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}header{height:92px;padding:20px 3vw;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#11130f}h1,h2,h3{font-family:Georgia,serif;font-weight:400;margin:0}h1{font-size:30px}h2{font-size:28px}h3{font-size:23px;max-width:760px}.eyebrow,.agency{display:block;color:var(--muted);font-size:11px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:5px}.target{display:flex;gap:12px;align-items:center}.target label{color:var(--muted)}select,input,textarea,button{font:inherit;color:var(--ink);background:#11130f;border:1px solid #3c4039;border-radius:3px;padding:9px 11px}button{background:var(--green);border-color:var(--green);color:#10150d;font-weight:700;cursor:pointer}button.secondary{background:transparent;color:var(--ink);border-color:#53584e}main{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 92px)}.rail{border-right:1px solid var(--line);padding:24px 20px;background:#11130f}.rail article{padding:0 0 28px;margin:0 0 28px;border-bottom:1px solid var(--line)}.small-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;text-transform:capitalize;font-size:12px}.small-row strong{font-weight:500}.observed{color:var(--green)}.not_observed{color:var(--muted)}.workspace{padding:30px 3vw}.toolbar{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}#message{min-height:25px;color:var(--green)}.candidate{background:var(--panel);border:1px solid var(--line);padding:22px;margin-bottom:14px;box-shadow:0 10px 30px #0002}.candidate-head{display:flex;justify-content:space-between;gap:20px}.disposition{height:max-content;border:1px solid #555;padding:4px 9px;font-size:11px;letter-spacing:.1em}.disposition.accept,.disposition.strike{color:var(--green);border-color:#527c36}.disposition.reject{color:var(--red);border-color:#80493f}.disposition.watch{color:var(--amber);border-color:#7e683c}.scores{display:flex;flex-wrap:wrap;gap:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;margin:17px 0;color:var(--muted)}.scores b{color:var(--ink)}.consequence{margin:-6px 0 15px;padding:8px 10px;border-left:2px solid var(--amber);color:#c9c1ac;font-size:12px}.evidence{color:var(--muted);font-size:12px;margin-bottom:18px}.evidence a{color:#b4d58f}.review-form label{display:grid;gap:5px;color:var(--muted)}.review-form .row{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px}.review-form>label{margin-top:10px}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}.muted,.empty{color:var(--muted)}.empty{padding:70px;text-align:center;border:1px dashed var(--line)}@media(max-width:850px){main{grid-template-columns:1fr}.rail{border-right:0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.review-form .row{grid-template-columns:1fr}.toolbar{align-items:start;gap:20px}header{height:auto;gap:20px;align-items:flex-start}.target{display:grid}}
+/* Pyrnova Operator Console (internal, local-only). Aligned to the Pyrnova house
+   system (/system.css supplies tokens + textured body); keeps the console's own
+   instrument character — mono body, serif headings, dense review queue. */
+
+header {
+  min-height: 84px; padding: 18px 3vw; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg)); gap: 20px; flex-wrap: wrap;
+}
+body { font-family: var(--mono); }
+.eyebrow, .agency {
+  display: block; color: var(--ink-faint); font-size: 10px; letter-spacing: .15em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; margin: 0; color: var(--ink); }
+h1 { font-size: 27px; } h2 { font-size: 24px; } h3 { font-size: 20px; max-width: 760px; }
+.target { display: flex; gap: 12px; align-items: center; }
+.target label { color: var(--ink-faint); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+select, input, textarea, button {
+  font: inherit; color: var(--ink); background: var(--inset); border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm); padding: 8px 11px;
+}
+button {
+  background: linear-gradient(180deg, rgba(37,207,232,.2), rgba(37,207,232,.05));
+  border-color: var(--signal-dim); color: var(--ink); font-weight: 600; letter-spacing: .03em; cursor: pointer;
+}
+button:hover { border-color: var(--signal); }
+button.secondary { background: transparent; color: var(--ink-dim); border-color: var(--line-2); font-weight: 400; }
+button.secondary:hover { color: var(--ink); }
+
+main { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 84px); }
+.rail { border-right: 1px solid var(--line); padding: 26px 22px; background: var(--bg-2); }
+.rail article { padding: 0 0 26px; margin: 0 0 26px; border-bottom: 1px solid var(--line); }
+.rail article:last-child { border-bottom: none; }
+.small-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0;
+  text-transform: capitalize; font-size: 12px; color: var(--ink-dim); }
+.small-row strong { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+.observed { color: var(--opportunity); }
+.not_observed { color: var(--ink-faint); }
+
+.workspace { padding: 28px 3vw; }
+.toolbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 16px; }
+#message { min-height: 22px; color: var(--signal); font-size: 13px; }
+
+.candidate { background: var(--surface-1); border: 1px solid var(--line); border-left: 3px solid var(--line-2);
+  border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow-1); }
+.candidate-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.disposition { height: max-content; border: 1px solid var(--line-2); padding: 4px 10px; font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; border-radius: 3px; color: var(--ink-dim); }
+.disposition.accept, .disposition.strike { color: var(--opportunity);
+  border-color: color-mix(in srgb, var(--opportunity) 55%, var(--line-2)); }
+.disposition.reject { color: var(--threat); border-color: color-mix(in srgb, var(--threat) 55%, var(--line-2)); }
+.disposition.watch { color: var(--monitoring); border-color: color-mix(in srgb, var(--monitoring) 55%, var(--line-2)); }
+.scores { display: flex; flex-wrap: wrap; gap: 24px; border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line); padding: 12px 0; margin: 17px 0; color: var(--ink-dim); font-size: 13px; }
+.scores b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.consequence { margin: -4px 0 15px; padding: 8px 11px; border-left: 2px solid var(--monitoring);
+  background: var(--monitoring-bg); color: var(--ink-dim); font-size: 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.evidence { color: var(--ink-dim); font-size: 12px; margin-bottom: 18px; }
+.evidence a { color: var(--accent); }
+.review-form label { display: grid; gap: 5px; color: var(--ink-faint); font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase; }
+.review-form .row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 12px; }
+.review-form > label { margin-top: 12px; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; align-items: center; }
+.muted, .empty { color: var(--ink-dim); }
+.empty { padding: 64px; text-align: center; border: 1px dashed var(--line-2); border-radius: var(--radius); }
+
+@media (max-width: 850px) {
+  main { grid-template-columns: 1fr; }
+  .rail { border-right: 0; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .rail article { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .review-form .row { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; align-items: flex-start; gap: 16px; }
+}

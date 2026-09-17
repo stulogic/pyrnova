@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pyrnova Live Intelligence</title>
-  <link rel="stylesheet" href="/access.css">
-  <link rel="stylesheet" href="/product.css">
+  <link rel="stylesheet" href="/system.css?v=2">
+  <link rel="stylesheet" href="/access.css?v=2">
+  <link rel="stylesheet" href="/product.css?v=2">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -28,6 +29,10 @@
       <button id="signout" type="button" hidden>Sign out</button>
     </div>
   </header>
+
+  <!-- Persistent Customer Lens context strip: whose bounded intelligence surface, its live/as-of
+       state and a compact count summary. Populated by product.js from real /api/lens data only. -->
+  <div id="lens-strip" class="lens-strip" role="region" aria-label="Customer Lens context" hidden></div>
 
   <p id="message" class="message" role="status" aria-live="polite" hidden></p>
 

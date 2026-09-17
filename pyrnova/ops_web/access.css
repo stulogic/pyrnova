@@ -1,36 +1,48 @@
-/* Pyrnova access gate (M22-F). Formal, restrained — consistent with the product, no marketing copy. */
+/* Pyrnova access gate (M22-F) — restrained, consistent with the product, no marketing copy.
+   Tokens/texture come from /system.css. */
 #access-gate {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
-  background: #0e1116;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(37,207,232,.06), transparent 55%),
+    var(--bg, #0b0d10);
 }
 #access-gate .access-card {
-  width: min(92vw, 380px);
-  background: #171b22; border: 1px solid #2a3038; border-radius: 8px;
-  padding: 32px 28px; box-shadow: 0 12px 40px rgba(0,0,0,.5);
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #dfe4ea;
+  width: min(92vw, 392px);
+  background: var(--surface-1, #14181d); border: 1px solid var(--line-2, #333c47);
+  border-radius: 10px; padding: 34px 30px 30px;
+  box-shadow: 0 1px 0 rgba(231,236,242,.03) inset, 0 24px 60px rgba(0,0,0,.55);
+  font: 14px/1.55 var(--sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: var(--ink, #e7ecf2);
 }
-#access-gate .access-brand .mark { font-weight: 700; letter-spacing: .18em; font-size: 13px; color: #8ea2c0; }
-#access-gate h1 { font-size: 20px; margin: 14px 0 6px; font-weight: 600; }
-#access-gate .access-msg { margin: 0 0 18px; color: #9aa4b2; font-size: 13px; }
-#access-gate label { display: block; font-size: 12px; color: #9aa4b2; margin-bottom: 18px; }
+#access-gate .access-brand .mark {
+  font-weight: 700; letter-spacing: .30em; font-size: 13px; color: var(--accent, #8fa9c9);
+}
+#access-gate h1 { font-size: 19px; margin: 16px 0 6px; font-weight: 650; }
+#access-gate .access-msg { margin: 0 0 20px; color: var(--ink-dim, #97a2b0); font-size: 13px; }
+#access-gate label {
+  display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint, #6a7481); margin-bottom: 20px;
+}
 #access-gate input {
-  display: block; width: 100%; margin-top: 6px; padding: 9px 10px;
-  background: #0e1116; border: 1px solid #2a3038; border-radius: 5px; color: #e8edf3;
-  font-size: 14px; box-sizing: border-box;
+  display: block; width: 100%; margin-top: 8px; padding: 10px 11px;
+  background: var(--inset, #10141a); border: 1px solid var(--line-2, #333c47); border-radius: 6px;
+  color: var(--ink, #e7ecf2); font-size: 14px; letter-spacing: normal; text-transform: none;
 }
-#access-gate input:focus { outline: none; border-color: #4a6da8; }
+#access-gate input:focus { outline: none; border-color: var(--signal, #25cfe8); }
 #access-gate button {
-  width: 100%; padding: 9px; background: #2f5db0; color: #fff; border: 0; border-radius: 5px;
-  font-size: 14px; font-weight: 600; cursor: pointer;
+  width: 100%; padding: 10px; border: 1px solid var(--signal-dim, #1c7f8f); border-radius: 6px;
+  background: linear-gradient(180deg, rgba(37,207,232,.22), rgba(37,207,232,.06));
+  color: var(--ink, #e7ecf2); font-size: 13px; font-weight: 600; letter-spacing: .04em; cursor: pointer;
 }
-#access-gate button:hover { background: #3a6cc4; }
+#access-gate button:hover { border-color: var(--signal, #25cfe8); }
 
 /* Authenticated organization display + sign-out in the masthead. */
-.org-identity { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #cfd7e2; }
-.org-identity .org-name { font-weight: 600; }
+.org-identity { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
+.org-identity .org-name { font-weight: 650; }
 .signout {
-  background: none; border: 1px solid #3a4250; color: #9aa4b2; border-radius: 4px;
-  padding: 4px 10px; font-size: 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line-2); color: var(--ink-dim);
+  border-radius: var(--radius-sm, 5px); padding: 5px 11px; font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; cursor: pointer;
 }
-.signout:hover { color: #dfe4ea; border-color: #55606f; }
+.signout:hover { color: var(--ink); border-color: var(--ink-faint); }
