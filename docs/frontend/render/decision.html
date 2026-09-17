@@ -1,0 +1,622 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Pyrnova — Decision View</title>
+<style>/* system.css */
+/* =============================================================================
+   PYRNOVA VISUAL SYSTEM  (FRONTEND-R2)
+   One coherent design system for every customer-facing surface — Customer Lens /
+   product, Material Changes, and Investigation. The tokens below are the accepted
+   Pyrnova house palette already used by the Material Changes / Investigation views
+   and the public site (website-go): dark graphite, steel accent, a cold cyan
+   "signal" accent used sparingly, and semantic disposition colour. This file adds
+   the shared texture, elevation hierarchy and micro-design primitives so the
+   surfaces read as one serious intelligence platform rather than three pages.
+
+   Character: clean · restrained · premium · evidence-led · quietly tactical.
+   Rule: every treatment must earn its place by improving comprehension. No neon,
+   no HUD cosplay, no decorative pseudo-data. Function over form.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- surface / elevation hierarchy (bg → work → analysis → detail) ---- */
+  --bg: #0b0d10;            /* page base (near-black, cool)                   */
+  --bg-2: #0e1114;          /* masthead / recessed chrome                    */
+  --surface-1: #14181d;     /* work surface — cards, list items              */
+  --surface-2: #1a1f26;     /* analysis panel — grouped decision sections    */
+  --inset: #10141a;         /* evidence / detail layer — insets, code, panes */
+  --panel: var(--surface-1);   /* legacy aliases (kept so page CSS lines up)  */
+  --panel-2: var(--surface-2);
+  --panel-3: var(--inset);
+
+  /* ---- structure ---- */
+  --line: #262d36;          /* hairline separators                           */
+  --line-2: #333c47;        /* stronger / interactive borders                */
+
+  /* ---- ink ---- */
+  --ink: #e7ecf2;           /* primary reading text                          */
+  --ink-dim: #97a2b0;       /* secondary                                     */
+  --ink-faint: #6a7481;     /* metadata / technical labels                   */
+
+  /* ---- semantic state (muted, professional; never a rainbow) ---- */
+  --threat: #d66b6b;        --threat-bg: #241618;   /* blocked / adverse     */
+  --opportunity: #6fae8f;   --opportunity-bg: #14201a; /* open / positive    */
+  --monitoring: #b8a06a;    --monitoring-bg: #211d13;  /* caution / watch    */
+  --steel: #7fa8c9;         --steel-bg: #16202b;    /* monitoring / post-award*/
+  --observed: #7fa8c9;      /* source fact voice                             */
+  --assessed: #b79bd0;      /* Pyrnova-derived voice / escalation            */
+
+  /* ---- accents (restrained; cyan used sparingly for live signal) ---- */
+  --accent: #8fa9c9;        /* steel-blue — links, active nav                */
+  --signal: #25cfe8;        /* cold cyan — live/now signal, used sparingly   */
+  --signal-dim: #1c7f8f;
+  --focus: #55e0f2;
+
+  /* ---- semantic aliases used by product.js pills ---- */
+  --good: var(--opportunity);
+  --warn: var(--monitoring);
+  --bad: var(--threat);
+  --unknown: var(--ink-faint);
+  --muted: var(--ink-dim);
+
+  --max: 1120px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow-1: 0 1px 0 rgba(231,236,242,.02) inset, 0 8px 24px rgba(0,0,0,.28);
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+
+/* ---- atmosphere: near-black base + barely-perceptible technical grid + soft
+   overhead vignette. Fixed, non-animated, pointer-inert. Readability first. --- */
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(115% 70% at 50% -12%, rgba(127,168,201,.055), transparent 60%),
+    repeating-linear-gradient(0deg,  rgba(231,236,242,.014) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(231,236,242,.014) 0 1px, transparent 1px 46px);
+  background-attachment: fixed;
+  color: var(--ink);
+  font: 15px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+/* faint grain — sub-2.5% opacity SVG turbulence, fixed, never animated */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .022;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body > * { position: relative; z-index: 1; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+.skip-link { position: absolute; left: -999px; top: 0; background: var(--surface-1);
+  padding: 8px 12px; z-index: 40; border: 1px solid var(--line-2); border-radius: var(--radius-sm); }
+.skip-link:focus { left: 8px; top: 8px; }
+
+/* ---------- typography ---------- */
+h1 { font-size: 21px; line-height: 1.25; margin: 4px 0 12px; font-weight: 650; letter-spacing: .005em; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.sig  { color: var(--signal); }
+.num  { font-variant-numeric: tabular-nums; }
+
+/* canonical technical micro-label (uppercase, tracked) — metadata voice only */
+.label, h2.label {
+  font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 600; margin: 0;
+}
+.label.accent { color: var(--accent); }
+.label.signal { color: var(--signal); }
+
+/* ---------- masthead (shared chrome; each page sets its own internals) ------ */
+.masthead {
+  position: sticky; top: 0; z-index: 20;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  backdrop-filter: saturate(120%);
+}
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.brand .mark, .mark { font-weight: 700; letter-spacing: .30em; font-size: 14px; color: var(--ink); }
+.brand .tag, .brand .module, .module {
+  color: var(--ink-faint); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+}
+
+/* ---------- persistent Customer Lens context strip ---------- */
+.lens-strip {
+  position: sticky; top: 0; z-index: 18;
+  display: flex; align-items: center; gap: 10px 20px; flex-wrap: wrap;
+  padding: 7px max(16px, calc((100vw - var(--max)) / 2));
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(37,207,232,.045), rgba(37,207,232,0)) , var(--bg);
+  font-size: 12px; color: var(--ink-dim);
+}
+.lens-strip .ls-lens { display: inline-flex; align-items: baseline; gap: 8px; }
+.lens-strip .ls-lens b { color: var(--ink); font-weight: 650; letter-spacing: .01em; }
+.lens-strip .ls-sep { width: 1px; height: 14px; background: var(--line-2); }
+.lens-strip .ls-metric { display: inline-flex; align-items: baseline; gap: 6px; }
+.lens-strip .ls-metric b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+.lens-strip .ls-asof { margin-left: auto; display: inline-flex; align-items: baseline; gap: 7px; }
+.lens-strip .ls-asof .mono { color: var(--ink); }
+.lens-strip .ls-live { color: var(--signal); }
+.lens-strip .ls-live::before {
+  content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--signal); box-shadow: 0 0 0 3px rgba(37,207,232,.16); margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ---------- status markers: pill / badge / chip ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--ink-dim);
+  white-space: nowrap;
+}
+.pill.good    { color: var(--opportunity); border-color: color-mix(in srgb, var(--opportunity) 55%, var(--line-2)); background: var(--opportunity-bg); }
+.pill.warn    { color: var(--monitoring);  border-color: color-mix(in srgb, var(--monitoring) 55%, var(--line-2));  background: var(--monitoring-bg); }
+.pill.bad     { color: var(--threat);      border-color: color-mix(in srgb, var(--threat) 55%, var(--line-2));      background: var(--threat-bg); }
+.pill.steel   { color: var(--steel);       border-color: color-mix(in srgb, var(--steel) 55%, var(--line-2));       background: var(--steel-bg); }
+.pill.unknown { color: var(--ink-faint); }
+.pill.dot::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .9;
+}
+
+.badge {
+  font-size: 11px; letter-spacing: .04em; color: var(--ink-dim);
+  border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 3px 8px; white-space: nowrap;
+}
+.badge b { color: var(--ink); font-weight: 650; margin-left: 5px; }
+
+.chip {
+  font-size: 11px; letter-spacing: .03em; color: var(--ink-dim);
+  border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 2px 8px;
+}
+.chip.derived { color: var(--assessed); border-color: color-mix(in srgb, var(--assessed) 45%, var(--line-2)); }
+.chip.source  { color: var(--observed); border-color: color-mix(in srgb, var(--observed) 45%, var(--line-2)); }
+.chip.signal  { color: var(--signal);   border-color: var(--signal-dim); }
+
+/* provenance kicker (uppercase, tracked, faint) */
+.prov { font-size: 10px; letter-spacing: .12em; color: var(--ink-faint); text-transform: uppercase; }
+
+/* ---------- confidence / relevance meter ---------- */
+.meter { display: grid; grid-template-columns: max-content 1fr max-content; align-items: center;
+  gap: 10px; font-size: 11px; }
+.meter .m-label { color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; }
+.meter .m-track { height: 4px; border-radius: 999px; background: var(--inset);
+  border: 1px solid var(--line); overflow: hidden; }
+.meter .m-fill { height: 100%; background: var(--steel); border-radius: 999px; }
+.meter .m-fill.good { background: var(--opportunity); }
+.meter .m-fill.warn { background: var(--monitoring); }
+.meter .m-fill.bad  { background: var(--threat); }
+.meter .m-val { color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+/* ---------- buttons ---------- */
+button, .act, a.act {
+  font: inherit; cursor: pointer; color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 7px 13px;
+}
+.act:hover, button:hover { border-color: var(--accent); text-decoration: none; }
+.act.primary, button.primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--signal) 22%, var(--surface-2)), var(--surface-2));
+  border-color: var(--signal-dim); color: var(--ink); font-weight: 600;
+}
+.act.primary:hover, button.primary:hover { border-color: var(--signal); }
+.act.ghost { background: transparent; }
+button[disabled], .act[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* ---------- surfaces ---------- */
+.panel { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow-1); }
+.card  { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; display: block; color: inherit; box-shadow: var(--shadow-1); }
+
+/* ---------- states ---------- */
+.empty { color: var(--ink-faint); padding: 30px 24px; text-align: center;
+  border: 1px dashed var(--line-2); border-radius: var(--radius); }
+.loading { color: var(--ink-dim); display: inline-flex; align-items: center; gap: 10px; padding: 24px 4px; }
+.loading::before {
+  content: ""; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--signal); box-shadow: 0 0 0 0 rgba(37,207,232,.4);
+  animation: pyr-pulse 1.4s ease-out infinite;
+}
+@keyframes pyr-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(37,207,232,.35); opacity: 1; }
+  70%  { box-shadow: 0 0 0 7px rgba(37,207,232,0); opacity: .55; }
+  100% { box-shadow: 0 0 0 0 rgba(37,207,232,0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .loading::before { animation: none; } }
+
+.message, .msg { margin: 12px 0; padding: 10px 13px; border: 1px solid var(--line-2);
+  border-left: 3px solid var(--steel); border-radius: var(--radius-sm);
+  background: var(--surface-1); color: var(--ink-dim); }
+.message.error, .msg.error { border-left-color: var(--threat); color: var(--ink); }
+
+code { background: var(--inset); border: 1px solid var(--line); padding: 1px 6px; border-radius: 4px;
+  font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--ink-dim); }
+
+.foot, footer.foot { color: var(--ink-faint); font-size: 12px; padding: 22px 0; border-top: 1px solid var(--line); }
+
+
+/* access.css */
+/* Pyrnova access gate (M22-F) — restrained, consistent with the product, no marketing copy.
+   Tokens/texture come from /system.css. */
+#access-gate {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(37,207,232,.06), transparent 55%),
+    var(--bg, #0b0d10);
+}
+#access-gate .access-card {
+  width: min(92vw, 392px);
+  background: var(--surface-1, #14181d); border: 1px solid var(--line-2, #333c47);
+  border-radius: 10px; padding: 34px 30px 30px;
+  box-shadow: 0 1px 0 rgba(231,236,242,.03) inset, 0 24px 60px rgba(0,0,0,.55);
+  font: 14px/1.55 var(--sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: var(--ink, #e7ecf2);
+}
+#access-gate .access-brand .mark {
+  font-weight: 700; letter-spacing: .30em; font-size: 13px; color: var(--accent, #8fa9c9);
+}
+#access-gate h1 { font-size: 19px; margin: 16px 0 6px; font-weight: 650; }
+#access-gate .access-msg { margin: 0 0 20px; color: var(--ink-dim, #97a2b0); font-size: 13px; }
+#access-gate label {
+  display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint, #6a7481); margin-bottom: 20px;
+}
+#access-gate input {
+  display: block; width: 100%; margin-top: 8px; padding: 10px 11px;
+  background: var(--inset, #10141a); border: 1px solid var(--line-2, #333c47); border-radius: 6px;
+  color: var(--ink, #e7ecf2); font-size: 14px; letter-spacing: normal; text-transform: none;
+}
+#access-gate input:focus { outline: none; border-color: var(--signal, #25cfe8); }
+#access-gate button {
+  width: 100%; padding: 10px; border: 1px solid var(--signal-dim, #1c7f8f); border-radius: 6px;
+  background: linear-gradient(180deg, rgba(37,207,232,.22), rgba(37,207,232,.06));
+  color: var(--ink, #e7ecf2); font-size: 13px; font-weight: 600; letter-spacing: .04em; cursor: pointer;
+}
+#access-gate button:hover { border-color: var(--signal, #25cfe8); }
+
+/* Authenticated organization display + sign-out in the masthead. */
+.org-identity { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
+.org-identity .org-name { font-weight: 650; }
+.signout {
+  background: transparent; border: 1px solid var(--line-2); color: var(--ink-dim);
+  border-radius: var(--radius-sm, 5px); padding: 5px 11px; font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; cursor: pointer;
+}
+.signout:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+
+/* product.css */
+/* Pyrnova Live Intelligence — Customer Lens / product surface (FRONTEND-R2/R3).
+   Tokens, base, texture and shared primitives come from /system.css. This file
+   owns the product shell (masthead, lens strip), the opportunity intelligence
+   queue, and the grouped Decision View. Class names consumed by product.js are
+   preserved. */
+
+/* ---------- masthead ---------- */
+.masthead {
+  display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+  padding: 12px max(16px, calc((100vw - var(--max)) / 2));
+}
+.topnav { display: flex; gap: 16px; flex: 1 1 auto; }
+.topnav a { color: var(--ink-faint); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 1px; border-bottom: 2px solid transparent; }
+.topnav a:hover { color: var(--ink-dim); text-decoration: none; }
+.topnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--signal); }
+.ident { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.ident label { color: var(--ink-faint); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  display: inline-flex; gap: 6px; align-items: center; }
+.ident select, .ident input, .ident button {
+  font: inherit; background: var(--inset); color: var(--ink); border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm); padding: 5px 9px; font-size: 13px; letter-spacing: normal; text-transform: none;
+}
+.ident .asof-field input { color-scheme: dark; }
+.org { font-weight: 650; color: var(--ink); font-size: 13px; }
+
+/* ---------- layout ---------- */
+main { padding: 20px max(16px, calc((100vw - var(--max)) / 2)) 8px; }
+.foot { max-width: var(--max); margin: 24px auto 0; padding: 20px 16px; }
+h2 { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-faint);
+  margin: 0 0 10px; font-weight: 600; }
+section { margin: 22px 0; }
+section > h2 { padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+
+.grid { display: grid; gap: 12px; }
+.cols { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+
+/* ---------- lens summary stat tiles ---------- */
+.stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px;
+  padding: 0; overflow: hidden; background: var(--line); }
+.stat > div { background: var(--surface-1); padding: 14px 16px; }
+.stat b { font-size: 26px; display: block; color: var(--ink); font-weight: 650; line-height: 1.1;
+  font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.stat .muted { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.stat > div.accent b { color: var(--signal); }
+
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 13px; }
+.kv dt { color: var(--ink-faint); }
+.kv dd { margin: 0; color: var(--ink-dim); }
+.muted { color: var(--ink-dim); }
+
+/* ---------- opportunity intelligence queue ---------- */
+a.card:hover { border-color: var(--line-2); }
+.card h3 { margin: 0 0 6px; font-size: 15px; color: var(--ink); font-weight: 600; }
+
+.opp { border-left: 3px solid var(--line-2); transition: border-color .12s ease, background .12s ease; }
+.opp.d-opportunity { border-left-color: var(--opportunity); }
+.opp.d-threat      { border-left-color: var(--threat); }
+.opp.d-monitoring  { border-left-color: var(--monitoring); }
+a.opp:hover { border-left-color: var(--signal); background: color-mix(in srgb, var(--signal) 4%, var(--surface-1)); }
+.opp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.opp-code { color: var(--ink-faint); font-size: 10px; letter-spacing: .1em; }
+.opp-title { margin: 3px 0 0; }
+.opp-why { margin: 11px 0; font-size: 13px; color: var(--ink-dim); }
+.opp-why .label { display: block; margin-bottom: 3px; }
+.opp-meters { display: grid; gap: 7px; margin: 11px 0; }
+.opp-foot { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 12px;
+  padding-top: 11px; border-top: 1px solid var(--line); }
+.opp-restricted { color: var(--ink-faint); font-size: 13px; margin: 8px 0 0; }
+
+/* ---------- Decision View ---------- */
+.decision-head { border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 4px; }
+.decision-head h1 { margin: 6px 0 8px; }
+.decision-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 13px;
+  color: var(--ink-dim); }
+.decision-meta .mono { color: var(--ink); }
+.backlink { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+.backlink:hover { color: var(--ink-dim); text-decoration: none; }
+
+.decision { display: grid; gap: 12px; margin: 16px 0; }
+@media (min-width: 780px) { .decision { grid-template-columns: 1fr 1fr; } }
+.dgroup { background: var(--surface-2); border: 1px solid var(--line); border-left: 2px solid var(--line-2);
+  border-radius: var(--radius); padding: 13px 15px; }
+.dgroup > h2 { border: 0; padding: 0; margin: 0 0 9px; }
+.dgroup p { margin: 0 0 7px; }
+.dgroup p:last-child { margin-bottom: 0; }
+.dgroup .strong { color: var(--ink); }
+/* span-two, emphasised primary groups */
+.dgroup.span2 { grid-column: 1 / -1; }
+.dgroup.verdict { border-left-color: var(--signal); background:
+  linear-gradient(180deg, rgba(37,207,232,.05), transparent 40%), var(--surface-2); }
+.dgroup.evidence-group { grid-column: 1 / -1; border-left-color: var(--observed); }
+.dgroup.memory { grid-column: 1 / -1; border-left-color: var(--assessed); }
+
+.verdict-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.verdict-row .pill { font-size: 11px; padding: 3px 10px; }
+.reasons { display: grid; gap: 8px; margin-top: 8px; }
+.reasons .r-col .label { display: block; margin-bottom: 5px; }
+.reasons ul { margin: 0; padding-left: 16px; }
+.reasons li { font-size: 13px; color: var(--ink-dim); margin: 3px 0; }
+.reasons .for  .label { color: var(--opportunity); }
+.reasons .against .label { color: var(--monitoring); }
+@media (min-width: 520px) { .reasons { grid-template-columns: 1fr 1fr; } }
+
+.window-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.window-line .big { font-size: 22px; font-weight: 650; color: var(--ink); font-variant-numeric: tabular-nums; }
+.window-line .big.soon { color: var(--monitoring); }
+.window-line .big.imminent { color: var(--threat); }
+
+.falsify { font-size: 13px; color: var(--ink-dim); line-height: 1.5; }
+
+/* ---------- evidence inspector (audit-grade) ---------- */
+.ev-list { display: grid; gap: 8px; }
+details.ev { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--inset);
+  padding: 0; overflow: hidden; }
+details.ev > summary { cursor: pointer; list-style: none; padding: 10px 13px; display: flex;
+  align-items: center; gap: 10px; flex-wrap: wrap; }
+details.ev > summary::-webkit-details-marker { display: none; }
+details.ev > summary::before { content: "▸"; color: var(--ink-faint); font-size: 11px; transition: transform .12s; }
+details.ev[open] > summary::before { transform: rotate(90deg); }
+details.ev > summary .ev-src { color: var(--ink); font-weight: 600; font-size: 13px; }
+details.ev > summary .ev-ref { color: var(--ink-faint); font-family: var(--mono); font-size: 11px; }
+.ev-body { padding: 4px 13px 13px; border-top: 1px solid var(--line); }
+.ev-prov-grid { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 12px;
+  margin-top: 10px; }
+.ev-prov-grid dt { color: var(--ink-faint); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  padding-top: 2px; }
+.ev-prov-grid dd { margin: 0; color: var(--ink-dim); }
+.ev-prov-grid dd .mono { color: var(--ink); }
+.ev-chain { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 2px; }
+.ev-chain .step { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint);
+  border: 1px solid var(--line-2); border-radius: 3px; padding: 2px 7px; }
+.ev-chain .arr { color: var(--ink-faint); }
+.ev-restricted { color: var(--monitoring); font-size: 12px; margin: 8px 0 0; }
+
+/* ---------- decision memory / temporal ---------- */
+.timeline { display: grid; gap: 0; }
+.timeline .t-row { display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.timeline .t-row:last-child { border-bottom: none; }
+.timeline .t-when { color: var(--ink-faint); font-family: var(--mono); font-size: 12px; min-width: 116px; }
+.timeline .t-what { color: var(--ink-dim); font-size: 13px; }
+
+/* ---------- your decision (Decision Memory input) ---------- */
+form.disp { display: grid; gap: 10px; margin-top: 10px; }
+form.disp label { display: grid; gap: 4px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-faint); }
+form.disp select, form.disp input, form.disp textarea {
+  font: inherit; background: var(--inset); color: var(--ink); border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm); padding: 7px 9px; letter-spacing: normal; text-transform: none;
+}
+
+/* ---------- actions / delivery ---------- */
+.actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+.spin { color: var(--ink-dim); }
+.deliver-form { margin-top: 12px; }
+.deliver-form > label { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 7px; }
+.deliver-row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.deliver-row input[type="email"] { flex: 1 1 280px; min-width: 0; padding: 8px 11px;
+  border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--inset); color: var(--ink);
+  font-size: 14px; }
+.deliver-status { margin: 8px 0 0; min-height: 1em; font-size: 13px; }
+
+/* lists + wrapping inside decision groups */
+.dgroup > ul, .dgroup .rev { margin: 7px 0 0; padding-left: 16px; }
+.dgroup > ul li, .dgroup .rev li { font-size: 13px; color: var(--ink-dim); margin: 4px 0; }
+.dgroup .opp-meters { margin: 11px 0 4px; }
+.ev-prov-grid dd, .ev-prov-grid dd a { overflow-wrap: anywhere; }
+.opp-title, .decision-head h1 { overflow-wrap: anywhere; }
+.decision-head .opp-code { display: block; margin-bottom: 6px; }
+.unc-list { margin: 6px 0 0; padding-left: 18px; color: var(--ink-dim); }
+.unc-list li { margin: 4px 0; font-size: 13px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 640px) {
+  .kv { grid-template-columns: 1fr; }
+  .topnav { order: 3; width: 100%; }
+  .decision-meta { gap: 4px 10px; }
+  .deliver-row input[type="email"] { flex-basis: 100%; }
+}
+</style></head><body>
+
+  <header class="masthead" role="banner">
+    <div class="brand"><span class="mark">PYRNOVA</span> <span class="tag">Live Intelligence</span></div>
+    <nav class="topnav" aria-label="Primary">
+      <a href="#/lens" aria-current="page">Lens</a><a href="#/opportunities">Opportunities</a>
+      <a href="#/search">Search</a><a href="#">Material Changes</a>
+    </nav>
+    <div class="ident"><span class="org">Torch Technologies</span>
+      <label class="asof-field">As&nbsp;of <input type="date"></label></div>
+  </header>
+<div class="lens-strip" role="region" aria-label="Customer Lens context"><span class="ls-lens"><span class="label accent">Lens</span> <b>Torch Technologies</b></span><span class="ls-sep"></span><span class="ls-metric"><b>6</b> <span>opportunities</span></span><span class="ls-metric"><b>8</b> <span>material changes</span></span><span class="ls-metric"><b>1</b> <span>uncertain</span></span><span class="ls-asof ls-live">Live</span></div>
+<main id="main" tabindex="-1" role="main">
+      <p><a class="backlink" href="#/opportunities">← Opportunities</a></p>
+      <div class="decision-head">
+        <span class="opp-code mono">OPP·F1B42D</span>
+        <h1>Recompete watch: Department of Defense — incumbent TORCH TECHNOLOGIES INC (ends 2026-09-30) <span class="pill good" title="Source-rights display">ALLOWED</span></h1>
+        <div class="decision-meta">
+          <span>candidate</span><span>·</span>
+          <span>Department of Defense</span><span>·</span>
+          <span class="mono">$354,918,287</span><span>·</span>
+          <span class="prov">as of current — live</span>
+        </div>
+      </div>
+
+      <div class="decision">
+        <section class="dgroup verdict span2">
+          <h2 class="label signal">Why it matters · Pyrnova disposition</h2>
+          <div class="verdict-row">
+            <span class="pill good">PURSUE</span>
+            <span class="pill steel">Confidence · MEDIUM</span>
+            <span class="prov">Pyrnova-derived — kept distinct from your decision</span>
+          </div>
+          <p class="strong">Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.</p>
+          <div class="opp-meters"><div class="meter"><span class="m-label">Attractiveness</span>
+    <span class="m-track"><span class="m-fill good" style="width:91%"></span></span>
+    <span class="m-val">91%</span></div><div class="meter"><span class="m-label">Signal confidence</span>
+    <span class="m-track"><span class="m-fill " style="width:59%"></span></span>
+    <span class="m-val">59%</span></div></div>
+          <div class="reasons">
+            <div class="r-col for"><span class="label">Supports</span><ul><li>incumbent performance: customer is the evidenced incumbent performing FA248622FA005</li><li>The customer holds FA248622FA005; a direct-access path is supported.</li></ul></div>
+            
+          </div>
+          <p class="prov" style="margin-top:10px">Reversal conditions</p><ul class="rev"><li>if the opportunity is cancelled or materially descoped, downgrade</li><li>if the incumbent&#39;s position strengthens (e.g. contract extended), downgrade</li></ul>
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">What changed · why now</h2>
+          <p class="strong">recompete_expiry</p>
+          <p>Contract period of performance ends 2026-09-30 (1.0 months).</p>
+          <p class="prov">Expected action by <span class="mono">2026-09-30</span></p>
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Decision window</h2>
+          <div class="window-line"><span class="big soon">29</span> <span class="muted">days to expected action</span></div>
+          <p class="prov" style="margin-top:8px">Buyer <span class="pill good">EVIDENCED</span></p>
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Access · route</h2>
+          <p><span class="pill good">DIRECT_ACCESS</span></p>
+          <p>The customer holds FA248622FA005; a direct-access path is supported.</p>
+          
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Customer consequence · fit</h2>
+          <p><span class="pill good">EVIDENCED</span> <span class="pill steel">Posture · DEFEND</span></p>
+          <p>Posture DEFEND. FOR: incumbent performance: customer is the evidenced incumbent performing FA248622FA005; The customer holds FA248622FA005; a direct-access path is supported..</p>
+          <div class="meter"><span class="m-label">Fit confidence</span>
+    <span class="m-track"><span class="m-fill good" style="width:70%"></span></span>
+    <span class="m-val">70%</span></div>
+          <p class="prov">Decisive factor · INCUMBENT PERFORMANCE</p>
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Incumbent · competitive</h2>
+          <p>TORCH TECHNOLOGIES INC</p>
+          <p class="prov">Next action</p><p>Confirm option-year status and re-compete intent; check SAM for a Sources Sought / Presolicitation on this requirement; assess incumbent displaceability and capability fit.</p>
+        </section>
+
+        <section class="dgroup span2">
+          <h2 class="label accent">Uncertainty · what would make this wrong</h2>
+          <p class="falsify">expiry is imminent (&lt;3 months); a recompete solicitation may already be published or the period may be extended via option/bridge rather than re-competed; the award may carry unexercised option years — expiry may be deferred, not a true recompete; the incumbent may be strongly entrenched (past performance, transition risk), lowering displaceability; the requirement may be consolidated, restructured, or moved onto a different vehicle/IDIQ</p>
+          <div class="meter"><span class="m-label">Assessment confidence</span>
+    <span class="m-track"><span class="m-fill " style="width:59%"></span></span>
+    <span class="m-val">59%</span></div>
+        </section>
+
+        <section class="dgroup evidence-group">
+          <h2 class="label">Evidence · audit trail (1)</h2>
+          <div class="ev-list"><details class="ev" data-ev="ev_usasp_award_FA248622FA005">
+    <summary>
+      <span class="ev-src">usaspending</span>
+      <span class="ev-ref">usaspending:award:FA248622FA005</span>
+      <span class="pill good" title="Source-rights display">ALLOWED</span>
+    </summary>
+    <div class="ev-body">
+      
+      <div class="ev-chain">
+        <span class="step">Source</span><span class="arr">→</span>
+        <span class="step">Retrieved</span><span class="arr">→</span>
+        <span class="step">Retained</span><span class="arr">→</span>
+        <span class="step">Assessed</span>
+      </div>
+      <dl class="ev-prov-grid">
+        <dt>Source</dt><dd>usaspending · <span class="mono">application/json</span> <span class="chip source">structured record</span></dd>
+        <dt>Reference</dt><dd class="mono">usaspending:award:FA248622FA005</dd>
+        <dt>Published</dt><dd class="mono">Unknown</dd>
+        <dt>Retrieved</dt><dd class="mono">Unknown</dd>
+        <dt>First seen</dt><dd class="mono">2026-09-01T00:00:00</dd>
+        <dt>Retention</dt><dd>hot</dd>
+        <dt>Integrity</dt><dd><code>7385d12d90ae76a0a30ab6dfde60f44a1e28611ff5d6ea918fc1de4216d3224f</code></dd>
+        <dt>Official record</dt><dd><a href="https://www.usaspending.gov/award/CONT_AWD_FA248622FA005_9700_GS00Q14OADS737_4732" rel="noopener">https://www.usaspending.gov/award/CONT_AWD_FA248622FA005_9700_GS00Q14OADS737_4732</a></dd>
+      </dl>
+    </div></details></div>
+        </section>
+
+        <section class="dgroup memory">
+          <h2 class="label">Decision memory · temporal</h2>
+          <p class="prov">Material changes affecting this opportunity</p>
+          <ul><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li><li>Torch Technologies Inc <span class="pill good" title="Source-rights display">ALLOWED</span></li></ul>
+          <p class="prov" style="margin-top:10px">Evidence first entered the record</p>
+            <div class="timeline"><div class="t-row"><span class="t-when mono">2026-09-01T00:00:00</span><span class="t-what">first retained</span></div></div>
+          <p class="prov" style="margin-top:10px">Known-then vs now is controlled by the As-of date in the header.</p>
+        </section>
+      </div>
+
+      <section class="panel"><h2>Your decision (recorded to Decision Memory)</h2>
+    <p class="prov">Customer judgment — kept distinct from Pyrnova's assessment.</p>
+    <form class="disp" id="disp-form">
+      <label>Relevance<select name="relevance"><option value="UNKNOWN">UNKNOWN</option><option value="RELEVANT">RELEVANT</option><option value="NOT_RELEVANT">NOT_RELEVANT</option><option value="PARTIAL">PARTIAL</option></select></label>
+      <label>Pursuit<select name="pursuit"><option value="UNKNOWN">UNKNOWN</option><option value="PURSUE">PURSUE</option><option value="WATCH">WATCH</option><option value="INVESTIGATE">INVESTIGATE</option><option value="PASS">PASS</option></select></label>
+      <label>Note<textarea name="note" rows="2" maxlength="500"></textarea></label>
+      <div class="actions"><button class="act primary" type="submit">Save my decision</button></div>
+    </form></section>
+      <div class="actions">
+        <a class="act primary" href="/api/opportunities/opp_f1b42dfff3d4202b4195/brief?customer=&download=1" rel="noopener">Download brief</a>
+        <button class="act" id="deliver-btn" type="button">Deliver brief…</button>
+      </div>
+      <div id="deliver-out" aria-live="polite"></div></main>
+<footer class="foot">Pyrnova composes source facts, Pyrnova-derived intelligence, and customer decisions — each labelled. UNKNOWN is a legitimate state; source-rights restrictions fail closed.</footer>
+</body></html>

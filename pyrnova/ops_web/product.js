@@ -44,50 +44,126 @@ function setNav(name) {
 }
 function focusMain() { main.focus(); }
 
+// --- intelligence micro-formatters (real values only; no fabrication) -------------------------------
+const clamp01 = v => Math.max(0, Math.min(1, Number(v)));
+function verdictClass(v) { v = String(v || "").toUpperCase();
+  return v === "PURSUE" ? "good" : v === "WATCH" ? "steel" : v === "INVESTIGATE" ? "warn"
+       : v === "PASS" ? "bad" : "unknown"; }
+function qualClass(q) { q = String(q || "").toUpperCase();
+  return q === "HIGH" ? "good" : q === "MEDIUM" ? "steel" : q === "LOW" ? "warn" : "unknown"; }
+function statusClass(s) { s = String(s || "").toUpperCase();
+  return (s === "EVIDENCED" || s === "DIRECT_ACCESS") ? "good"
+       : (s === "" || s === "UNKNOWN") ? "unknown" : "steel"; }
+function dispClass(d) { d = String(d || "").toUpperCase();
+  return d === "THREAT" ? "d-threat" : d === "MONITORING" ? "d-monitoring" : "d-opportunity"; }
+function dispPillClass(d) { d = String(d || "").toUpperCase();
+  return d === "THREAT" ? "bad" : d === "OPPORTUNITY" ? "good" : "warn"; }
+const bandFill = v => { v = clamp01(v); return v >= 0.67 ? "good" : v >= 0.4 ? "" : "warn"; };
+const tail = id => String(id || "").replace(/^[a-z]+_/i, "").slice(0, 6).toUpperCase();
+
+// A thin, honest confidence/relevance meter for a real 0..1 value. Returns "" when not a fact.
+function meter(label, value) {
+  if (value === null || value === undefined || isNaN(Number(value))) return "";
+  const v = clamp01(value), w = Math.round(v * 100);
+  return `<div class="meter"><span class="m-label">${esc(label)}</span>
+    <span class="m-track"><span class="m-fill ${bandFill(v)}" style="width:${w}%"></span></span>
+    <span class="m-val">${w}%</span></div>`;
+}
+function daysUntil(iso) { if (!iso) return null; const t = Date.parse(iso); return isNaN(t) ? null : Math.round((t - Date.now()) / 86400000); }
+function windowChip(w, opp) {
+  const iso = (w && w.expected_action_at) || (opp && opp.expected_action_at);
+  const d = (w && typeof w.horizon_days === "number") ? w.horizon_days : daysUntil(iso);
+  if (d === null && !iso) return "";
+  const label = d === null ? esc(iso) : (d <= 0 ? "now" : `${d} day${d === 1 ? "" : "s"}`);
+  return `<span class="chip">Window · ${label}</span>`;
+}
+
+// --- persistent Customer Lens context strip (whose lens · state · counts) ---------------------------
+const lensState = { name: null, mc: null, opp: null, unc: null };
+function updateLensStrip(partial) {
+  Object.assign(lensState, partial || {});
+  const strip = document.querySelector("#lens-strip");
+  if (!strip) return;
+  if (!lensState.name && lensState.mc === null && lensState.opp === null) { strip.hidden = true; return; }
+  const asof = asofEl && asofEl.value;
+  const asofHtml = asof
+    ? `<span class="ls-asof"><span class="label">As of</span> <span class="mono">${esc(asof)}</span></span>`
+    : `<span class="ls-asof ls-live">Live</span>`;
+  const metric = (n, l) => (n === null || n === undefined) ? ""
+    : `<span class="ls-metric"><b>${esc(n)}</b> <span>${esc(l)}</span></span>`;
+  strip.innerHTML =
+    `<span class="ls-lens"><span class="label accent">Lens</span> <b>${esc(lensState.name || "—")}</b></span>` +
+    `<span class="ls-sep"></span>` +
+    metric(lensState.opp, "opportunities") +
+    metric(lensState.mc, "material changes") +
+    metric(lensState.unc, "uncertain") +
+    asofHtml;
+  strip.hidden = false;
+}
+
 // --- Customer Lens (B3.1) --------------------------------------------------------------------------
 async function viewLens() {
   setNav("lens"); loading();
   try {
     const l = await api(`/api/lens?${cq()}${asofQuery()}`);
     const mc = l.material_changes || {}, opp = l.opportunities || {}, unc = l.uncertainty || {};
+    const uncCount = (unc.low_confidence_opportunities || []).length;
+    updateLensStrip({ name: l.customer && l.customer.name, mc: mc.count ?? 0, opp: opp.count ?? 0, unc: uncCount });
     const top = (opp.top || []).map(oppCard).join("");
-    const changes = (mc.items || []).map(c => `
-      <div class="card"><h3>${esc(dash((c.observed||{}).affected_entity || c.title || c.id))}</h3>
-        <p class="muted">${esc(dash((c.assessment||{}).summary || (c.observed||{}).summary || c.disposition))}</p>
-        ${rightsPill(c.source_rights)}</div>`).join("");
+    const changes = (mc.items || []).map(changeCard).join("");
     const uncertain = (unc.low_confidence_opportunities || []).map(u =>
       `<li>${esc(dash(u.title || u.id))} — confidence ${esc(dash(pct(u.confidence)))}</li>`).join("");
     main.innerHTML = `
       <h1>${esc(dash(l.customer && l.customer.name))} — Customer Lens</h1>
-      <div class="stat panel" aria-label="Summary">
+      <div class="stat" aria-label="Summary">
+        <div class="accent"><b>${esc(opp.count ?? 0)}</b><span class="muted">Opportunities</span></div>
         <div><b>${esc(mc.count ?? 0)}</b><span class="muted">Material changes</span></div>
-        <div><b>${esc(opp.count ?? 0)}</b><span class="muted">Opportunities</span></div>
-        <div><b>${esc((unc.low_confidence_opportunities||[]).length)}</b><span class="muted">Uncertain</span></div>
+        <div><b>${esc(uncCount)}</b><span class="muted">Flagged uncertain</span></div>
       </div>
-      <section><h2>What materially changed</h2><div class="grid cols">${changes || empty("No material changes at this cutoff.")}</div></section>
       <section><h2>Opportunities that matter</h2><div class="grid cols">${top || empty("No opportunities at this cutoff.")}</div></section>
-      <section><h2>What is uncertain</h2>${uncertain ? `<ul>${uncertain}</ul>` : empty("No flagged uncertainty.")}</section>`;
+      <section><h2>What materially changed</h2><div class="grid cols">${changes || empty("No material changes at this cutoff.")}</div></section>
+      <section><h2>What is uncertain</h2>${uncertain ? `<ul class="unc-list">${uncertain}</ul>` : empty("No flagged uncertainty.")}</section>`;
     note(""); focusMain();
   } catch (e) { note(e.message); main.innerHTML = empty("Could not load the Lens."); }
 }
 
+// A material-change summary card for the Lens (observed entity + why it matters + strength markers).
+function changeCard(c) {
+  const obs = c.observed || {}, ass = c.assessment || {};
+  const title = dash(obs.affected_entity || c.title || c.id);
+  const why = dash(ass.consequence || obs.event_summary || ass.mechanism || c.disposition);
+  return `<div class="card opp ${dispClass(c.disposition)}">
+    <div class="opp-top"><h3 class="opp-title">${esc(title)}</h3>
+      <span class="pill ${dispPillClass(c.disposition)}">${esc(dash(c.disposition))}</span></div>
+    <p class="opp-why"><span class="label">Why it matters</span>${esc(why)}</p>
+    <div class="opp-foot">
+      ${ass.materiality ? `<span class="chip">Materiality · ${esc(ass.materiality)}</span>` : ""}
+      ${ass.confidence ? `<span class="chip">Confidence · ${esc(ass.confidence)}</span>` : ""}
+      ${rightsPill(c.source_rights)}</div></div>`;
+}
+
 function oppCard(o) {
   if ((o.source_rights || {}).display === "BLOCKED")
-    return `<div class="card"><h3>Restricted</h3>${rightsPill(o.source_rights)}
-      <p class="muted">Source rights restrict customer display of this item.</p></div>`;
-  const w = o.why_now || {}, s = o.signal || {}, disp = o.customer_disposition;
-  return `<a class="card" href="#/opp/${encodeURIComponent(o.id)}">
-    <h3>${esc(dash(o.title))}</h3>
-    <dl class="kv">
-      <dt>Why now</dt><dd>${esc(dash(w.kind))} — ${esc(dash(w.summary))}</dd>
-      <dt>Incumbent</dt><dd>${esc(dash(o.incumbent))}</dd>
-      <dt>Value</dt><dd>${esc(dash(money(o.value_usd)))}</dd>
-      <dt>Expected action</dt><dd>${esc(dash(o.expected_action_at))}</dd>
-      <dt>Signals</dt><dd>attractiveness ${esc(dash(pct(s.attractiveness)))} · confidence ${esc(dash(pct(s.confidence)))}</dd>
-      ${disp ? `<dt>Your view</dt><dd>${esc(dash(disp.pursuit))} / ${esc(dash(disp.relevance))}</dd>` : ""}
-    </dl>
-    <p class="prov">Pyrnova-derived · next: ${esc(dash(o.recommended_action))}</p>
-    ${rightsPill(o.source_rights)}</a>`;
+    return `<div class="card opp"><div class="opp-top"><h3 class="opp-title">Restricted</h3>${rightsPill(o.source_rights)}</div>
+      <p class="opp-restricted">Source rights restrict customer display of this item.</p></div>`;
+  const w = o.why_now || {}, s = o.signal || {}, disp = o.customer_disposition, pur = o.pursuit || {};
+  const verdict = pur.verdict
+    ? `<span class="pill ${verdictClass(pur.verdict)}">${esc(pur.verdict)}${pur.confidence ? ` · ${esc(pur.confidence)}` : ""}</span>`
+    : "";
+  return `<a class="card opp d-opportunity" href="#/opp/${encodeURIComponent(o.id)}">
+    <div class="opp-top">
+      <div><span class="opp-code mono">OPP·${esc(tail(o.id))}</span><h3 class="opp-title">${esc(dash(o.title))}</h3></div>
+      ${verdict}
+    </div>
+    <p class="opp-why"><span class="label">Why now</span>${esc(dash(w.summary || w.kind))}</p>
+    <div class="opp-meters">${meter("Attractiveness", s.attractiveness)}${meter("Confidence", s.confidence)}</div>
+    <div class="opp-foot">
+      ${windowChip(w, o)}
+      ${o.value_usd != null ? `<span class="chip">${esc(money(o.value_usd))}</span>` : ""}
+      ${o.evidence_count != null ? `<span class="chip source">Evidence · ${esc(o.evidence_count)}</span>` : ""}
+      ${disp ? `<span class="chip signal">Your view · ${esc(dash(disp.pursuit))}</span>` : ""}
+      ${rightsPill(o.source_rights)}
+    </div></a>`;
 }
 
 // --- Opportunities list (B3.3) ---------------------------------------------------------------------
@@ -114,40 +190,108 @@ async function viewOpportunity(id) {
       return focusMain();
     }
     const opp = dc.opportunity || {}, w = dc.why_now || {}, ic = dc.incumbent_competitive || {},
-      fit = dc.customer_fit || {}, p = dc.pursuit || {}, unc = dc.uncertainty || {}, t = dc.temporal || {};
-    const verdictPill = `<span class="pill unknown">${esc(dash(p.verdict))}</span>`;
-    const mc = (dc.material_changes || []).map(c =>
+      fit = dc.customer_fit || {}, p = dc.pursuit || {}, unc = dc.uncertainty || {}, t = dc.temporal || {},
+      acc = dc.access || {}, buyer = dc.buyer || {}, ns = p.native_signal || {}, fr = fit.fit_reasoning || {};
+    const listOf = arr => (arr || []).filter(Boolean);
+    const reasonsFor = listOf(p.why), reasonsNot = listOf(p.why_not), reversals = listOf(p.reversal_conditions);
+    const wiso = w.expected_action_at || opp.expected_action_at || t.expected_action_at;
+    const wdays = (typeof w.horizon_days === "number") ? w.horizon_days : daysUntil(wiso);
+    const wcls = wdays === null ? "" : (wdays <= 14 ? "imminent" : wdays <= 45 ? "soon" : "");
+    const wbig = wdays === null ? esc(dash(wiso)) : (wdays <= 0 ? "now" : String(wdays));
+    const wunit = (wdays === null || wdays <= 0) ? "" : `<span class="muted">day${wdays === 1 ? "" : "s"} to expected action</span>`;
+    const mcItems = (dc.material_changes || []).map(c =>
       `<li>${esc(dash((c.observed||{}).affected_entity || c.title || c.id))} ${rightsPill(c.source_rights)}</li>`).join("");
+    const firstSeen = listOf(t.evidence_first_seen);
     const ev = (dc.evidence || []).map(e => evidenceBlock(id, e)).join("");
+
     main.innerHTML = `
-      <p><a href="#/opportunities">← Opportunities</a></p>
-      <h1>${esc(dash(opp.title))} ${rightsPill(d.source_rights)}</h1>
-      <p class="muted">${esc(dash(opp.lifecycle_state))} · ${esc(dash(opp.agency))} · ${esc(dash(money(opp.value_usd)))}
-        · <span class="prov">as of ${esc(t.as_of || "current")}</span></p>
-      <div class="chain">
-        <section><h2>Why now</h2><p>${esc(dash(w.kind))}: ${esc(dash(w.summary))} — expected action by ${esc(dash(w.expected_action_at))}</p></section>
-        <section><h2>Buyer</h2><p>${esc(dash(dc.buyer && dc.buyer.agency))} <span class="pill unknown">${esc(dash(dc.buyer && dc.buyer.status))}</span></p></section>
-        <section><h2>Incumbent / competitive</h2><p>${esc(dash(ic.incumbent))}</p></section>
-        <section><h2>Access</h2><p><span class="pill unknown">${esc(dash(dc.access && dc.access.status))}</span></p></section>
-        <section><h2>Customer fit</h2><p>relevance ${esc(dash(fit.relevance_score))} <span class="pill unknown">${esc(dash(fit.status))}</span></p></section>
-        <section><h2>Pursuit ${verdictPill}</h2>
-          <p><strong>Recommended:</strong> ${esc(dash(p.recommended_action))}</p>
-          <p class="prov">Native signal: attractiveness ${esc(dash(pct((p.native_signal||{}).attractiveness)))}
-             · confidence ${esc(dash(pct((p.native_signal||{}).confidence)))}. Verdict UNKNOWN when Bundle-2 pursuit inputs are not persisted (no fabricated score).</p>
-          ${(p.reversal_conditions||[]).filter(Boolean).length ? `<p><strong>Reversal:</strong> ${esc(dash((p.reversal_conditions||[]).filter(Boolean).join("; ")))}</p>` : ""}
-        </section>
-        <section><h2>Material changes</h2>${mc ? `<ul>${mc}</ul>` : `<p class="muted">None affecting this opportunity.</p>`}</section>
-        <section><h2>Next action</h2><p>${esc(dash(dc.next_action))}</p></section>
-        <section><h2>Uncertainty</h2><p>${esc(dash(unc.falsification))}</p></section>
-        <section><h2>Evidence (${(dc.evidence||[]).length})</h2>${ev || `<p class="muted">No evidence attached.</p>`}</section>
-        <section><h2>Temporal / as-of history</h2>
-          <p class="muted">Known then vs now is controlled by the As-of date in the header. Evidence first seen:
-            ${esc(dash((t.evidence_first_seen||[]).join(", ")))}</p></section>
+      <p><a class="backlink" href="#/opportunities">← Opportunities</a></p>
+      <div class="decision-head">
+        <span class="opp-code mono">OPP·${esc(tail(id))}</span>
+        <h1>${esc(dash(opp.title))} ${rightsPill(d.source_rights)}</h1>
+        <div class="decision-meta">
+          <span>${esc(dash(opp.lifecycle_state))}</span><span>·</span>
+          <span>${esc(dash(opp.agency))}</span><span>·</span>
+          <span class="mono">${esc(dash(money(opp.value_usd)))}</span><span>·</span>
+          <span class="prov">as of ${esc(t.as_of || "current — live")}</span>
+        </div>
       </div>
+
+      <div class="decision">
+        <section class="dgroup verdict span2">
+          <h2 class="label signal">Why it matters · Pyrnova disposition</h2>
+          <div class="verdict-row">
+            <span class="pill ${verdictClass(p.verdict)}">${esc(dash(p.verdict))}</span>
+            ${p.confidence ? `<span class="pill ${qualClass(p.confidence)}">Confidence · ${esc(p.confidence)}</span>` : ""}
+            <span class="prov">Pyrnova-derived — kept distinct from your decision</span>
+          </div>
+          <p class="strong">${esc(dash(p.recommended_action))}</p>
+          <div class="opp-meters">${meter("Attractiveness", ns.attractiveness)}${meter("Signal confidence", ns.confidence)}</div>
+          ${(reasonsFor.length || reasonsNot.length) ? `<div class="reasons">
+            ${reasonsFor.length ? `<div class="r-col for"><span class="label">Supports</span><ul>${reasonsFor.map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+            ${reasonsNot.length ? `<div class="r-col against"><span class="label">Against</span><ul>${reasonsNot.map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+          </div>` : ""}
+          ${reversals.length ? `<p class="prov" style="margin-top:10px">Reversal conditions</p><ul class="rev">${reversals.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">What changed · why now</h2>
+          <p class="strong">${esc(dash(w.kind))}</p>
+          <p>${esc(dash(w.summary))}</p>
+          ${wiso ? `<p class="prov">Expected action by <span class="mono">${esc(wiso)}</span></p>` : ""}
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Decision window</h2>
+          <div class="window-line"><span class="big ${wcls}">${wbig}</span> ${wunit}</div>
+          <p class="prov" style="margin-top:8px">Buyer <span class="pill ${statusClass(buyer.status)}">${esc(dash(buyer.status))}</span></p>
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Access · route</h2>
+          <p><span class="pill ${statusClass(acc.verdict)}">${esc(dash(acc.verdict))}</span>${acc.teaming_required ? ` <span class="pill warn">Teaming required</span>` : ""}</p>
+          ${acc.summary ? `<p>${esc(acc.summary)}</p>` : ""}
+          ${acc.required_vehicle ? `<p class="prov">Required vehicle <span class="mono">${esc(acc.required_vehicle)}</span></p>` : ""}
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Customer consequence · fit</h2>
+          <p><span class="pill ${statusClass(fit.status)}">${esc(dash(fit.status))}</span>${fr.posture ? ` <span class="pill steel">Posture · ${esc(fr.posture)}</span>` : ""}</p>
+          ${fr.explanation ? `<p>${esc(fr.explanation)}</p>` : ""}
+          ${meter("Fit confidence", fr.fit_confidence)}
+          ${fr.decisive_factor ? `<p class="prov">Decisive factor · ${esc(String(fr.decisive_factor).replace(/_/g, " "))}</p>` : ""}
+        </section>
+
+        <section class="dgroup">
+          <h2 class="label accent">Incumbent · competitive</h2>
+          <p>${esc(dash(ic.incumbent))}</p>
+          ${dc.next_action ? `<p class="prov">Next action</p><p>${esc(dash(dc.next_action))}</p>` : ""}
+        </section>
+
+        <section class="dgroup span2">
+          <h2 class="label accent">Uncertainty · what would make this wrong</h2>
+          <p class="falsify">${esc(dash(unc.falsification))}</p>
+          ${meter("Assessment confidence", unc.confidence)}
+        </section>
+
+        <section class="dgroup evidence-group">
+          <h2 class="label">Evidence · audit trail (${(dc.evidence || []).length})</h2>
+          <div class="ev-list">${ev || `<p class="muted">No evidence attached.</p>`}</div>
+        </section>
+
+        <section class="dgroup memory">
+          <h2 class="label">Decision memory · temporal</h2>
+          <p class="prov">Material changes affecting this opportunity</p>
+          ${mcItems ? `<ul>${mcItems}</ul>` : `<p class="muted">None affecting this opportunity.</p>`}
+          ${firstSeen.length ? `<p class="prov" style="margin-top:10px">Evidence first entered the record</p>
+            <div class="timeline">${firstSeen.map(f => `<div class="t-row"><span class="t-when mono">${esc(f)}</span><span class="t-what">first retained</span></div>`).join("")}</div>` : ""}
+          <p class="prov" style="margin-top:10px">Known-then vs now is controlled by the As-of date in the header.</p>
+        </section>
+      </div>
+
       ${dispositionForm(id, dc.customer_disposition)}
       <div class="actions">
-        <a class="act" href="/api/opportunities/${encodeURIComponent(id)}/brief?${cq()}${asofQuery()}&download=1"
-           rel="noopener">Download brief</a>
+        <a class="act primary" href="/api/opportunities/${encodeURIComponent(id)}/brief?${cq()}${asofQuery()}&download=1" rel="noopener">Download brief</a>
         <button class="act" id="deliver-btn" type="button">Deliver brief…</button>
       </div>
       <div id="deliver-out" aria-live="polite"></div>`;
@@ -157,17 +301,33 @@ async function viewOpportunity(id) {
 }
 
 function evidenceBlock(oppId, e) {
-  const doc = e.doctrine || {};
   const blocked = (e.source_rights || {}).display === "BLOCKED";
+  const isJson = /json/i.test(e.media_type || "");
   return `<details class="ev" data-ev="${esc(e.id)}">
-    <summary>${esc(dash(e.source_id))} — ${esc(dash(e.source_ref || e.id))} ${rightsPill(e.source_rights)}</summary>
-    ${blocked ? `<p class="muted">Rights-restricted: raw source is not shown; provenance only.</p>` : ""}
-    <dl class="kv">
-      <dt class="prov">Source fact</dt><dd>${esc(dash(e.source_id))}</dd>
-      <dt class="prov">Observed</dt><dd>${esc(dash(e.first_seen_at || e.published_at))}</dd>
-      <dt class="prov">Provenance</dt><dd><code>${esc(dash(e.content_sha256))}</code></dd>
-      ${e.source_url ? `<dt class="prov">Source URL</dt><dd><a href="${esc(e.source_url)}" rel="noopener">official record</a></dd>` : ""}
-    </dl></details>`;
+    <summary>
+      <span class="ev-src">${esc(dash(e.source_id))}</span>
+      <span class="ev-ref">${esc(dash(e.source_ref || e.id))}</span>
+      ${rightsPill(e.source_rights)}
+    </summary>
+    <div class="ev-body">
+      ${blocked ? `<p class="ev-restricted">Rights-restricted — raw source withheld; provenance retained for audit.</p>` : ""}
+      <div class="ev-chain">
+        <span class="step">Source</span><span class="arr">→</span>
+        <span class="step">Retrieved</span><span class="arr">→</span>
+        <span class="step">Retained</span><span class="arr">→</span>
+        <span class="step">Assessed</span>
+      </div>
+      <dl class="ev-prov-grid">
+        <dt>Source</dt><dd>${esc(dash(e.source_id))}${e.media_type ? ` · <span class="mono">${esc(e.media_type)}</span> <span class="chip ${isJson ? "source" : "derived"}">${isJson ? "structured record" : "document"}</span>` : ""}</dd>
+        <dt>Reference</dt><dd class="mono">${esc(dash(e.source_ref || e.id))}</dd>
+        <dt>Published</dt><dd class="mono">${esc(dash(e.published_at))}</dd>
+        <dt>Retrieved</dt><dd class="mono">${esc(dash(e.retrieved_at))}</dd>
+        <dt>First seen</dt><dd class="mono">${esc(dash(e.first_seen_at))}</dd>
+        <dt>Retention</dt><dd>${esc(dash(e.retention_tier))}</dd>
+        <dt>Integrity</dt><dd><code>${esc(dash(e.content_sha256))}</code></dd>
+        ${e.source_url ? `<dt>Official record</dt><dd><a href="${esc(e.source_url)}" rel="noopener">${esc(e.source_url)}</a></dd>` : ""}
+      </dl>
+    </div></details>`;
 }
 
 function dispositionForm(id, current) {
@@ -288,7 +448,10 @@ function applyIdentity(me) {
   const signout = document.querySelector("#signout");
   const fixed = Pyrnova.fixedCustomer();
   const switchable = Pyrnova.switchable();
-  if (fixed && me && me.customer) { org.textContent = me.customer.name || me.customer.id; field.hidden = true; }
+  if (fixed && me && me.customer) {
+    org.textContent = me.customer.name || me.customer.id; field.hidden = true;
+    updateLensStrip({ name: me.customer.name || me.customer.id });
+  }
   else if (switchable) {
     field.hidden = false;
     customerSel.innerHTML = switchable.map(c => `<option value="${esc(c.id)}">${esc(c.name || c.id)}</option>`).join("");
