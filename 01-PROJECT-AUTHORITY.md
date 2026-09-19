@@ -137,9 +137,11 @@ Scout green, Vector blue and Atlas violet/purple. PyrAI uses a subordinate blue/
 shared intelligence layer, not a fifth peer product.
 
 Use geometric display type for names/major headings, wide-tracked uppercase supporting type for labels
-and metadata, and a clean modern sans for readable body/UI copy. Exact product marks, non-cyan production
-tokens, font families and product imagery remain separately approval-gated. The supplied concept board
-is direction, not final artwork or authority for slogans, filler copy, photography or icon geometry.
+and metadata, and a clean modern sans for readable body/UI copy. The master Pyrnova mark and wordmark on
+the current owner-approved concept board are the CURRENT WORKING LOGO CONCEPT (D-070). Exact Scout,
+Strike, Vector and Atlas marks, non-cyan production tokens, font families and product imagery remain
+separately approval-gated. The supplied concept board is direction outside that approved master-logo
+exception, not final artwork or authority for slogans, filler copy, photography or icon geometry.
 
 ## Phase control and finishability
 

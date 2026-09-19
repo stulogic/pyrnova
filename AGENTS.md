@@ -11,6 +11,20 @@ Pyrnova's only local implementation authority is **`/Users/stu/Documents/Pyrnova
 authoritative — it lacks credentials and real evidence and must not be used for milestone work. If your
 session started elsewhere, switch first. The untracked `.codex/` directory is intentional; leave it.
 
+## Repository-first context
+
+Begin Pyrnova work by inspecting current GitHub/repository authority and the relevant state on
+`origin/main`; preserve unrelated branches, worktrees, staged files, and untracked work while doing so.
+The repository is the primary operational source of truth. Conversation history is supplemental context
+only when current repository canon is silent or the owner explicitly asks to recover a recent,
+unreconciled decision. Do not trawl old chats for decisions that should already be canonical.
+
+When an owner decision made in chat materially changes product architecture, commercial authority,
+brand/design doctrine, implementation constraints, or operating rules, reconcile it promptly through the
+smallest coherent repository authority update and push it when repository workflow permits. This rule
+does not change the authority hierarchy below: current owner decisions remain highest authority; it makes
+the repository the first place future work consults for their durable expression.
+
 ## Authority hierarchy (resolve conflicts in this order)
 
 1. **Owner decisions / Phase One Constitution** — highest authority; the locked Constitution is
@@ -43,6 +57,10 @@ Rules:
 `04-DECISIONS.md` when a prior choice affects the task; consult
 roadmap/research only for future-scope questions. Read `PRODUCT_COMMERCIAL_AUTHORITY.md` before using
 research or roadmap material to make any product/commercial decision.
+
+For brand, visual-identity, UI presentation, or asset-generation work, also read
+`docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` and the relevant material under `docs/brand/` before using
+concept boards, generated assets, or conversational descriptions.
 
 Core and PyrAI are shared platform layers. Scout, Strike, Vector, and Atlas are complementary products,
 not mandatory sequential pipeline stages. Product work must not fork shared canonical truth or infer that
@@ -121,7 +139,11 @@ Before generating or changing a Pyrnova asset or UI, read the visual identity au
 red/orange, Scout green, Vector blue and Atlas violet/purple. PyrAI is a subordinate blue/violet shared
 layer, not a fifth product. Apply the recorded typography classes and hierarchy; do not promote a concept
 board's slogans, filler copy, photography, icon geometry, unapproved fonts or proposed tokens into
-authority. Exact product marks and role-specific imagery remain approval-gated.
+authority. The master Pyrnova mark and wordmark on the current owner-approved concept board are the
+**CURRENT WORKING LOGO CONCEPT**: preserve and reuse them by default; do not redesign, replace,
+reinterpret or improve them without explicit owner authorization. Exact Scout, Strike, Vector and Atlas
+marks and role-specific imagery remain approval-gated. The missing canonical master-asset requirement is
+recorded under `docs/brand/master/`.
 
 ## Engineering & infrastructure doctrine (binding)
 

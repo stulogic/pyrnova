@@ -1,7 +1,7 @@
 # Pyrnova corporate posture & brand doctrine
 
 _Status: canonical strategic authority · effective 2026-09-09 · visual identity amended 2026-09-19
-under D-069 · companion to
+under D-069/D-070 · companion to
 `docs/strategy/COMPETITIVE_DOCTRINE.md` and `docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md`_
 
 > **Authority level.** Binding doctrine governing Pyrnova's external presentation, brand character, and
@@ -71,10 +71,40 @@ commercial advantage.
 
 ### Reference-board boundary
 
-The owner-supplied branding board is **inspiration and north-star visual direction**, not literal final
-artwork. It is not authority for slogans, taglines, filler or descriptive copy, card photography, product
-imagery, or exact icon geometry. Do not reproduce those elements merely because they appear on the board.
-All words on a designed surface remain subject to D-041 and the current product/commercial authorities.
+Except for the approved Pyrnova master-logo status below, the owner-supplied branding board is
+**inspiration and north-star visual direction**, not literal final artwork. It is not authority for
+slogans, taglines, filler or descriptive copy, card photography, product imagery, or exact subproduct
+icon geometry. Do not reproduce those elements merely because they appear on the board. All words on a
+designed surface remain subject to D-041 and the current product/commercial authorities.
+
+### Pyrnova master logo — CURRENT WORKING LOGO CONCEPT
+
+The Pyrnova master mark and wordmark shown on the current owner-approved concept board are the
+**CURRENT WORKING LOGO CONCEPT**. They are the default Pyrnova logo for present asset, UI, and brand
+generation. Agents and designers must preserve and reuse that concept by default and must not redesign,
+replace, reinterpret, or "improve" it without explicit owner authorization.
+
+New work should preserve the current mark/wordmark relationship, general proportions, spacing character,
+and parent-brand treatment. This is intentionally a working-concept status, not a permanently frozen
+final production or trademark-artwork designation. Later refinement is possible only by explicit owner
+decision.
+
+Within the concept board, the master Pyrnova logo has stronger authority than slogans, filler copy,
+photography, card layouts, or other presentation content. Those surrounding elements do not become
+canonical merely because they appear beside the approved logo. Exact Scout, Strike, Vector, and Atlas
+marks remain open unless separately approved.
+
+As of 2026-09-19, the exact approved concept-board master logo is **not stored as a tracked raster or
+vector asset on `origin/main`**. The repository's older
+`docs/brand/notion/pyrnova-notion-header.svg` and `website-go/assets/pyrnova-mark.svg` use different
+geometry. They remain records of prior/current implementation and must not be silently rewritten, but
+they are not substitutes for the current working master in new asset generation.
+
+The required in-repository handoff is reserved at `docs/brand/master/README.md`. Until the exact
+owner-approved production asset is stored there, do not fabricate an asset, reverse-engineer exact
+geometry from the concept-board raster, or substitute a different mark. When the board is available in a
+task, it may guide composition and treatment; when it is not available, stop before logo-specific work or
+use a clearly labelled placeholder rather than inventing the master mark.
 
 ### Brand and product hierarchy
 
@@ -126,18 +156,19 @@ atmospheric depth and a premium technical, aerospace-adjacent visual language. T
 one family across Pyrnova and its products. Avoid indiscriminate neon, rainbow treatment, generic AI
 glows, generic corporate technology imagery and decorative complexity that reduces operational clarity.
 
-A shared geometric icon family for Strike, Scout, Vector and Atlas is desirable. Exact product marks and
-icon geometry remain **OPEN until separately owner-approved**; the concept-board marks do not become
-canonical by reference. Product imagery is also **UNFROZEN**. Select it to express the product's actual
-role and evidence-backed function, not generic AI/corporate themes.
+A shared geometric icon family for Strike, Scout, Vector and Atlas is desirable. Exact Scout, Strike,
+Vector and Atlas marks and icon geometry remain **OPEN until separately owner-approved**; those
+concept-board marks do not become canonical by reference. Product imagery is also **UNFROZEN**. Select it
+to express the product's actual role and evidence-backed function, not generic AI/corporate themes.
 
 ### Asset and UI generation rule
 
 Before generating or approving a Pyrnova asset or UI, consult this section, D-041, and
 `PLATFORM_PRODUCT_ARCHITECTURE.md`. Preserve the hierarchy, semantic color assignments, typography roles
-and reference-board boundary. A concept may explore exact fonts, secondary tokens, product marks and
+and reference-board boundary. A concept may explore exact fonts, secondary tokens, subproduct marks and
 role-specific imagery, but must label them as proposals until separately approved. Do not present a
-concept-board slogan, image, icon, token or font choice as repository authority.
+concept-board slogan, image, subproduct icon, token or font choice as repository authority. The current
+working Pyrnova master logo is the explicit exception governed above.
 
 ## Visual & environmental character (non-customer-facing)
 
