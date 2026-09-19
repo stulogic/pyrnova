@@ -37,7 +37,10 @@ implementation and historical lineage, but they are not a competing Phase 1 prod
 
 Prove repeated customer-specific decision value with real design customers and convert that proof into durable recurring revenue.
 
-Customer #1 is **IronMountain Solutions**. The current commercial offer and production pricing are internal authority and must not be published externally unless separately authorized.
+**IronMountain Solutions is solely a non-customer, non-commercial operational-soak test Lens and is
+explicitly not Customer #1** (D-065). Any Customer #1 designation and GO / NO-GO remains separately
+authorized under CUSTOMER-001. The current commercial offer and production pricing are internal authority
+and must not be published externally unless separately authorized.
 
 The immediate execution workstream is defined only in `02-EXECUTION.md`.
 

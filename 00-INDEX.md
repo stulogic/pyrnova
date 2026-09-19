@@ -127,5 +127,7 @@ a canonical authority or specification explicitly incorporates them.
 
 `02-EXECUTION.md` authorizes exactly one immediate workstream: **PHASE1-LIVE-OPS-CLOSURE**.
 
-The next decision after that workstream closes is **Customer #1 GO / NO-GO** for IronMountain Solutions.
-No broad product expansion is authorized before that decision.
+The next decision after that workstream closes is a separately authorized **Customer #1 GO / NO-GO**
+under CUSTOMER-001. IronMountain Solutions is solely a non-customer, non-commercial operational-soak test
+Lens and is explicitly not Customer #1 (D-065). No broad product expansion is authorized before that
+decision.

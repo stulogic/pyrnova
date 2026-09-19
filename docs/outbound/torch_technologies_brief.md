@@ -5,7 +5,8 @@
 > Retained only as historical M2-era outbound provenance. The **$2,500 Intelligence Sprint**, monthly
 > **Capture Radar**, and Torch-first commercial posture below are not current Pyrnova commercial or target
 > authority. Current Phase 1 offer, customer order, category, and sales scope are governed exclusively by
-> `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`. Current Customer #1 is **IronMountain Solutions**.
+> `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`. **IronMountain Solutions is solely a non-customer,
+> non-commercial operational-soak test Lens and is not Customer #1** (D-065).
 > Do not reuse the superseded terms below without new explicit owner authority.
 
 **Original status (2026-09-08):** DRAFT for founder verification before sending. Human-reviewed by Pyrnova execution lead.

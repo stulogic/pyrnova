@@ -6,12 +6,15 @@
 > is **not** the current Customer #1. The former Torch-first target order and **$2,500 Intelligence Sprint**
 > below are superseded by `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
 >
-> Current design-customer order is:
+> The superseded design-customer order recorded at that time was:
 > 1. **IronMountain Solutions**
 > 2. **Trideum**
 > 3. **i3**
 > 4. **Radiance Technologies**
 > 5. **Avion Solutions**
+>
+> IronMountain Solutions is now authorized solely as a non-customer, non-commercial operational-soak test
+> Lens and is explicitly not Customer #1 or a member of the fixed CUSTOMER-001 cohort (D-065).
 >
 > Do not use this file to choose current outreach order, pricing, or commercial structure.
 
