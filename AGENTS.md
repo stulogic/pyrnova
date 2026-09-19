@@ -48,6 +48,11 @@ Core and PyrAI are shared platform layers. Scout, Strike, Vector, and Atlas are 
 not mandatory sequential pipeline stages. Product work must not fork shared canonical truth or infer that
 all four products are current Phase 1 SKUs; only `02-EXECUTION.md` may open implementation.
 
+Current Phase 1 is **Pyrnova / Strategic Change Pilot** and is Strike-led, not Strike-owned (D-068).
+Product identity, implemented capability, integrated Phase 1 capability, standalone readiness and
+commercial availability are different states. Do not rename the offer to Strike, advertise a product as
+separately available, or invent entitlement/pricing/bundling before recorded readiness and owner approval.
+
 ## Do NOT treat as higher authority than current repository authority
 
 README marketing language; stale plans; historical work orders; future-roadmap items; research

@@ -51,6 +51,12 @@ entity/relationship work may provide foundations for Scout, Vector, and Atlas re
 establish those products as implemented standalone Phase 1 SKUs. The current offer remains branded
 Pyrnova unless the owner separately authorizes a naming or packaging transition.
 
+Phase 1 is therefore **Strike-led, not Strike-owned**. It may integrate capabilities mapping to Core,
+PyrAI, Scout, Vector or Atlas without transferring ownership of shared truth to Strike or commercially
+launching those products. Architectural identity, implemented capability, integrated Phase 1 capability,
+standalone readiness and commercial availability must remain distinct. D-068 governs this packaging and
+makes later product naming/bundling a readiness-gated future decision, not a current canon blocker.
+
 ## 2. Canonical intelligence lineage
 
 The canonical conceptual lineage is:

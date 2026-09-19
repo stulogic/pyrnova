@@ -1,6 +1,7 @@
 # Pyrnova platform and product architecture
 
-_Status: LOCKED owner-approved cross-phase architecture · effective 2026-09-19 · recorded by D-067_
+_Status: LOCKED owner-approved cross-phase architecture · effective 2026-09-19 · recorded by D-067 ·
+commercial packaging authority closed by D-068_
 
 > **Authority level and scope.** This document records the owner-approved company, platform-layer and
 > product boundaries. It is a companion to `PRODUCT_COMMERCIAL_AUTHORITY.md` at the cross-phase
@@ -157,7 +158,8 @@ The following are therefore distinct:
 2. **Current Phase 1 commercial packaging:** one Pyrnova / Strategic Change Pilot offer — CURRENT.
 3. **Existing implementation:** a shared repository and runtime, predominantly supporting the
    Strike-led Phase 1 workflow — CURRENT as evidenced by repository state.
-4. **Future product packaging and rollout:** not resolved by this architecture decision.
+4. **Future product packaging and rollout:** intentionally flexible, readiness-gated and subject to
+   later explicit owner approval under D-068; not a current canon blocker.
 
 ## 7. Decision status and supersession
 
@@ -172,9 +174,57 @@ The following are therefore distinct:
 - **EXPERIMENTAL:** no product boundary, packaging plan or implementation split is made experimental by
   this decision. Experiments require separate authorization and explicit status.
 
-## 8. Owner decision still required
+## 8. Commercial packaging authority — LOCKED
 
-The architecture does not decide when or how the four products become separately named, priced,
-entitled, launched or sold. Before any commercial split or renaming of the current Phase 1 offer, the
-owner must decide the transition and packaging sequence, including whether the current offer adopts the
-Strike name and which evidence gates must be met before Scout, Vector or Atlas becomes a standalone SKU.
+### Current Phase 1 offer
+
+The current commercial offer remains **Pyrnova / Strategic Change Pilot** as one bounded engagement. It
+is not automatically renamed Strike or divided into Scout, Strike, Vector and Atlas SKUs. Architectural
+product identity does not establish separate launch, entitlement, pricing, contracting, marketing or
+standalone production readiness.
+
+Phase 1 is **Strike-led, not Strike-owned**. Customer-specific judgement is the current center of value,
+but shared evidence, identity, provenance, temporal truth, source rights and infrastructure remain owned
+by Core or the appropriate shared layer. Capabilities mapping to Scout, Vector or Atlas may participate in
+the engagement where useful without becoming Strike-owned implementation or standalone commercial
+products.
+
+Repository authority must keep these states distinct:
+
+1. architectural product identity;
+2. implemented capability;
+3. capability integrated into the Phase 1 engagement;
+4. standalone product readiness;
+5. standalone commercial availability.
+
+### Standalone commercialization
+
+Scout, Strike, Vector or Atlas may become separately purchasable only after repository authority records
+explicit standalone readiness and commercial approval. The determination must address, at minimum:
+
+- a coherent standalone customer problem and product boundary;
+- coherent product surfaces, workflows and production-quality customer experience;
+- entitlement, access, security and tenant-isolation implications;
+- evidence, provenance, temporal-truth and auditability behavior;
+- operational support and launch status;
+- validation evidence;
+- commercial positioning and contractual treatment;
+- separately owner-approved pricing or packaging.
+
+Reuse existing Pyrnova validation, security, operational, payment, signature and activation gates where
+they govern these concerns. Do not create duplicate governance or infer numerical thresholds or pricing
+that the owner has not approved.
+
+### Naming and future flexibility
+
+Strike remains the architectural identity of the autonomous customer-specific judgement product. The
+current offer does not adopt that commercial name automatically. A later evidence-supported owner
+decision may name or package Strike separately, retain it beneath a broader Pyrnova engagement, or adopt
+another coherent arrangement.
+
+Future packaging may use individual products, bundles, a full-platform subscription, customer-specific
+combinations, enterprise platform arrangements or another coherent model. Architecture must support
+separation without hard-coding one future pricing/bundling model or forcing premature SKU proliferation.
+
+These later launch and packaging choices are intentionally deferred until evidence exists. Their deferral
+is governed flexibility, not unresolved architecture or a current owner blocker.

@@ -1456,6 +1456,11 @@ Do not create multiple Phase 1 editions or prematurely launch Scout, Vector, or 
 commercially mature. The owner-approved four-product architecture is locked, but it does not by itself
 authorize a four-SKU Phase 1 catalog or rename the current offer.
 
+The current offer is **Strike-led, not Strike-owned**: customer-specific judgement is its commercial
+center, while Core/PyrAI and capabilities mapping to Scout, Vector or Atlas may participate without
+becoming Strike-owned or independently available. Product identity, implemented capability, integrated
+Phase 1 capability, standalone readiness and commercial availability are distinct states (D-068).
+
 Separate paid components should appear only when they correspond to genuinely separable economics, such as:
 
 - premium third-party data;
@@ -2542,6 +2547,11 @@ interpretation of it as permanent company-wide single-product architecture is **
 locked Core/PyrAI + Scout/Strike/Vector/Atlas architecture. The timing, naming, pricing and launch order
 of separately sold products still require owner authority.
 
+**PACKAGING CLOSURE (D-068):** Those later choices are intentionally deferred until standalone readiness
+and customer evidence support a separate owner decision. They are not required for current canon. The
+current offer remains Pyrnova / Strategic Change Pilot; no product is separately available merely because
+its architectural identity exists, and future pricing/bundling remains flexible rather than invented now.
+
 ### DECISION 17: MISSED INTELLIGENCE IS FIRST CLASS
 
 **DECISION:** Customer-expected misses are recorded and categorized.
@@ -2884,7 +2894,7 @@ A lower-ranked document cannot silently overturn a higher-ranked authority.
 
 ## 29. TOP OWNER DECISIONS
 
-Seven unresolved matters genuinely require founder judgment now.
+Only six unresolved matters genuinely require founder judgment now.
 
 ### 1. FIRST FIVE DESIGN CUSTOMERS
 
@@ -2923,16 +2933,9 @@ Use real pipeline evidence to decide when SSO, external penetration testing, SOC
 
 After the five-customer falsification gate, decide which adjacent domain, if any, has enough repeated and budget-backed customer pull to open.
 
-### 7. FOUR-PRODUCT COMMERCIAL TRANSITION
-
-Decide when and how Scout, Strike, Vector and Atlas become separately named, priced, entitled and sold;
-whether the current Pyrnova / Strategic Change Pilot offer adopts the Strike name; and which validation
-gates each standalone product must satisfy. The architecture is locked, but the commercial transition
-and launch sequence are not.
-
-This new decision does not block closing current live-operations readiness or beginning validation of the
-existing Phase 1 offer. It does block inventing a four-SKU catalog or renaming the current offer without
-owner authority.
+Four-product commercial transition is not a current unresolved matter. D-068 locks the present package,
+keeps future packaging flexible, and requires standalone readiness plus later explicit owner approval
+before any separate launch, pricing, entitlement or Strike naming transition.
 
 ---
 
@@ -2988,8 +2991,8 @@ Canonical posture:
 - $36K ordinary annual floor;
 - $72K initial stretch;
 - organizational-scope pricing;
-- one current Phase 1 commercial offer, mapped primarily to Strike; the separate-product transition is
-  not yet owner-resolved.
+- one current Phase 1 commercial offer, **Strike-led but not Strike-owned**; future standalone packaging
+  is readiness-gated and deliberately deferred, not a current owner blocker.
 
 ### HAS THE COMPETITIVE POSITION CHANGED?
 

@@ -23,9 +23,11 @@ and no product owns shared Core/PyrAI truth.
 
 This authority synchronization changes no implementation status. The current Phase 1 commercial package
 remains Pyrnova / Strategic Change Pilot, maps primarily to Strike, and continues to use Material Changes
-as its dominant surface. Scout, Vector, and Atlas are not thereby claimed as implemented standalone
-products or current Phase 1 SKUs. Their launch order, separate packaging, pricing, and any renaming of the
-current offer remain owner decisions.
+as its dominant surface. It is **Strike-led, not Strike-owned** and may use cross-product capabilities
+without converting them into separately available products. Scout, Vector, and Atlas are not thereby
+claimed as implemented standalone products or current Phase 1 SKUs. Separate launch, entitlement,
+pricing, contracting and any Strike naming transition require readiness evidence and later explicit owner
+approval under D-068; intentionally deferring those choices is not a current canon blocker.
 
 ## Current product
 

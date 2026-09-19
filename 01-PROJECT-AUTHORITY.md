@@ -27,9 +27,11 @@ The sole product and implementation authority within Phase 1 scope is:
 
 That document controls the current category, ICP, customer order, commercial offer, Phase 1 acceptance,
 validation, and explicit non-goals. The current offer maps primarily to Strike, supported by shared Core
-foundations and bounded PyrAI capability; it is not automatically renamed or split into four Phase 1
-SKUs. Capture Radar and the earlier Business Opportunity Pipeline remain important implementation and
-historical lineage, but they are not a competing Phase 1 product/category authority.
+foundations and bounded PyrAI capability. It is **Strike-led, not Strike-owned**: cross-product capability
+may participate without moving shared truth into Strike or establishing separate commercial availability.
+The offer remains Pyrnova / Strategic Change Pilot and is not automatically renamed or split into four
+Phase 1 SKUs (D-068). Capture Radar and the earlier Business Opportunity Pipeline remain important
+implementation and historical lineage, but they are not a competing Phase 1 product/category authority.
 
 ## Current commercial objective
 
