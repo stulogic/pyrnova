@@ -15,7 +15,8 @@ session started elsewhere, switch first. The untracked `.codex/` directory is in
 
 1. **Owner decisions / Phase One Constitution** — highest authority; the locked Constitution is
    incorporated in `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`.
-2. **Cross-phase product / commercial authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`.
+2. **Cross-phase product / commercial authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`
+   and the locked platform/product boundaries in `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`.
 3. **Phase 1 product / implementation authority** — `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` is sole
    authority within Phase 1 scope. `01-PROJECT-AUTHORITY.md` and the compatible strategy companions
    summarize or specialize current doctrine; none may erase or redefine cross-phase authority outside
@@ -37,10 +38,15 @@ Rules:
 ## Reading order (read only what the task needs)
 
 `00-INDEX.md` → `01-PROJECT-AUTHORITY.md` → `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` →
-`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` → `03-CURRENT-STATE.md` → `02-EXECUTION.md` → the relevant
-`docs/specs/` document. Consult `04-DECISIONS.md` when a prior choice affects the task; consult
+`docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` → `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` →
+`03-CURRENT-STATE.md` → `02-EXECUTION.md` → the relevant `docs/specs/` document. Consult
+`04-DECISIONS.md` when a prior choice affects the task; consult
 roadmap/research only for future-scope questions. Read `PRODUCT_COMMERCIAL_AUTHORITY.md` before using
 research or roadmap material to make any product/commercial decision.
+
+Core and PyrAI are shared platform layers. Scout, Strike, Vector, and Atlas are complementary products,
+not mandatory sequential pipeline stages. Product work must not fork shared canonical truth or infer that
+all four products are current Phase 1 SKUs; only `02-EXECUTION.md` may open implementation.
 
 ## Do NOT treat as higher authority than current repository authority
 

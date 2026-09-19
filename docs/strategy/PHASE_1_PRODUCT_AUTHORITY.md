@@ -1,14 +1,15 @@
 # Pyrnova Phase 1 product and commercial authority
 
-_Status: CANONICAL AND LOCKED · Phase One Constitution incorporated 2026-09-11_
+_Status: CANONICAL AND LOCKED · Phase One Constitution incorporated 2026-09-11 · architecture mapping reconciled 2026-09-19_
 
 > **Authority level and scope.** This document is the sole product and implementation authority within
 > Phase 1 scope. It incorporates the owner-approved Phase One Constitution, specializes
 > `01-PROJECT-AUTHORITY.md` for Phase 1, and sits above the milestone work order. The overarching
 > `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` separately governs cross-phase product and commercial
-> strategy. This document may specialize that authority for Phase 1, but may not erase, redefine, or
-> supersede it outside Phase 1. It does **not** authorize implementation — `02-EXECUTION.md` alone
-> authorizes active work.
+> strategy, and `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` records the locked cross-phase Core,
+> PyrAI, Scout, Strike, Vector and Atlas boundaries. This document may specialize those authorities for
+> Phase 1, but may not erase, redefine, or supersede them outside Phase 1. It does **not** authorize
+> implementation — `02-EXECUTION.md` alone authorizes active work.
 
 Research informs this authority. Research does not override it. Roadmap material does not enter Phase 1 unless `02-EXECUTION.md` explicitly authorizes it under the phase-control rules below.
 
@@ -35,11 +36,20 @@ Pyrnova is an intelligence system. It is not:
 - a Palantir clone;
 - a general-purpose internal operating system.
 
-The long-term architecture may become broader. Phase 1 sales and category language remains narrow until customer evidence authorizes expansion.
+The cross-phase architecture is broader: shared Core and PyrAI layers support Scout, Strike, Vector and
+Atlas as distinct products. Phase 1 sales and category language nevertheless remain narrow until customer
+evidence and owner authority authorize different packaging.
 
 The dominant customer question is: **What materially changed since I last looked, why does it matter to us, what evidence supports it, and what should we investigate or do next?**
 
 Material Changes is the dominant customer surface. Company and program investigation, evidence, search, review, and outcome history support that workflow. They are not separate products.
+
+Within the locked cross-phase architecture, this current package maps primarily to **Strike**. Existing
+source/archive/identity/temporal infrastructure maps to shared **Core** foundations, and bounded optional
+model assistance is compatible with **PyrAI**. Existing event sensing, consequence/propagation, and
+entity/relationship work may provide foundations for Scout, Vector, and Atlas respectively, but does not
+establish those products as implemented standalone Phase 1 SKUs. The current offer remains branded
+Pyrnova unless the owner separately authorizes a naming or packaging transition.
 
 ## 2. Canonical intelligence lineage
 

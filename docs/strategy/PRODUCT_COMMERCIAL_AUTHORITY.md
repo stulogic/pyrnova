@@ -1,11 +1,14 @@
 # Pyrnova product + commercial authority
 
-_Status: canonical cross-phase product / commercial authority · effective 2026-09-10 · owner-approved. Supersedes
-conflicting earlier commercial/product hypotheses where explicitly resolved in §23–§24 below._
+_Status: canonical cross-phase product / commercial authority · effective 2026-09-10 · architecture
+reconciled 2026-09-19 · owner-approved. Supersedes conflicting earlier commercial/product hypotheses
+where explicitly resolved in §23–§24 below._
 
 > **Authority level and scope.** Owner decisions and the Phase One Constitution are highest authority.
 > This document is the overarching **cross-phase product / commercial authority**. It unifies Pyrnova's
 > broader product, commercial/pricing, trust, validation, UX, AI, and expansion direction across phases.
+> `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` is its locked companion for the shared Core/PyrAI
+> platform layers and the Scout/Strike/Vector/Atlas product boundaries (D-067).
 > `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` incorporates the locked Phase One Constitution and is the
 > sole product and implementation authority within Phase 1 scope. It may specialize this cross-phase
 > authority for Phase 1, but may not erase, redefine, or supersede it outside Phase 1. Compatible strategy
@@ -36,7 +39,12 @@ conflicting earlier commercial/product hypotheses where explicitly resolved in �
 
 ## 1. EXECUTIVE AUTHORITY
 
-Pyrnova is a customer-specific external-change intelligence product.
+Pyrnova is one company and one intelligence platform. It has shared **Core** and **PyrAI** layers and
+four distinct customer-facing products: **Scout**, **Strike**, **Vector**, and **Atlas**. Their locked
+boundaries and non-sequential relationships are defined in `PLATFORM_PRODUCT_ARCHITECTURE.md` (D-067).
+
+Pyrnova's current Phase 1 commercial package is a customer-specific external-change intelligence product
+whose implementation maps primarily to Strike.
 
 Its purpose is:
 
@@ -111,7 +119,8 @@ Canonical initial pricing:
 - Initial stretch ACV: **$72,000**
 - Pricing unit: **licensed organizational scope**, not alert volume, searches or raw usage
 
-Phase 1 has **one product**, not a SKU zoo.
+Phase 1 has **one current commercial offer**, not a SKU zoo. That packaging rule does not redefine the
+locked four-product company architecture or make Core/PyrAI customer-facing products.
 
 M22-A through M22-F are closed and remain closed. Research does not justify reopening them.
 
@@ -135,7 +144,10 @@ Otherwise:
 
 ### AUTHORITATIVE DEFINITION
 
-Pyrnova is:
+Pyrnova's company-level architecture is one intelligence platform with shared Core/PyrAI capabilities
+and Scout, Strike, Vector, and Atlas as customer-facing products.
+
+Its enduring intelligence thesis is:
 
 **A continuously updated and historically auditable intelligence system that models what external change means economically to a specific organization.**
 
@@ -1438,9 +1450,11 @@ Seats may provide sensible access boundaries but are not the principal value uni
 
 ### INITIAL PRODUCT STRUCTURE
 
-**ONE PRODUCT.**
+**ONE CURRENT PHASE 1 COMMERCIAL OFFER.**
 
-Do not create multiple editions merely to look commercially mature.
+Do not create multiple Phase 1 editions or prematurely launch Scout, Vector, or Atlas merely to look
+commercially mature. The owner-approved four-product architecture is locked, but it does not by itself
+authorize a four-SKU Phase 1 catalog or rename the current offer.
 
 Separate paid components should appear only when they correspond to genuinely separable economics, such as:
 
@@ -2513,7 +2527,7 @@ The following should not govern current Pyrnova:
 
 **REVISIT TRIGGER:** Product usage or enterprise structure creates a better repeatable value unit.
 
-### DECISION 16: ONE PRODUCT
+### DECISION 16: ONE PHASE 1 COMMERCIAL OFFER — CURRENT
 
 **DECISION:** Phase 1 has one commercial product.
 
@@ -2522,6 +2536,11 @@ The following should not govern current Pyrnova:
 **CONSEQUENCE:** Premium data, API and custom services remain explicit exceptions/add-ons.
 
 **REVISIT TRIGGER:** Repeated demand supports materially distinct buyer/value packages.
+
+**ARCHITECTURE CLARIFICATION (D-067):** This decision governs current Phase 1 packaging only. Any
+interpretation of it as permanent company-wide single-product architecture is **SUPERSEDED** by the
+locked Core/PyrAI + Scout/Strike/Vector/Atlas architecture. The timing, naming, pricing and launch order
+of separately sold products still require owner authority.
 
 ### DECISION 17: MISSED INTELLIGENCE IS FIRST CLASS
 
@@ -2865,7 +2884,7 @@ A lower-ranked document cannot silently overturn a higher-ranked authority.
 
 ## 29. TOP OWNER DECISIONS
 
-Only six unresolved matters genuinely require founder judgment now.
+Seven unresolved matters genuinely require founder judgment now.
 
 ### 1. FIRST FIVE DESIGN CUSTOMERS
 
@@ -2904,7 +2923,16 @@ Use real pipeline evidence to decide when SSO, external penetration testing, SOC
 
 After the five-customer falsification gate, decide which adjacent domain, if any, has enough repeated and budget-backed customer pull to open.
 
-No other major founder decision is required before closing live-operations readiness and beginning design-customer validation.
+### 7. FOUR-PRODUCT COMMERCIAL TRANSITION
+
+Decide when and how Scout, Strike, Vector and Atlas become separately named, priced, entitled and sold;
+whether the current Pyrnova / Strategic Change Pilot offer adopts the Strike name; and which validation
+gates each standalone product must satisfy. The architecture is locked, but the commercial transition
+and launch sequence are not.
+
+This new decision does not block closing current live-operations readiness or beginning validation of the
+existing Phase 1 offer. It does block inventing a four-SKU catalog or renaming the current offer without
+owner authority.
 
 ---
 
@@ -2960,7 +2988,8 @@ Canonical posture:
 - $36K ordinary annual floor;
 - $72K initial stretch;
 - organizational-scope pricing;
-- one initial product.
+- one current Phase 1 commercial offer, mapped primarily to Strike; the separate-product transition is
+  not yet owner-resolved.
 
 ### HAS THE COMPETITIVE POSITION CHANGED?
 

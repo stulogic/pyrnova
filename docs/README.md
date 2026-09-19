@@ -8,13 +8,15 @@ in [`../00-INDEX.md`](../00-INDEX.md).
 Read in this order:
 
 1. [`../README.md`](../README.md) — product, boundaries, quick start, and architecture summary.
-2. [`system/SYSTEM_ARCHITECTURE.md`](system/SYSTEM_ARCHITECTURE.md) — implemented planes and data flow.
-3. [`system/DOMAIN_MODEL.md`](system/DOMAIN_MODEL.md) — identities, state, time, evidence, and invariants.
-4. [`system/DATA_AND_PROVENANCE.md`](system/DATA_AND_PROVENANCE.md) — source-to-evidence lineage.
-5. [`system/REPLAY_AND_TEMPORAL_TRUTH.md`](system/REPLAY_AND_TEMPORAL_TRUTH.md) — historical reconstruction.
-6. [`system/SCORING_AND_DECISION_LOGIC.md`](system/SCORING_AND_DECISION_LOGIC.md) — current policies and
+2. [`strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`](strategy/PLATFORM_PRODUCT_ARCHITECTURE.md) — locked
+   Core/PyrAI and Scout/Strike/Vector/Atlas boundaries.
+3. [`system/SYSTEM_ARCHITECTURE.md`](system/SYSTEM_ARCHITECTURE.md) — implemented planes and data flow.
+4. [`system/DOMAIN_MODEL.md`](system/DOMAIN_MODEL.md) — identities, state, time, evidence, and invariants.
+5. [`system/DATA_AND_PROVENANCE.md`](system/DATA_AND_PROVENANCE.md) — source-to-evidence lineage.
+6. [`system/REPLAY_AND_TEMPORAL_TRUTH.md`](system/REPLAY_AND_TEMPORAL_TRUTH.md) — historical reconstruction.
+7. [`system/SCORING_AND_DECISION_LOGIC.md`](system/SCORING_AND_DECISION_LOGIC.md) — current policies and
    human decision boundaries.
-7. [`system/SECURITY_AND_TENANCY.md`](system/SECURITY_AND_TENANCY.md) — actual access controls and limits.
+8. [`system/SECURITY_AND_TENANCY.md`](system/SECURITY_AND_TENANCY.md) — actual access controls and limits.
 
 ## Change Pyrnova
 
@@ -51,7 +53,7 @@ Read in this order:
 The exact precedence is in [`../00-INDEX.md`](../00-INDEX.md). In summary:
 
 1. owner decisions and the Phase One Constitution;
-2. cross-phase product and commercial authority;
+2. cross-phase product, commercial, and locked platform/product architecture authority;
 3. Phase 1 product and implementation authority within Phase 1 scope;
 4. execution, state, milestone, and evidence records;
 5. architectural authority;
@@ -77,8 +79,8 @@ point to authority and code, not silently create new product scope.
 
 | Document area | Purpose | Owner role | Update trigger | Controlling source | Last reviewed |
 |---|---|---|---|---|---|
-| Root README and this page | Entry and routing | Engineering lead | Product surface or doc topology changes | Authority index + repository | 2026-09-12 |
-| `system/SYSTEM_ARCHITECTURE.md` | Implemented design | Engineering lead | Data flow, state owner, or boundary changes | Code + architecture authority | 2026-09-12 |
+| Root README and this page | Entry and routing | Engineering lead | Product surface or doc topology changes | Authority index + repository | 2026-09-19 |
+| `system/SYSTEM_ARCHITECTURE.md` | Implemented design | Engineering lead | Data flow, state owner, or boundary changes | Code + architecture authority | 2026-09-19 |
 | `system/DOMAIN_MODEL.md` | Canonical semantics | Domain/engineering lead | Model, identity, lifecycle, or time semantics change | Models + schema + specs | 2026-09-12 |
 | `system/DATA_AND_PROVENANCE.md` | Evidence lineage | Data engineering lead | Source/archive/provenance contract changes | Registry + archive + source specs | 2026-09-12 |
 | `system/REPLAY_AND_TEMPORAL_TRUTH.md` | Historical truth | Intelligence engineering lead | Replay/outcome/cutoff behavior changes | Replay code + corpora + specs | 2026-09-12 |

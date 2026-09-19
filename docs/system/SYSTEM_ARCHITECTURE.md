@@ -1,7 +1,7 @@
 # System architecture
 
 Status: descriptive; repository evidence controls  
-Last reviewed: 2026-09-12
+Last reviewed: 2026-09-19
 
 ## Context and boundary
 
@@ -14,6 +14,18 @@ The current Phase 1 application is customer-specific federal-contractor Material
 cross-source reasoning, consequence/fit, threat propagation, investigation, and replay are capabilities
 inside the same system. Integrated Phase 1.5 industrial replay remains research/evaluation evidence,
 not an implemented production plane.
+
+The locked cross-phase product architecture is defined separately in
+`../strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`: shared **Core** and **PyrAI** layers support **Scout**,
+**Strike**, **Vector**, and **Atlas**. Those are product/ownership boundaries, not claims that the current
+Python package has already been split into services or four product runtimes. The current implementation
+maps predominantly to the Strike-led Phase 1 workflow, while the existing planes provide shared Core
+foundations and bounded capabilities that may support other products later.
+
+The four products are not a mandatory execution sequence. Any future separation must preserve one
+canonical shared truth for identity, evidence, provenance, time, rights and customer scope; it must not
+clone the current planes into competing product-owned truth stores. PyrAI remains model-agnostic and
+subordinate to those invariants.
 
 ## Planes
 

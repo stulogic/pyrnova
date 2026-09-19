@@ -1,10 +1,17 @@
 # Pyrnova project authority
 
-_Status: current root project authority · synchronized to the locked Phase One Constitution 2026-09-11_
+_Status: current root project authority · Phase One Constitution locked · architecture reconciled 2026-09-19_
 
 ## Mission and current product
 
 Pyrnova is an intelligence company building evidence-backed, historically auditable external intelligence for commercial decision-making.
+
+Pyrnova is one company and one intelligence platform. **Core** is the shared data/infrastructure
+substrate and **PyrAI** is the shared model-agnostic intelligence/orchestration layer. **Scout** (live
+sensing), **Strike** (customer-specific judgement), **Vector** (consequence/scenario modelling), and
+**Atlas** (structural intelligence) are distinct customer-facing products. They are complementary, not
+mandatory sequential stages, and none owns Core or PyrAI. The locked boundaries are in
+`docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` (D-067).
 
 The current Phase 1 product is **Pyrnova**, a **decision-grade external-intelligence system for government contractors**. Its operating concept is **Material Changes**.
 
@@ -18,7 +25,11 @@ The sole product and implementation authority within Phase 1 scope is:
 
 `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`
 
-That document controls the current category, ICP, customer order, commercial offer, Phase 1 acceptance, validation, and explicit non-goals. Capture Radar and the earlier Business Opportunity Pipeline remain important implementation and historical lineage, but they are not a competing Phase 1 product/category authority.
+That document controls the current category, ICP, customer order, commercial offer, Phase 1 acceptance,
+validation, and explicit non-goals. The current offer maps primarily to Strike, supported by shared Core
+foundations and bounded PyrAI capability; it is not automatically renamed or split into four Phase 1
+SKUs. Capture Radar and the earlier Business Opportunity Pipeline remain important implementation and
+historical lineage, but they are not a competing Phase 1 product/category authority.
 
 ## Current commercial objective
 

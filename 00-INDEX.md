@@ -15,10 +15,11 @@ For implementation work, read only what the task requires, in this order:
 1. `00-INDEX.md`
 2. `01-PROJECT-AUTHORITY.md`
 3. `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` (overarching cross-phase product and commercial authority)
-4. `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (sole product and implementation authority within Phase 1 scope)
-5. `03-CURRENT-STATE.md`
-6. `02-EXECUTION.md`
-7. the relevant document under `docs/specs/`
+4. `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` (locked cross-phase platform and product boundaries)
+5. `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` (sole product and implementation authority within Phase 1 scope)
+6. `03-CURRENT-STATE.md`
+7. `02-EXECUTION.md`
+8. the relevant document under `docs/specs/`
 
 Then consult `04-DECISIONS.md` when a prior choice affects the task and `05-BACKLOG.md` only for
 future-scope questions. `06-HISTORY.md` and `docs/handovers/` are continuity records, not current
@@ -31,7 +32,9 @@ When documents conflict, use this precedence:
 1. **Owner decisions / Phase One Constitution** — highest authority. The locked Constitution is incorporated
    in `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`; current owner decisions control any genuine conflict.
 2. **Cross-phase product / commercial authority** — `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` governs
-   Pyrnova's overarching product and commercial direction across phases.
+   Pyrnova's overarching product and commercial direction across phases;
+   `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` records the locked Core/PyrAI and
+   Scout/Strike/Vector/Atlas boundaries at the same tier.
 3. **Phase 1 product / implementation authority** — `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` is sole
    authority within Phase 1 scope. `01-PROJECT-AUTHORITY.md` and the compatible strategy companions summarize
    or specialize current doctrine; none may erase or redefine cross-phase authority outside Phase 1.
@@ -75,6 +78,8 @@ a canonical authority or specification explicitly incorporates them.
 - `docs/specs/` — active product, run, review, and source-ingestion specifications.
 - `docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md` — overarching, owner-approved cross-phase product and
   commercial authority.
+- `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md` — owner-approved cross-phase company/platform/product
+  architecture: shared Core and PyrAI with Scout, Strike, Vector, and Atlas as distinct products.
 - `docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md` — sole product and implementation authority within Phase 1
   scope, including category, ICP, customer order, commercial offer, intelligence lineage, gates, non-goals,
   Live Ops doctrine, validation, and deferred scope.

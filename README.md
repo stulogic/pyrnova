@@ -7,10 +7,12 @@ matter, verify the evidence, and decide what to investigate or do next. Its curr
 turns attributable external change into customer-specific Material Changes: opportunity, threat, or
 monitoring items that retain evidence, uncertainty, temporal truth, review state, and later outcomes.
 
-The current customer product is the Material Changes feed with company/program investigation and
-deterministic search. Capture Radar is the opportunity-detection kernel within that product, not a
-separate product. Broader industrial and cross-sector architecture is direction or research unless the
-current execution authority explicitly opens it.
+The current Phase 1 commercial package is the Material Changes feed with company/program investigation
+and deterministic search. It maps primarily to **Strike** within Pyrnova's locked architecture of shared
+**Core** and **PyrAI** layers plus **Scout**, **Strike**, **Vector**, and **Atlas** products. Capture Radar
+is the opportunity-detection kernel within the current package, not a separate product. The architecture
+does not make all four products current Phase 1 SKUs or authorize implementation; broader product work
+still requires current execution authority.
 
 ## Current Phase 1 state
 
@@ -36,7 +38,9 @@ Broad Phase 1 research and broad product expansion are not currently authorized.
 
 Owner decisions and the locked Phase One Constitution are highest authority.
 [`docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md`](docs/strategy/PRODUCT_COMMERCIAL_AUTHORITY.md) governs
-cross-phase product and commercial strategy. [`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`](docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md)
+cross-phase product and commercial strategy, with locked platform/product boundaries in
+[`docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`](docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md).
+[`docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md`](docs/strategy/PHASE_1_PRODUCT_AUTHORITY.md)
 is sole product and implementation authority within Phase 1 scope; it may not redefine the cross-phase
 authority outside that scope. Only [`02-EXECUTION.md`](02-EXECUTION.md) authorizes active implementation.
 Descriptive documentation in

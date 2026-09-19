@@ -1,6 +1,6 @@
 # Pyrnova current state
 
-_Verified repository authority state: 2026-09-11 · implementation baseline remains M22-F close_
+_Verified repository authority state: 2026-09-19 · implementation baseline remains M22-F close_
 
 ## Phase 1 authority state
 
@@ -13,6 +13,19 @@ Canonical Phase 1 product and commercial authority:
 Broad Phase 1 research is **frozen** except for the narrow exceptions defined in that authority: a genuine Customer #1 blocker, an unsettled commercial decision that current authority cannot resolve, a correctness/security issue, or a customer-driven expansion question.
 
 No broad product expansion is authorized.
+
+## Company and product architecture
+
+The locked cross-phase architecture is **Core + PyrAI** as shared platform layers and **Scout, Strike,
+Vector, and Atlas** as distinct, complementary customer-facing products (D-067;
+`docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`). The products are not a mandatory sequential pipeline,
+and no product owns shared Core/PyrAI truth.
+
+This authority synchronization changes no implementation status. The current Phase 1 commercial package
+remains Pyrnova / Strategic Change Pilot, maps primarily to Strike, and continues to use Material Changes
+as its dominant surface. Scout, Vector, and Atlas are not thereby claimed as implemented standalone
+products or current Phase 1 SKUs. Their launch order, separate packaging, pricing, and any renaming of the
+current offer remain owner decisions.
 
 ## Current product
 
