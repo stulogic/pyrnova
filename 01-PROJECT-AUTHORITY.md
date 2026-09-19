@@ -128,6 +128,19 @@ Avoid slogans, clever headings, anthropomorphic AI language, generic startup cla
 
 Detailed voice/posture authority remains in `docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` and D-041/D-054.
 
+## Visual identity authority
+
+All generated assets and UI must consult `docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` (D-069). Pyrnova
+is the parent/institutional identity: black/near-black and metallic white/silver, with cyan as the
+dominant non-product highlight and interaction accent. Product semantic families are Strike red/orange,
+Scout green, Vector blue and Atlas violet/purple. PyrAI uses a subordinate blue/violet gradient as a
+shared intelligence layer, not a fifth peer product.
+
+Use geometric display type for names/major headings, wide-tracked uppercase supporting type for labels
+and metadata, and a clean modern sans for readable body/UI copy. Exact product marks, non-cyan production
+tokens, font families and product imagery remain separately approval-gated. The supplied concept board
+is direction, not final artwork or authority for slogans, filler copy, photography or icon geometry.
+
 ## Phase control and finishability
 
 A missing capability may block current Phase 1 work only when needed for:

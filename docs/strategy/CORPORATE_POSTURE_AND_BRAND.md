@@ -1,6 +1,7 @@
 # Pyrnova corporate posture & brand doctrine
 
-_Status: canonical strategic authority · effective 2026-09-09 · companion to
+_Status: canonical strategic authority · effective 2026-09-09 · visual identity amended 2026-09-19
+under D-069 · companion to
 `docs/strategy/COMPETITIVE_DOCTRINE.md` and `docs/strategy/COMPETITIVE_INTELLIGENCE_AND_DATA_AUTONOMY.md`_
 
 > **Authority level.** Binding doctrine governing Pyrnova's external presentation, brand character, and
@@ -8,6 +9,12 @@ _Status: canonical strategic authority · effective 2026-09-09 · companion to
 > Pyrnova presents and discloses*; it does **not** authorize implementation (`02-EXECUTION.md` alone
 > does), never overrides the finishability rule (D-047) or Phase 1 non-goals (D-048), and never licenses
 > anything unlawful, deceptive, or intimidating toward customers. See D-054.
+
+> **Visual-authority scope.** The visual identity rules below are binding for generated assets, product
+> UI, websites, presentations, social graphics and other designed surfaces. They specialize presentation
+> only. Product roles and hierarchy remain governed by
+> `docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`; copy remains governed by D-041; and
+> `02-EXECUTION.md` alone authorizes implementation. See D-069.
 
 ## Two deliberate faces
 
@@ -59,6 +66,78 @@ commercial advantage.
 > of truth (`00-INDEX.md`), and agents must keep authority/decisions/state complete and honest. Who may
 > access the repository and other internal records is an owner-controlled decision, not a license to
 > under-document internally. "Unknown stays unknown" and "do not fabricate" still bind.
+
+## Visual identity authority
+
+### Reference-board boundary
+
+The owner-supplied branding board is **inspiration and north-star visual direction**, not literal final
+artwork. It is not authority for slogans, taglines, filler or descriptive copy, card photography, product
+imagery, or exact icon geometry. Do not reproduce those elements merely because they appear on the board.
+All words on a designed surface remain subject to D-041 and the current product/commercial authorities.
+
+### Brand and product hierarchy
+
+**PYRNOVA is the institution and parent brand.** Scout, Strike, Vector and Atlas are a coordinated family
+of customer-facing products. PyrAI is a shared intelligence capability/layer, visually subordinate to the
+parent brand, **not a fifth peer product**. This visual hierarchy reflects, and does not redefine, the
+locked platform/product boundaries in `PLATFORM_PRODUCT_ARCHITECTURE.md` (D-067/D-068).
+
+### Color system — semantic assignments LOCKED
+
+- **Pyrnova parent/platform:** black or near-black foundations; metallic white/silver for primary marks,
+  type and structure; **cyan is the dominant highlight and interaction accent whenever no
+  product-specific semantic color applies**.
+- **Strike:** red/orange.
+- **Scout:** green.
+- **Vector:** blue.
+- **Atlas:** violet/purple.
+- **PyrAI:** blue-to-violet gradient treatment, contained within the wider cyan-led Pyrnova system and
+  never presented with the visual weight of a fifth product identity.
+
+Cyan is the visual spine for parent-brand emphasis, active states, selected navigation, focus treatments,
+key interface emphasis, non-product data accents, subtle glows, links, dividers and general illumination.
+Product colors are semantic and contextual: they may identify a product or product-owned meaning, but
+must not replace cyan as the default platform accent. "Dominant" describes hierarchy, not surface area;
+cyan should remain restrained and purposeful rather than becoming neon decoration.
+
+The repository's accepted Pyrnova mark and published website work already use **`#25CFE8`** as canonical
+brand cyan (`docs/brand/notion/pyrnova-notion-header.svg` and `docs/operations/WEBSITE_GO_EVIDENCE.md`).
+Retain that value where an exact cyan token is required. This decision does **not** invent or freeze exact
+red/orange, green, blue, violet/purple, metallic or gradient values. Production palette/token work may
+define those values later without changing the semantic assignments above.
+
+### Typography hierarchy — font classes LOCKED, exact families OPEN
+
+- Use a **futuristic geometric display face** for the Pyrnova/product names and major headings.
+- Use **wide-tracked uppercase supporting type** for labels, navigation, eyebrow text, metadata and brand
+  support copy.
+- Use a **clean, highly legible modern sans** for body and UI copy.
+
+Font selection must preserve a premium technical character while keeping body text, controls and dense
+operational information readable across sizes and accessibility settings. Do not hard-code a new font
+family as brand authority without separate approval. Future asset/UI work should select within these
+classes, document substitutions and keep the hierarchy intact.
+
+### Form, imagery and family coherence
+
+Use dark cinematic backgrounds, very high contrast, generous negative space, restrained luminous accents,
+atmospheric depth and a premium technical, aerospace-adjacent visual language. The system should feel like
+one family across Pyrnova and its products. Avoid indiscriminate neon, rainbow treatment, generic AI
+glows, generic corporate technology imagery and decorative complexity that reduces operational clarity.
+
+A shared geometric icon family for Strike, Scout, Vector and Atlas is desirable. Exact product marks and
+icon geometry remain **OPEN until separately owner-approved**; the concept-board marks do not become
+canonical by reference. Product imagery is also **UNFROZEN**. Select it to express the product's actual
+role and evidence-backed function, not generic AI/corporate themes.
+
+### Asset and UI generation rule
+
+Before generating or approving a Pyrnova asset or UI, consult this section, D-041, and
+`PLATFORM_PRODUCT_ARCHITECTURE.md`. Preserve the hierarchy, semantic color assignments, typography roles
+and reference-board boundary. A concept may explore exact fonts, secondary tokens, product marks and
+role-specific imagery, but must label them as proposals until separately approved. Do not present a
+concept-board slogan, image, icon, token or font choice as repository authority.
 
 ## Visual & environmental character (non-customer-facing)
 

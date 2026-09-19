@@ -113,6 +113,16 @@ defaults to **need-to-know** — do not publish roadmap, datasets, methods, comp
 or strategic weaknesses externally without a commercial reason. This does **not** weaken *internal*
 record-keeping: keep the repository's authority/decisions/state full, honest, and current.
 
+## Visual identity (binding for assets and UI)
+
+Before generating or changing a Pyrnova asset or UI, read the visual identity authority in
+`docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` (D-069) and preserve the product hierarchy in
+`docs/strategy/PLATFORM_PRODUCT_ARCHITECTURE.md`. Cyan is the default parent/platform accent; Strike is
+red/orange, Scout green, Vector blue and Atlas violet/purple. PyrAI is a subordinate blue/violet shared
+layer, not a fifth product. Apply the recorded typography classes and hierarchy; do not promote a concept
+board's slogans, filler copy, photography, icon geometry, unapproved fonts or proposed tokens into
+authority. Exact product marks and role-specific imagery remain approval-gated.
+
 ## Engineering & infrastructure doctrine (binding)
 
 *How* you build is governed, not just what. Before substantive implementation or infrastructure work,

@@ -89,7 +89,9 @@ a canonical authority or specification explicitly incorporates them.
   collection, proper-means rule + YELLOW review, clean-room reverse engineering, personnel boundary,
   strategic data autonomy, rights-contamination control, vendor displacement (build deferred).
 - `docs/strategy/CORPORATE_POSTURE_AND_BRAND.md` — two-faces posture, customer voice (with D-041),
-  external secrecy default (NEED TO KNOW), visual/brand character, competitive reputation.
+  external secrecy default (NEED TO KNOW), and binding visual identity doctrine for generated assets/UI:
+  parent/product hierarchy, cyan-led accent system, semantic product colors, typography classes and open
+  mark/imagery boundaries (D-054/D-069).
 - `docs/strategy/SOCIAL_GROWTH_AUTHORITY.md` — accepted SOCIAL-GROWTH-001 audience, distribution,
   disclosure, rights, visual and human-approval authority; planning assets are linked from it.
 - `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon

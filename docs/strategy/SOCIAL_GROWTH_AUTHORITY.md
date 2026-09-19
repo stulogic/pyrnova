@@ -67,8 +67,9 @@ X is optional. Newsletter and owned community are deferred.
 ## Visual and publication doctrine
 
 The previous Canva-versus-Figma owner decision is superseded. Social production is subordinate to the
-current PYRNOVA-DESIGN-AUTHORITY-001 visual authority and
-inherits the existing Pyrnova design language. Canva Free may be used for lightweight production and
+canonical visual identity authority in
+[docs/strategy/CORPORATE_POSTURE_AND_BRAND.md](CORPORATE_POSTURE_AND_BRAND.md) (D-069) and inherits the
+existing Pyrnova design language. Canva Free may be used for lightweight production and
 existing Figma may be used where useful; neither is a required product dependency. Do not create a
 separate social identity, generic Canva-template aesthetics, secondary design system or visuals
 inconsistent with the Pyrnova visual authority. The accepted EPICENTER / Pyrnova visual language is
