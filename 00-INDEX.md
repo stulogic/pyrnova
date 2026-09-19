@@ -97,6 +97,9 @@ a canonical authority or specification explicitly incorporates them.
   disclosure, rights, visual and human-approval authority; planning assets are linked from it.
 - `docs/strategy/STRATEGIC_CAPABILITY_ROADMAP.md` — strategic capability roadmap: durable longer-horizon
   capabilities, non-authoritative over active work but binding on milestone-planning consultation.
+- `docs/strategy/planning/productization-recon-001/` — planning-only authority baseline and factual
+  capability inventory for PYRNOVA-PRODUCTIZATION-RECON-001. It does not authorize implementation,
+  packaging, pricing, launch, or changes to the current Phase 1 gate.
 - `docs/architecture/` — current system structure and design boundaries. Includes the binding
   **engineering doctrine** (`ENGINEERING_DOCTRINE.md`) and **infrastructure & capital doctrine**
   (`INFRASTRUCTURE_DOCTRINE.md`) — how Pyrnova is built and scaled (D-059); read before substantive
